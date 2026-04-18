@@ -1,0 +1,250 @@
+"""GET /api/events, GET /api/events/{id} — FIL-01, FIL-02 (D-08 visibility)."""
+from __future__ import annotations
+
+import uuid
+from datetime import datetime
+from typing import Literal
+
+import structlog
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.database import get_session
+from app.models.events import Event
+from app.models.markings import TlpMarking
+from app.models.sources import Source
+from app.models.tags import AttackTechniqueTag
+from app.schemas.events import (
+    EventDetail,
+    EventItem,
+    EventListResponse,
+)
+from app.services.events_query import (
+    CursorError,
+    EventsQueryParams,
+    apply_cursor,
+    apply_fts_cursor,
+    build_events_query,
+    build_fts_query,
+    decode_cursor,
+    decode_fts_cursor,
+    encode_cursor,
+    encode_fts_cursor,
+)
+
+log = structlog.get_logger(__name__)
+router = APIRouter(prefix="/events", tags=["events"])
+
+FeedType = Literal["rss", "taxii", "nvd"]
+TlpName = Literal["clear", "green", "amber", "amber+strict", "red"]
+
+
+async def _hydrate_item(event: Event, db: AsyncSession) -> EventItem:
+    """Populate source_name/source_type, resolve TLP name, collect attack_techniques."""
+    source_name: str | None = None
+    source_type: str | None = None
+    if event.source_id is not None:
+        row = (
+            await db.execute(
+                select(Source.name, Source.feed_type).where(Source.id == event.source_id)
+            )
+        ).one_or_none()
+        if row is not None:
+            source_name, source_type = row[0], row[1]
+
+    tlp_name: str | None = None
+    if event.tlp_marking_id is not None:
+        row = (
+            await db.execute(
+                select(TlpMarking.name).where(TlpMarking.id == event.tlp_marking_id)
+            )
+        ).one_or_none()
+        if row is not None:
+            tlp_name = row[0]
+
+    tech_rows = (
+        await db.execute(
+            select(AttackTechniqueTag.technique_id).where(
+                AttackTechniqueTag.event_id == event.id
+            )
+        )
+    ).all()
+    attack_techniques = [r[0] for r in tech_rows]
+
+    return EventItem(
+        id=event.id,
+        observed_at=event.observed_at,
+        fetched_at=event.fetched_at,
+        source_id=event.source_id,
+        source_name=source_name,
+        source_type=source_type,  # type: ignore[arg-type]
+        stix_id=event.stix_id,
+        stix_type=event.stix_type,
+        title=event.title,
+        description=event.description,
+        tlp=tlp_name,  # type: ignore[arg-type]
+        tags=(event.tags or []),
+        attack_techniques=attack_techniques,
+        archived=event.archived,
+        visibility=event.visibility,  # type: ignore[arg-type]
+        geo_lat=event.geo_lat,
+        geo_lon=event.geo_lon,
+    )
+
+
+@router.get("", response_model=EventListResponse)
+async def list_events(
+    source: list[uuid.UUID] | None = Query(default=None),
+    source_type: list[FeedType] | None = Query(default=None),
+    observed_from: datetime | None = Query(default=None),
+    observed_to: datetime | None = Query(default=None),
+    tlp: list[TlpName] | None = Query(default=None),
+    attack_technique: list[str] | None = Query(default=None),
+    tag: list[str] | None = Query(default=None),
+    free_text: str | None = Query(default=None),
+    include_archived: bool = Query(default=False),
+    has_geo: bool = Query(default=False),
+    tag_mode: Literal["any", "all"] = Query(default="all"),
+    include_total: bool = Query(default=False),
+    cursor: str | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    role: str | None = Header(default=None, alias="X-Dashboard-Role"),
+    db: AsyncSession = Depends(get_session),
+) -> EventListResponse:
+    if free_text is not None:
+        q = free_text.strip()
+        if not q:
+            raise HTTPException(
+                status_code=400, detail="free_text query cannot be empty"
+            )
+
+        # FTS path (FIL-05) — rank-ordered, triple-key cursor
+        params = EventsQueryParams(
+            source=source,
+            source_type=source_type,
+            observed_from=observed_from,
+            observed_to=observed_to,
+            tlp=tlp,
+            attack_technique=attack_technique,
+            tag=tag,
+            include_archived=include_archived,
+            has_geo=has_geo,
+            tag_mode=tag_mode,
+        )
+        fts_stmt = build_fts_query(params, role, q)
+
+        if cursor:
+            try:
+                c_rank, c_ts, c_id = decode_fts_cursor(cursor)
+            except CursorError as e:
+                raise HTTPException(status_code=400, detail=str(e)) from e
+            fts_stmt = apply_fts_cursor(fts_stmt, q, c_rank, c_ts, c_id)
+
+        fts_page = fts_stmt.limit(limit + 1)
+        rows_raw = (await db.execute(fts_page)).all()  # list of (Event, rank) Row objects
+
+        next_cursor: str | None = None
+        if len(rows_raw) > limit:
+            last_event, last_rank = rows_raw[limit - 1][0], float(rows_raw[limit - 1][1])
+            next_cursor = encode_fts_cursor(
+                last_rank, last_event.observed_at, last_event.id
+            )
+            rows_raw = rows_raw[:limit]
+
+        total: int | None = None
+        if include_total:
+            count_stmt = select(func.count()).select_from(
+                build_fts_query(params, role, q).subquery()
+            )
+            total = int((await db.execute(count_stmt)).scalar_one())
+
+        items = [await _hydrate_item(r[0], db) for r in rows_raw]
+        log.info(
+            "events_fts_queried",
+            q=q,
+            count=len(items),
+            dashboard_role=role,
+            has_cursor=bool(cursor),
+        )
+        return EventListResponse(items=items, next_cursor=next_cursor, total=total)
+
+    # Standard non-FTS path (keyset cursor on observed_at, id)
+    params = EventsQueryParams(
+        source=source,
+        source_type=source_type,
+        observed_from=observed_from,
+        observed_to=observed_to,
+        tlp=tlp,
+        attack_technique=attack_technique,
+        tag=tag,
+        include_archived=include_archived,
+        has_geo=has_geo,
+        tag_mode=tag_mode,
+    )
+
+    stmt = build_events_query(params, role)
+
+    if cursor:
+        try:
+            cursor_ts, cursor_id = decode_cursor(cursor)
+        except CursorError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        stmt = apply_cursor(stmt, cursor_ts, cursor_id)
+
+    stmt_page = stmt.limit(limit + 1)
+    rows = (await db.execute(stmt_page)).scalars().all()
+
+    next_cursor_std: str | None = None
+    if len(rows) > limit:
+        last = rows[limit - 1]
+        next_cursor_std = encode_cursor(last.observed_at, last.id)
+        rows = rows[:limit]
+
+    total_std: int | None = None
+    if include_total:
+        # Total uses the FILTER-only stmt (no cursor, no limit) to avoid
+        # counting only rows after the cursor position (D-06).
+        count_stmt = select(func.count()).select_from(
+            build_events_query(params, role).subquery()
+        )
+        total_std = int((await db.execute(count_stmt)).scalar_one())
+
+    items = [await _hydrate_item(r, db) for r in rows]
+
+    log.info(
+        "events_listed",
+        count=len(items),
+        filters_applied=sum(
+            1
+            for v in [source, source_type, observed_from, observed_to, tlp, attack_technique, tag]
+            if v
+        ),
+        dashboard_role=role,
+        has_cursor=bool(cursor),
+        include_total=include_total,
+    )
+    return EventListResponse(items=items, next_cursor=next_cursor_std, total=total_std)
+
+
+@router.get("/{event_id}", response_model=EventDetail)
+async def get_event(
+    event_id: uuid.UUID,
+    role: str | None = Header(default=None, alias="X-Dashboard-Role"),
+    db: AsyncSession = Depends(get_session),
+) -> EventDetail:
+    # Composite-PK aware lookup (Pitfall 1 from 04-RESEARCH.md — NOT session.get())
+    row = (
+        await db.execute(select(Event).where(Event.id == event_id))
+    ).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="event not found")
+
+    # Visibility gate — return 404 to avoid information disclosure (D-13)
+    if role == "red" and row.visibility == "blue_only":
+        raise HTTPException(status_code=404, detail="event not found")
+    if role == "blue" and row.visibility == "red_only":
+        raise HTTPException(status_code=404, detail="event not found")
+
+    item = await _hydrate_item(row, db)
+    return EventDetail(**item.model_dump(), raw_stix=row.raw_stix)

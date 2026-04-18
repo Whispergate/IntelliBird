@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+/* IntelliBird brand palette
+   Ink #04342C | Primary #1D9E75 | Deep teal #0F6E56 | Mist #9FE1CB
+   Fog #E1F5EE | Signal #EF9F27 | Slate #888780
+*/
+
+@layer base {
+  :root {
+    --background: 157 46% 92%;          /* Fog (light theme unused in M1) */
+    --foreground: 168 85% 11%;          /* Ink */
+    --card: 157 46% 92%;
+    --card-foreground: 168 85% 11%;
+    --popover: 157 46% 92%;
+    --popover-foreground: 168 85% 11%;
+    --primary: 160 69% 37%;             /* Primary teal */
+    --primary-foreground: 157 46% 96%;
+    --secondary: 159 51% 75%;           /* Mist */
+    --secondary-foreground: 168 85% 11%;
+    --muted: 159 51% 85%;
+    --muted-foreground: 51 2% 40%;      /* Slate (darker) */
+    --accent: 35 86% 54%;               /* Signal amber */
+    --accent-foreground: 168 85% 11%;
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 159 51% 65%;
+    --input: 159 51% 65%;
+    --ring: 160 69% 37%;
+    --radius: 0.5rem;
+
+    /* Brand tokens (direct hex for non-shadcn components) */
+    --brand-ink: #04342c;
+    --brand-primary: #1d9e75;
+    --brand-deep-teal: #0f6e56;
+    --brand-mist: #9fe1cb;
+    --brand-fog: #e1f5ee;
+    --brand-signal: #ef9f27;
+    --brand-slate: #888780;
+  }
+
+  .dark {
+    --background: 168 85% 11%;          /* Ink */
+    --foreground: 157 46% 92%;          /* Fog */
+    --card: 168 78% 14%;                /* slightly lighter than Ink */
+    --card-foreground: 157 46% 92%;
+    --popover: 168 78% 14%;
+    --popover-foreground: 157 46% 92%;
+    --primary: 160 69% 37%;             /* Primary teal */
+    --primary-foreground: 168 85% 11%;
+    --secondary: 164 76% 25%;           /* Deep teal */
+    --secondary-foreground: 157 46% 92%;
+    --muted: 168 60% 18%;
+    --muted-foreground: 159 25% 70%;
+    --accent: 35 86% 54%;               /* Signal amber */
+    --accent-foreground: 168 85% 11%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 168 60% 22%;
+    --input: 168 60% 22%;
+    --ring: 35 86% 54%;                 /* Signal for focus rings */
+  }
+}
+
+/* Brand typography scale — use via Tailwind arbitrary values or @apply */
+@layer base {
+  :root {
+    --font-display-size: 32px;
+    --font-display-weight: 500;
+    --font-heading-size: 22px;
+    --font-heading-weight: 500;
+    --font-body-size: 16px;
+    --font-body-weight: 400;
+    --font-body-leading: 1.7;
+    --font-caption-size: 12px;
+    --font-caption-weight: 500;
+    --font-caption-tracking: 0.15em;
+    --font-mono-size: 13px;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-size: var(--font-body-size);
+    line-height: var(--font-body-leading);
+    font-weight: var(--font-body-weight);
+  }
+
+  h1.brand-display,
+  .brand-display {
+    font-size: var(--font-display-size);
+    font-weight: var(--font-display-weight);
+    line-height: 1.2;
+  }
+
+  h2.brand-heading,
+  .brand-heading {
+    font-size: var(--font-heading-size);
+    font-weight: var(--font-heading-weight);
+    line-height: 1.3;
+  }
+
+  .brand-caption {
+    font-size: var(--font-caption-size);
+    font-weight: var(--font-caption-weight);
+    letter-spacing: var(--font-caption-tracking);
+    text-transform: uppercase;
+  }
+
+  .brand-mono,
+  code,
+  pre {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: var(--font-mono-size);
+  }
+}
