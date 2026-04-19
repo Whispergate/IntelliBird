@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""TAXII compatibility spike for IntelliBird Phase 2.
+"""TAXII compatibility spike for IntelliBird.
 
 Runs against MITRE CTI, AlienVault OTX, and CIRCL OSINT. Prints
 per-server findings to stdout in a TAXII-SPIKE.md-ready format.
 
 Usage:
-  cd backend && uv run python scripts/taxii_spike.py [--mitre] [--otx] [--circl] [--all]
+ cd backend && uv run python scripts/taxii_spike.py [--mitre] [--otx] [--circl] [--all]
 
 Env vars:
-  OTX_API_KEY   -- AlienVault OTX API key (required for OTX section;
-                   if unset, OTX section is marked "skipped: no API key").
-  CIRCL_TOKEN   -- optional bearer token for CIRCL if the operator has one.
+ OTX_API_KEY -- AlienVault OTX API key (required for OTX section;
+ if unset, OTX section is marked "skipped: no API key").
+ CIRCL_TOKEN -- optional bearer token for CIRCL if the operator has one.
 """
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ TARGETS: dict[str, dict[str, Any]] = {
     "mitre": {
         "name": "MITRE CTI (ATT&CK)",
         # /taxii2/ is the TAXII 2.1 discovery endpoint (returns api_roots).
-        # /api/v21/ is the API root itself -- using it as the Server() URL
+        # /api/v21/ is the API root itself -- using it as the Server URL
         # results in zero api_roots because taxii2client expects a discovery URL.
         "urls": [
             "https://attack-taxii.mitre.org/taxii2/",

@@ -1,4 +1,4 @@
-"""Unit tests for Plan 03-06 — scheduler Redis pub/sub reload listener.
+"""Unit tests for — scheduler Redis pub/sub reload listener.
 
 Tests cover:
 - _reload_handler: remove_job dispatch, malformed entries, _load_source_jobs call
@@ -146,7 +146,7 @@ def test_reload_handler_load_source_jobs_exception_does_not_raise(monkeypatch):
 # ---------------------------------------------------------------------------
 
 def _make_fake_pubsub(messages: list[dict[str, Any]]):
-    """Return a fake redis object whose pubsub().listen() yields messages."""
+    """Return a fake redis object whose pubsub.listen yields messages."""
     pubsub = MagicMock()
     pubsub.listen.return_value = iter(messages)
 

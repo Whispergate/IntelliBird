@@ -5,12 +5,12 @@ import { getSourceEventCount } from "@/app/api-client";
 
 /**
  * Fetch the event count for a source, then open the native browser confirm
- * dialog with the D-14 verbatim message. Native `confirm()` is intentional
- * per 03-CONTEXT D-14 — do NOT replace with shadcn AlertDialog.
+ * dialog with the verbatim message. Native `confirm` is intentional
+ * per 03-CONTEXT — do NOT replace with shadcn AlertDialog.
  *
  * On `getSourceEventCount` error, falls back to "?" as the count so the
  * operator can still see the confirm and decide.
- */
+*/
 export async function showDeleteConfirm(source: Source): Promise<boolean> {
   let count: number | "?";
   try {

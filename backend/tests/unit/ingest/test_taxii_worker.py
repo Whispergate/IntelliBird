@@ -3,7 +3,7 @@
 Parser-level (Task 1): pure parse_stix_bundle + resolve_tlp_marking +
 normalise_stix_object against the captured taxii_mitre_sample.json fixture.
 Worker-level (Task 2): mocks taxii2-client Server + stix2.parse and asserts
-pagination loop, cursor commit order (D-15/D-16), allow_custom=True, TLP
+pagination loop, cursor commit order, allow_custom=True, TLP
 resolution end-to-end.
 """
 from __future__ import annotations
@@ -311,7 +311,7 @@ def test_poll_taxii_loops_pagination(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_poll_taxii_cursor_advanced_after_all_pages(monkeypatch: pytest.MonkeyPatch):
-    """Cursor advance MUST happen after all persist calls — D-15/D-16."""
+    """Cursor advance MUST happen after all persist calls —."""
     from app.workers import taxii as taxii_module
     page1_obj = _fixture_objects()[0]
     page2_obj = _fixture_objects()[1]

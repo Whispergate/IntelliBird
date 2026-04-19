@@ -14,7 +14,7 @@ import {
 import type { FeedType } from "@/app/api-client";
 import type { SourceFormValues, TaxiiAuthScheme } from "../lib/sourceSchema";
 
-/** Verbatim D-12 placeholder shown on all credential inputs in Edit mode. */
+/** Verbatim placeholder shown on all credential inputs in Edit mode.*/
 const EDIT_PLACEHOLDER = "(unchanged — type to replace)";
 
 type Props = {
@@ -25,13 +25,13 @@ type Props = {
 /**
  * Type-aware credentials field group.
  *
- * - RSS    → renders nothing (null)
- * - NVD    → single optional "NVD API Key" password input
- * - TAXII  → auth-scheme Select + conditional username/password/token inputs
+ * - RSS → renders nothing (null)
+ * - NVD → single optional "NVD API Key" password input
+ * - TAXII → auth-scheme Select + conditional username/password/token inputs
  *
  * All credential inputs are type="password", autoComplete="off", spellCheck={false}.
- * In Edit mode, inputs show the verbatim placeholder "(unchanged — type to replace)" (D-12).
- */
+ * In Edit mode, inputs show the verbatim placeholder "(unchanged — type to replace)".
+*/
 export function CredentialsField({ feed_type, mode }: Props) {
   const {
     register,
@@ -43,7 +43,7 @@ export function CredentialsField({ feed_type, mode }: Props) {
   const scheme = watch("taxii_scheme") ?? "none";
   const placeholder = mode === "edit" ? EDIT_PLACEHOLDER : undefined;
 
-  // RSS: no credentials UI at all (D-13)
+  // RSS: no credentials UI at all
   if (feed_type === "rss") return null;
 
   // NVD: single optional API key input

@@ -14,12 +14,12 @@ from pydantic import BaseModel, ConfigDict, Field
 DestinationType = Literal["slack", "teams", "discord", "generic"]
 DeliveryStatus = Literal["ok", "http_error", "network_error", "timeout"]
 
-_BATCHING_ALLOWED = {0, 60, 300, 900, 1800}  # D-08
+_BATCHING_ALLOWED = {0, 60, 300, 900, 1800}  #
 _NAME_REGEX = r"^[a-z0-9_-]{1,64}$"
 
 
 # ---------------------------------------------------------------------------
-# Auth discriminated union (D-24)
+# Auth discriminated union
 # ---------------------------------------------------------------------------
 
 
@@ -67,7 +67,7 @@ class WebhookCreate(BaseModel):
     bound_preset_names: list[str] = Field(default_factory=list)
 
     def validate_batching(self) -> None:
-        """Raise ValueError if batching_window_sec is not in the allowed set (D-08)."""
+        """Raise ValueError if batching_window_sec is not in the allowed set."""
         if self.batching_window_sec not in _BATCHING_ALLOWED:
             raise ValueError(
                 f"batching_window_sec must be one of {sorted(_BATCHING_ALLOWED)}"
@@ -77,8 +77,8 @@ class WebhookCreate(BaseModel):
 class WebhookUpdate(BaseModel):
     """Payload to partially update a webhook.
 
-    destination_type DELIBERATELY ABSENT — locked on edit (D-35).
-    """
+ destination_type DELIBERATELY ABSENT — locked on edit.
+"""
 
     name: str | None = Field(default=None, pattern=_NAME_REGEX)
     url: str | None = None
@@ -98,10 +98,10 @@ class WebhookUpdate(BaseModel):
 class WebhookResponse(BaseModel):
     """Webhook representation returned by CRUD endpoints.
 
-    auth_enc DELIBERATELY ABSENT — SRC-04 parallel: credentials never returned
-    in plaintext responses. bound_preset_names populated via join query in router
-    (07-04); defaults to [] for schema-level tests.
-    """
+ auth_enc DELIBERATELY ABSENT — SRC-04 parallel: credentials never returned
+ in plaintext responses. bound_preset_names populated via join query in router
+ (07-04); defaults to [] for schema-level tests.
+"""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -127,11 +127,11 @@ class WebhookResponse(BaseModel):
 
 
 class TestSendRequest(BaseModel):
-    """Payload for the test-send endpoint (D-31..D-33).
+    """Payload for the test-send endpoint.
 
-    Client sends plaintext auth — backend encrypts for the round-trip.
-    Always returns HTTP 200; ok flag signals success/failure.
-    """
+ Client sends plaintext auth — backend encrypts for the round-trip.
+ Always returns HTTP 200; ok flag signals success/failure.
+"""
 
     destination_type: DestinationType
     url: str = Field(min_length=1)

@@ -1,7 +1,7 @@
 """Webhook + WebhookPresetBinding ORM — maps to migration 006 tables.
 
-Pitfall 1: auth_enc is Text (not LargeBinary) — app.crypto returns base64url str.
-D-02: webhook_preset_bindings is a join table; composite PK (webhook_id, preset_name).
+: auth_enc is Text (not LargeBinary) — app.crypto returns base64url str.
+: webhook_preset_bindings is a join table; composite PK (webhook_id, preset_name).
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ class Webhook(Base):
         nullable=False,
     )
     url: Mapped[str] = mapped_column(Text, nullable=False)
-    # Pitfall 1: Text (base64url) — NOT LargeBinary.
+    #: Text (base64url) — NOT LargeBinary.
     # app.crypto.encrypt_credentials returns a base64url string. Matches
     # the sources.credentials_enc pattern exactly.
     auth_enc: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -64,7 +64,7 @@ class Webhook(Base):
 
 
 class WebhookPresetBinding(Base):
-    """Join table: webhooks ↔ filter_presets (D-02). Composite PK."""
+    """Join table: webhooks ↔ filter_presets. Composite PK."""
 
     __tablename__ = "webhook_preset_bindings"
 

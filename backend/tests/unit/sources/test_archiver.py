@@ -1,7 +1,7 @@
 """Unit tests for app.services.archiver — STO-01, STO-03, STO-04.
 
 All tests use mocked sessions (no live DB required). The mock session
-captures execute() calls so we can assert SQL shape and bind params.
+captures execute calls so we can assert SQL shape and bind params.
 """
 from __future__ import annotations
 
@@ -19,10 +19,10 @@ import pytest
 def _make_session(rowcount: int = 0, source_rows: list | None = None):
     """Create a mock SQLAlchemy Session for unit tests.
 
-    Args:
-        rowcount: The rowcount returned by execute() on DML statements.
-        source_rows: Rows returned when SELECT ... FROM sources is called.
-    """
+ Args:
+ rowcount: The rowcount returned by execute on DML statements.
+ source_rows: Rows returned when SELECT... FROM sources is called.
+"""
     session = MagicMock()
 
     # Default execute result for DML (DELETE/UPDATE)
@@ -41,10 +41,10 @@ def _make_session(rowcount: int = 0, source_rows: list | None = None):
 
 
 def _extract_sql(session: MagicMock, call_index: int = 0) -> str:
-    """Extract the SQL text from a session.execute() call."""
+    """Extract the SQL text from a session.execute call."""
     call_args = session.execute.call_args_list[call_index]
     sql_obj = call_args[0][0]
-    # text() objects have a .text attribute
+    # text objects have a.text attribute
     return str(sql_obj) if not hasattr(sql_obj, "text") else sql_obj.text
 
 

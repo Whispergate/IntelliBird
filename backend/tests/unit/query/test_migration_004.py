@@ -47,12 +47,12 @@ def test_down_revision_chains_to_003() -> None:
 
 
 # ---------------------------------------------------------------------------
-# upgrade() DDL shape
+# upgrade DDL shape
 # ---------------------------------------------------------------------------
 
 
 def test_upgrade_creates_search_tsv_column() -> None:
-    """upgrade() must emit the GENERATED ALWAYS AS STORED tsvector column."""
+    """upgrade must emit the GENERATED ALWAYS AS STORED tsvector column."""
     mod = _load_migration()
     src = inspect.getsource(mod.upgrade)
     assert "search_tsv" in src, "search_tsv column name missing from upgrade()"
@@ -61,7 +61,7 @@ def test_upgrade_creates_search_tsv_column() -> None:
 
 
 def test_upgrade_creates_gin_index() -> None:
-    """upgrade() must create a GIN index named ix_events_search_tsv."""
+    """upgrade must create a GIN index named ix_events_search_tsv."""
     mod = _load_migration()
     src = inspect.getsource(mod.upgrade)
     assert "ix_events_search_tsv" in src, "GIN index name missing from upgrade()"
@@ -69,7 +69,7 @@ def test_upgrade_creates_gin_index() -> None:
 
 
 def test_upgrade_creates_filter_presets_table() -> None:
-    """upgrade() must create filter_presets table with required columns."""
+    """upgrade must create filter_presets table with required columns."""
     mod = _load_migration()
     src = inspect.getsource(mod.upgrade)
     assert "filter_presets" in src, "filter_presets table name missing from upgrade()"
@@ -83,12 +83,12 @@ def test_upgrade_creates_filter_presets_table() -> None:
 
 
 # ---------------------------------------------------------------------------
-# downgrade() DDL shape
+# downgrade DDL shape
 # ---------------------------------------------------------------------------
 
 
 def test_downgrade_drops_in_reverse_order() -> None:
-    """downgrade() must DROP table, index, and column — all three present."""
+    """downgrade must DROP table, index, and column — all three present."""
     mod = _load_migration()
     src = inspect.getsource(mod.downgrade)
     assert "DROP TABLE IF EXISTS filter_presets" in src, (

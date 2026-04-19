@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 
 // ---------------------------------------------------------------------------
 // Mocks — factories must not reference outer let variables (hoisting issue).
-// Capture the mock fn via vi.mocked() after import instead.
+// Capture the mock fn via vi.mocked after import instead.
 // ---------------------------------------------------------------------------
 
 const replaceMock = vi.fn();

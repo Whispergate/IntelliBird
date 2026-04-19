@@ -30,7 +30,7 @@ function writeLayout(name: string): void {
   try {
     window.sessionStorage.setItem(LAYOUT_KEY, name);
   } catch {
-    /* ignore */
+    /* ignore*/
   }
 }
 

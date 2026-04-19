@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 # app.config imported lazily inside upsert_techniques_sync to avoid a
-# module-load dependency on plan 04 (broker/plan 03 and config/plan 04
+# module-load dependency on (broker/ and config/
 # run in the same wave; their order is undefined).
 from app.models.attack import AttackTechnique
 
@@ -44,9 +44,9 @@ def _tactic_from_stix(obj: dict) -> str | None:
 def upsert_techniques_sync(bundle: dict, matrix: str) -> int:
     """Synchronous upsert — called from Dramatiq actor (sync context).
 
-    Uses a short-lived sync engine so it does not collide with the API's
-    async engine. Returns the number of rows upserted.
-    """
+ Uses a short-lived sync engine so it does not collide with the API's
+ async engine. Returns the number of rows upserted.
+"""
     from app.config import settings  # lazy import — see module docstring
 
     # Convert asyncpg DSN → psycopg DSN for sync use

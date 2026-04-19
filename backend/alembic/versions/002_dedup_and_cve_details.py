@@ -1,19 +1,19 @@
-"""Phase 2 migration 002: dedup UNIQUE constraint + cve_details table.
+""" migration 002: dedup UNIQUE constraint + cve_details table.
 
 Revision ID: 0002_dedup_and_cve_details
 Revises: 0001_initial_schema
 Create Date: 2026-04-17
 
 - UNIQUE index on (source_id, content_hash, observed_at) on events hypertable
-  (D-06 / INGR-03 / H-3). TimescaleDB requires the partition column (observed_at)
-  to be included in any unique index on a hypertable; we use create_index with
-  unique=True rather than ALTER TABLE ADD CONSTRAINT. The index name matches the
-  constraint-name convention so IntegrityError messages still cite
-  uq_events_source_content_hash.
+. TimescaleDB requires the partition column (observed_at)
+ to be included in any unique index on a hypertable; we use create_index with
+ unique=True rather than ALTER TABLE ADD CONSTRAINT. The index name matches the
+ constraint-name convention so IntegrityError messages still cite
+ uq_events_source_content_hash.
 - cve_details table for INGC-02 — separate from events to avoid widening
-  the hot hypertable with CVE-specific columns.
+ the hot hypertable with CVE-specific columns.
 
-TimescaleDB compatibility note: `ALTER TABLE events ADD CONSTRAINT ... UNIQUE
+TimescaleDB compatibility note: `ALTER TABLE events ADD CONSTRAINT... UNIQUE
 (source_id, content_hash)` fails with "cannot create a unique index without the
 column observed_at (used in partitioning)". Fallback: unique index including the
 partition column. Workers still use ON CONFLICT (source_id, content_hash) with a
@@ -35,7 +35,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # D-06: race-proof dedup enforced at DB layer.
+    #: race-proof dedup enforced at DB layer.
     # TimescaleDB requires the partition column (observed_at) in every unique
     # index on a hypertable — ALTER TABLE ADD CONSTRAINT UNIQUE (source_id,
     # content_hash) is rejected at runtime. We create a UNIQUE index that

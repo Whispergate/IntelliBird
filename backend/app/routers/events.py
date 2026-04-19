@@ -1,4 +1,4 @@
-"""GET /api/events, GET /api/events/{id} — FIL-01, FIL-02 (D-08 visibility)."""
+"""GET /api/events, GET /api/events/{id} — FIL-01, FIL-02."""
 from __future__ import annotations
 
 import uuid
@@ -6,9 +6,10 @@ from datetime import datetime
 from typing import Literal
 
 import structlog
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
 
 from app.database import get_session
 from app.models.events import Event
@@ -95,6 +96,7 @@ async def _hydrate_item(event: Event, db: AsyncSession) -> EventItem:
 
 @router.get("", response_model=EventListResponse)
 async def list_events(
+    request: Request,
     source: list[uuid.UUID] | None = Query(default=None),
     source_type: list[FeedType] | None = Query(default=None),
     observed_from: datetime | None = Query(default=None),
@@ -109,9 +111,14 @@ async def list_events(
     include_total: bool = Query(default=False),
     cursor: str | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
-    role: str | None = Header(default=None, alias="X-Dashboard-Role"),
     db: AsyncSession = Depends(get_session),
 ) -> EventListResponse:
+    # AUTH-02 / C-2: dashboard_roles sourced from JWT claim (request.state.user),
+    # populated by AuthMiddleware. Dashboard role header removed (plan 09-05).
+    # When AUTH_ENABLED=false, request.state.user is unset → dashboard_roles=None → no filter.
+    user = getattr(request.state, "user", None)
+    dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
+
     if free_text is not None:
         q = free_text.strip()
         if not q:
@@ -132,7 +139,7 @@ async def list_events(
             has_geo=has_geo,
             tag_mode=tag_mode,
         )
-        fts_stmt = build_fts_query(params, role, q)
+        fts_stmt = build_fts_query(params, dashboard_roles, q)
 
         if cursor:
             try:
@@ -155,7 +162,7 @@ async def list_events(
         total: int | None = None
         if include_total:
             count_stmt = select(func.count()).select_from(
-                build_fts_query(params, role, q).subquery()
+                build_fts_query(params, dashboard_roles, q).subquery()
             )
             total = int((await db.execute(count_stmt)).scalar_one())
 
@@ -164,7 +171,7 @@ async def list_events(
             "events_fts_queried",
             q=q,
             count=len(items),
-            dashboard_role=role,
+            dashboard_roles=dashboard_roles,
             has_cursor=bool(cursor),
         )
         return EventListResponse(items=items, next_cursor=next_cursor, total=total)
@@ -183,7 +190,7 @@ async def list_events(
         tag_mode=tag_mode,
     )
 
-    stmt = build_events_query(params, role)
+    stmt = build_events_query(params, dashboard_roles)
 
     if cursor:
         try:
@@ -204,9 +211,9 @@ async def list_events(
     total_std: int | None = None
     if include_total:
         # Total uses the FILTER-only stmt (no cursor, no limit) to avoid
-        # counting only rows after the cursor position (D-06).
+        # counting only rows after the cursor position.
         count_stmt = select(func.count()).select_from(
-            build_events_query(params, role).subquery()
+            build_events_query(params, dashboard_roles).subquery()
         )
         total_std = int((await db.execute(count_stmt)).scalar_one())
 
@@ -220,7 +227,7 @@ async def list_events(
             for v in [source, source_type, observed_from, observed_to, tlp, attack_technique, tag]
             if v
         ),
-        dashboard_role=role,
+        dashboard_roles=dashboard_roles,
         has_cursor=bool(cursor),
         include_total=include_total,
     )
@@ -230,21 +237,27 @@ async def list_events(
 @router.get("/{event_id}", response_model=EventDetail)
 async def get_event(
     event_id: uuid.UUID,
-    role: str | None = Header(default=None, alias="X-Dashboard-Role"),
+    request: Request,
     db: AsyncSession = Depends(get_session),
 ) -> EventDetail:
-    # Composite-PK aware lookup (Pitfall 1 from 04-RESEARCH.md — NOT session.get())
+    # AUTH-02 / C-2: dashboard_roles sourced from JWT claim (request.state.user),
+    # populated by AuthMiddleware. Dashboard role header removed (plan 09-05).
+    user = getattr(request.state, "user", None)
+    dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
+
+    # Composite-PK aware lookup ( from 04-RESEARCH.md — NOT session.get)
     row = (
         await db.execute(select(Event).where(Event.id == event_id))
     ).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="event not found")
 
-    # Visibility gate — return 404 to avoid information disclosure (D-13)
-    if role == "red" and row.visibility == "blue_only":
-        raise HTTPException(status_code=404, detail="event not found")
-    if role == "blue" and row.visibility == "red_only":
-        raise HTTPException(status_code=404, detail="event not found")
+    # Visibility gate — return 404 to avoid information disclosure
+    if dashboard_roles:
+        if "red" not in dashboard_roles and row.visibility == "red_only":
+            raise HTTPException(status_code=404, detail="event not found")
+        if "blue" not in dashboard_roles and row.visibility == "blue_only":
+            raise HTTPException(status_code=404, detail="event not found")
 
     item = await _hydrate_item(row, db)
     return EventDetail(**item.model_dump(), raw_stix=row.raw_stix)

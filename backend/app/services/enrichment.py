@@ -2,20 +2,20 @@
 from event title + description prose.
 
 Extracts:
-  - CVE IDs (CVE-YYYY-NNNN+)     → tags `cve-YYYY-NNNN`
-  - ATT&CK technique IDs (T\\d+)  → attack_technique_tags rows
-  - IPv4 / IPv6 addresses         → tags + geo (if lat/lon still NULL)
-  - Domain names                   → tags (lowercase)
-  - SHA256 / SHA1 / MD5 hashes     → tags
-  - BTC / ETH addresses            → tags
-  - Email addresses                → tags
-  - ISO 3166-1 alpha-2 country mentions (explicit two-letter codes) → country_code
-  - Severity markers (CVSS, critical) → tags `high-severity` / `critical`
+ - CVE IDs (CVE-YYYY-NNNN+) → tags `cve-YYYY-NNNN`
+ - ATT&CK technique IDs (T\\d+) → attack_technique_tags rows
+ - IPv4 / IPv6 addresses → tags + geo (if lat/lon still NULL)
+ - Domain names → tags (lowercase)
+ - SHA256 / SHA1 / MD5 hashes → tags
+ - BTC / ETH addresses → tags
+ - Email addresses → tags
+ - ISO 3166-1 alpha-2 country mentions (explicit two-letter codes) → country_code
+ - Severity markers (CVSS, critical) → tags `high-severity` / `critical`
 
 Explicitly NOT scope for M1 (banned per REQUIREMENTS.md):
-  - NLP inference of ATT&CK techniques from TTP prose
-  - LLM summarisation
-  - Speculative actor / campaign attribution
+ - NLP inference of ATT&CK techniques from TTP prose
+ - LLM summarisation
+ - Speculative actor / campaign attribution
 
 Extraction is deterministic: if the string literally contains `T1190`, we
 tag it. If it contains "spearphishing" without T1566, we DO NOT guess.
@@ -180,9 +180,9 @@ def _auto_severity(text: str) -> str | None:
 def enrich_event(title: str | None, description: str | None) -> Enrichment:
     """Parse title + description, return structured enrichment.
 
-    Callers merge the result into event row + attack_technique_tags. Safe to
-    call with None / empty strings.
-    """
+ Callers merge the result into event row + attack_technique_tags. Safe to
+ call with None / empty strings.
+"""
     e = Enrichment()
     parts: list[str] = []
     if title:
@@ -266,9 +266,9 @@ def merge_enrichment_into_event_row(
 ) -> None:
     """Merge enrichment into a dict representing an events row before INSERT.
 
-    Mutates `event_row` in place. Caller handles attack_technique_tags separately
-    (those are a different table — see `attack_technique_tag_rows`).
-    """
+ Mutates `event_row` in place. Caller handles attack_technique_tags separately
+ (those are a different table — see `attack_technique_tag_rows`).
+"""
     # Tags union
     existing_tags = set(event_row.get("tags") or [])
     existing_tags.update(enrichment.tags)
@@ -283,8 +283,8 @@ def attack_technique_tag_rows(
     event_id, enrichment: Enrichment, evidence_prefix: str = "description"
 ) -> list[dict]:
     """Build rows for `attack_technique_tags` insert. Provenance=feed_asserted
-    since the technique ID was explicitly present in the feed content.
-    """
+ since the technique ID was explicitly present in the feed content.
+"""
     return [
         {
             "event_id": event_id,

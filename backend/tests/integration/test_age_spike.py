@@ -1,9 +1,9 @@
 """AGE spike — concurrent write/read under two Dramatiq actors.
 
-CONTEXT D-09 deliverable. Requires:
-  - intellibird-db:m1 image running (db service)
-  - redis service running
-  - workers process running OR direct in-process call via .fn()
+CONTEXT deliverable. Requires:
+ - intellibird-db:m1 image running (db service)
+ - redis service running
+ - workers process running OR direct in-process call via.fn
 """
 from __future__ import annotations
 

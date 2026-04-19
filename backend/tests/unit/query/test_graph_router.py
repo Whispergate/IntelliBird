@@ -1,7 +1,10 @@
-"""Unit tests for GET /api/events/{id}/graph router — Phase 4 / graph.
+"""Unit tests for GET /api/events/{id}/graph router — / graph.
 
 Uses fake env vars + deferred imports to avoid triggering pydantic_settings
 validation (DATABASE_URL, SECRET_KEY required) at collection time.
+
+Updated in plan 09-05: router now reads dashboard_roles from request.state.user
+(not X-Dashboard-Role header). Tests updated accordingly.
 """
 from __future__ import annotations
 
@@ -16,6 +19,7 @@ from httpx import ASGITransport, AsyncClient
 # This is safe: unit tests never connect to a real DB or use the actual secret.
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("SECRET_KEY", "a" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 
 
 @pytest.fixture
@@ -51,7 +55,7 @@ async def test_depth_default_is_2(app_with_router, monkeypatch):
 
     captured: dict = {}
 
-    async def fake_traverse(session, event_id, depth, role=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
         captured["depth"] = depth
         return None  # triggers 404 — we only need to capture arg
 
@@ -72,7 +76,7 @@ async def test_depth_default_is_2(app_with_router, monkeypatch):
 async def test_404_when_service_returns_none(app_with_router, monkeypatch):
     from app.database import get_session  # noqa: PLC0415
 
-    async def fake_traverse(session, event_id, depth, role=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
         return None
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -91,7 +95,7 @@ async def test_404_when_service_returns_none(app_with_router, monkeypatch):
 async def test_400_on_value_error(app_with_router, monkeypatch):
     from app.database import get_session  # noqa: PLC0415
 
-    async def fake_traverse(session, event_id, depth, role=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
         raise ValueError("bad depth")
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -119,7 +123,7 @@ async def test_successful_response_shape(app_with_router, monkeypatch):
     fake_result.add_node("technique:T1190", "T1190", "technique")
     fake_result.add_edge(f"event:{eid}", "technique:T1190", "uses")
 
-    async def fake_traverse(session, event_id, depth, role=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
         return fake_result
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -147,7 +151,7 @@ async def test_depth_3_accepted(app_with_router, monkeypatch):
     from app.database import get_session  # noqa: PLC0415
     from app.services.graph_traversal import MAX_DEPTH  # noqa: PLC0415
 
-    async def fake_traverse(session, event_id, depth, role=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
         return None
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -163,14 +167,18 @@ async def test_depth_3_accepted(app_with_router, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_role_header_passed_to_service(app_with_router, monkeypatch):
-    """X-Dashboard-Role header is forwarded to traverse_graph as role param."""
+async def test_dashboard_roles_sourced_from_request_state(app_with_router, monkeypatch):
+    """dashboard_roles is sourced from request.state.user, not X-Dashboard-Role header.
+
+    AUTH-02 / C-2 closure: even when X-Dashboard-Role=red header is sent,
+    the router passes dashboard_roles from request.state.user (None when unset).
+    """
     from app.database import get_session  # noqa: PLC0415
 
     captured: dict = {}
 
-    async def fake_traverse(session, event_id, depth, role=None):
-        captured["role"] = role
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
+        captured["dashboard_roles"] = dashboard_roles
         return None
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -181,9 +189,11 @@ async def test_role_header_passed_to_service(app_with_router, monkeypatch):
     app_with_router.dependency_overrides[get_session] = _fake_session
 
     async with AsyncClient(transport=ASGITransport(app=app_with_router), base_url="http://t") as c:
+        # Send X-Dashboard-Role header — it must be IGNORED
         r = await c.get(
             f"/api/events/{uuid.uuid4()}/graph",
             headers={"X-Dashboard-Role": "red"},
         )
         assert r.status_code == 404
-        assert captured["role"] == "red"
+        # dashboard_roles must be None (no request.state.user set in this minimal test app)
+        assert captured["dashboard_roles"] is None

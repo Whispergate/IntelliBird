@@ -11,7 +11,7 @@ import { bucketByDay } from "./bucketByDay";
 const LABEL = "TOOLING CHATTER (24H)";
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// tag_mode: "any" — matches events tagged tooling OR offensive-tooling (Phase 6 D-20)
+// tag_mode: "any" — matches events tagged tooling OR offensive-tooling
 const WIDGET_FILTER_STATIC: Omit<EventsQuery, "observed_from"> = {
   tag: ["tooling", "offensive-tooling"],
   tag_mode: "any",

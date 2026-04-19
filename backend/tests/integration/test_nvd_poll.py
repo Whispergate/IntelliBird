@@ -68,9 +68,9 @@ def nvd_source_id(live_db):
     sid = uuid.uuid4()
     with Session(engine) as s:
         s.execute(text("""
-            INSERT INTO sources (id, name, feed_type, url, poll_interval_sec)
-            VALUES (:id, 'nvd-fixture', 'nvd', 'https://services.nvd.nist.gov/', 86400)
-        """), {"id": str(sid)})
+ INSERT INTO sources (id, name, feed_type, url, poll_interval_sec)
+ VALUES (:id, 'nvd-fixture', 'nvd', 'https://services.nvd.nist.gov/', 86400)
+"""), {"id": str(sid)})
         s.commit()
     return sid
 
@@ -98,7 +98,7 @@ def test_nvd_poll_end_to_end_from_fixture(live_db, nvd_source_id,
     with Session(engine) as s:
         events = s.execute(
             text("""SELECT id, title, raw_reference, content_hash, observed_at
-                     FROM events WHERE source_id = :sid"""),
+ FROM events WHERE source_id =:sid"""),
             {"sid": str(nvd_source_id)},
         ).all()
         assert len(events) == 1, events
@@ -107,7 +107,7 @@ def test_nvd_poll_end_to_end_from_fixture(live_db, nvd_source_id,
 
         cvd = s.execute(
             text("""SELECT cve_id, cvss_v3_score, cwe_ids
-                     FROM cve_details WHERE event_id = :eid"""),
+ FROM cve_details WHERE event_id =:eid"""),
             {"eid": str(event_id)},
         ).one()
         assert cvd.cve_id == "CVE-2024-99999"
@@ -116,7 +116,7 @@ def test_nvd_poll_end_to_end_from_fixture(live_db, nvd_source_id,
 
         tags = s.execute(
             text("""SELECT technique_id, tag_source, evidence_text
-                     FROM attack_technique_tags WHERE event_id = :eid"""),
+ FROM attack_technique_tags WHERE event_id =:eid"""),
             {"eid": str(event_id)},
         ).all()
         assert len(tags) == 1
@@ -188,7 +188,7 @@ def test_nvd_poll_health_on_success(live_db, nvd_source_id,
     with Session(engine) as s:
         row = s.execute(
             text("""SELECT last_polled_at, last_status, consecutive_failures
-                     FROM sources WHERE id = :id"""),
+ FROM sources WHERE id =:id"""),
             {"id": str(nvd_source_id)},
         ).one()
         assert row.last_polled_at is not None

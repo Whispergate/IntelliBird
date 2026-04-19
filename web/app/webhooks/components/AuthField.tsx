@@ -20,7 +20,7 @@ import type { WebhookFormValues } from "../lib/webhookSchema";
  * For Generic destinations:
  * - Auth Type Select: None / Bearer token / Basic auth / Custom header
  * - Conditional sub-fields per selection
- */
+*/
 export function AuthField() {
   const {
     register,
@@ -32,7 +32,7 @@ export function AuthField() {
   const dtype = watch("destination_type");
   const atype = watch("auth_type") ?? "none";
 
-  // Hidden for all non-generic destination types (D-35)
+  // Hidden for all non-generic destination types
   if (dtype !== "generic") return null;
 
   return (

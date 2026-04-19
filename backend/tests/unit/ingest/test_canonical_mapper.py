@@ -1,7 +1,7 @@
-"""Shared writers for Phase 2 workers — _persist_event + update_source_health.
+"""Shared writers for workers — _persist_event + update_source_health.
 
-These helpers encapsulate D-04/D-06/D-07 (ON CONFLICT DO NOTHING against
-UNIQUE(source_id, content_hash, observed_at)) and D-33 (single-transaction
+These helpers encapsulate (ON CONFLICT DO NOTHING against
+UNIQUE(source_id, content_hash, observed_at)) and (single-transaction
 health update after every poll attempt).
 
 Heavy DB-side behaviour is tested end-to-end in tests/integration; this
@@ -103,7 +103,7 @@ def test_persist_event_returns_rowcount(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_persist_event_uses_on_conflict_do_nothing() -> None:
     """The compiled statement must include ON CONFLICT DO NOTHING targeting
-    (source_id, content_hash, observed_at) — three-column index per 02-01 deviation."""
+ (source_id, content_hash, observed_at) — three-column index per 02-01 deviation."""
     from app.ingest.normalise import _persist_event
     session = MagicMock()
     res = MagicMock(); res.rowcount = 1

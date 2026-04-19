@@ -52,9 +52,9 @@ function TlpBadge({ tlp }: { tlp: TlpName | null }) {
 }
 
 type Props = {
-  /** When provided by a parent coordinator (e.g. DashboardClient), skip self-fetch. */
+  /** When provided by a parent coordinator (e.g. DashboardClient), skip self-fetch.*/
   items?: EventItem[];
-  /** Loading state from parent coordinator. Only used when `items` is provided. */
+  /** Loading state from parent coordinator. Only used when `items` is provided.*/
   loading?: boolean;
 };
 

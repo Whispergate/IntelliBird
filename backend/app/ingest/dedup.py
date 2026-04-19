@@ -1,10 +1,10 @@
-"""Content-hash helpers for feed dedup (D-01, D-02, D-03).
+"""Content-hash helpers for feed dedup.
 
 The UNIQUE (source_id, content_hash, observed_at) constraint on events
 (migration 002) is the DB-layer enforcement; these functions produce the
 `content_hash` column value. Each feed type has its own natural-identity
 formula — same content from different sources is legitimately stored twice
-(D-08).
+.
 """
 from __future__ import annotations
 
@@ -27,9 +27,9 @@ def rss_content_hash(source_id: str, link: str, title: str) -> str:
 def taxii_content_hash(source_id: str, stix_id: str, modified: str) -> str:
     """TAXII/STIX: sha256(source_id || \\x1f || stix_id || \\x1f || modified).
 
-    `modified` is the STIX SDO's revision timestamp — genuinely-modified
-    objects produce a new hash and land as a new row (D-05).
-    """
+ `modified` is the STIX SDO's revision timestamp — genuinely-modified
+ objects produce a new hash and land as a new row.
+"""
     return _sha256_hex(source_id, stix_id, modified)
 
 

@@ -4,9 +4,9 @@ Called from each worker's _impl function after a successful batch.
 Caller MUST commit the session (mirrors app.ingest.normalise pattern).
 
 State machine:
-  inserted_count == 0  → silent_failure_count += 1
-  inserted_count >= 1  → silent_failure_count = 0
-  inserted_count < 0   → ValueError (caller bug)
+ inserted_count == 0 → silent_failure_count += 1
+ inserted_count >= 1 → silent_failure_count = 0
+ inserted_count < 0 → ValueError (caller bug)
 
 Plan 02's _effective_status reads INGEST_SILENT_FAILURE_THRESHOLD and
 surfaces 'silent' in SourceResponse when the counter crosses the threshold
@@ -29,14 +29,14 @@ def update_silent_failure_count(
 ) -> None:
     """Increment or reset sources.silent_failure_count. Caller commits.
 
-    State machine:
-    - inserted_count == 0  → silent_failure_count = silent_failure_count + 1
-    - inserted_count >= 1  → silent_failure_count = 0
-    - inserted_count < 0   → raises ValueError
+ State machine:
+ - inserted_count == 0 → silent_failure_count = silent_failure_count + 1
+ - inserted_count >= 1 → silent_failure_count = 0
+ - inserted_count < 0 → raises ValueError
 
-    This function only executes an UPDATE — it does NOT call session.commit().
-    The caller (worker _impl success path) owns the transaction boundary.
-    """
+ This function only executes an UPDATE — it does NOT call session.commit.
+ The caller (worker _impl success path) owns the transaction boundary.
+"""
     if inserted_count < 0:
         raise ValueError(
             f"inserted_count must be >= 0, got {inserted_count!r}"

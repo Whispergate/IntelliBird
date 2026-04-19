@@ -1,6 +1,6 @@
-"""Exhaustive coverage of update_source_health — D-33 + VALID_STATUSES.
+"""Exhaustive coverage of update_source_health — + VALID_STATUSES.
 
-Phase 2 Wave 0 stub for 02-07. Complements test_canonical_mapper.py's
+ stub for 02-07. Complements test_canonical_mapper.py's
 spot-checks with full enum + success/failure matrix coverage.
 """
 from __future__ import annotations
@@ -94,8 +94,8 @@ def test_where_clause_targets_source_id() -> None:
 
 def test_no_cursor_column_touched() -> None:
     """Health update MUST NOT touch last_cursor — cursor advance is a
-    separate helper (per plans 02-04 and 02-06).
-    """
+ separate helper (per plans 02-04 and 02-06).
+"""
     session = MagicMock()
     update_source_health(session, uuid.uuid4(), status="ok", succeeded=True)
     stmt = session.execute.call_args[0][0]
@@ -105,8 +105,8 @@ def test_no_cursor_column_touched() -> None:
 
 def test_does_not_commit() -> None:
     """Caller owns the transaction boundary — update_source_health only
-    executes the UPDATE statement.
-    """
+ executes the UPDATE statement.
+"""
     session = MagicMock()
     update_source_health(session, uuid.uuid4(), status="ok", succeeded=True)
     session.commit.assert_not_called()

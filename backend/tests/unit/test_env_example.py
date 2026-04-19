@@ -12,9 +12,9 @@ def test_env_example_exists() -> None:
 
 def test_secret_key_is_placeholder() -> None:
     """.env.example MUST ship a placeholder so the validator rejects a
-    copy-without-edit — this is the guard rail that forces the operator
-    to generate a real key.
-    """
+ copy-without-edit — this is the guard rail that forces the operator
+ to generate a real key.
+"""
     content = ENV_EXAMPLE.read_text()
     assert "SECRET_KEY=CHANGEME" in content, (
         ".env.example must ship SECRET_KEY=CHANGEME so the pydantic "

@@ -1,6 +1,24 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
+// next-auth/react — mock useSession + SessionProvider so TopNav and other
+// client components that call useSession() work in jsdom without a real
+// NextAuth provider. Returns a null session by default; individual tests that
+// need a user can override via vi.mocked(useSession).mockReturnValue(...).
+vi.mock("next-auth/react", () => ({
+  useSession: vi.fn(() => ({ data: null, status: "unauthenticated" })),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  SessionProvider: ({ children }: { children: any }) => children,
+}));
+
+// Polyfill Element.scrollIntoView — jsdom does not implement it. Radix UI
+// Select calls scrollIntoView on the selected option at mount time. Without
+// this stub the call throws "candidate?.scrollIntoView is not a function"
+// and leaks as an unhandled error in every test that renders a Select.
+if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}
+
 // Polyfill ResizeObserver — required by Radix UI primitives (Select, RadioGroup, Sheet, etc.)
 // in jsdom which does not implement it natively.
 if (typeof globalThis.ResizeObserver === "undefined") {

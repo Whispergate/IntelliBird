@@ -127,12 +127,12 @@ def upgrade() -> None:
     )
     op.execute(
         """
-        INSERT INTO tlp_markings (id, name) VALUES
-          ('613f2e26-407d-48c7-9eca-b8e91df99dc9', 'TLP:WHITE'),
-          ('34098fce-860f-48ae-8e50-ebd3cc5e41da', 'TLP:GREEN'),
-          ('f88d31f6-1208-47b8-8c13-1706eb6387bc', 'TLP:AMBER'),
-          ('5e57c739-391a-4eb3-b6be-7d15ca92d5ed', 'TLP:RED')
-        """
+ INSERT INTO tlp_markings (id, name) VALUES
+ ('613f2e26-407d-48c7-9eca-b8e91df99dc9', 'TLP:WHITE'),
+ ('34098fce-860f-48ae-8e50-ebd3cc5e41da', 'TLP:GREEN'),
+ ('f88d31f6-1208-47b8-8c13-1706eb6387bc', 'TLP:AMBER'),
+ ('5e57c739-391a-4eb3-b6be-7d15ca92d5ed', 'TLP:RED')
+"""
     )
 
     # 7. nodes, edges (relational graph — AGE deferred to M2)

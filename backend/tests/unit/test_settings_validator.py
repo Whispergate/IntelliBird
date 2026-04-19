@@ -1,4 +1,4 @@
-"""Settings validator rejects placeholders and short keys — FND-05 / PITFALLS C-3."""
+"""Settings validator rejects placeholders and short keys — FN / PITFALLS C-3."""
 from __future__ import annotations
 
 import os

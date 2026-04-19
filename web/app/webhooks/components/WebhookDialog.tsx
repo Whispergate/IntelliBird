@@ -83,15 +83,15 @@ function defaultValuesFor(
 /**
  * Add/Edit Webhook Dialog.
  *
- * - Add mode:  heading "Add Webhook", submit "Save Webhook"
- * - Edit mode: heading "Edit Webhook", submit "Save Changes", Type locked (D-35)
+ * - Add mode: heading "Add Webhook", submit "Save Webhook"
+ * - Edit mode: heading "Edit Webhook", submit "Save Changes", Type locked
  *
- * Test Send button is NON-BLOCKING (D-31): Save button is never disabled by
+ * Test Send button is NON-BLOCKING: Save button is never disabled by
  * test result. Failure shows amber alert with exact copy:
- *   "Test failed: {error_detail}. You can still save this configuration."
+ * "Test failed: {error_detail}. You can still save this configuration."
  * Success shows green alert:
- *   "Test sent successfully · {latency}ms"
- */
+ * "Test sent successfully · {latency}ms"
+*/
 export function WebhookDialog({
   open,
   mode,
@@ -195,7 +195,7 @@ export function WebhookDialog({
               <DialogTitle>{title}</DialogTitle>
             </DialogHeader>
 
-            {/* Field 1: Name */}
+            {/* Field 1: Name*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="name">Name</Label>
               <Input id="name" {...register("name")} />
@@ -206,7 +206,7 @@ export function WebhookDialog({
               )}
             </div>
 
-            {/* Field 2: Type — locked on edit (D-35) */}
+            {/* Field 2: Type — locked on edit*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="destination_type">Type</Label>
               <Select
@@ -242,7 +242,7 @@ export function WebhookDialog({
               )}
             </div>
 
-            {/* Field 3: URL */}
+            {/* Field 3: URL*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="url">URL</Label>
               <Input id="url" type="url" {...register("url")} />
@@ -253,10 +253,10 @@ export function WebhookDialog({
               )}
             </div>
 
-            {/* Field 4: Auth — conditional on Generic destination type */}
+            {/* Field 4: Auth — conditional on Generic destination type*/}
             <AuthField />
 
-            {/* Field 5: Bound presets — async-loaded on open */}
+            {/* Field 5: Bound presets — async-loaded on open*/}
             <div className="flex flex-col gap-1">
               <Label>Bound presets</Label>
               <PresetMultiSelect
@@ -269,7 +269,7 @@ export function WebhookDialog({
               />
             </div>
 
-            {/* Field 6: Batching window */}
+            {/* Field 6: Batching window*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="batching_window_sec">Batching window</Label>
               <Select
@@ -295,7 +295,7 @@ export function WebhookDialog({
               </Select>
             </div>
 
-            {/* Test Send inline alert — NON-BLOCKING (D-31) */}
+            {/* Test Send inline alert — NON-BLOCKING*/}
             {testResult?.kind === "ok" && (
               <Alert className="border-green-700 bg-green-900/20 text-green-300">
                 <AlertDescription>
@@ -317,7 +317,7 @@ export function WebhookDialog({
                 Cancel
               </Button>
               {/* Test Send: type="button" so it never submits the form.
-                  Brand: Primary teal outline — secondary action */}
+ Brand: Primary teal outline — secondary action*/}
               <Button
                 type="button"
                 variant="outline"
@@ -330,8 +330,8 @@ export function WebhookDialog({
               >
                 {testing ? "Sending..." : "Test Send"}
               </Button>
-              {/* Save button — NEVER disabled by test result (D-31).
-                  Brand: Signal amber — primary CTA */}
+              {/* Save button — NEVER disabled by test result.
+ Brand: Signal amber — primary CTA*/}
               <Button
                 type="submit"
                 style={{

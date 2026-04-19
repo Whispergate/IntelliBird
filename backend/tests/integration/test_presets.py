@@ -1,4 +1,4 @@
-"""Integration: /api/presets CRUD lifecycle — FIL-04 (D-24..D-28)."""
+"""Integration: /api/presets CRUD lifecycle — FIL-04."""
 from __future__ import annotations
 
 import asyncio
@@ -98,7 +98,7 @@ async def test_put_upsert_creates_when_absent() -> None:
 
 @pytest.mark.asyncio
 async def test_put_upsert_bumps_updated_at() -> None:
-    """Pitfall 8: ON CONFLICT DO UPDATE must bump updated_at."""
+    """: ON CONFLICT DO UPDATE must bump updated_at."""
     name = f"stamp-{uuid.uuid4().hex[:8]}"
     try:
         async with await _client() as c:
@@ -107,7 +107,7 @@ async def test_put_upsert_bumps_updated_at() -> None:
             created_at_1 = r1.json()["created_at"]
             updated_at_1 = r1.json()["updated_at"]
 
-            # Small delay to get a strictly greater timestamp from now()
+            # Small delay to get a strictly greater timestamp from now
             await asyncio.sleep(1.1)
 
             r2 = await c.put(f"/api/presets/{name}", json={"query_params": {"v": 2}})

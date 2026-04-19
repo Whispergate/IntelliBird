@@ -1,10 +1,10 @@
 """Unit tests for source probe helpers and /test-connection endpoint (SRC-03).
 
 Probe helper tests (Task 1 — RED/GREEN):
-  9 tests covering _probe_rss, _probe_nvd, _probe_taxii
+ 9 tests covering _probe_rss, _probe_nvd, _probe_taxii
 
 Endpoint tests (Task 2 — RED/GREEN):
-  8 tests covering route contract, HTTP 200 on probe failure, arg forwarding
+ 8 tests covering route contract, HTTP 200 on probe failure, arg forwarding
 
 Environment: tests run without a live Postgres/Redis — endpoint tests use a
 mini FastAPI with only the sources router mounted.

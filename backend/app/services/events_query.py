@@ -1,7 +1,7 @@
 """Events list query builder — FIL-01, FIL-02.
 
 Pure query construction. No DB execution here — routers pass the returned
-Select to session.execute().
+Select to session.execute.
 """
 from __future__ import annotations
 
@@ -57,7 +57,7 @@ def decode_cursor(cursor: str) -> tuple[datetime, uuid.UUID]:
         raise CursorError(f"invalid cursor: {exc}") from exc
 
 
-def build_events_query(params: EventsQueryParams, role: str | None) -> Select:
+def build_events_query(params: EventsQueryParams, dashboard_roles: list[str] | None) -> Select:
     stmt: Select = select(Event)
 
     if params.source:
@@ -93,9 +93,9 @@ def build_events_query(params: EventsQueryParams, role: str | None) -> Select:
         )
 
     if params.tag:
-        # Pitfall 6: COALESCE NULL tags to empty array so untagged rows are NOT
+        #: COALESCE NULL tags to empty array so untagged rows are NOT
         # silently excluded — NULL @> ARRAY[...] = NULL which never matches WHERE.
-        # D-20: tag_mode='any' uses && (overlap); tag_mode='all' (default) uses @> (contains).
+        #: tag_mode='any' uses && (overlap); tag_mode='all' (default) uses @> (contains).
         op_token = "&&" if params.tag_mode == "any" else "@>"
         stmt = stmt.where(
             sa.func.coalesce(
@@ -111,12 +111,17 @@ def build_events_query(params: EventsQueryParams, role: str | None) -> Select:
     if params.has_geo:
         stmt = stmt.where(Event.geo_lat.isnot(None)).where(Event.geo_lon.isnot(None))
 
-    # D-08: visibility gating by X-Dashboard-Role header
-    if role == "red":
-        stmt = stmt.where(Event.visibility.in_(["red_only", "shared"]))
-    elif role == "blue":
-        stmt = stmt.where(Event.visibility.in_(["blue_only", "shared"]))
-    # role None / other: no visibility filter
+    # Visibility gating by dashboard_roles claim (AUTH-02 / C-2 closure).
+    # dashboard_roles comes from request.state.user.dashboard_roles (populated by AuthMiddleware
+    # from the JWT claim). Dashboard role header trust removed at the service layer (plan 09-05).
+    # Empty / None list = unauthenticated (AUTH_ENABLED=false) or admin view -> no filter.
+    if dashboard_roles:
+        allowed: list[str] = ["shared"]
+        if "red" in dashboard_roles:
+            allowed.append("red_only")
+        if "blue" in dashboard_roles:
+            allowed.append("blue_only")
+        stmt = stmt.where(Event.visibility.in_(allowed))
 
     stmt = stmt.order_by(Event.observed_at.desc(), Event.id.desc())
     return stmt
@@ -140,13 +145,13 @@ def _rank_expression(q: str):
     return sa.func.ts_rank_cd(sa.column("search_tsv"), tsquery)
 
 
-def build_fts_query(params: EventsQueryParams, role: str | None, q: str) -> Select:
+def build_fts_query(params: EventsQueryParams, dashboard_roles: list[str] | None, q: str) -> Select:
     """FTS variant of build_events_query.
 
-    Adds WHERE search_tsv @@ plainto_tsquery('english', :q) and
-    ORDER BY ts_rank_cd DESC, observed_at DESC, id DESC.
-    The select projects (Event, rank) so routers can read rank off rows for cursor.
-    """
+ Adds WHERE search_tsv @@ plainto_tsquery('english',:q) and
+ ORDER BY ts_rank_cd DESC, observed_at DESC, id DESC.
+ The select projects (Event, rank) so routers can read rank off rows for cursor.
+"""
     if not q or not q.strip():
         raise ValueError("free_text query cannot be empty")
 
@@ -184,8 +189,8 @@ def build_fts_query(params: EventsQueryParams, role: str | None, q: str) -> Sele
             )
         )
     if params.tag:
-        # Pitfall 6: COALESCE NULL tags so untagged rows are not silently included
-        # D-20: tag_mode='any' uses && (overlap); tag_mode='all' (default) uses @> (contains).
+        #: COALESCE NULL tags so untagged rows are not silently included
+        #: tag_mode='any' uses && (overlap); tag_mode='all' (default) uses @> (contains).
         op_token = "&&" if params.tag_mode == "any" else "@>"
         stmt = stmt.where(
             sa.func.coalesce(
@@ -198,10 +203,16 @@ def build_fts_query(params: EventsQueryParams, role: str | None, q: str) -> Sele
     # MAP-01: filter to only events with resolved geo coordinates
     if params.has_geo:
         stmt = stmt.where(Event.geo_lat.isnot(None)).where(Event.geo_lon.isnot(None))
-    if role == "red":
-        stmt = stmt.where(Event.visibility.in_(["red_only", "shared"]))
-    elif role == "blue":
-        stmt = stmt.where(Event.visibility.in_(["blue_only", "shared"]))
+    # Visibility gating by dashboard_roles claim (AUTH-02 / C-2 closure).
+    # Dashboard role header trust removed at the service layer (plan 09-05).
+    # Empty / None list = unauthenticated (AUTH_ENABLED=false) or admin view -> no filter.
+    if dashboard_roles:
+        allowed: list[str] = ["shared"]
+        if "red" in dashboard_roles:
+            allowed.append("red_only")
+        if "blue" in dashboard_roles:
+            allowed.append("blue_only")
+        stmt = stmt.where(Event.visibility.in_(allowed))
 
     stmt = stmt.order_by(rank_col.desc(), Event.observed_at.desc(), Event.id.desc())
     return stmt

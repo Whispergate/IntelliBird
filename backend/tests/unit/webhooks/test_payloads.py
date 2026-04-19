@@ -17,7 +17,7 @@ DASHBOARD_URL = "http://127.0.0.1:3000"
 PRESET_NAME = "my-preset"
 
 # ---------------------------------------------------------------------------
-# EventItem keys from Phase 4 D-11 (all 17 fields that EventItem defines)
+# EventItem keys from (all 17 fields that EventItem defines)
 # ---------------------------------------------------------------------------
 _EVENTITEM_KEYS = {
     "id",
@@ -100,7 +100,7 @@ class TestSlackPayload:
                 f"Expected {expected_emoji} for tlp={tlp!r}"
             )
 
-        # None TLP defaults to :white_circle:
+        # None TLP defaults to:white_circle:
         ev_none = build_fake_event(tlp=None)
         result_none = build_slack_payload([ev_none], PRESET_NAME, DASHBOARD_URL)
         assert ":white_circle:" in result_none["blocks"][1]["text"]["text"]
@@ -112,7 +112,7 @@ class TestSlackPayload:
         result = build_slack_payload([ev], PRESET_NAME, DASHBOARD_URL)
         section_text = result["blocks"][1]["text"]["text"]
         # Title is bolded as *<title>*, extract the inner part
-        # The rendered title starts with *  and ends before the newline
+        # The rendered title starts with * and ends before the newline
         rendered_title = section_text.split("\n")[0].strip("*")
         assert len(rendered_title) == 200
         assert rendered_title.endswith("...")
@@ -149,7 +149,7 @@ class TestSlackPayload:
 class TestTeamsPayload:
     def test_envelope_is_message_type(self):
         """Returned dict has type=='message', attachments is a list of length 1,
-        and attachments[0].contentType == 'application/vnd.microsoft.card.adaptive'."""
+ and attachments[0].contentType == 'application/vnd.microsoft.card.adaptive'."""
         result = build_teams_payload([build_fake_event()], PRESET_NAME, DASHBOARD_URL)
         assert result["type"] == "message"
         assert isinstance(result["attachments"], list)
@@ -169,7 +169,7 @@ class TestTeamsPayload:
 
     def test_factset_contains_events(self):
         """body contains a FactSet; facts list has one fact per event (capped at 10);
-        fact[0].title == event.title (truncated if needed)."""
+ fact[0].title == event.title (truncated if needed)."""
         events = [build_fake_event(title=f"Event {i}") for i in range(5)]
         result = build_teams_payload(events, PRESET_NAME, DASHBOARD_URL)
         content = result["attachments"][0]["content"]
@@ -196,8 +196,8 @@ class TestTeamsPayload:
         assert actions[0]["url"] == f"{DASHBOARD_URL}/events?preset={PRESET_NAME}"
 
     def test_no_legacy_messagecard_key(self):
-        """'@type' must NOT appear anywhere in the returned dict (Pitfall 4 guard).
-        Also no 'MessageCard' string in contentType values."""
+        """'@type' must NOT appear anywhere in the returned dict ( guard).
+ Also no 'MessageCard' string in contentType values."""
         result = build_teams_payload([build_fake_event()], PRESET_NAME, DASHBOARD_URL)
         all_keys = _walk_keys(result)
         assert "@type" not in all_keys, "Legacy MessageCard '@type' key found — Pitfall 4 violation"
@@ -225,7 +225,7 @@ class TestDiscordPayload:
         assert result_2["content"] == f"**2 new events matched `{PRESET_NAME}`**"
 
     def test_tlp_color_int_map(self):
-        """Full 5-key TLP → Discord color int assertion per D-21."""
+        """Full 5-key TLP → Discord color int assertion."""
         expected = {
             "clear": 10478027,
             "green": 1940085,
@@ -242,7 +242,7 @@ class TestDiscordPayload:
             )
 
     def test_max_10_embeds_and_footer(self):
-        """15 events → len(embeds) == 10 AND content ends with ' ... and 5 more'."""
+        """15 events → len(embeds) == 10 AND content ends with '... and 5 more'."""
         events = [build_fake_event() for _ in range(15)]
         result = build_discord_payload(events, PRESET_NAME, DASHBOARD_URL)
         assert len(result["embeds"]) == 10
@@ -270,7 +270,7 @@ class TestDiscordPayload:
 
 class TestGenericPayload:
     def test_shape_matches_eventitem(self):
-        """Each events[i] dict has the 17 EventItem keys from Phase 4 D-11."""
+        """Each events[i] dict has the 17 EventItem keys from."""
         events = [build_fake_event() for _ in range(3)]
         result = build_generic_payload(events, PRESET_NAME, DASHBOARD_URL)
         for ev in result["events"]:

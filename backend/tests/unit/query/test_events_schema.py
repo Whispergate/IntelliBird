@@ -1,4 +1,4 @@
-"""EventItem geo_lat/geo_lon schema — plan 06-03 target (MAP-01, MAP-05)."""
+"""EventItem geo_lat/geo_lon schema —-03 target (MAP-01, MAP-05)."""
 from __future__ import annotations
 
 import uuid
@@ -37,7 +37,7 @@ def test_event_item_geo_defaults_none():
 
 
 def test_event_item_geo_excluded_from_serialized_none_in_strict_mode():
-    """model_dump() includes geo_lat and geo_lon keys with None values (keys are present)."""
+    """model_dump includes geo_lat and geo_lon keys with None values (keys are present)."""
     item = EventItem(**_MINIMAL)
     dumped = item.model_dump()
     assert "geo_lat" in dumped

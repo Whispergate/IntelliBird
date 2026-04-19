@@ -1,4 +1,4 @@
-"""Phase 6 MAP-05 D-06 — one-shot backfill actor.
+""" MAP-05 — one-shot backfill actor.
 
 Idempotent by SELECT predicate (WHERE geo_lat IS NULL). Iterates existing
 events with a non-empty raw_stix, calls resolve_geo, UPDATEs coords in
@@ -43,12 +43,12 @@ def _open_session() -> Iterator[SyncSession]:
 def backfill_geo_once_impl() -> dict:
     """Scan events with NULL geo coords and resolve via resolve_geo.
 
-    Returns a summary dict: {'scanned': int, 'updated': int, 'skipped': int}.
-    Commits after each batch of BATCH_SIZE rows to avoid long-running
-    transactions.  Safe to call multiple times — the SELECT predicate
-    (geo_lat IS NULL AND geo_lon IS NULL) ensures already-resolved rows
-    are never touched.
-    """
+ Returns a summary dict: {'scanned': int, 'updated': int, 'skipped': int}.
+ Commits after each batch of BATCH_SIZE rows to avoid long-running
+ transactions. Safe to call multiple times — the SELECT predicate
+ (geo_lat IS NULL AND geo_lon IS NULL) ensures already-resolved rows
+ are never touched.
+"""
     from app.services.geo import resolve_geo  # lazy import — MMDB may not exist
 
     scanned = 0
@@ -67,30 +67,30 @@ def backfill_geo_once_impl() -> dict:
                 # First page — no keyset filter
                 rows = session.execute(
                     text("""
-                        SELECT id, observed_at, raw_stix
-                        FROM events
-                        WHERE geo_lat IS NULL
-                          AND geo_lon IS NULL
-                          AND raw_stix IS NOT NULL
-                          AND archived = false
-                        ORDER BY observed_at DESC, id DESC
-                        LIMIT :batch_size
-                    """),
+ SELECT id, observed_at, raw_stix
+ FROM events
+ WHERE geo_lat IS NULL
+ AND geo_lon IS NULL
+ AND raw_stix IS NOT NULL
+ AND archived = false
+ ORDER BY observed_at DESC, id DESC
+ LIMIT:batch_size
+"""),
                     {"batch_size": BATCH_SIZE},
                 ).all()
             else:
                 rows = session.execute(
                     text("""
-                        SELECT id, observed_at, raw_stix
-                        FROM events
-                        WHERE geo_lat IS NULL
-                          AND geo_lon IS NULL
-                          AND raw_stix IS NOT NULL
-                          AND archived = false
-                          AND (observed_at, id) < (:cursor_ts, :cursor_id)
-                        ORDER BY observed_at DESC, id DESC
-                        LIMIT :batch_size
-                    """),
+ SELECT id, observed_at, raw_stix
+ FROM events
+ WHERE geo_lat IS NULL
+ AND geo_lon IS NULL
+ AND raw_stix IS NOT NULL
+ AND archived = false
+ AND (observed_at, id) < (:cursor_ts,:cursor_id)
+ ORDER BY observed_at DESC, id DESC
+ LIMIT:batch_size
+"""),
                     {
                         "batch_size": BATCH_SIZE,
                         "cursor_ts": cursor_observed_at,
@@ -140,7 +140,7 @@ def backfill_geo_once_impl() -> dict:
 def backfill_geo_once(_ignore: str = "nil") -> None:
     """Dramatiq actor wrapper — enqueued by scheduler at startup.
 
-    The _ignore parameter matches the bootstrap_attack convention so
-    scheduler._make_dispatch(backfill_geo_once, "nil") works unchanged.
-    """
+ The _ignore parameter matches the bootstrap_attack convention so
+ scheduler._make_dispatch(backfill_geo_once, "nil") works unchanged.
+"""
     backfill_geo_once_impl()

@@ -1,7 +1,7 @@
 """Dramatiq broker — Redis. Imported by workers and by the api admin endpoint.
 
-IMPORTANT: `app.config` is imported INSIDE `_build_broker()` so that a bare
-`import app.workers.broker` (used e.g. by smoke tests and by plan 05's api
+IMPORTANT: `app.config` is imported INSIDE `_build_broker` so that a bare
+`import app.workers.broker` (used e.g. by smoke tests and by's api
 startup wiring) does not hard-require `app.config` at module-load time.
 Plans 03 and 04 run in the same wave and their execution order is
 undefined; this keeps module import order-free.
@@ -29,7 +29,7 @@ def get_broker() -> RedisBroker:
 
 
 # Configure JSON logging at dramatiq worker startup (SYS-04). The dramatiq
-# CLI imports this module before any actor runs; configure_logging() wipes
+# CLI imports this module before any actor runs; configure_logging wipes
 # the root handlers + installs the structlog ProcessorFormatter bridge so
 # stdlib logging.getLogger(__name__) in rss.py / nvd.py / taxii.py produces
 # JSON lines, matching the api's RequestLogMiddleware output.
@@ -46,5 +46,5 @@ from app.workers import bootstrap  # noqa: E402,F401
 from app.workers import rss  # noqa: E402,F401
 from app.workers import nvd  # noqa: E402,F401
 from app.workers import taxii  # noqa: E402,F401
-from app.services import geo_backfill  # noqa: E402,F401  — Phase 6 MAP-05 maintenance actor
-from app.workers import webhook_dispatcher_actor  # noqa: E402,F401  — Phase 7 HOOK-02
+from app.services import geo_backfill  # noqa: E402,F401 — MAP-05 maintenance actor
+from app.workers import webhook_dispatcher_actor  # noqa: E402,F401 — HOOK-02

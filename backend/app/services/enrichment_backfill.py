@@ -2,11 +2,11 @@
 description and merges extracted tags / country_code / ATT&CK tags.
 
 Run manually via:
-    docker compose exec -T worker python -m app.services.enrichment_backfill
+ docker compose exec -T worker python -m app.services.enrichment_backfill
 
 Or dispatch via Dramatiq:
-    from app.services.enrichment_backfill import backfill_enrichment
-    backfill_enrichment.send()
+ from app.services.enrichment_backfill import backfill_enrichment
+ backfill_enrichment.send
 """
 from __future__ import annotations
 
@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
 def backfill_enrichment(batch_size: int = 500) -> dict:
     """Iterate existing events, enrich description + title, merge results.
 
-    Returns summary dict with counts.
-    """
+ Returns summary dict with counts.
+"""
     from app.config import settings  # noqa: PLC0415
 
     sync_url = settings.DATABASE_URL.replace(

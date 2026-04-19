@@ -1,7 +1,7 @@
-"""APScheduler per-source job registration — D-32 / Pitfall 7.
+"""APScheduler per-source job registration — /.
 
-Uses testcontainers PG to seed sources rows, then invokes build_scheduler()
-and introspects scheduler.get_jobs() to verify one IntervalTrigger job per
+Uses testcontainers PG to seed sources rows, then invokes build_scheduler
+and introspects scheduler.get_jobs to verify one IntervalTrigger job per
 enabled source with deterministic id.
 """
 from __future__ import annotations
@@ -65,9 +65,9 @@ def _insert_source(
     with Session(engine) as s:
         s.execute(
             text("""
-                INSERT INTO sources (id, name, feed_type, url, poll_interval_sec, enabled)
-                VALUES (:id, :name, :ft, :url, :iv, :en)
-            """),
+ INSERT INTO sources (id, name, feed_type, url, poll_interval_sec, enabled)
+ VALUES (:id,:name,:ft,:url,:iv,:en)
+"""),
             {
                 "id": str(sid),
                 "name": f"{feed_type}-fixture-{sid}",

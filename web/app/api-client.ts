@@ -1,12 +1,121 @@
 // Server-side fetch helper. Uses the compose-internal API_BASE when running
 // inside the web container; falls back to localhost for local dev.
-export type SystemStatus = {
-  auth_enabled: boolean;
-  host: string;
-  host_loopback_only: boolean;
-  version: string;
-  warning: string | null;
+import type { components } from "./api-client.generated";
+
+// ============================================================
+// Enum types extracted from generated schema
+// (These types are inlined in schema objects — no standalone OpenAPI schemas for them)
+// ============================================================
+
+export type FeedType = components["schemas"]["SourceResponse"]["feed_type"];
+export type ArchivePolicy = components["schemas"]["SourceResponse"]["archive_policy"];
+// TlpName: non-nullable enum (generated EventItem.tlp is optional nullable; we normalise here)
+export type TlpName = "clear" | "green" | "amber" | "amber+strict" | "red";
+export type Visibility = components["schemas"]["EventItem"]["visibility"];
+export type DestinationType = components["schemas"]["WebhookResponse"]["destination_type"];
+
+// WebhookAuth — union of generated discriminated auth schemas
+export type WebhookAuth =
+  | components["schemas"]["BearerAuth"]
+  | components["schemas"]["BasicAuth"]
+  | components["schemas"]["HeaderAuth"];
+
+// ============================================================
+// Types imported from generated OpenAPI schema
+// ============================================================
+
+export type SystemStatus = components["schemas"]["SystemStatusResponse"];
+export type Source = components["schemas"]["SourceResponse"];
+export type CreateSourcePayload = components["schemas"]["SourceCreate"];
+export type UpdateSourcePayload = components["schemas"]["SourceUpdate"];
+export type TestConnectionPayload = components["schemas"]["TestConnectionRequest"];
+export type TestConnectionResult = components["schemas"]["TestConnectionResponse"];
+export type CredentialField = components["schemas"]["CredentialField"];
+export type SourceTemplate = components["schemas"]["SourceTemplate"];
+
+// EventItem: override optional fields to required (callers depend on required shapes;
+// generated schema marks source_name, source_type, tlp, tags, attack_techniques as optional)
+export type EventItem = Omit<
+  components["schemas"]["EventItem"],
+  "tlp" | "attack_techniques" | "tags" | "source_name" | "source_type"
+> & {
+  tlp: TlpName | null;
+  attack_techniques: string[];
+  tags: string[];
+  source_name: string | null;
+  source_type: FeedType | null;
 };
+
+// EventDetail: same field overrides as EventItem plus raw_stix
+export type EventDetail = Omit<
+  components["schemas"]["EventDetail"],
+  "tlp" | "attack_techniques" | "tags" | "source_name" | "source_type"
+> & {
+  tlp: TlpName | null;
+  attack_techniques: string[];
+  tags: string[];
+  source_name: string | null;
+  source_type: FeedType | null;
+  raw_stix: Record<string, unknown> | null;
+};
+
+// EventListResponse: override items array to use our normalised EventItem type
+export type EventListResponse = Omit<components["schemas"]["EventListResponse"], "items"> & {
+  items: EventItem[];
+};
+export type FilterPreset = components["schemas"]["FilterPresetResponse"];
+export type GraphNode = components["schemas"]["GraphNode"];
+export type GraphEdge = components["schemas"]["GraphEdge"];
+export type GraphResponse = components["schemas"]["GraphResponse"];
+export type TagPatchPayload = components["schemas"]["TagPatchRequest"];
+export type TagPatchResponse = components["schemas"]["TagPatchResponse"];
+
+// Webhook: override bound_preset_names to required (callers depend on it always being present)
+export type Webhook = Omit<components["schemas"]["WebhookResponse"], "bound_preset_names"> & {
+  bound_preset_names: string[];
+};
+
+export type CreateWebhookPayload = components["schemas"]["WebhookCreate"];
+
+// UpdateWebhookPayload: make clear_auth optional (callers don't always send it; backend defaults to false)
+export type UpdateWebhookPayload = Omit<components["schemas"]["WebhookUpdate"], "clear_auth"> & {
+  clear_auth?: boolean;
+};
+
+export type TestWebhookPayload = components["schemas"]["TestSendRequest"];
+export type TestWebhookResult = components["schemas"]["TestSendResponse"];
+export type RekeyResponse = components["schemas"]["RekeyResponse"];
+export type EventCount = components["schemas"]["EventCountResponse"];
+
+// ============================================================
+// UI-only types (not in OpenAPI schema — frontend shapes only)
+// ============================================================
+
+export type DashboardRole = "red" | "blue"; // frontend-only, not in OpenAPI schema
+
+export type EventsQuery = {
+  source?: string[];
+  source_type?: FeedType[];
+  observed_from?: string;
+  observed_to?: string;
+  tlp?: TlpName[];
+  attack_technique?: string[];
+  tag?: string[];
+  free_text?: string;
+  include_archived?: boolean;
+  include_total?: boolean;
+  cursor?: string;
+  limit?: number;
+  has_geo?: boolean;
+  tag_mode?: "any" | "all";
+};
+
+// DeliveryStatus — more specific than generated WebhookResponse.last_delivery_status (string | null)
+export type DeliveryStatus = "ok" | "http_error" | "network_error" | "timeout" | null;
+
+// ============================================================
+// API base + helpers
+// ============================================================
 
 // Browser: use relative URLs → Next.js Route Handler at /api/[...path] proxies
 // to BACKEND_URL at request time (same-origin, no CORS). Server: use
@@ -17,6 +126,33 @@ const API_BASE =
       process.env.NEXT_PUBLIC_API_BASE ??
       "http://api:8000"
     : "";
+
+async function _handle<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+function _buildQuery(q: EventsQuery): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(q)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) for (const v of value) params.append(key, String(v));
+    else params.append(key, String(value));
+  }
+  const s = params.toString();
+  return s ? `?${s}` : "";
+}
+
+function _roleHeaders(role?: DashboardRole): HeadersInit {
+  return role ? { "X-Dashboard-Role": role } : {};
+}
+
+// ============================================================
+// System status
+// ============================================================
 
 export async function fetchSystemStatus(): Promise<SystemStatus | null> {
   try {
@@ -30,56 +166,9 @@ export async function fetchSystemStatus(): Promise<SystemStatus | null> {
   }
 }
 
-export type FeedType = "rss" | "taxii" | "nvd";
-export type ArchivePolicy = "keep" | "drop" | "move-to-cold";
-
-export type Source = {
-  id: string;
-  name: string;
-  feed_type: FeedType;
-  url: string;
-  poll_interval_sec: number;
-  hot_retention_days: number;
-  archive_policy: ArchivePolicy;
-  enabled: boolean;
-  last_polled_at: string | null;
-  last_status: string | null;
-  consecutive_failures: number;
-  silent_failure_count: number;
-  effective_status: string | null;
-  created_at: string;
-};
-
-export type CreateSourcePayload = {
-  name: string;
-  feed_type: FeedType;
-  url: string;
-  credentials?: Record<string, string> | null;
-  poll_interval_sec: number;
-  hot_retention_days: number;
-  archive_policy: ArchivePolicy;
-  enabled: boolean;
-};
-
-export type UpdateSourcePayload = {
-  name?: string;
-  url?: string;
-  credentials?: Record<string, string> | null; // absent/null → keep existing
-  poll_interval_sec?: number;
-  hot_retention_days?: number;
-  archive_policy?: ArchivePolicy;
-  enabled?: boolean;
-};
-
-export type EventCount = { count: number };
-
-async function _handle<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
-  }
-  return res.json() as Promise<T>;
-}
+// ============================================================
+// Sources — SRC-01..04
+// ============================================================
 
 export async function fetchSources(): Promise<Source[]> {
   const res = await fetch(`${API_BASE}/api/admin/sources`, { cache: "no-store" });
@@ -127,19 +216,6 @@ export async function getSourceEventCount(id: string): Promise<EventCount> {
   return _handle<EventCount>(res);
 }
 
-export type TestConnectionPayload = {
-  feed_type: FeedType;
-  url: string;
-  credentials?: Record<string, string> | null;
-};
-
-export type TestConnectionResult = {
-  ok: boolean;
-  latency_ms: number;
-  item_count_sampled: number;
-  error_detail: string | null;
-};
-
 export async function testConnection(
   payload: TestConnectionPayload,
 ): Promise<TestConnectionResult> {
@@ -153,98 +229,14 @@ export async function testConnection(
 }
 
 // Preconfigured source templates (operator quick-add)
-export type CredentialField = {
-  key: string;
-  label: string;
-  type: "password" | "text";
-  required: boolean;
-  placeholder?: string | null;
-};
-
-export type SourceTemplate = {
-  id: string;
-  name: string;
-  feed_type: FeedType;
-  url: string;
-  description: string;
-  auth_scheme: string | null;
-  credential_fields: CredentialField[];
-  poll_interval_sec: number;
-  docs_url: string | null;
-};
-
 export async function fetchSourceTemplates(): Promise<SourceTemplate[]> {
   const res = await fetch(`${API_BASE}/api/admin/source-templates`, { cache: "no-store" });
   return _handle<SourceTemplate[]>(res);
 }
 
 // ============================================================
-// Phase 4 query API — FIL-01..05, FIL-03, FIL-04
+// Events — FIL-01..05, FIL-03, FIL-04
 // ============================================================
-
-export type TlpName = "clear" | "green" | "amber" | "amber+strict" | "red";
-export type Visibility = "shared" | "red_only" | "blue_only";
-export type DashboardRole = "red" | "blue";
-
-export type EventItem = {
-  id: string;
-  observed_at: string;
-  fetched_at: string;
-  source_id: string | null;
-  source_name: string | null;
-  source_type: FeedType | null;
-  stix_id: string | null;
-  stix_type: string;
-  title: string | null;
-  description: string | null;
-  tlp: TlpName | null;
-  tags: string[];
-  attack_techniques: string[];
-  archived: boolean;
-  visibility: Visibility;
-  geo_lat: number | null;
-  geo_lon: number | null;
-};
-
-export type EventDetail = EventItem & { raw_stix: Record<string, unknown> | null };
-
-export type EventListResponse = {
-  items: EventItem[];
-  next_cursor: string | null;
-  total: number | null;
-};
-
-export type EventsQuery = {
-  source?: string[];
-  source_type?: FeedType[];
-  observed_from?: string;
-  observed_to?: string;
-  tlp?: TlpName[];
-  attack_technique?: string[];
-  tag?: string[];
-  free_text?: string;
-  include_archived?: boolean;
-  include_total?: boolean;
-  cursor?: string;
-  limit?: number;
-  has_geo?: boolean;
-  tag_mode?: "any" | "all";
-};
-
-function _buildQuery(q: EventsQuery): string {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(q)) {
-    if (value === undefined || value === null) continue;
-    if (Array.isArray(value)) for (const v of value) params.append(key, String(v));
-    else params.append(key, String(value));
-  }
-  const s = params.toString();
-  return s ? `?${s}` : "";
-}
-
-function _roleHeaders(role?: DashboardRole): HeadersInit {
-  return role ? { "X-Dashboard-Role": role } : {};
-}
 
 export async function listEvents(
   query: EventsQuery = {},
@@ -265,9 +257,6 @@ export async function getEvent(id: string, role?: DashboardRole): Promise<EventD
   return _handle<EventDetail>(res);
 }
 
-export type TagPatchPayload = { add: string[]; remove: string[] };
-export type TagPatchResponse = { tags: string[] };
-
 export async function patchEventTags(
   id: string,
   payload: TagPatchPayload,
@@ -281,10 +270,6 @@ export async function patchEventTags(
   return _handle<TagPatchResponse>(res);
 }
 
-export type GraphNode = { data: { id: string; label: string; type: string; tag_source?: string } };
-export type GraphEdge = { data: { source: string; target: string; relation: string } };
-export type GraphResponse = { nodes: GraphNode[]; edges: GraphEdge[]; truncated: boolean };
-
 export async function getEventGraph(
   id: string,
   depth: 1 | 2 | 3 = 2,
@@ -297,13 +282,9 @@ export async function getEventGraph(
   return _handle<GraphResponse>(res);
 }
 
-export type FilterPreset = {
-  id: string;
-  name: string;
-  query_params: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
-};
+// ============================================================
+// Filter presets — FIL-05
+// ============================================================
 
 export async function listPresets(): Promise<FilterPreset[]> {
   const res = await fetch(`${API_BASE}/api/presets`, { cache: "no-store" });
@@ -355,66 +336,8 @@ export async function deletePreset(name: string): Promise<void> {
 }
 
 // ============================================================
-// Phase 7 webhook alerts — HOOK-01, HOOK-02, HOOK-06, HOOK-09
+// Webhook alerts — HOOK-01, HOOK-02, HOOK-06, HOOK-09
 // ============================================================
-
-export type DestinationType = "slack" | "teams" | "discord" | "generic";
-export type DeliveryStatus = "ok" | "http_error" | "network_error" | "timeout" | null;
-
-export type WebhookAuth =
-  | { type: "bearer"; token: string }
-  | { type: "basic"; username: string; password: string }
-  | { type: "header"; name: string; value: string };
-
-export type Webhook = {
-  id: string;
-  name: string;
-  destination_type: DestinationType;
-  url: string;
-  // auth deliberately absent — never returned in plaintext (SRC-04 parallel)
-  batching_window_sec: number;
-  enabled: boolean;
-  last_dispatch_at: string | null;
-  last_delivery_at: string | null;
-  last_delivery_status: DeliveryStatus;
-  consecutive_failures: number;
-  bound_preset_names: string[];
-  created_at: string;
-  updated_at: string;
-};
-
-export type CreateWebhookPayload = {
-  name: string;
-  destination_type: DestinationType;
-  url: string;
-  auth?: WebhookAuth | null;
-  batching_window_sec: number; // one of 0, 60, 300, 900, 1800
-  bound_preset_names: string[];
-  enabled: boolean;
-};
-
-export type UpdateWebhookPayload = {
-  name?: string;
-  url?: string;
-  auth?: WebhookAuth | null;
-  clear_auth?: boolean;
-  batching_window_sec?: number;
-  bound_preset_names?: string[];
-  enabled?: boolean;
-  // destination_type DELIBERATELY ABSENT — locked on edit (D-35)
-};
-
-export type TestWebhookPayload = {
-  destination_type: DestinationType;
-  url: string;
-  auth?: WebhookAuth | null;
-};
-
-export type TestWebhookResult = {
-  ok: boolean;
-  latency_ms: number;
-  error_detail: string | null;
-};
 
 export async function listWebhooks(): Promise<Webhook[]> {
   const res = await fetch(`${API_BASE}/api/admin/webhooks`, { cache: "no-store" });

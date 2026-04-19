@@ -1,6 +1,6 @@
 """Admin Source Registry CRUD — SRC-01, SRC-02, SRC-04, SRC-05, STO-01, STO-02.
 
-Unauthenticated in M1 (PROJECT D-17 + PITFALLS C-1). Auth lands in M2.
+AUTH-02 (Phase 9): every endpoint guarded by Depends(require_admin).
 Test Connection endpoint (SRC-03) added by Plan 03.
 """
 from __future__ import annotations
@@ -20,7 +20,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.crypto import encrypt_credentials
 from app.database import get_session
+from app.middleware.auth import require_admin
 from app.models.sources import Source
+from app.security.jwt import AuthUser
 from app.services.source_events import publish_sources_changed
 from app.services.source_probes import _probe_nvd, _probe_rss, _probe_taxii
 
@@ -90,7 +92,7 @@ class SourceCreate(BaseModel):
 
 class SourceUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
-    # feed_type DELIBERATELY ABSENT — D-11 locks it after creation
+    # feed_type DELIBERATELY ABSENT — locks it after creation
     url: str | None = None
     credentials: dict | None = None  # None/absent → keep; non-empty → re-encrypt
     poll_interval_sec: int | None = Field(default=None, ge=60)
@@ -117,11 +119,14 @@ class TestConnectionResponse(BaseModel):
 
 
 @router.post("/test-connection", response_model=TestConnectionResponse)
-def test_connection(payload: TestConnectionRequest) -> TestConnectionResponse:
+def test_connection(
+    payload: TestConnectionRequest,
+    _admin: AuthUser = Depends(require_admin),
+) -> TestConnectionResponse:
     """Synchronous Test Connection probe. Returns 200 regardless of probe
-    outcome — the ok flag in the body signals success/failure. UI uses
-    this as informational only (D-08).
-    """
+ outcome — the ok flag in the body signals success/failure. UI uses
+ this as informational only.
+"""
     if payload.feed_type == "rss":
         ok, latency, count, err = _probe_rss(payload.url)
     elif payload.feed_type == "nvd":
@@ -147,7 +152,10 @@ def test_connection(payload: TestConnectionRequest) -> TestConnectionResponse:
 
 
 @router.get("", response_model=list[SourceResponse])
-async def list_sources(db: AsyncSession = Depends(get_session)) -> list[SourceResponse]:
+async def list_sources(
+    db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
+) -> list[SourceResponse]:
     result = await db.execute(
         select(Source).order_by(Source.last_polled_at.desc().nullslast())
     )
@@ -155,7 +163,11 @@ async def list_sources(db: AsyncSession = Depends(get_session)) -> list[SourceRe
 
 
 @router.get("/{source_id}", response_model=SourceResponse)
-async def get_source(source_id: uuid.UUID, db: AsyncSession = Depends(get_session)) -> SourceResponse:
+async def get_source(
+    source_id: uuid.UUID,
+    db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
+) -> SourceResponse:
     src = await db.get(Source, source_id)
     if src is None:
         raise HTTPException(status_code=404, detail="source not found")
@@ -164,7 +176,9 @@ async def get_source(source_id: uuid.UUID, db: AsyncSession = Depends(get_sessio
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=SourceResponse)
 async def create_source(
-    payload: SourceCreate, db: AsyncSession = Depends(get_session)
+    payload: SourceCreate,
+    db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> SourceResponse:
     credentials_enc = None
     if payload.credentials:
@@ -195,6 +209,7 @@ async def update_source(
     source_id: uuid.UUID,
     payload: SourceUpdate,
     db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> SourceResponse:
     src = await db.get(Source, source_id)
     if src is None:
@@ -207,7 +222,7 @@ async def update_source(
         creds = data.pop("credentials")
         if creds:
             src.credentials_enc = encrypt_credentials(settings.SECRET_KEY, creds)
-        # else: keep existing credentials_enc (D-12)
+        # else: keep existing credentials_enc
 
     for key, val in data.items():
         setattr(src, key, val)
@@ -221,7 +236,9 @@ async def update_source(
 
 @router.delete("/{source_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def delete_source(
-    source_id: uuid.UUID, db: AsyncSession = Depends(get_session)
+    source_id: uuid.UUID,
+    db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> Response:
     src = await db.get(Source, source_id)
     if src is None:
@@ -240,7 +257,9 @@ async def delete_source(
 
 @router.get("/{source_id}/event-count", response_model=EventCountResponse)
 async def event_count(
-    source_id: uuid.UUID, db: AsyncSession = Depends(get_session)
+    source_id: uuid.UUID,
+    db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> EventCountResponse:
     result = await db.execute(
         text("SELECT COUNT(*) FROM events WHERE source_id = :sid"),

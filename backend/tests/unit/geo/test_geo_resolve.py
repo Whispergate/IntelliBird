@@ -1,4 +1,4 @@
-"""resolve_geo STIX-location path — plan 06-01 target (MAP-05)."""
+"""resolve_geo STIX-location path —-01 target (MAP-05)."""
 from __future__ import annotations
 
 import pytest

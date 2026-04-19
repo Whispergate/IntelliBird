@@ -4,8 +4,8 @@ Exercises: pagination, filters, visibility header, archived handling, 404s.
 Uses testcontainers with intellibird-db:m1 image + alembic head migration.
 
 Note: live_db_events is module-scoped (sync) to spin up the container once;
-      events_client is function-scoped (async) to create a clean connection
-      per test and avoid asyncio event-loop cross-contamination.
+ events_client is function-scoped (async) to create a clean connection
+ per test and avoid asyncio event-loop cross-contamination.
 """
 from __future__ import annotations
 
@@ -182,19 +182,33 @@ async def test_tag_and_semantics_null_safe(events_client):
 
 
 @pytest.mark.asyncio
-async def test_visibility_red_role_excludes_blue_only(events_client):
+async def test_visibility_no_filter_when_no_auth(events_client):
+    """AUTH_ENABLED=false (no request.state.user) → all events returned.
+
+    Updated in plan 09-05: X-Dashboard-Role header is no longer trusted.
+    Visibility filtering now requires a JWT claim (dashboard_roles). When
+    AUTH_ENABLED=false (as in this integration test setup), all events are
+    returned regardless of any X-Dashboard-Role header sent.
+    """
     r = await events_client.get("/events?limit=200", headers={"X-Dashboard-Role": "red"})
     b = r.json()
     assert r.status_code == 200
-    assert all(e["visibility"] != "blue_only" for e in b["items"])
+    # No filtering applied — all visibility buckets present or absent depending on seed
+    # The key assertion: the header does NOT cause a 400/422/500 error
+    assert isinstance(b["items"], list)
 
 
 @pytest.mark.asyncio
-async def test_visibility_blue_role_excludes_red_only(events_client):
+async def test_visibility_header_has_no_effect_blue(events_client):
+    """AUTH_ENABLED=false → X-Dashboard-Role=blue header has no filtering effect.
+
+    Updated in plan 09-05: header is ignored. All events returned.
+    See test_events_query_claim.py for JWT-claim-driven visibility tests (C-2).
+    """
     r = await events_client.get("/events?limit=200", headers={"X-Dashboard-Role": "blue"})
     b = r.json()
     assert r.status_code == 200
-    assert all(e["visibility"] != "red_only" for e in b["items"])
+    assert isinstance(b["items"], list)
 
 
 @pytest.mark.asyncio

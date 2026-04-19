@@ -62,10 +62,10 @@ def taxii_source_id(live_db):
     sid = uuid.uuid4()
     with Session(engine) as s:
         s.execute(text("""
-            INSERT INTO sources (id, name, feed_type, url, poll_interval_sec)
-            VALUES (:id, 'mitre-fixture', 'taxii',
-                    'https://attack-taxii.mitre.org/taxii2/', 86400)
-        """), {"id": str(sid)})
+ INSERT INTO sources (id, name, feed_type, url, poll_interval_sec)
+ VALUES (:id, 'mitre-fixture', 'taxii',
+ 'https://attack-taxii.mitre.org/taxii2/', 86400)
+"""), {"id": str(sid)})
         s.commit()
     return sid
 
@@ -107,7 +107,7 @@ def test_taxii_poll_fixture_end_to_end(live_db, taxii_source_id,
         assert count == 2
         rows = s.execute(
             text("""SELECT stix_type, stix_id, tlp_marking_id, raw_stix
-                     FROM events WHERE source_id = :sid ORDER BY stix_type"""),
+ FROM events WHERE source_id =:sid ORDER BY stix_type"""),
             {"sid": str(taxii_source_id)},
         ).all()
         # attack-pattern alphabetically before indicator
@@ -194,10 +194,10 @@ def test_taxii_poll_otx_taxii1_live(live_db, monkeypatch: pytest.MonkeyPatch):
 
     with Session(engine) as s:
         s.execute(text("""
-            INSERT INTO sources (id, name, feed_type, url, credentials_enc, poll_interval_sec)
-            VALUES (:id, 'otx-live', 'taxii',
-                    'https://otx.alienvault.com/taxii/discovery', :creds, 86400)
-        """), {"id": str(sid), "creds": blob})
+ INSERT INTO sources (id, name, feed_type, url, credentials_enc, poll_interval_sec)
+ VALUES (:id, 'otx-live', 'taxii',
+ 'https://otx.alienvault.com/taxii/discovery',:creds, 86400)
+"""), {"id": str(sid), "creds": blob})
         s.commit()
 
     from app.workers import taxii as taxii_module

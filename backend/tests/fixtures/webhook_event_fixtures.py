@@ -1,6 +1,6 @@
 """Shared fake EventItem builder used by payload builder tests (07-02) and
 dispatcher tests (07-03). EventItem schema from backend/app/schemas/events.py
-(Phase 4 D-11). Using a helper keeps the 4 payload test files DRY."""
+. Using a helper keeps the 4 payload test files DRY."""
 from __future__ import annotations
 
 import uuid

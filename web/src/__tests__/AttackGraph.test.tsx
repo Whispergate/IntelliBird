@@ -114,7 +114,7 @@ describe("AttackGraph", () => {
     });
   });
 
-  // ── Phase 6 stylesheet assertions ─────────────────────────────────────────
+  // ── stylesheet assertions ─────────────────────────────────────────
 
   it("technique node has hexagon shape selector in NODE_STYLES", async () => {
     getEventGraphMock.mockResolvedValueOnce({

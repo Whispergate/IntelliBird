@@ -1,6 +1,6 @@
 """Per-source retention archiver — STO-01, STO-03, STO-04.
 
-Pitfall 3: TimescaleDB add_retention_policy and add_compression_policy are
+: TimescaleDB add_retention_policy and add_compression_policy are
 HYPERTABLE-WIDE (they apply to all rows regardless of source_id). IntelliBird
 requires per-source retention, so archiving is done in application SQL via
 per-source DELETE (policy=drop) or UPDATE events SET archived=true
@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 def _archive_source(session: Session, source_id: str, hot_retention_days: int, policy: str) -> int:
     """Apply the source's archive policy to events older than hot_retention_days.
 
-    Returns the number of rows affected (0 for keep).
-    """
+ Returns the number of rows affected (0 for keep).
+"""
     if policy == "keep":
         return 0
 
@@ -64,10 +64,10 @@ def _archive_source(session: Session, source_id: str, hot_retention_days: int, p
 def archive_once(session: Session) -> dict[str, int]:
     """Run one archiver pass across all sources. Returns per-policy row counts.
 
-    Each source is processed and committed individually. A failure in one
-    source logs archiver_source_failed and moves on to the next; one bad
-    source does not halt the whole run (rollback + continue pattern).
-    """
+ Each source is processed and committed individually. A failure in one
+ source logs archiver_source_failed and moves on to the next; one bad
+ source does not halt the whole run (rollback + continue pattern).
+"""
     logger.info("archiver_started")
     totals: dict[str, int] = {"keep": 0, "drop": 0, "move-to-cold": 0}
 

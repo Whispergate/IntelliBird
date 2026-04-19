@@ -163,7 +163,7 @@ export function EventDetailDrawer({
         className="w-[480px] sm:max-w-[480px] overflow-y-auto p-0"
         data-testid="event-detail-drawer"
       >
-        {/* Section 1 — Header (sticky) */}
+        {/* Section 1 — Header (sticky)*/}
         <SheetHeader
           className="p-4 border-b sticky top-0 z-10"
           style={{ background: "hsl(var(--card))" }}
@@ -202,7 +202,7 @@ export function EventDetailDrawer({
           ) : null}
         </SheetHeader>
 
-        {/* Loading skeleton */}
+        {/* Loading skeleton*/}
         {loading ? (
           <div className="p-4 flex flex-col gap-3" data-testid="drawer-loading">
             <div className="animate-pulse bg-muted rounded h-4 w-3/4" />
@@ -211,7 +211,7 @@ export function EventDetailDrawer({
             <div className="animate-pulse bg-muted rounded h-48 w-full" />
           </div>
         ) : error ? (
-          /* Error state — header still visible above */
+          /* Error state — header still visible above*/
           <div className="p-4" data-testid="drawer-error">
             <p className="text-muted-foreground" style={{ fontSize: 16 }}>
               Failed to load event. Please try again.
@@ -219,7 +219,7 @@ export function EventDetailDrawer({
           </div>
         ) : event ? (
           <>
-            {/* Section 2 — Description */}
+            {/* Section 2 — Description*/}
             <section
               data-testid="drawer-section-description"
               className="p-4 border-b"
@@ -232,7 +232,7 @@ export function EventDetailDrawer({
               </p>
             </section>
 
-            {/* Section 3 — Tags */}
+            {/* Section 3 — Tags*/}
             <section
               data-testid="drawer-section-tags"
               className="p-4 border-b"
@@ -241,7 +241,7 @@ export function EventDetailDrawer({
               <TagEditor eventId={event.id} initialTags={event.tags} />
             </section>
 
-            {/* Section 4 — ATT&CK techniques */}
+            {/* Section 4 — ATT&CK techniques*/}
             <section
               data-testid="drawer-section-techniques"
               className="p-4 border-b"
@@ -279,8 +279,8 @@ export function EventDetailDrawer({
             </section>
 
             {/* Section 5 — Geo
-                M1: EventDetail has no geo_lat/geo_lon fields (geo resolution lands Phase 6 via
-                MAP-05). Always renders the fallback copy per plan 05-05 spec note. */}
+ M1: EventDetail has no geo_lat/geo_lon fields (geo resolution lands via
+ MAP-05). Always renders the fallback copy per-05 spec note.*/}
             <section
               data-testid="drawer-section-geo"
               className="p-4 border-b"
@@ -293,7 +293,7 @@ export function EventDetailDrawer({
               </p>
             </section>
 
-            {/* Section 6 — Attack Graph */}
+            {/* Section 6 — Attack Graph*/}
             <section
               data-testid="drawer-section-graph"
               className="p-4 border-b"
@@ -304,7 +304,7 @@ export function EventDetailDrawer({
               <AttackGraph eventId={event.id} height={240} />
             </section>
 
-            {/* Section 7 — Raw STIX / CVE (collapsed by default) */}
+            {/* Section 7 — Raw STIX / CVE (collapsed by default)*/}
             <section data-testid="drawer-section-raw" className="p-4">
               <details>
                 <summary

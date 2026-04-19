@@ -4,8 +4,9 @@ from __future__ import annotations
 import uuid
 
 import structlog
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.requests import Request
 
 from app.database import get_session
 from app.schemas.graph import GraphResponse
@@ -23,12 +24,18 @@ router = APIRouter(prefix="/events", tags=["graph"])
 @router.get("/{event_id}/graph", response_model=GraphResponse)
 async def get_event_graph(
     event_id: uuid.UUID,
+    request: Request,
     depth: int = Query(default=DEFAULT_DEPTH, ge=MIN_DEPTH, le=MAX_DEPTH),
-    role: str | None = Header(default=None, alias="X-Dashboard-Role"),
     db: AsyncSession = Depends(get_session),
 ) -> GraphResponse:
+    # AUTH-02 / C-2: dashboard_roles sourced from JWT claim (request.state.user),
+    # populated by AuthMiddleware. Dashboard role header removed (plan 09-05).
+    # When AUTH_ENABLED=false, request.state.user is unset → dashboard_roles=None → no filter.
+    user = getattr(request.state, "user", None)
+    dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
+
     try:
-        result = await traverse_graph(db, event_id, depth=depth, role=role)
+        result = await traverse_graph(db, event_id, depth=depth, dashboard_roles=dashboard_roles)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     if result is None:

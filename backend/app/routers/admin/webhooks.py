@@ -1,7 +1,7 @@
 """Admin Webhook Registry CRUD — HOOK-01, HOOK-02, HOOK-09.
 
-Unauthenticated in M1 (loopback + auth-deferred). Mirrors sources.py.
-Test-send endpoint registered BEFORE /{id} routes (FastAPI path order — Pitfall 5).
+AUTH-02 (Phase 9): every endpoint guarded by Depends(require_admin).
+Test-send endpoint registered BEFORE /{id} routes (FastAPI path order).
 auth_enc encrypted on save; NEVER appears in any response body (SRC-04 parallel).
 """
 from __future__ import annotations
@@ -20,7 +20,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.crypto import encrypt_credentials
 from app.database import get_session
+from app.middleware.auth import require_admin
 from app.models.webhooks import Webhook, WebhookPresetBinding
+from app.security.jwt import AuthUser
 from app.schemas.webhooks import (
     TestSendRequest,
     TestSendResponse,
@@ -50,7 +52,7 @@ def _auth_to_dict(auth) -> dict | None:
 
 
 def _make_dummy_event() -> dict:
-    """Synthesise a test event for the test-send endpoint (D-32)."""
+    """Synthesise a test event for the test-send endpoint."""
     now = datetime.now(timezone.utc).isoformat()
     return {
         "id": f"urn:uuid:test-{uuid.uuid4()}",
@@ -76,8 +78,8 @@ def _make_dummy_event() -> dict:
 def _build_auth_headers(auth) -> dict[str, str]:
     """Build Authorization / custom headers from plaintext AuthSpec for test-send.
 
-    No DB round-trip — auth is supplied in the request body for test-send.
-    """
+ No DB round-trip — auth is supplied in the request body for test-send.
+"""
     if auth is None:
         return {}
     if auth.type == "bearer":
@@ -94,15 +96,18 @@ def _build_auth_headers(auth) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# test-send — MUST be registered BEFORE /{webhook_id} routes (Pitfall 5)
+# test-send — MUST be registered BEFORE /{webhook_id} routes
 # FastAPI matches routes in declaration order; /test-send must come first or
 # FastAPI will try to cast "test-send" as a UUID and return 422.
 # ---------------------------------------------------------------------------
 
 
 @router.post("/test-send", response_model=TestSendResponse)
-def test_webhook_send(payload: TestSendRequest) -> TestSendResponse:
-    """Non-blocking test send. D-31: always HTTP 200; ok flag in body signals result."""
+def test_webhook_send(
+    payload: TestSendRequest,
+    _admin: AuthUser = Depends(require_admin),
+) -> TestSendResponse:
+    """Non-blocking test send.: always HTTP 200; ok flag in body signals result."""
     dummy_event = _make_dummy_event()
     result_payload = build_payload_for_type(
         payload.destination_type,
@@ -180,6 +185,7 @@ async def _hydrate(db: AsyncSession, wh: Webhook) -> WebhookResponse:
 @router.get("", response_model=list[WebhookResponse])
 async def list_webhooks(
     db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> list[WebhookResponse]:
     rows = await db.execute(select(Webhook).order_by(Webhook.created_at.desc()))
     return [await _hydrate(db, wh) for wh in rows.scalars().all()]
@@ -189,6 +195,7 @@ async def list_webhooks(
 async def create_webhook(
     payload: WebhookCreate,
     db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> WebhookResponse:
     if payload.batching_window_sec not in _BATCHING_ALLOWED:
         raise HTTPException(
@@ -240,6 +247,7 @@ async def create_webhook(
 async def get_webhook(
     webhook_id: uuid.UUID,
     db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> WebhookResponse:
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
@@ -252,6 +260,7 @@ async def update_webhook(
     webhook_id: uuid.UUID,
     payload: WebhookUpdate,
     db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> WebhookResponse:
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
@@ -306,6 +315,7 @@ async def update_webhook(
 async def delete_webhook(
     webhook_id: uuid.UUID,
     db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> Response:
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
@@ -320,8 +330,9 @@ async def delete_webhook(
 async def reset_cursor(
     webhook_id: uuid.UUID,
     db: AsyncSession = Depends(get_session),
+    _admin: AuthUser = Depends(require_admin),
 ) -> WebhookResponse:
-    """D-12: reset last_dispatch_at to NULL. Next tick uses 24h lookback (D-13)."""
+    """: reset last_dispatch_at to NULL. Next tick uses 24h lookback."""
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
         raise HTTPException(status_code=404, detail="webhook not found")

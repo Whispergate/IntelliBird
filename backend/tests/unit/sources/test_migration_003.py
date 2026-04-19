@@ -1,8 +1,8 @@
 """Unit tests for migration 003 (archive_policy enum + silent_failure_count).
 
 All tests run offline — no live database required. Monkeypatching alembic.op
-is used to inspect the exact sequence of DDL operations emitted by upgrade()
-and downgrade().
+is used to inspect the exact sequence of DDL operations emitted by upgrade
+and downgrade.
 """
 from __future__ import annotations
 

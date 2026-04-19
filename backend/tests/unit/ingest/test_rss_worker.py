@@ -1,6 +1,6 @@
 """RSS parser + normaliser + worker tests — INGR-01, INGR-02, INGR-03.
 
-Parser-level (Task 1 of plan 02-03): pure functions over feedparser output
+Parser-level (Task 1 of-03): pure functions over feedparser output
 using the backend/tests/fixtures/rss_krebs_2026-04.xml golden file.
 Worker-level (Task 2): mocks the DB session and asserts _persist_event
 + update_source_health call shapes.
@@ -21,7 +21,7 @@ SRC_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
 @contextmanager
 def _fake_session_ctx(*_args, **_kwargs):
-    """Context manager returning a MagicMock session with commit()/rollback() no-ops."""
+    """Context manager returning a MagicMock session with commit/rollback no-ops."""
     from unittest.mock import MagicMock
     s = MagicMock()
     s.__enter__ = lambda self: self
@@ -133,7 +133,7 @@ def test_link_id_fallback() -> None:
 # ──────────────────────────────────────── Worker-level (Task 2) ────
 
 class _FakeEntry(dict):
-    """Tests use plain dict entries — feedparser.FeedParserDict duck-types via .get/.attr."""
+    """Tests use plain dict entries — feedparser.FeedParserDict duck-types via.get/.attr."""
     def __getattr__(self, k: str):
         try:
             return self[k]

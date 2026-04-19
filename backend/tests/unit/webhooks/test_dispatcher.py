@@ -2,9 +2,9 @@
 
 Strategy: pure-function tests using in-process stubs.
 - FakeRedis: dict-backed stub that implements the Redis methods used by the dispatcher
-  (llen, rpush, lrange, set, get, expire, delete).
+ (llen, rpush, lrange, set, get, expire, delete).
 - FakeSession: minimal SQLAlchemy session stub for _record_delivery_result /
-  _advance_cursor tests that only call session.execute().
+ _advance_cursor tests that only call session.execute.
 - httpx: monkeypatched via module-level attribute replacement.
 - time.sleep: monkeypatched to capture call args.
 """
@@ -139,7 +139,7 @@ import app.services.webhook_dispatcher as disp
 
 class TestBatching:
     def test_first_event_fires_immediately(self, monkeypatch):
-        """D-09: when Redis list is empty, events are pushed and dispatch fires immediately."""
+        """: when Redis list is empty, events are pushed and dispatch fires immediately."""
         wh = _make_webhook()
         r = FakeRedis()
         event = _make_event()
@@ -172,7 +172,7 @@ class TestBatching:
         assert r.llen(batch_key) == 1
 
     def test_subsequent_events_accumulate(self, monkeypatch):
-        """D-09: when Redis list already has items and window not closed, only accumulate."""
+        """: when Redis list already has items and window not closed, only accumulate."""
         wh = _make_webhook(batching_window_sec=300)
         r = FakeRedis()
         now = datetime.now(timezone.utc)
@@ -245,17 +245,17 @@ class TestBatching:
         assert len(drain_calls) == 1
 
     def test_null_cursor_uses_24h_lookback(self, monkeypatch):
-        """D-13: NULL cursor → observed_from = now - 24h (within 1s tolerance)."""
+        """: NULL cursor → observed_from = now - 24h (within 1s tolerance)."""
         captured_params = []
 
         def fake_build_events_query(params, role):
             captured_params.append(params)
-            return MagicMock()  # stmt that session.execute() can handle
+            return MagicMock()  # stmt that session.execute can handle
 
         monkeypatch.setattr(disp, "build_events_query", fake_build_events_query)
 
         session = MagicMock()
-        # session.execute(stmt).scalars().all() -> []
+        # session.execute(stmt).scalars.all -> []
         session.execute.return_value.scalars.return_value.all.return_value = []
 
         before = datetime.now(timezone.utc)
@@ -275,7 +275,7 @@ class TestBatching:
 
 class TestRetry:
     def test_retries_30_60_120_seconds(self, monkeypatch):
-        """D-26: 3 attempts → sleep called with 30, 60 between attempts (not after last)."""
+        """: 3 attempts → sleep called with 30, 60 between attempts (not after last)."""
         sleep_calls: list[int] = []
         monkeypatch.setattr(disp.time, "sleep", lambda n: sleep_calls.append(n))
 
@@ -300,7 +300,7 @@ class TestRetry:
         assert sleep_calls == [30, 60]
 
     def test_max_3_attempts(self, monkeypatch):
-        """D-26: at most 3 attempts, no 4th."""
+        """: at most 3 attempts, no 4th."""
         monkeypatch.setattr(disp.time, "sleep", lambda n: None)
 
         attempt_count = 0
@@ -324,7 +324,7 @@ class TestRetry:
         assert attempt_count == 3
 
     def test_auto_disable_at_5_consecutive_failures(self):
-        """D-27: webhook.consecutive_failures=4 + failure → enabled=false in UPDATE."""
+        """: webhook.consecutive_failures=4 + failure → enabled=false in UPDATE."""
         wh = _make_webhook(consecutive_failures=4)
         session = MagicMock()
 
@@ -333,7 +333,7 @@ class TestRetry:
         # Find the execute call with the UPDATE
         assert session.execute.called
         call_args = session.execute.call_args
-        stmt = call_args[0][0]  # first positional arg is the text() obj
+        stmt = call_args[0][0]  # first positional arg is the text obj
         params = call_args[0][1]  # second positional arg is the params dict
 
         # cf should be 5, disable should be True
@@ -346,7 +346,7 @@ class TestRetry:
 # ===========================================================================
 
 def test_cursor_stays_on_failure(monkeypatch):
-    """D-06: on delivery failure, _advance_cursor is NOT called."""
+    """: on delivery failure, _advance_cursor is NOT called."""
     wh = _make_webhook(consecutive_failures=0)
     r = FakeRedis()
     session = MagicMock()
@@ -376,7 +376,7 @@ def test_cursor_stays_on_failure(monkeypatch):
 
 
 def test_cursor_advances_on_success(monkeypatch):
-    """D-06: on delivery success, _advance_cursor IS called with max observed_at."""
+    """: on delivery success, _advance_cursor IS called with max observed_at."""
     wh = _make_webhook(consecutive_failures=0)
     r = FakeRedis()
     session = MagicMock()
@@ -408,11 +408,11 @@ def test_cursor_advances_on_success(monkeypatch):
 
 
 def test_event_matching_reuses_build_events_query(monkeypatch):
-    """Pitfall 7: _fetch_matching_events calls build_events_query with role=None."""
+    """: _fetch_matching_events calls build_events_query with dashboard_roles=None."""
     spy_calls: list[tuple] = []
 
-    def spy_build_events_query(params, role):
-        spy_calls.append((params, role))
+    def spy_build_events_query(params, dashboard_roles):
+        spy_calls.append((params, dashboard_roles))
         return MagicMock()
 
     monkeypatch.setattr(disp, "build_events_query", spy_build_events_query)
@@ -424,12 +424,12 @@ def test_event_matching_reuses_build_events_query(monkeypatch):
     disp._fetch_matching_events(session, {}, last_dispatch_at=cutoff)
 
     assert len(spy_calls) == 1
-    _, role_passed = spy_calls[0]
-    assert role_passed is None, f"Expected role=None but got {role_passed!r}"
+    _, dashboard_roles_passed = spy_calls[0]
+    assert dashboard_roles_passed is None, f"Expected dashboard_roles=None but got {dashboard_roles_passed!r}"
 
 
 def test_dedup_across_bound_presets(monkeypatch):
-    """D-05: same event matched by 2 presets → appears ONCE in Redis batch."""
+    """: same event matched by 2 presets → appears ONCE in Redis batch."""
     wh = _make_webhook()
     r = FakeRedis()
     session = MagicMock()

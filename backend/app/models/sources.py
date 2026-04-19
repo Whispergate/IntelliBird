@@ -1,4 +1,4 @@
-"""Source registry. Phase 3 adds CRUD; Phase 1 establishes the schema."""
+"""Source registry. adds CRUD; establishes the schema."""
 from __future__ import annotations
 
 import uuid
@@ -26,6 +26,9 @@ class Source(Base):
     credentials_enc: Mapped[str | None] = mapped_column(Text, nullable=True)
     poll_interval_sec: Mapped[int] = mapped_column(Integer, nullable=False, server_default="3600")
     hot_retention_days: Mapped[int] = mapped_column(Integer, nullable=False, server_default="30")
+    credentials_key_version: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default="1"
+    )
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
     last_polled_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
     last_cursor: Mapped[str | None] = mapped_column(Text, nullable=True)

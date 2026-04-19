@@ -11,10 +11,10 @@ from testcontainers.redis import RedisContainer
 @pytest.fixture(scope="session")
 def pg_container() -> Iterator[PostgresContainer]:
     """
-    Phase 1 Plan 02 will swap this image for the locally-built intellibird-db
-    image (Postgres 16 + TimescaleDB + AGE). Until then use the base
-    timescaledb-ha image so extension tests can load timescaledb only.
-    """
+ Plan 02 will swap this image for the locally-built intellibird-db
+ image (Postgres 16 + TimescaleDB + AGE). Until then use the base
+ timescaledb-ha image so extension tests can load timescaledb only.
+"""
     with PostgresContainer("timescale/timescaledb:latest-pg16") as pg:
         yield pg
 
@@ -25,7 +25,7 @@ def redis_container() -> Iterator[RedisContainer]:
         yield r
 
 
-# Phase 2 — fixtures directory accessor used by RSS/TAXII/NVD integration tests.
+# fixtures directory accessor used by RSS/TAXII/NVD integration tests.
 from pathlib import Path
 
 import pytest as _pytest2

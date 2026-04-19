@@ -1,4 +1,4 @@
-"""Backfill actor idempotency tests — plan 06-02 (MAP-05).
+"""Backfill actor idempotency tests —-02 (MAP-05).
 
 Tests verify:
 - backfill_geo_once_impl resolves STIX-location events and UPDATEs geo cols
@@ -101,10 +101,10 @@ def _insert_source(engine) -> uuid.UUID:
     with Session(engine) as s:
         s.execute(
             text("""
-                INSERT INTO sources (id, name, feed_type, url, poll_interval_sec, enabled,
-                                     hot_retention_days, archive_policy)
-                VALUES (:id, :name, 'rss', :url, 3600, true, 30, 'keep')
-            """),
+ INSERT INTO sources (id, name, feed_type, url, poll_interval_sec, enabled,
+ hot_retention_days, archive_policy)
+ VALUES (:id,:name, 'rss',:url, 3600, true, 30, 'keep')
+"""),
             {
                 "id": str(sid),
                 "name": f"backfill-test-{sid}",
@@ -130,13 +130,13 @@ def _insert_event(
     with Session(engine) as s:
         s.execute(
             text("""
-                INSERT INTO events
-                    (id, source_id, stix_type, observed_at, content_hash,
-                     raw_stix, geo_lat, geo_lon, archived)
-                VALUES
-                    (:id, :sid, 'indicator', now(), :ch,
-                     :raw_stix::jsonb, :geo_lat, :geo_lon, false)
-            """),
+ INSERT INTO events
+ (id, source_id, stix_type, observed_at, content_hash,
+ raw_stix, geo_lat, geo_lon, archived)
+ VALUES
+ (:id,:sid, 'indicator', now,:ch,
+:raw_stix::jsonb,:geo_lat,:geo_lon, false)
+"""),
             {
                 "id": str(eid),
                 "sid": str(source_id),

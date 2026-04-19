@@ -25,7 +25,7 @@ if (!dagreRegistered) {
 }
 
 const NODE_STYLES = [
-  // ── Per-type fill colors (Phase 5) ──────────────────────────────────────
+  // ── Per-type fill colors ──────────────────────────────────────
   {
     selector: "node[type='event']",
     style: {
@@ -94,7 +94,7 @@ const NODE_STYLES = [
       "text-halign": "center",
     },
   },
-  // ── Infrastructure node type (Phase 6 — Deep teal fill) ─────────────────
+  // ── Infrastructure node type ─────────────────
   {
     selector: "node[type='infrastructure']",
     style: {
@@ -109,7 +109,7 @@ const NODE_STYLES = [
       height: 22,
     },
   },
-  // ── Edges (Phase 5) ──────────────────────────────────────────────────────
+  // ── Edges ──────────────────────────────────────────────────────
   {
     selector: "edge",
     style: {
@@ -120,7 +120,7 @@ const NODE_STYLES = [
       width: 1,
     },
   },
-  // ── Node shape encoding (Phase 6 — D-24) ────────────────────────────────
+  // ── Node shape encoding ────────────────────────────────
   // MUST appear after per-type fill entries so specificity order is correct.
   {
     selector: "node[type='event']",
@@ -146,8 +146,8 @@ const NODE_STYLES = [
     selector: "node[type='infrastructure']",
     style: { shape: "square" },
   },
-  // ── Provenance border-style encoding (Phase 6 — D-22) ───────────────────
-  // MUST appear AFTER the shape selectors (Pitfall 6 — order matters).
+  // ── Provenance border-style encoding ───────────────────
+  // MUST appear AFTER the shape selectors ( — order matters).
   {
     selector: "node[tag_source='analyst']",
     style: { "border-style": "solid", "border-width": 2, "border-opacity": 1.0 },

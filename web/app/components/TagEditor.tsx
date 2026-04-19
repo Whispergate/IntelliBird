@@ -17,7 +17,7 @@ const CHIP_STYLE = {
 };
 
 // Suggested tags grouped by intent — click to apply. Same vocabulary as
-// Phase 5 widget queries (actor, c2, exploit, tooling, vendor-advisory,
+// widget queries (actor, c2, exploit, tooling, vendor-advisory,
 // high-severity) so tagged events roll up into dashboard widgets.
 const SUGGESTED_TAG_GROUPS: { label: string; tags: string[] }[] = [
   { label: "Severity", tags: ["critical", "high-severity", "medium-severity", "low-severity"] },
@@ -101,7 +101,7 @@ export function TagEditor({
 
   return (
     <div data-testid="tag-editor" className="flex flex-col gap-2">
-      {/* Applied tags + freeform input */}
+      {/* Applied tags + freeform input*/}
       <div
         className={`flex flex-wrap items-center gap-1 ${
           invalid ? "ring-1 ring-destructive rounded-md" : ""
@@ -143,7 +143,7 @@ export function TagEditor({
       />
       </div>
 
-      {/* Suggested tags — grouped, click to apply, hide if already applied */}
+      {/* Suggested tags — grouped, click to apply, hide if already applied*/}
       <div className="flex flex-col gap-1" data-testid="tag-suggestions">
         {SUGGESTED_TAG_GROUPS.map((group) => {
           const available = group.tags.filter((t) => !appliedSet.has(t));

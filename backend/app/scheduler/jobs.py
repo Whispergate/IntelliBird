@@ -1,9 +1,9 @@
 """APScheduler process — dispatches Dramatiq actors on cron triggers.
 
-Phase 1 established attack_weekly_refresh + attack_first_boot.
-Phase 2 adds per-source poll_{rss,taxii,nvd} IntervalTrigger jobs
-loaded from the sources table at startup (D-32).
-Phase 3 Plan 06 adds a daemon thread subscribing to Redis pub/sub for
+ established attack_weekly_refresh + attack_first_boot.
+ adds per-source poll_{rss,taxii,nvd} IntervalTrigger jobs
+loaded from the sources table at startup.
+ Plan 06 adds a daemon thread subscribing to Redis pub/sub for
 live source CRUD reload without scheduler restart.
 """
 from __future__ import annotations
@@ -37,7 +37,7 @@ from app.services.source_events import RELOAD_CHANNEL
 logger = logging.getLogger(__name__)
 
 # feed_type -> actor lookup. Must match sources.feed_type enum (migration 001).
-# 'custom' is intentionally absent — Phase 3 will handle operator-defined types.
+# 'custom' is intentionally absent — will handle operator-defined types.
 _ACTOR_MAP: dict[str, object] = {
     "rss": poll_rss,
     "taxii": poll_taxii,
@@ -76,11 +76,11 @@ def _make_dispatch(actor: object, source_id: str):  # type: ignore[no-untyped-de
 def _load_source_jobs(scheduler: BlockingScheduler) -> None:
     """Read sources table and register one IntervalTrigger job per enabled source.
 
-    Uses a short-lived sync psycopg2 connection — APScheduler is sync.
-    Idempotent via replace_existing=True (Pitfall 7). Unknown feed_type
-    values are skipped with a structured-log WARNING (defence against
-    Phase 3 CRUD introducing new types before the scheduler is updated).
-    """
+ Uses a short-lived sync psycopg2 connection — APScheduler is sync.
+ Idempotent via replace_existing=True . Unknown feed_type
+ values are skipped with a structured-log WARNING (defence against
+ CRUD introducing new types before the scheduler is updated).
+"""
     import psycopg2  # noqa: PLC0415
 
     from app.config import settings  # noqa: PLC0415
@@ -111,7 +111,7 @@ def _load_source_jobs(scheduler: BlockingScheduler) -> None:
                     _make_dispatch(actor, str(source_id)),
                     IntervalTrigger(seconds=int(interval_sec)),
                     id=job_id,
-                    replace_existing=True,  # Pitfall 7 — prevents duplicate jobs on restart
+                    replace_existing=True,  # — prevents duplicate jobs on restart
                 )
                 logger.info(
                     "scheduler_registered feed_type=%s source_id=%s interval=%d",
@@ -126,10 +126,10 @@ def _load_source_jobs(scheduler: BlockingScheduler) -> None:
 def _reload_handler(scheduler: BlockingScheduler, payload: dict[str, Any]) -> None:
     """Process one reload message: remove deleted jobs, reload the rest.
 
-    Pitfall 8: DELETE publishes {"deleted": [{"feed_type": "...", "source_id": "..."}]}.
-    We must remove those specific APScheduler jobs BEFORE _load_source_jobs runs
-    (which only adds/updates — it does not remove orphans).
-    """
+: DELETE publishes {"deleted": [{"feed_type": "...", "source_id": "..."}]}.
+ We must remove those specific APScheduler jobs BEFORE _load_source_jobs runs
+ (which only adds/updates — it does not remove orphans).
+"""
     deleted = payload.get("deleted") or []
     for entry in deleted:
         feed_type = entry.get("feed_type")
@@ -193,7 +193,7 @@ def _start_reload_listener(scheduler: BlockingScheduler) -> threading.Thread:
 
 def build_scheduler() -> BlockingScheduler:
     scheduler = BlockingScheduler(timezone="UTC")
-    # Phase 1 jobs (preserved)
+    # jobs (preserved)
     scheduler.add_job(
         refresh_attack,
         CronTrigger(day_of_week="mon", hour=3, minute=0),
@@ -206,19 +206,19 @@ def build_scheduler() -> BlockingScheduler:
         id="attack_first_boot",
         replace_existing=True,
     )
-    # Phase 3 archiver job — nightly at 03:00 UTC
+    # archiver job — nightly at 03:00 UTC
     scheduler.add_job(
         archiver_job_wrapper,
         CronTrigger(hour=3, minute=0),
         id="archiver_nightly",
         replace_existing=True,
     )
-    # Phase 2 per-source ingest jobs
+    # per-source ingest jobs
     try:
         _load_source_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_source_load_failed error=%s", e)
-    # Phase 6 MAP-05 — geo backfill one-shot at startup (+30s)
+    # MAP-05 — geo backfill one-shot at startup (+30s)
     try:
         from app.services.geo_backfill import backfill_geo_once  # noqa: PLC0415
         scheduler.add_job(
@@ -231,7 +231,7 @@ def build_scheduler() -> BlockingScheduler:
         )
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_geo_backfill_register_failed error=%s", e)
-    # Phase 7 — webhook dispatcher tick (60s interval)
+    # webhook dispatcher tick (60s interval)
     try:
         from app.workers.webhook_dispatcher_actor import webhook_dispatch_tick  # noqa: PLC0415
         scheduler.add_job(
@@ -243,7 +243,7 @@ def build_scheduler() -> BlockingScheduler:
         logger.info("scheduler_registered webhook_dispatch_tick interval=60")
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_webhook_dispatch_register_failed error=%s", e)
-    # Phase 3 Plan 06 — live reload listener (daemon thread)
+    # Plan 06 — live reload listener (daemon thread)
     try:
         _start_reload_listener(scheduler)
     except Exception as e:  # noqa: BLE001

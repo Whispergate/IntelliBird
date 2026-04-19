@@ -6,11 +6,11 @@ Create Date: 2026-04-18
 
 Creates destination_type_enum + webhooks + webhook_preset_bindings.
 
-Pitfall 1 correction vs 07-CONTEXT D-01: auth_enc is TEXT (not bytea).
+ correction vs 07-CONTEXT: auth_enc is TEXT (not bytea).
 app.crypto.encrypt_credentials returns base64url str — matching
 sources.credentials_enc pattern exactly.
 
-Pitfall 6: enum creation guarded via DO $$ EXCEPTION WHEN duplicate_object
+: enum creation guarded via DO $$ EXCEPTION WHEN duplicate_object
 block (established project pattern from migration 003) — handles
 partial-migration re-run. Uses postgresql.ENUM(create_type=False) in
 op.create_table — exact pattern from migration 001 (project standard).
@@ -30,7 +30,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Pitfall 6: guarded enum creation — established project pattern from migration 003.
+    #: guarded enum creation — established project pattern from migration 003.
     # EXCEPTION WHEN duplicate_object THEN NULL handles partial-migration re-run.
     op.execute(
         "DO $$ BEGIN "
@@ -60,7 +60,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.Column("url", sa.Text, nullable=False),
-        # Pitfall 1: Text (base64url) — NOT bytea.
+        #: Text (base64url) — NOT bytea.
         # app.crypto.encrypt_credentials returns a base64url string, matching
         # the sources.credentials_enc pattern exactly.
         sa.Column("auth_enc", sa.Text, nullable=True),

@@ -6,7 +6,7 @@ Tests cover:
 - Poll_Request construction with/without cursor
 - Content_Block extraction: STIX 2.x JSON, STIX 1.x XML
 - OTX auth header injection
-- Cursor advance only after all objects committed (D-15/D-16)
+- Cursor advance only after all objects committed
 - Missing API key → http_error health update
 - Network error mid-poll → network_error health update, no cursor advance
 
@@ -45,38 +45,38 @@ SRC_ID = uuid.UUID("00000000-0000-0000-0000-000000000099")
 DISCOVERY_RESPONSE_XML = b"""\
 <?xml version="1.0" encoding="UTF-8"?>
 <taxii_11:Discovery_Response
-    xmlns:taxii_11="http://taxii.mitre.org/messages/taxii_xml_binding-1.1"
-    message_id="1">
-  <taxii_11:Service_Instance service_type="DISCOVERY" available="true">
-    <taxii_11:Protocol_Binding>urn:taxii.mitre.org:protocol:https:1.0</taxii_11:Protocol_Binding>
-    <taxii_11:Address>https://otx.alienvault.com/taxii/discovery</taxii_11:Address>
-    <taxii_11:Message_Binding>urn:taxii.mitre.org:message:xml:1.1</taxii_11:Message_Binding>
-  </taxii_11:Service_Instance>
-  <taxii_11:Service_Instance service_type="COLLECTION_MANAGEMENT" available="true">
-    <taxii_11:Protocol_Binding>urn:taxii.mitre.org:protocol:https:1.0</taxii_11:Protocol_Binding>
-    <taxii_11:Address>https://otx.alienvault.com/taxii/collections</taxii_11:Address>
-    <taxii_11:Message_Binding>urn:taxii.mitre.org:message:xml:1.1</taxii_11:Message_Binding>
-  </taxii_11:Service_Instance>
-  <taxii_11:Service_Instance service_type="POLL" available="true">
-    <taxii_11:Protocol_Binding>urn:taxii.mitre.org:protocol:https:1.0</taxii_11:Protocol_Binding>
-    <taxii_11:Address>https://otx.alienvault.com/taxii/poll</taxii_11:Address>
-    <taxii_11:Message_Binding>urn:taxii.mitre.org:message:xml:1.1</taxii_11:Message_Binding>
-  </taxii_11:Service_Instance>
+ xmlns:taxii_11="http://taxii.mitre.org/messages/taxii_xml_binding-1.1"
+ message_id="1">
+ <taxii_11:Service_Instance service_type="DISCOVERY" available="true">
+ <taxii_11:Protocol_Binding>urn:taxii.mitre.org:protocol:https:1.0</taxii_11:Protocol_Binding>
+ <taxii_11:Address>https://otx.alienvault.com/taxii/discovery</taxii_11:Address>
+ <taxii_11:Message_Binding>urn:taxii.mitre.org:message:xml:1.1</taxii_11:Message_Binding>
+ </taxii_11:Service_Instance>
+ <taxii_11:Service_Instance service_type="COLLECTION_MANAGEMENT" available="true">
+ <taxii_11:Protocol_Binding>urn:taxii.mitre.org:protocol:https:1.0</taxii_11:Protocol_Binding>
+ <taxii_11:Address>https://otx.alienvault.com/taxii/collections</taxii_11:Address>
+ <taxii_11:Message_Binding>urn:taxii.mitre.org:message:xml:1.1</taxii_11:Message_Binding>
+ </taxii_11:Service_Instance>
+ <taxii_11:Service_Instance service_type="POLL" available="true">
+ <taxii_11:Protocol_Binding>urn:taxii.mitre.org:protocol:https:1.0</taxii_11:Protocol_Binding>
+ <taxii_11:Address>https://otx.alienvault.com/taxii/poll</taxii_11:Address>
+ <taxii_11:Message_Binding>urn:taxii.mitre.org:message:xml:1.1</taxii_11:Message_Binding>
+ </taxii_11:Service_Instance>
 </taxii_11:Discovery_Response>
 """
 
 COLLECTION_RESPONSE_XML = b"""\
 <?xml version="1.0" encoding="UTF-8"?>
 <taxii_11:Collection_Information_Response
-    xmlns:taxii_11="http://taxii.mitre.org/messages/taxii_xml_binding-1.1"
-    message_id="2">
-  <taxii_11:Collection collection_name="AlienVault OTX Pulse" collection_type="DATA_FEED" available="true">
-    <taxii_11:Description>OTX Pulses</taxii_11:Description>
-    <taxii_11:Polling_Service>
-      <taxii_11:Protocol_Binding>urn:taxii.mitre.org:protocol:https:1.0</taxii_11:Protocol_Binding>
-      <taxii_11:Address>https://otx.alienvault.com/taxii/poll</taxii_11:Address>
-    </taxii_11:Polling_Service>
-  </taxii_11:Collection>
+ xmlns:taxii_11="http://taxii.mitre.org/messages/taxii_xml_binding-1.1"
+ message_id="2">
+ <taxii_11:Collection collection_name="AlienVault OTX Pulse" collection_type="DATA_FEED" available="true">
+ <taxii_11:Description>OTX Pulses</taxii_11:Description>
+ <taxii_11:Polling_Service>
+ <taxii_11:Protocol_Binding>urn:taxii.mitre.org:protocol:https:1.0</taxii_11:Protocol_Binding>
+ <taxii_11:Address>https://otx.alienvault.com/taxii/poll</taxii_11:Address>
+ </taxii_11:Polling_Service>
+ </taxii_11:Collection>
 </taxii_11:Collection_Information_Response>
 """
 
@@ -98,14 +98,14 @@ import json as _json
 POLL_RESPONSE_XML_STIX2 = ("""\
 <?xml version="1.0" encoding="UTF-8"?>
 <taxii_11:Poll_Response
-    xmlns:taxii_11="http://taxii.mitre.org/messages/taxii_xml_binding-1.1"
-    message_id="3" collection_name="AlienVault OTX Pulse">
-  <taxii_11:Content_Block>
-    <taxii_11:Content_Binding binding_id="urn:stix.mitre.org:json:2.1"/>
-    <taxii_11:Content><![CDATA[""" + _json.dumps(_STIX2_OBJ) + """]]></taxii_11:Content>
+ xmlns:taxii_11="http://taxii.mitre.org/messages/taxii_xml_binding-1.1"
+ message_id="3" collection_name="AlienVault OTX Pulse">
+ <taxii_11:Content_Block>
+ <taxii_11:Content_Binding binding_id="urn:stix.mitre.org:json:2.1"/>
+ <taxii_11:Content><![CDATA[""" + _json.dumps(_STIX2_OBJ) + """]]></taxii_11:Content>
   </taxii_11:Content_Block>
 </taxii_11:Poll_Response>
-""").encode()
+""").encode
 
 POLL_RESPONSE_XML_STIX1 = b"""\
 <?xml version="1.0" encoding="UTF-8"?>
@@ -128,142 +128,142 @@ POLL_RESPONSE_XML_STIX1 = b"""\
 
 
 def _mock_response(content: bytes, status_code: int = 200):
-    r = MagicMock()
-    r.status_code = status_code
-    r.content = content
-    r.raise_for_status = lambda: None
-    return r
+ r = MagicMock
+ r.status_code = status_code
+ r.content = content
+ r.raise_for_status = lambda: None
+ return r
 
 
 # ──── _discover_services ──────────────────────────────────────────────
 
-def test_discover_services_parses_xml() -> None:
-    from app.ingest.taxii1_otx import _discover_services
-    mock_session = MagicMock()
-    mock_session.post.return_value = _mock_response(DISCOVERY_RESPONSE_XML)
-    services = _discover_services(mock_session, "https://otx.alienvault.com/taxii/discovery")
-    assert "poll" in services
-    assert services["poll"] == "https://otx.alienvault.com/taxii/poll"
-    assert "collection_management" in services or "collection-management" in services
+def test_discover_services_parses_xml -> None:
+ from app.ingest.taxii1_otx import _discover_services
+ mock_session = MagicMock
+ mock_session.post.return_value = _mock_response(DISCOVERY_RESPONSE_XML)
+ services = _discover_services(mock_session, "https://otx.alienvault.com/taxii/discovery")
+ assert "poll" in services
+ assert services["poll"] == "https://otx.alienvault.com/taxii/poll"
+ assert "collection_management" in services or "collection-management" in services
 
 
-def test_discover_services_includes_discovery_self() -> None:
-    from app.ingest.taxii1_otx import _discover_services
-    mock_session = MagicMock()
-    mock_session.post.return_value = _mock_response(DISCOVERY_RESPONSE_XML)
-    services = _discover_services(mock_session, "https://otx.alienvault.com/taxii/discovery")
-    assert "discovery" in services
+def test_discover_services_includes_discovery_self -> None:
+ from app.ingest.taxii1_otx import _discover_services
+ mock_session = MagicMock
+ mock_session.post.return_value = _mock_response(DISCOVERY_RESPONSE_XML)
+ services = _discover_services(mock_session, "https://otx.alienvault.com/taxii/discovery")
+ assert "discovery" in services
 
 
 # ──── _list_collections ───────────────────────────────────────────────
 
-def test_list_collections_returns_names() -> None:
-    from app.ingest.taxii1_otx import _list_collections
-    mock_session = MagicMock()
-    mock_session.post.return_value = _mock_response(COLLECTION_RESPONSE_XML)
-    names = _list_collections(mock_session, "https://otx.alienvault.com/taxii/collections")
-    assert names == ["AlienVault OTX Pulse"]
+def test_list_collections_returns_names -> None:
+ from app.ingest.taxii1_otx import _list_collections
+ mock_session = MagicMock
+ mock_session.post.return_value = _mock_response(COLLECTION_RESPONSE_XML)
+ names = _list_collections(mock_session, "https://otx.alienvault.com/taxii/collections")
+ assert names == ["AlienVault OTX Pulse"]
 
 
 # ──── _poll_request_xml ───────────────────────────────────────────────
 
-def test_poll_request_includes_begin_timestamp() -> None:
-    from app.ingest.taxii1_otx import _poll_request_xml
-    xml = _poll_request_xml("AlienVault OTX Pulse", "2026-04-01T00:00:00+00:00")
-    assert "Exclusive_Begin_Timestamp" in xml
-    assert "2026-04-01T00:00:00+00:00" in xml
+def test_poll_request_includes_begin_timestamp -> None:
+ from app.ingest.taxii1_otx import _poll_request_xml
+ xml = _poll_request_xml("AlienVault OTX Pulse", "2026-04-01T00:00:00+00:00")
+ assert "Exclusive_Begin_Timestamp" in xml
+ assert "2026-04-01T00:00:00+00:00" in xml
 
 
-def test_poll_request_without_cursor_omits_begin_timestamp() -> None:
-    from app.ingest.taxii1_otx import _poll_request_xml
-    xml = _poll_request_xml("AlienVault OTX Pulse", None)
-    assert "Exclusive_Begin_Timestamp" not in xml
+def test_poll_request_without_cursor_omits_begin_timestamp -> None:
+ from app.ingest.taxii1_otx import _poll_request_xml
+ xml = _poll_request_xml("AlienVault OTX Pulse", None)
+ assert "Exclusive_Begin_Timestamp" not in xml
 
 
-def test_poll_request_includes_collection_name() -> None:
-    from app.ingest.taxii1_otx import _poll_request_xml
-    xml = _poll_request_xml("AlienVault OTX Pulse", None)
-    assert "AlienVault OTX Pulse" in xml
+def test_poll_request_includes_collection_name -> None:
+ from app.ingest.taxii1_otx import _poll_request_xml
+ xml = _poll_request_xml("AlienVault OTX Pulse", None)
+ assert "AlienVault OTX Pulse" in xml
 
 
 # ──── _poll_collection: STIX 2.x JSON payload ─────────────────────────
 
-def test_poll_collection_extracts_stix2_json() -> None:
-    from app.ingest.taxii1_otx import _poll_collection
-    mock_session = MagicMock()
-    mock_session.post.return_value = _mock_response(POLL_RESPONSE_XML_STIX2)
-    objects = _poll_collection(mock_session, "https://otx.alienvault.com/taxii/poll",
-                               "AlienVault OTX Pulse", None)
-    assert len(objects) == 1
-    assert objects[0]["type"] == "indicator"
-    assert objects[0]["id"] == "indicator--aaaa0000-0000-0000-0000-000000000001"
+def test_poll_collection_extracts_stix2_json -> None:
+ from app.ingest.taxii1_otx import _poll_collection
+ mock_session = MagicMock
+ mock_session.post.return_value = _mock_response(POLL_RESPONSE_XML_STIX2)
+ objects = _poll_collection(mock_session, "https://otx.alienvault.com/taxii/poll",
+ "AlienVault OTX Pulse", None)
+ assert len(objects) == 1
+ assert objects[0]["type"] == "indicator"
+ assert objects[0]["id"] == "indicator--aaaa0000-0000-0000-0000-000000000001"
 
 
-def test_poll_collection_extracts_stix1_xml_as_synthesized() -> None:
-    from app.ingest.taxii1_otx import _poll_collection
-    mock_session = MagicMock()
-    mock_session.post.return_value = _mock_response(POLL_RESPONSE_XML_STIX1)
-    objects = _poll_collection(mock_session, "https://otx.alienvault.com/taxii/poll",
-                               "AlienVault OTX Pulse", None)
-    assert len(objects) >= 1
-    # STIX 1.x objects get synthesized x-stix1- type prefix
-    assert objects[0]["type"].startswith("x-stix1-")
-    assert "id" in objects[0]
+def test_poll_collection_extracts_stix1_xml_as_synthesized -> None:
+ from app.ingest.taxii1_otx import _poll_collection
+ mock_session = MagicMock
+ mock_session.post.return_value = _mock_response(POLL_RESPONSE_XML_STIX1)
+ objects = _poll_collection(mock_session, "https://otx.alienvault.com/taxii/poll",
+ "AlienVault OTX Pulse", None)
+ assert len(objects) >= 1
+ # STIX 1.x objects get synthesized x-stix1- type prefix
+ assert objects[0]["type"].startswith("x-stix1-")
+ assert "id" in objects[0]
 
 
 # ──── _make_otx_session ────────────────────────────────────────────────
 
-def test_make_otx_session_injects_api_key() -> None:
-    from app.ingest.taxii1_otx import _make_otx_session
-    sess = _make_otx_session("test-api-key-1234")
-    assert sess.headers.get("X-OTX-API-KEY") == "test-api-key-1234"
-    assert sess.headers.get("X-TAXII-Content-Type") == "urn:taxii.mitre.org:message:xml:1.1"
+def test_make_otx_session_injects_api_key -> None:
+ from app.ingest.taxii1_otx import _make_otx_session
+ sess = _make_otx_session("test-api-key-1234")
+ assert sess.headers.get("X-OTX-API-KEY") == "test-api-key-1234"
+ assert sess.headers.get("X-TAXII-Content-Type") == "urn:taxii.mitre.org:message:xml:1.1"
 
 
 # ──── poll_otx_taxii1 integration-level unit tests ────────────────────
 
 @contextmanager
 def _fake_session_ctx(*_a, **_kw):
-    s = MagicMock()
-    s.__enter__ = lambda self: self
-    s.__exit__ = lambda self, *a: None
-    yield s
+ s = MagicMock
+ s.__enter__ = lambda self: self
+ s.__exit__ = lambda self, *a: None
+ yield s
 
 
 def _build_mock_src(*, cursor: str | None = None):
-    return {
-        "id": SRC_ID,
-        "url": "https://otx.alienvault.com/taxii/discovery",
-        "credentials_enc": None,
-        "last_cursor": cursor,
-    }
+ return {
+ "id": SRC_ID,
+ "url": "https://otx.alienvault.com/taxii/discovery",
+ "credentials_enc": None,
+ "last_cursor": cursor,
+ }
 
 
-def test_poll_otx_no_api_key_returns_http_error() -> None:
-    from app.ingest.taxii1_otx import poll_otx_taxii1
-    db_session = MagicMock()
-    health_calls: list = []
+def test_poll_otx_no_api_key_returns_http_error -> None:
+ from app.ingest.taxii1_otx import poll_otx_taxii1
+ db_session = MagicMock
+ health_calls: list = []
 
-    with patch("app.ingest.taxii1_otx._make_otx_session") as mock_sess_factory, \
-         patch("app.ingest.normalise.update_source_health",
-               lambda s, sid, *, status, succeeded:
-               health_calls.append((status, succeeded))):
-        from app.ingest import normalise as norm_mod
-        norm_mod.update_source_health = lambda s, sid, *, status, succeeded: \
-            health_calls.append((status, succeeded))
+ with patch("app.ingest.taxii1_otx._make_otx_session") as mock_sess_factory, \
+ patch("app.ingest.normalise.update_source_health",
+ lambda s, sid, *, status, succeeded:
+ health_calls.append((status, succeeded))):
+ from app.ingest import normalise as norm_mod
+ norm_mod.update_source_health = lambda s, sid, *, status, succeeded: \
+ health_calls.append((status, succeeded))
 
-        poll_otx_taxii1(db_session, _build_mock_src(),
-                        creds=None,  # no API key
-                        tlp_cache=TLP_CACHE)
+ poll_otx_taxii1(db_session, _build_mock_src,
+ creds=None, # no API key
+ tlp_cache=TLP_CACHE)
 
-    # Should have called update_source_health with http_error
-    # (actual call happens inside poll_otx_taxii1 via direct import)
-    # Verify the session.commit() was called
-    assert db_session.commit.called
+ # Should have called update_source_health with http_error
+ # (actual call happens inside poll_otx_taxii1 via direct import)
+ # Verify the session.commit was called
+ assert db_session.commit.called
 
 
-def test_poll_otx_uses_cursor_as_begin_timestamp() -> None:
-    """Verify Poll_Request XML includes cursor in Exclusive_Begin_Timestamp."""
+def test_poll_otx_uses_cursor_as_begin_timestamp -> None:
+"""Verify Poll_Request XML includes cursor in Exclusive_Begin_Timestamp."""
     from app.ingest.taxii1_otx import _poll_request_xml
     cursor = "2026-04-10T00:00:00+00:00"
     xml = _poll_request_xml("AlienVault OTX Pulse", cursor)

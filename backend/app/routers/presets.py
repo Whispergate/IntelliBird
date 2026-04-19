@@ -1,14 +1,14 @@
 """Filter preset CRUD — FIL-04.
 
 Endpoints:
-  GET    /api/presets         → list[FilterPresetResponse]
-  POST   /api/presets         → 201 FilterPresetResponse (409 on duplicate name)
-  GET    /api/presets/{name}  → FilterPresetResponse (404 if absent)
-  PUT    /api/presets/{name}  → FilterPresetResponse (upsert; updated_at bumped — Pitfall 8)
-  DELETE /api/presets/{name}  → 204 (404 if absent)
+ GET /api/presets → list[FilterPresetResponse]
+ POST /api/presets → 201 FilterPresetResponse (409 on duplicate name)
+ GET /api/presets/{name} → FilterPresetResponse (404 if absent)
+ PUT /api/presets/{name} → FilterPresetResponse (upsert; updated_at bumped —)
+ DELETE /api/presets/{name} → 204 (404 if absent)
 
-Note: asyncpg rejects :param::type cast syntax — CAST(:param AS jsonb) used throughout
-(deviation discovered in plan 04-01, applied here proactively).
+Note: asyncpg rejects:param::type cast syntax — CAST(:param AS jsonb) used throughout
+(deviation discovered in-01, applied here proactively).
 """
 from __future__ import annotations
 
@@ -57,9 +57,9 @@ async def create_preset(
 ) -> FilterPresetResponse:
     """Create a new named filter preset.
 
-    Returns 409 Conflict if the name already exists.
-    Name must match ^[a-z0-9_-]{1,64}$ (enforced by Pydantic; DB CHECK is defence-in-depth).
-    """
+ Returns 409 Conflict if the name already exists.
+ Name must match ^[a-z0-9_-]{1,64}$ (enforced by Pydantic; DB CHECK is defence-in-depth).
+"""
     try:
         result = await db.execute(
             text(
@@ -110,10 +110,10 @@ async def upsert_preset(
 ) -> FilterPresetResponse:
     """Upsert a named preset (create if absent, replace query_params if present).
 
-    Pitfall 8: ON CONFLICT DO UPDATE must explicitly set updated_at = now()
-    because the column default only fires on INSERT, not on UPDATE.
-    created_at is preserved across updates (not included in SET clause).
-    """
+: ON CONFLICT DO UPDATE must explicitly set updated_at = now
+ because the column default only fires on INSERT, not on UPDATE.
+ created_at is preserved across updates (not included in SET clause).
+"""
     result = await db.execute(
         text(
             "INSERT INTO filter_presets (name, query_params) "
@@ -148,9 +148,9 @@ async def delete_preset(
 ) -> Response:
     """Delete a preset by name.
 
-    Returns 204 on success, 404 if not found.
-    response_class=Response avoids FastAPI 204/None body serialisation bug (Phase 3 Plan 02 fix).
-    """
+ Returns 204 on success, 404 if not found.
+ response_class=Response avoids FastAPI 204/None body serialisation bug.
+"""
     result = await db.execute(
         text("DELETE FROM filter_presets WHERE name = :name RETURNING name"),
         {"name": name},

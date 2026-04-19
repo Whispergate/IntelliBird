@@ -1,6 +1,6 @@
 """Apache AGE spike — concurrent write/read smoke test under Dramatiq.
 
-CONTEXT D-09. Does NOT gate M1 — outcome recorded in AGE-SPIKE.md.
+CONTEXT. Does NOT gate M1 — outcome recorded in AGE-SPIKE.md.
 """
 from __future__ import annotations
 

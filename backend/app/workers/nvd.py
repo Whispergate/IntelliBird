@@ -1,22 +1,22 @@
 """NVD/CVE polling actor — INGC-01, INGC-02, INGC-03.
 
-Cursor strategy (D-20/D-21, Pitfall 8):
-  - last_cursor IS NULL → fetch last 30 days.
-  - Otherwise → lastModStartDate = last_cursor + 1 second.
-  - On success, advance last_cursor to (max lastModified seen) + 1 second.
-  - On any failure, cursor is NOT advanced — re-poll covers the same window.
+Cursor strategy:
+ - last_cursor IS NULL → fetch last 30 days.
+ - Otherwise → lastModStartDate = last_cursor + 1 second.
+ - On success, advance last_cursor to (max lastModified seen) + 1 second.
+ - On any failure, cursor is NOT advanced — re-poll covers the same window.
 
-Rate-limit handling (D-29/D-30):
-  - 429 or 5xx: exponential backoff 30s → 60s → 120s (max 3 attempts).
-  - After final failure: last_status='rate_limited' (429) or 'http_error' (5xx).
-  - Other 4xx: fail fast — no retry, last_status='http_error'.
+Rate-limit handling:
+ - 429 or 5xx: exponential backoff 30s → 60s → 120s (max 3 attempts).
+ - After final failure: last_status='rate_limited' (429) or 'http_error' (5xx).
+ - Other 4xx: fail fast — no retry, last_status='http_error'.
 
 Event → cve_details / attack_technique_tags linkage:
-  - Uses RETURNING id on the events insert to capture the server-generated UUID.
-  - ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING matches the
-    3-column unique index from migration 002 (required by TimescaleDB hypertable).
-  - Dependent writes (cve_details, attack_technique_tags) are skipped when the
-    event row is a dedup conflict — they already exist from the original insert.
+ - Uses RETURNING id on the events insert to capture the server-generated UUID.
+ - ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING matches the
+ 3-column unique index from migration 002 (required by TimescaleDB hypertable).
+ - Dependent writes (cve_details, attack_technique_tags) are skipped when the
+ event row is a dedup conflict — they already exist from the original insert.
 """
 from __future__ import annotations
 
@@ -129,13 +129,13 @@ def _error_status_code(err: BaseException) -> int | None:
 
 
 def _fetch_with_backoff(**kwargs: Any) -> list:
-    """Call nvdlib.searchCVE_V2 with D-29/D-30 backoff.
+    """Call nvdlib.searchCVE_V2 with backoff.
 
-    Returns list of CVE objects on success, or raises the final exception.
+ Returns list of CVE objects on success, or raises the final exception.
 
-    Backoff schedule: sleep 30s, 60s, 120s — one sleep per failed attempt
-    (3 attempts total, 3 sleeps). 4xx non-429 fails fast without sleeping.
-    """
+ Backoff schedule: sleep 30s, 60s, 120s — one sleep per failed attempt
+ (3 attempts total, 3 sleeps). 4xx non-429 fails fast without sleeping.
+"""
     last_exc: BaseException | None = None
     for attempt_idx, sleep_s in enumerate(BACKOFF_SCHEDULE):
         try:
@@ -143,7 +143,7 @@ def _fetch_with_backoff(**kwargs: Any) -> list:
         except BaseException as e:  # noqa: BLE001
             code = _error_status_code(e)
             last_exc = e
-            # 4xx non-429: fail fast — no sleep, propagate immediately (D-30)
+            # 4xx non-429: fail fast — no sleep, propagate immediately
             if code is not None and 400 <= code < 500 and code != 429:
                 raise
             # 429 or 5xx: sleep then retry (or give up after last attempt)

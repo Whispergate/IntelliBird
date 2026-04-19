@@ -26,9 +26,9 @@ logger = logging.getLogger(__name__)
 def _open_session() -> Iterator[Session]:
     """Sync-engine session per poll — mirrors app.workers.attack_writer pattern.
 
-    Lazily imports settings so `import app.workers.rss` stays cheap
-    (Phase 1 pattern — see broker.py module docstring).
-    """
+ Lazily imports settings so `import app.workers.rss` stays cheap
+.
+"""
     from app.config import settings  # noqa: PLC0415
     sync_url = settings.DATABASE_URL.replace("+asyncpg", "")
     engine = create_engine(sync_url, future=True)
@@ -52,8 +52,8 @@ def _fetch_source_row(session: Session, source_id: uuid.UUID) -> dict | None:
 
 def poll_rss_impl(source_id_str: str) -> None:
     """Actor body — sync implementation. Called by `poll_rss.send(...)` or
-    directly by integration tests.
-    """
+ directly by integration tests.
+"""
     source_id = uuid.UUID(source_id_str)
     inserted = 0
     deduped = 0

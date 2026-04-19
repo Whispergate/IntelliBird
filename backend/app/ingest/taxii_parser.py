@@ -7,7 +7,7 @@ title/description land in indexed columns.
 INGT-03 — object_marking_refs resolved against the four canonical TLP 2.0
 UUIDs seeded in migration 001. Non-canonical markings log a WARNING and
 leave tlp_marking_id NULL (PITFALLS H-4).
-D-09 analog — objects missing id or modified are dropped with a WARNING.
+ analog — objects missing id or modified are dropped with a WARNING.
 """
 from __future__ import annotations
 
@@ -37,13 +37,13 @@ _MARKING_REF_PATTERN = re.compile(r"^marking-definition--([0-9a-f-]{36})$", re.I
 
 def parse_stix_bundle(bundle_or_envelope: dict | list) -> list[Any]:
     """Run stix2.parse with allow_custom=True on a bundle dict or envelope
-    {"objects": [...]} dict. Returns a list of parsed objects (dicts or
-    stix2 SDO instances depending on shape).
+ {"objects": [...]} dict. Returns a list of parsed objects (dicts or
+ stix2 SDO instances depending on shape).
 
-    Raises stix2-side validation errors when a non-custom type is malformed
-    (e.g. `indicator` without required `pattern`). This is intentional — we
-    want bad input to surface.
-    """
+ Raises stix2-side validation errors when a non-custom type is malformed
+ (e.g. `indicator` without required `pattern`). This is intentional — we
+ want bad input to surface.
+"""
     if isinstance(bundle_or_envelope, list):
         objects = bundle_or_envelope
     elif "objects" in bundle_or_envelope:
@@ -67,10 +67,10 @@ def resolve_tlp_marking(
 ) -> uuid.UUID | None:
     """Match any ref in object_marking_refs to a canonical TLP UUID.
 
-    tlp_cache is a lookup {canonical_uuid: name} prepared at worker startup
-    by the caller (one query against tlp_markings). A non-canonical marking
-    returns None after logging WARNING tlp_marking_unresolved.
-    """
+ tlp_cache is a lookup {canonical_uuid: name} prepared at worker startup
+ by the caller (one query against tlp_markings). A non-canonical marking
+ returns None after logging WARNING tlp_marking_unresolved.
+"""
     if not object_marking_refs:
         return None
     for ref in object_marking_refs:
@@ -132,8 +132,8 @@ def normalise_stix_object(
 ) -> dict | None:
     """Normalise one STIX SDO (dict or stix2 object) to an Event row dict.
 
-    Returns None if the object is unhashable (missing id OR missing modified).
-    """
+ Returns None if the object is unhashable (missing id OR missing modified).
+"""
     d = _as_dict(obj)
     stix_id = d.get("id")
     modified = d.get("modified") or d.get("created")

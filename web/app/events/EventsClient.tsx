@@ -92,7 +92,7 @@ export function EventsClient() {
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<string>("");
 
-  // Resolve role from localStorage (Phase 5 pattern — /events is role-neutral)
+  // Resolve role from localStorage
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem("intellibird:last-role") as
@@ -233,7 +233,7 @@ export function EventsClient() {
 
   return (
     <RoleProvider value={role ?? "blue"}>
-      {/* Page header */}
+      {/* Page header*/}
       <div style={{ marginBottom: "1rem" }}>
         <h1 className="brand-display text-foreground">Events</h1>
         <p className="text-muted-foreground mt-1" style={{ fontSize: 16 }}>
@@ -241,7 +241,7 @@ export function EventsClient() {
         </p>
       </div>
 
-      {/* Quick tag filters — click to add to filter set */}
+      {/* Quick tag filters — click to add to filter set*/}
       <div style={{ marginBottom: "1.5rem" }} className="flex flex-col gap-1">
         <span className="brand-caption text-[10px] text-muted-foreground" style={{ letterSpacing: "0.12em" }}>
           Quick filters
@@ -276,15 +276,15 @@ export function EventsClient() {
         </div>
       </div>
 
-      {/* Filter row */}
+      {/* Filter row*/}
       <div
         className="flex flex-wrap items-center gap-3"
         style={{ marginBottom: "1.5rem" }}
       >
-        {/* Filter chips */}
+        {/* Filter chips*/}
         <FilterChips activeFilters={filter} onRemove={removeFilter} />
 
-        {/* Date range inputs */}
+        {/* Date range inputs*/}
         <div className="flex items-center gap-2">
           <label className="brand-caption text-muted-foreground" htmlFor="events-from">
             From
@@ -310,7 +310,7 @@ export function EventsClient() {
           />
         </div>
 
-        {/* Preset selector */}
+        {/* Preset selector*/}
         <div style={{ width: 200 }}>
           <Select
             value={selectedPreset}
@@ -333,7 +333,7 @@ export function EventsClient() {
           </Select>
         </div>
 
-        {/* Reset / clear all filters */}
+        {/* Reset / clear all filters*/}
         {hasFilters && (
           <Button
             variant="ghost"
@@ -347,7 +347,7 @@ export function EventsClient() {
         )}
       </div>
 
-      {/* Events table */}
+      {/* Events table*/}
       {showError ? (
         <div
           className="flex flex-col items-center justify-center py-16 gap-2"
@@ -408,7 +408,7 @@ export function EventsClient() {
         />
       )}
 
-      {/* Event detail drawer — unconditional mount; opens on ?event=<id> */}
+      {/* Event detail drawer — unconditional mount; opens on ?event=<id>*/}
       <EventDetailDrawer />
     </RoleProvider>
   );

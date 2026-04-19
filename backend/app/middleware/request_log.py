@@ -1,15 +1,15 @@
 """Request-log middleware — SYS-04.
 
 Emits one structlog JSON line per HTTP request with:
-  ts, level, event='http_request', method, path, status, duration_ms,
-  request_id, dashboard_role, client_ip.
+ ts, level, event='http_request', method, path, status, duration_ms,
+ request_id, dashboard_role, client_ip.
 
 Binds request_id to structlog.contextvars so downstream log calls
-(events_listed, tags_patched, graph_queried, ...) inherit it automatically
+(events_listed, tags_patched, graph_queried,...) inherit it automatically
 — backend/app/logging.py already includes structlog.contextvars.merge_contextvars
 in the processor chain.
 
-Pitfall 7: BaseHTTPMiddleware can swallow exceptions. We try/except
+: BaseHTTPMiddleware can swallow exceptions. We try/except
 around call_next, log explicitly, and re-raise so FastAPI exception handlers
 still run.
 """

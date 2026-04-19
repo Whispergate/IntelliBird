@@ -184,7 +184,7 @@ def _fake_session_ctx_nvd(*_args, **_kwargs):
 
 
 class _NvdError(Exception):
-    """Stand-in for nvdlib exception hierarchy — tests set .status_code."""
+    """Stand-in for nvdlib exception hierarchy — tests set.status_code."""
     def __init__(self, msg: str, status_code: int) -> None:
         super().__init__(msg)
         self.status_code = status_code
@@ -419,7 +419,7 @@ def test_poll_nvd_4xx_non_429_fails_fast(monkeypatch: pytest.MonkeyPatch) -> Non
     monkeypatch.setattr(nvd_module, "_advance_cursor", lambda *a, **kw: None)
 
     nvd_module.poll_nvd_impl(str(sid))
-    assert sleeps == []  # D-30: 4xx non-429 fails fast
+    assert sleeps == []  #: 4xx non-429 fails fast
     assert health == [("http_error", False)]
 
 

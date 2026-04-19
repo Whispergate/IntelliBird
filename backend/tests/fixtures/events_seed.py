@@ -1,23 +1,23 @@
-"""Deterministic events seed for Phase 4 integration tests.
+"""Deterministic events seed for integration tests.
 
 Contract:
 - 3 sources (rss, taxii, nvd) with known UUIDs
 - 50 events distributed:
-    - source 1 (rss):  20 events, TLP clear,  visibility shared
-    - source 2 (taxii): 20 events, TLP amber, visibility red_only (10) + shared (10)
-    - source 3 (nvd):  10 events, TLP green, visibility blue_only
+ - source 1 (rss): 20 events, TLP clear, visibility shared
+ - source 2 (taxii): 20 events, TLP amber, visibility red_only (10) + shared (10)
+ - source 3 (nvd): 10 events, TLP green, visibility blue_only
 - All observed_at in 2025-09-01..2025-10-20 (30-day span, deterministic hourly step)
 - Tags mix: events 0-9 have tags=["apt28"], 10-19 have tags=["phishing"],
-  20-29 have tags=["apt28","phishing"], 30+ have tags=[] (NOT NULL empty,
-  to exercise COALESCE path)
+ 20-29 have tags=["apt28","phishing"], 30+ have tags=[] (NOT NULL empty,
+ to exercise COALESCE path)
 - Events 5, 15, 25 have tags=NULL explicitly (to exercise ARRAY NULL coalesce pitfall)
 - Event 0 has raw_stix={"objects":[{"type":"relationship",
-  "source_ref":"threat-actor--aaa","target_ref":"malware--bbb",
-  "relationship_type":"uses"}]} for graph depth-2 test
+ "source_ref":"threat-actor--aaa","target_ref":"malware--bbb",
+ "relationship_type":"uses"}]} for graph depth-2 test
 - Event 0 linked in attack_technique_tags to T1190
 - Event 1 linked in attack_technique_tags to T1566 and T1059
 - Title pattern: f"Event {i} {random_word}" where random_word is picked
-  deterministically from ["APT28", "phishing", "vulnerability", "exploit", "campaign"]
+ deterministically from ["APT28", "phishing", "vulnerability", "exploit", "campaign"]
 - Description pattern: f"Description for event {i} about {random_word}"
 """
 from __future__ import annotations
@@ -80,19 +80,19 @@ def _source_tlp_visibility(i: int) -> tuple[str, str, str]:
 async def seed_50_events(session: AsyncSession) -> list[dict]:
     """Seed 3 sources + 50 events. Returns list of inserted row dicts.
 
-    Clears sources, events, attack_technique_tags before inserting.
-    Commits once at end; rolls back on exception.
-    """
+ Clears sources, events, attack_technique_tags before inserting.
+ Commits once at end; rolls back on exception.
+"""
     try:
         # Ensure TLP markings exist with STIX 2.1 TLP 2.0 names (used by filter API)
         await session.execute(
             sa.text("""
-                INSERT INTO tlp_markings (id, name) VALUES
-                    (:c_id, 'clear'),
-                    (:g_id, 'green'),
-                    (:a_id, 'amber')
-                ON CONFLICT (id) DO NOTHING
-            """),
+ INSERT INTO tlp_markings (id, name) VALUES
+ (:c_id, 'clear'),
+ (:g_id, 'green'),
+ (:a_id, 'amber')
+ ON CONFLICT (id) DO NOTHING
+"""),
             {
                 "c_id": str(TLP_CLEAR),
                 "g_id": str(TLP_GREEN),
@@ -108,13 +108,13 @@ async def seed_50_events(session: AsyncSession) -> list[dict]:
         # Insert 3 sources
         await session.execute(
             sa.text("""
-                INSERT INTO sources (id, name, feed_type, url, poll_interval_sec, hot_retention_days,
-                                     enabled, archive_policy)
-                VALUES
-                    (:id1, 'Seed RSS Source',   'rss',   'http://seed/rss',   3600, 30, true, 'keep'),
-                    (:id2, 'Seed TAXII Source', 'taxii', 'http://seed/taxii', 3600, 30, true, 'keep'),
-                    (:id3, 'Seed NVD Source',   'nvd',   'http://seed/nvd',   3600, 30, true, 'keep')
-            """),
+ INSERT INTO sources (id, name, feed_type, url, poll_interval_sec, hot_retention_days,
+ enabled, archive_policy)
+ VALUES
+ (:id1, 'Seed RSS Source', 'rss', 'http://seed/rss', 3600, 30, true, 'keep'),
+ (:id2, 'Seed TAXII Source', 'taxii', 'http://seed/taxii', 3600, 30, true, 'keep'),
+ (:id3, 'Seed NVD Source', 'nvd', 'http://seed/nvd', 3600, 30, true, 'keep')
+"""),
             {
                 "id1": str(SOURCE_RSS),
                 "id2": str(SOURCE_TAXII),
@@ -175,14 +175,14 @@ async def seed_50_events(session: AsyncSession) -> list[dict]:
 
             await session.execute(
                 sa.text(f"""
-                    INSERT INTO events
-                        (id, source_id, stix_type, observed_at, title, description,
-                         tlp_marking_id, visibility, content_hash, raw_stix, tags)
-                    VALUES
-                        (:id, :source_id, :stix_type, :observed_at, :title, :description,
-                         :tlp_marking_id, :visibility, :content_hash,
-                         CAST(:raw_stix AS jsonb), {tags_sql})
-                """),
+ INSERT INTO events
+ (id, source_id, stix_type, observed_at, title, description,
+ tlp_marking_id, visibility, content_hash, raw_stix, tags)
+ VALUES
+ (:id,:source_id,:stix_type,:observed_at,:title,:description,
+:tlp_marking_id,:visibility,:content_hash,
+ CAST(:raw_stix AS jsonb), {tags_sql})
+"""),
                 params,
             )
 
@@ -223,12 +223,12 @@ async def seed_50_events(session: AsyncSession) -> list[dict]:
         for row in att_rows:
             await session.execute(
                 sa.text("""
-                    INSERT INTO attack_technique_tags
-                        (event_id, technique_id, tag_source)
-                    VALUES
-                        (:event_id, :technique_id, :tag_source)
-                    ON CONFLICT DO NOTHING
-                """),
+ INSERT INTO attack_technique_tags
+ (event_id, technique_id, tag_source)
+ VALUES
+ (:event_id,:technique_id,:tag_source)
+ ON CONFLICT DO NOTHING
+"""),
                 row,
             )
 

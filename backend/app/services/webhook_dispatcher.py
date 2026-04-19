@@ -1,17 +1,17 @@
 """Webhook dispatcher service — core tick logic.
 
 Fired every 60s by APScheduler via webhook_dispatch_tick actor.
-D-04..D-28: per-webhook iteration -> build_events_query match ->
+..: per-webhook iteration -> build_events_query match ->
 Redis wh-batch:{id} accumulation -> dispatch via payload builder -> retry.
 
-Pitfall 2: broad try/except around run_dispatch_tick body so Dramatiq
+: broad try/except around run_dispatch_tick body so Dramatiq
 max_retries=0 actually means "do not retry" — without the wrap, an
 uncaught exception still re-queues.
 
-Pitfall 5: tolerate Redis key eviction between tick and drain —
+: tolerate Redis key eviction between tick and drain —
 always check LLEN > 0 before drain; missing key is not an error.
 
-Pitfall 7: role=None for all build_events_query calls — dispatcher is
+: dashboard_roles=None for all build_events_query calls — dispatcher is
 an admin operation, not dashboard-scoped. All visibility classes delivered.
 """
 from __future__ import annotations
@@ -44,13 +44,13 @@ from app.services.webhook_payloads import build_payload_for_type
 log = structlog.get_logger(__name__)
 
 # ---- constants --------------------------------------------------------------
-RETRY_DELAYS: list[int] = [30, 60, 120]  # D-26 — 3 attempts, 2 inter-sleep gaps
+RETRY_DELAYS: list[int] = [30, 60, 120]  # — 3 attempts, 2 inter-sleep gaps
 CONNECT_TIMEOUT = 10.0
 READ_TIMEOUT = 20.0
 TOTAL_TIMEOUT = 30.0
-MAX_DIGEST_EVENTS = 50  # D-10
-AUTO_DISABLE_FAILURES = 5  # D-27
-NULL_CURSOR_LOOKBACK_HOURS = 24  # D-13
+MAX_DIGEST_EVENTS = 50  #
+AUTO_DISABLE_FAILURES = 5  #
+NULL_CURSOR_LOOKBACK_HOURS = 24  #
 
 
 def _redis_ttl_for(window_sec: int) -> int:
@@ -62,8 +62,8 @@ def _redis_ttl_for(window_sec: int) -> int:
 def run_dispatch_tick() -> None:
     """Called by webhook_dispatch_tick Dramatiq actor every 60s.
 
-    Pitfall 2: catch everything; max_retries=0 + broad except = no re-queue.
-    """
+: catch everything; max_retries=0 + broad except = no re-queue.
+"""
     try:
         _run_tick_inner()
     except Exception as e:  # noqa: BLE001
@@ -125,7 +125,7 @@ def _process_webhook(
         log.debug("webhook_no_presets", webhook_id=str(webhook.id))
         return
 
-    # Collect matching events across all bound presets, dedup by event.id (D-05)
+    # Collect matching events across all bound presets, dedup by event.id
     # all_matched: event_id str -> (event dict, first-matching FilterPreset)
     all_matched: dict[str, tuple[dict, FilterPreset]] = {}
     for preset in bindings:
@@ -165,7 +165,7 @@ def _process_webhook(
     existing = int(r.llen(batch_key) or 0)
 
     if existing == 0:
-        # D-09: first event of window → immediate dispatch
+        #: first event of window → immediate dispatch
         r.rpush(batch_key, *serialised)
         r.set(ts_key, now.isoformat())
         r.expire(batch_key, ttl)
@@ -194,9 +194,9 @@ def _fetch_matching_events(
 ) -> list[dict]:
     """Reuse build_events_query with observed_from cursor.
 
-    D-13: NULL cursor -> scan last 24h only.
-    Pitfall 7: role=None (admin operation, no dashboard-scope gating).
-    """
+: NULL cursor -> scan last 24h only.
+: dashboard_roles=None (admin operation, no dashboard-scope gating).
+"""
     if last_dispatch_at is None:
         cutoff = datetime.now(timezone.utc) - timedelta(hours=NULL_CURSOR_LOOKBACK_HOURS)
     else:
@@ -214,7 +214,7 @@ def _fetch_matching_events(
         has_geo=preset_query_params.get("has_geo", False),
         tag_mode=preset_query_params.get("tag_mode", "all"),
     )
-    stmt = build_events_query(params, role=None)  # Pitfall 7 — role=None always
+    stmt = build_events_query(params, dashboard_roles=None)  # — no role filter (admin operation)
     stmt = stmt.limit(MAX_DIGEST_EVENTS)
 
     rows = session.execute(stmt).scalars().all()
@@ -285,7 +285,7 @@ def _drain_and_dispatch(
 
     raw_items = r.lrange(batch_key, 0, MAX_DIGEST_EVENTS - 1) or []
     if not raw_items:
-        # Pitfall 5: eviction tolerance — missing key is not an error
+        #: eviction tolerance — missing key is not an error
         log.debug("webhook_batch_empty_or_evicted", webhook_id=str(webhook.id))
         return
 
@@ -308,7 +308,7 @@ def _drain_and_dispatch(
     _record_delivery_result(session, webhook, ok, err)
 
     if ok:
-        # D-06: advance cursor ONLY on success
+        #: advance cursor ONLY on success
         _advance_cursor(session, webhook, max_observed)
         r.delete(batch_key, ts_key)
         log.info(
@@ -318,7 +318,7 @@ def _drain_and_dispatch(
             event_count=len(events),
         )
     else:
-        # D-06: cursor NOT advanced on failure — next tick re-attempts same window
+        #: cursor NOT advanced on failure — next tick re-attempts same window
         log.warning(
             "webhook_delivery_failed",
             webhook_id=str(webhook.id),
@@ -338,9 +338,9 @@ def _post_with_retry(
 ) -> tuple[bool, str | None]:
     """3 attempts with sleeps of 30s then 60s between them (no sleep after last).
 
-    D-26: RETRY_DELAYS = [30, 60, 120]; 3 attempts means 2 inter-attempt sleeps.
-    Returns (success, error_detail).
-    """
+: RETRY_DELAYS = [30, 60, 120]; 3 attempts means 2 inter-attempt sleeps.
+ Returns (success, error_detail).
+"""
     last_err: str | None = None
     attempts = len(RETRY_DELAYS)  # 3
 
@@ -371,7 +371,7 @@ def _post_with_retry(
 
 # ---- auth header builder ----------------------------------------------------
 def _build_auth_headers(auth_enc: str | None) -> dict[str, str]:
-    """Decrypt auth_enc and return appropriate auth header dict (D-24)."""
+    """Decrypt auth_enc and return appropriate auth header dict."""
     if not auth_enc:
         return {}
     try:
@@ -415,7 +415,7 @@ def _max_observed_at(events: list[dict]) -> datetime:
 def _advance_cursor(
     session: SyncSession, webhook: Webhook, ts: datetime
 ) -> None:
-    """UPDATE webhooks SET last_dispatch_at=:ts WHERE id=:id (D-06)."""
+    """UPDATE webhooks SET last_dispatch_at=:ts WHERE id=:id."""
     session.execute(
         text(
             "UPDATE webhooks SET last_dispatch_at = :ts, updated_at = now() "
@@ -431,7 +431,7 @@ def _record_delivery_result(
     ok: bool,
     err: str | None,
 ) -> None:
-    """Update delivery status columns; auto-disable at 5 consecutive failures (D-27)."""
+    """Update delivery status columns; auto-disable at 5 consecutive failures."""
     if ok:
         session.execute(
             text(
@@ -454,7 +454,7 @@ def _record_delivery_result(
     else:
         status_token = "http_error"
 
-    should_disable = new_failure_count >= AUTO_DISABLE_FAILURES  # D-27
+    should_disable = new_failure_count >= AUTO_DISABLE_FAILURES  #
     session.execute(
         text(
             "UPDATE webhooks SET "

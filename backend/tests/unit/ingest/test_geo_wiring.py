@@ -1,4 +1,4 @@
-"""_persist_event geo wiring tests — plan 06-02 (MAP-05).
+"""_persist_event geo wiring tests —-02 (MAP-05).
 
 Tests verify that _persist_event resolves geo coordinates from raw_stix
 when the worker has not pre-populated them, and that pre-existing coords
@@ -53,7 +53,7 @@ def test_persist_event_populates_geo_from_stix_location():
     row = _make_row(raw_stix=raw_stix)
 
     session = MagicMock()
-    # Capture the values dict passed to pg_insert().values()
+    # Capture the values dict passed to pg_insert.values
     captured_values: dict = {}
 
     original_pg_insert = None

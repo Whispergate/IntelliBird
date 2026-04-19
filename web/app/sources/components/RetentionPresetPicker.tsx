@@ -23,9 +23,9 @@ import {
  * Retention Preset Picker — 5 radio options.
  *
  * Selecting "Custom" reveals:
- *  - Hot retention (days) number input
- *  - Archive policy Select
- */
+ * - Hot retention (days) number input
+ * - Archive policy Select
+*/
 export function RetentionPresetPicker() {
   const {
     register,

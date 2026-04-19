@@ -13,7 +13,7 @@ type Props = {
  * Custom multi-select for filter presets.
  * No ScrollArea shadcn component — uses plain div + overflow-y-auto.
  * Renders three states: loading, empty, or a scrollable checkbox list.
- */
+*/
 export function PresetMultiSelect({ value, options, onChange, loading }: Props) {
   if (loading) {
     return (

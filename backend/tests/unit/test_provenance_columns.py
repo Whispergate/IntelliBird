@@ -1,4 +1,4 @@
-"""tests/unit/test_provenance_columns.py — Wave 0 stub. Implemented by plan 02 in phase 01-foundation."""
+"""tests/unit/test_provenance_columns.py — stub. Implemented by in phase 01-foundation."""
 import pytest
 
 

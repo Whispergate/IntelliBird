@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // ---------------------------------------------------------------------------
-// Mocks — use vi.fn() directly inside the factory to avoid hoisting issues
+// Mocks — use vi.fn directly inside the factory to avoid hoisting issues
 // ---------------------------------------------------------------------------
 
 const replaceMock = vi.fn();

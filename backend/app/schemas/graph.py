@@ -1,4 +1,4 @@
-"""Cytoscape.js-compatible graph response schemas (D-29)."""
+"""Cytoscape.js-compatible graph response schemas."""
 from __future__ import annotations
 
 from pydantic import BaseModel

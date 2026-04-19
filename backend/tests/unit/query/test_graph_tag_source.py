@@ -1,4 +1,4 @@
-"""graph_traversal tag_source propagation — plan 06-03 target (MAP-03, MAP-04)."""
+"""graph_traversal tag_source propagation —-03 target (MAP-03, MAP-04)."""
 from __future__ import annotations
 
 import uuid
@@ -49,8 +49,8 @@ async def test_traverse_graph_includes_tag_source_on_techniques():
     fake_event.raw_stix = None
 
     # Mock session.execute to return:
-    #  - first call: seed event
-    #  - second call: technique rows with (technique_id, tag_source) tuples
+    # - first call: seed event
+    # - second call: technique rows with (technique_id, tag_source) tuples
     seed_result = MagicMock()
     seed_result.scalar_one_or_none = MagicMock(return_value=fake_event)
 
@@ -64,7 +64,7 @@ async def test_traverse_graph_includes_tag_source_on_techniques():
     session = AsyncMock()
     session.execute = AsyncMock(side_effect=[seed_result, tech_result])
 
-    out = await traverse_graph(session, eid, depth=1, role=None)
+    out = await traverse_graph(session, eid, depth=1, dashboard_roles=None)
 
     assert out is not None
     # 3 nodes: seed event + 2 techniques

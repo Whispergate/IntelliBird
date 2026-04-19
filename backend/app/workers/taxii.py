@@ -2,12 +2,12 @@
 
 - Version negotiation: try taxii2client.v21 first; on failure fall back to v20.
 - Pagination: call collection.get_objects(added_after=cursor, next=None) then
-  loop while envelope.get("more") is truthy, passing envelope["next"].
-- Cursor advance: ONLY after all pages committed (D-15/D-16). Cursor source
-  per TAXII-SPIKE.md recommendation — default = max(modified) across batch.
+ loop while envelope.get("more") is truthy, passing envelope["next"].
+- Cursor advance: ONLY after all pages committed. Cursor source
+ per TAXII-SPIKE.md recommendation — default = max(modified) across batch.
 - Auth: decrypt credentials_enc per poll, inject into Server constructor.
 - OTX dispatch: if source URL contains /taxii/discovery and server responds
-  with application/xml (TAXII 1.1), route to taxii1_otx.poll_otx_taxii1.
+ with application/xml (TAXII 1.1), route to taxii1_otx.poll_otx_taxii1.
 """
 from __future__ import annotations
 
@@ -83,9 +83,9 @@ def _decrypt_taxii_creds(credentials_enc: str | None) -> dict | None:
 def _build_server(url: str, creds: dict | None) -> Any:
     """Version negotiation — prefer v2.1, fall back to v2.0.
 
-    creds shape: {"type":"basic","username":"...","password":"..."} or
-                 {"type":"bearer","token":"..."} or None.
-    """
+ creds shape: {"type":"basic","username":"...","password":"..."} or
+ {"type":"bearer","token":"..."} or None.
+"""
     # Build auth kwargs
     kwargs: dict = {}
     if creds:
@@ -201,7 +201,7 @@ def poll_taxii_impl(source_id_str: str) -> None:
                 if mod_field and (latest_modified_str is None or str(mod_field) > latest_modified_str):
                     latest_modified_str = str(mod_field)
 
-        # Cursor advance — ONLY after all pages written (D-15/D-16).
+        # Cursor advance — ONLY after all pages written.
         if latest_modified_str:
             _advance_cursor(session, source_id, latest_modified_str)
 

@@ -1,13 +1,13 @@
-"""005 Partial geo index on events — Phase 6 MAP-05.
+"""005 Partial geo index on events — MAP-05.
 
 Revision ID: 005_geo_backfill_and_indexes
 Revises: 004_fts_and_presets
 Create Date: 2026-04-17
 
 Adds a partial B-tree index on events(geo_lat, geo_lon) restricted to rows
-where geo_lat IS NOT NULL AND geo_lon IS NOT NULL.  Only rows that carry
+where geo_lat IS NOT NULL AND geo_lon IS NOT NULL. Only rows that carry
 resolved geo coordinates enter the index — keeps it small while making the
-Phase 6 has_geo filter (WHERE geo_lat IS NOT NULL AND geo_lon IS NOT NULL)
+ has_geo filter (WHERE geo_lat IS NOT NULL AND geo_lon IS NOT NULL)
 an index-scan rather than a seq-scan over the full hypertable.
 
 Note: TimescaleDB hypertables do NOT support CREATE INDEX CONCURRENTLY.

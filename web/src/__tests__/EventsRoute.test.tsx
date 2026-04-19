@@ -27,13 +27,14 @@ vi.mock("@/app/api-client", async () => {
 });
 
 import * as apiClient from "@/app/api-client";
+import type { EventItem } from "@/app/api-client";
 import { EventsClient } from "@/app/events/EventsClient";
 import { RoleProvider } from "@/app/lib/role-context";
 
 const listEventsMock = apiClient.listEvents as ReturnType<typeof vi.fn>;
 const listPresetsMock = apiClient.listPresets as ReturnType<typeof vi.fn>;
 
-function buildEvent(id = "evt-1", overrides: Partial<ReturnType<typeof buildEvents>[number]> = {}) {
+function buildEvent(id = "evt-1", overrides: Partial<EventItem> = {}): EventItem {
   return {
     id,
     observed_at: new Date().toISOString(),
@@ -56,7 +57,7 @@ function buildEvent(id = "evt-1", overrides: Partial<ReturnType<typeof buildEven
   };
 }
 
-function buildEvents(n: number) {
+function buildEvents(n: number): EventItem[] {
   return Array.from({ length: n }, (_, i) => buildEvent(`evt-${i}`));
 }
 

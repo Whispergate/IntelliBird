@@ -1,9 +1,9 @@
 """structlog configuration — JSON lines for production.
 
-Call configure_logging() once at process startup. Downstream code uses:
-    import structlog
-    log = structlog.get_logger(__name__)
-    log.info("event_name", key=value, ...)
+Call configure_logging once at process startup. Downstream code uses:
+ import structlog
+ log = structlog.get_logger(__name__)
+ log.info("event_name", key=value,...)
 
 Stdlib `logging.getLogger(__name__)` records (from feed workers, SQLAlchemy,
 uvicorn, etc.) are bridged through the same JSON processor chain via
@@ -20,10 +20,10 @@ import structlog
 def configure_logging(level: str = "INFO") -> None:
     """Set up stdlib logging + structlog with unified JSON rendering.
 
-    Bridges stdlib `logging` records through structlog's processor chain so
-    worker modules using `logging.getLogger(__name__)` (rss/nvd/taxii) produce
-    the same JSON line shape as `structlog.get_logger(__name__)`. SYS-04.
-    """
+ Bridges stdlib `logging` records through structlog's processor chain so
+ worker modules using `logging.getLogger(__name__)` (rss/nvd/taxii) produce
+ the same JSON line shape as `structlog.get_logger(__name__)`. SYS-04.
+"""
     log_level = getattr(logging, level.upper(), logging.INFO)
 
     # Shared processor chain for BOTH structlog loggers AND stdlib bridge.

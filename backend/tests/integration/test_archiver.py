@@ -74,10 +74,10 @@ def _insert_source(
     with Session(engine) as s:
         s.execute(
             text("""
-                INSERT INTO sources (id, name, feed_type, url, poll_interval_sec, enabled,
-                                     hot_retention_days, archive_policy)
-                VALUES (:id, :name, :ft, :url, :iv, :en, :hrd, :ap)
-            """),
+ INSERT INTO sources (id, name, feed_type, url, poll_interval_sec, enabled,
+ hot_retention_days, archive_policy)
+ VALUES (:id,:name,:ft,:url,:iv,:en,:hrd,:ap)
+"""),
             {
                 "id": str(sid),
                 "name": f"archiver-fixture-{sid}",
@@ -107,9 +107,9 @@ def _insert_event(
     with Session(engine) as s:
         s.execute(
             text("""
-                INSERT INTO events (id, source_id, stix_type, observed_at, content_hash)
-                VALUES (:id, :sid, 'indicator', :observed_at, :ch)
-            """),
+ INSERT INTO events (id, source_id, stix_type, observed_at, content_hash)
+ VALUES (:id,:sid, 'indicator',:observed_at,:ch)
+"""),
             {
                 "id": str(eid),
                 "sid": str(source_id),
@@ -236,7 +236,7 @@ def test_archiver_keep_policy_is_noop(live_db, monkeypatch):
 
 
 def test_scheduler_registers_archiver_nightly_job(live_db, monkeypatch):
-    """build_scheduler() must register archiver_nightly with CronTrigger(hour=3, minute=0)."""
+    """build_scheduler must register archiver_nightly with CronTrigger(hour=3, minute=0)."""
     engine, env = live_db
     _apply_env(monkeypatch, env)
 
@@ -257,7 +257,7 @@ def test_scheduler_registers_archiver_nightly_job(live_db, monkeypatch):
 
 
 def test_scheduler_preserves_phase1_and_phase2_jobs(live_db, monkeypatch):
-    """build_scheduler() must still register Phase 1 jobs (non-regression)."""
+    """build_scheduler must still register jobs (non-regression)."""
     engine, env = live_db
     _apply_env(monkeypatch, env)
 

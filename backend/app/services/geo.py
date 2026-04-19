@@ -1,11 +1,11 @@
-"""Phase 6 geo resolution — D-01..D-07 (MAP-05).
+""" geo resolution —.. (MAP-05).
 
 resolve_geo(raw_stix) returns (lat, lon, country_code) using:
-  1. STIX location SDO latitude/longitude/country
-  2. MaxMind GeoLite2 City lookup on first IP observable
-  3. (None, None, None) if nothing resolves
+ 1. STIX location SDO latitude/longitude/country
+ 2. MaxMind GeoLite2 City lookup on first IP observable
+ 3. (None, None, None) if nothing resolves
 
-The MMDB file at GEOLITE_PATH is optional (D-03) — absent file logs a
+The MMDB file at GEOLITE_PATH is optional — absent file logs a
 single warning on first attempt and all subsequent calls short-circuit.
 """
 from __future__ import annotations
@@ -18,8 +18,8 @@ import structlog
 
 log = structlog.get_logger(__name__)
 
-# Module-level reader state.  _reader_attempted is set to True the first time
-# _get_reader() is called, preventing repeated filesystem checks.
+# Module-level reader state. _reader_attempted is set to True the first time
+# _get_reader is called, preventing repeated filesystem checks.
 _reader: Any = None
 _reader_attempted: bool = False
 
@@ -27,9 +27,9 @@ _reader_attempted: bool = False
 def _get_reader() -> Any:
     """Lazily load the MaxMind GeoLite2 City reader exactly once per process.
 
-    Returns the geoip2.database.Reader instance on success, or None if the
-    MMDB file is absent or the library is unavailable.
-    """
+ Returns the geoip2.database.Reader instance on success, or None if the
+ MMDB file is absent or the library is unavailable.
+"""
     global _reader, _reader_attempted
     if _reader_attempted:
         return _reader
@@ -52,12 +52,12 @@ def _get_reader() -> Any:
 def _lookup_ip(ip: str) -> Optional[tuple[float, float, str | None]]:
     """Return (lat, lon, country_code) for a plain IP string, or None.
 
-    Caches results to avoid repeated MMDB reads for the same IP.  The
-    caller is responsible for stripping any CIDR suffix before calling.
+ Caches results to avoid repeated MMDB reads for the same IP. The
+ caller is responsible for stripping any CIDR suffix before calling.
 
-    Raises nothing — AddressNotFoundError and all other geoip2 errors are
-    caught and converted to None.
-    """
+ Raises nothing — AddressNotFoundError and all other geoip2 errors are
+ caught and converted to None.
+"""
     reader = _get_reader()
     if reader is None:
         return None
@@ -77,10 +77,10 @@ def _extract_stix_location(
     raw_stix: dict | None,
 ) -> Optional[tuple[float, float, str | None]]:
     """Return (lat, lon, country_code) from the first STIX location SDO that
-    has both latitude and longitude, or None if no usable location is found.
+ has both latitude and longitude, or None if no usable location is found.
 
-    country may be absent in a location SDO — that is fine per STIX 2.1.
-    """
+ country may be absent in a location SDO — that is fine per STIX 2.1.
+"""
     if not isinstance(raw_stix, dict):
         return None
     objects = raw_stix.get("objects")
@@ -101,11 +101,11 @@ def _extract_stix_location(
 
 def _extract_ips_from_stix(raw_stix: dict | None) -> list[str]:
     """Return a list of IP value strings from STIX ipv4-addr and ipv6-addr
-    observables in bundle order.
+ observables in bundle order.
 
-    Values may include CIDR suffixes (e.g. ``192.0.2.1/24``) per STIX
-    flexibility — callers are expected to strip them before lookup.
-    """
+ Values may include CIDR suffixes (e.g. ``192.0.2.1/24``) per STIX
+ flexibility — callers are expected to strip them before lookup.
+"""
     if not isinstance(raw_stix, dict):
         return []
     objects = raw_stix.get("objects")
@@ -125,19 +125,19 @@ def _extract_ips_from_stix(raw_stix: dict | None) -> list[str]:
 def resolve_geo(
     raw_stix: dict | None,
 ) -> tuple[float | None, float | None, str | None]:
-    """Resolve geographic coordinates for an event using D-02 precedence.
+    """Resolve geographic coordinates for an event using precedence.
 
-    Resolution order:
-    1. STIX location SDO (latitude + longitude + optional country)
-    2. MaxMind GeoLite2 City lookup on first IP observable in bundle
-    3. (None, None, None) — coordinates unknown
+ Resolution order:
+ 1. STIX location SDO (latitude + longitude + optional country)
+ 2. MaxMind GeoLite2 City lookup on first IP observable in bundle
+ 3. (None, None, None) — coordinates unknown
 
-    CIDR suffixes on IP values are stripped automatically before the
-    MaxMind lookup so geoip2 does not raise AddressNotFoundError.
+ CIDR suffixes on IP values are stripped automatically before the
+ MaxMind lookup so geoip2 does not raise AddressNotFoundError.
 
-    Never raises — all failure modes (absent MMDB, unknown IP, bad STIX
-    shape, None input) are handled and produce (None, None, None).
-    """
+ Never raises — all failure modes (absent MMDB, unknown IP, bad STIX
+ shape, None input) are handled and produce (None, None, None).
+"""
     stix_hit = _extract_stix_location(raw_stix)
     if stix_hit is not None:
         return stix_hit

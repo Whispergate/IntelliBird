@@ -110,16 +110,16 @@ function defaultValuesFor(
 /**
  * Add/Edit Source Dialog.
  *
- * - Add mode:  heading "Add Source", submit "Save Source"
- * - Edit mode: heading "Edit Source", submit "Save Changes", Type locked (D-11),
- *              credential inputs show "(unchanged — type to replace)" placeholder (D-12)
+ * - Add mode: heading "Add Source", submit "Save Source"
+ * - Edit mode: heading "Edit Source", submit "Save Changes", Type locked,
+ * credential inputs show "(unchanged — type to replace)" placeholder
  *
- * Test Connection button is NON-BLOCKING (D-08): Save button is never disabled by
+ * Test Connection button is NON-BLOCKING: Save button is never disabled by
  * test result. Probe failure shows amber alert with exact copy:
- *   "Test failed: {error_detail}. You can still save this configuration."
+ * "Test failed: {error_detail}. You can still save this configuration."
  * Probe success shows green alert:
- *   "Connection OK · {latency_ms}ms · {item_count_sampled} items sampled"
- */
+ * "Connection OK · {latency_ms}ms · {item_count_sampled} items sampled"
+*/
 export function SourceDialog({
   open,
   mode,
@@ -166,7 +166,7 @@ export function SourceDialog({
     let cancelled = false;
     fetchSourceTemplates()
       .then((t) => { if (!cancelled) setTemplates(t); })
-      .catch(() => { /* silent — operator can fill form manually */ });
+      .catch(() => { /* silent — operator can fill form manually*/ });
     return () => { cancelled = true; };
   }, [mode]);
 
@@ -255,7 +255,7 @@ export function SourceDialog({
               <DialogTitle>{title}</DialogTitle>
             </DialogHeader>
 
-            {/* Quick-add template picker — only visible in Add mode, hidden if no templates */}
+            {/* Quick-add template picker — only visible in Add mode, hidden if no templates*/}
             {mode === "add" && templates.length > 0 && (
               <div className="flex flex-col gap-1">
                 <Label htmlFor="template">Quick-add preset</Label>
@@ -289,7 +289,7 @@ export function SourceDialog({
               </div>
             )}
 
-            {/* Field 1: Name */}
+            {/* Field 1: Name*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="name">Name</Label>
               <Input id="name" {...register("name")} />
@@ -300,7 +300,7 @@ export function SourceDialog({
               )}
             </div>
 
-            {/* Field 2: Type (locked on edit — D-11) */}
+            {/* Field 2: Type (locked on edit —)*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="feed_type">Type</Label>
               <Select
@@ -333,7 +333,7 @@ export function SourceDialog({
               )}
             </div>
 
-            {/* Field 3: URL */}
+            {/* Field 3: URL*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="url">URL</Label>
               <Input id="url" type="url" {...register("url")} />
@@ -344,10 +344,10 @@ export function SourceDialog({
               )}
             </div>
 
-            {/* Field 4: Credentials (type-aware, D-13) */}
+            {/* Field 4: Credentials (type-aware,)*/}
             <CredentialsField feed_type={feedType} mode={mode} />
 
-            {/* Field 5: Poll interval */}
+            {/* Field 5: Poll interval*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="poll_interval_number">Poll interval</Label>
               <div className="flex gap-2">
@@ -382,10 +382,10 @@ export function SourceDialog({
               )}
             </div>
 
-            {/* Fields 6–7: Retention preset (includes hot_retention_days + archive_policy for Custom) */}
+            {/* Fields 6–7: Retention preset (includes hot_retention_days + archive_policy for Custom)*/}
             <RetentionPresetPicker />
 
-            {/* Test Connection inline result — NON-BLOCKING (D-08) */}
+            {/* Test Connection inline result — NON-BLOCKING*/}
             {testResult?.kind === "ok" && (
               <Alert className="border-green-700 bg-green-900/20 text-green-300">
                 <AlertDescription>
@@ -408,7 +408,7 @@ export function SourceDialog({
                 Cancel
               </Button>
               {/* Test Connection: type="button" so it never submits the form.
-                  Brand: Primary teal outline — secondary action */}
+ Brand: Primary teal outline — secondary action*/}
               <Button
                 type="button"
                 variant="outline"
@@ -421,8 +421,8 @@ export function SourceDialog({
               >
                 {testing ? "Testing connection..." : "Test Connection"}
               </Button>
-              {/* Save button — NEVER disabled by test result (D-08).
-                  Brand: Signal amber — primary CTA */}
+              {/* Save button — NEVER disabled by test result.
+ Brand: Signal amber — primary CTA*/}
               <Button
                 type="submit"
                 style={{

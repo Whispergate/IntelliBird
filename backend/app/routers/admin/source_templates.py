@@ -3,8 +3,11 @@ credentials only. Static list for M1; could move to DB later.
 """
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
+from app.middleware.auth import require_admin
+from app.security.jwt import AuthUser
 
 router = APIRouter(prefix="/admin/source-templates", tags=["admin"])
 
@@ -160,6 +163,8 @@ TEMPLATES: list[SourceTemplate] = [
 
 
 @router.get("", response_model=list[SourceTemplate])
-async def list_source_templates() -> list[SourceTemplate]:
+async def list_source_templates(
+    _admin: AuthUser = Depends(require_admin),
+) -> list[SourceTemplate]:
     """List pre-configured source templates operators can quick-add."""
     return TEMPLATES

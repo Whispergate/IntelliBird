@@ -16,7 +16,7 @@ from app.models.base import Base
 
 
 class FilterPreset(Base):
-    """Saved filter preset — stores query_params dict for /api/events replay (D-24..D-28)."""
+    """Saved filter preset — stores query_params dict for /api/events replay."""
 
     __tablename__ = "filter_presets"
 

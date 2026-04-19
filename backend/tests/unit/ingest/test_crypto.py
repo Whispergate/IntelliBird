@@ -1,4 +1,4 @@
-"""AES-256-GCM credentials encrypt/decrypt — D-17 / SRC-04.
+"""AES-256-GCM credentials encrypt/decrypt — / SRC-04.
 
 The sources.credentials_enc column stores the base64url-encoded
 (nonce || ciphertext || tag) output of AESGCM. Key is derived from

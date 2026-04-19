@@ -1,4 +1,4 @@
-"""Pydantic schemas for tag PATCH — FIL-03 (D-19..D-23)."""
+"""Pydantic schemas for tag PATCH — FIL-03."""
 from __future__ import annotations
 
 import re

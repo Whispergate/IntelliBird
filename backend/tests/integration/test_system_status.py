@@ -1,4 +1,4 @@
-"""GET /api/system/status — FND-04 shape and loopback signal."""
+"""GET /api/system/status — FN shape and loopback signal."""
 from __future__ import annotations
 
 import os

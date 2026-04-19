@@ -3,8 +3,8 @@
 INGC-01: CVE fetched and persisted with normalised fields.
 INGC-02: CVSS v3 score/vector, CPE match list, CWE ids in indexed cve_details columns.
 INGC-03: attack.mitre.org/techniques/T#### URLs (or tag-based T#### alongside
-         Exploit/VDB Entry tag) → attack_technique_tags with tag_source='feed_asserted'.
-D-09 analog: CVEs missing `id` or `lastModified` are dropped.
+ Exploit/VDB Entry tag) → attack_technique_tags with tag_source='feed_asserted'.
+ analog: CVEs missing `id` or `lastModified` are dropped.
 """
 from __future__ import annotations
 
@@ -101,10 +101,10 @@ def _cwe_ids(cve: Any) -> list[str] | None:
 
 
 def extract_attack_techniques(cve: Any) -> list[tuple[str, str]]:
-    """D-25..D-28: URL regex + tag-with-Exploit/VDB fallback. Returns
-    deduplicated list of (technique_id, evidence_url) pairs, order-preserved
-    relative to the references list.
-    """
+    """..: URL regex + tag-with-Exploit/VDB fallback. Returns
+ deduplicated list of (technique_id, evidence_url) pairs, order-preserved
+ relative to the references list.
+"""
     seen: set[str] = set()
     out: list[tuple[str, str]] = []
     for ref in _attr(cve, "references", []) or []:
@@ -131,8 +131,8 @@ def extract_attack_techniques(cve: Any) -> list[tuple[str, str]]:
 def normalise_cve(cve: Any, source_id: uuid.UUID) -> tuple[dict, dict, list[tuple[str, str]]] | None:
     """Normalise one nvdlib CVE object into (event_row, cve_details_row, attack_links).
 
-    Returns None when the CVE is unhashable (missing id or lastModified).
-    """
+ Returns None when the CVE is unhashable (missing id or lastModified).
+"""
     cve_id = _attr(cve, "id")
     last_modified_str = _attr(cve, "lastModified")
     if not cve_id or not last_modified_str:

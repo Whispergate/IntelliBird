@@ -1,14 +1,14 @@
-"""AES-256-GCM encryption for sources.credentials_enc (D-17, SRC-04).
+"""AES-256-GCM encryption for sources.credentials_enc.
 
 Key is derived from Settings.SECRET_KEY via HKDF-SHA256 with a fixed
 info string. Output blob = base64url(nonce(12) || ciphertext || tag(16)).
 
 Public API:
-    encrypt_credentials(secret, creds_dict) -> base64url-str
-    decrypt_credentials(secret, blob_str)    -> creds_dict
+ encrypt_credentials(secret, creds_dict) -> base64url-str
+ decrypt_credentials(secret, blob_str) -> creds_dict
 
-Phase 3 source CRUD reads `Settings.SECRET_KEY` and passes to these
-functions at each write/read. Phase 2 worker plans call decrypt only.
+ source CRUD reads `Settings.SECRET_KEY` and passes to these
+functions at each write/read. worker plans call decrypt only.
 """
 from __future__ import annotations
 
@@ -38,8 +38,8 @@ def _derive_key(secret: str) -> bytes:
 def encrypt_credentials(secret: str, creds: dict) -> str:
     """Encrypt a JSON-serialisable dict → base64url str.
 
-    Output layout: base64url(nonce || AESGCM.encrypt(plaintext) + tag)
-    """
+ Output layout: base64url(nonce || AESGCM.encrypt(plaintext) + tag)
+"""
     key = _derive_key(secret)
     aesgcm = AESGCM(key)
     nonce = os.urandom(_NONCE_LEN)

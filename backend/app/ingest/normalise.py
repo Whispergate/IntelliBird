@@ -1,9 +1,9 @@
-"""Shared event writer + per-source health update for Phase 2 workers.
+"""Shared event writer + per-source health update for workers.
 
 These two helpers are the ONLY code path that touches the events table
 insert + UNIQUE(source_id, content_hash, observed_at) ON CONFLICT DO NOTHING
-contract (D-04, D-06, D-07) and the sources health-field update contract
-(D-33). Worker plans 03/04/05 call these — they do not re-implement.
+contract and the sources health-field update contract
+. Worker plans 03/04/05 call these — they do not re-implement.
 
 IMPORTANT: The unique index on the events hypertable spans THREE columns:
 (source_id, content_hash, observed_at). TimescaleDB requires the partition
@@ -34,17 +34,17 @@ VALID_STATUSES: frozenset[str] = frozenset({
 def _persist_event(session: Session, row: dict) -> int:
     """Insert one event row with ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING.
 
-    Returns: 1 if inserted, 0 if conflict skipped. Caller is responsible
-    for `session.commit()` at the end of the batch.
+ Returns: 1 if inserted, 0 if conflict skipped. Caller is responsible
+ for `session.commit` at the end of the batch.
 
-    The three-column conflict target matches the unique index
-    uq_events_source_content_hash created by migration 002 — TimescaleDB
-    requires the partition column (observed_at) in any unique index on a
-    hypertable. The row dict MUST include observed_at (set to the feed
-    item's published/modified timestamp so re-fetches produce identical
-    triples and are silently dropped).
-    """
-    # Phase 6 MAP-05 — resolve geo at ingest if worker has not pre-populated
+ The three-column conflict target matches the unique index
+ uq_events_source_content_hash created by migration 002 — TimescaleDB
+ requires the partition column (observed_at) in any unique index on a
+ hypertable. The row dict MUST include observed_at (set to the feed
+ item's published/modified timestamp so re-fetches produce identical
+ triples and are silently dropped).
+"""
+    # MAP-05 — resolve geo at ingest if worker has not pre-populated
     if row.get("geo_lat") is None or row.get("geo_lon") is None:
         from app.services.geo import resolve_geo  # lazy import — keeps worker boot cheap
         lat, lon, cc = resolve_geo(row.get("raw_stix"))
@@ -54,7 +54,7 @@ def _persist_event(session: Session, row: dict) -> int:
             if cc is not None and row.get("country_code") is None:
                 row["country_code"] = cc
 
-    # Phase 6+ article enrichment — regex-extract CVE IDs, ATT&CK technique
+    #+ article enrichment — regex-extract CVE IDs, ATT&CK technique
     # IDs, IOCs, severity, country hints from title + description prose.
     # Deterministic (no NLP inference). Extracted ATT&CK IDs get feed_asserted
     # provenance because the text literally contains them.
@@ -105,14 +105,14 @@ def update_source_health(
     status: str,
     succeeded: bool,
 ) -> None:
-    """Update sources.last_polled_at, last_status, consecutive_failures — D-33.
+    """Update sources.last_polled_at, last_status, consecutive_failures —.
 
-    - `last_polled_at` → now() (DB-side clock, not Python's)
-    - `last_status` → one of VALID_STATUSES
-    - `consecutive_failures` → 0 on success, else self-increment (+1)
+ - `last_polled_at` → now (DB-side clock, not Python's)
+ - `last_status` → one of VALID_STATUSES
+ - `consecutive_failures` → 0 on success, else self-increment (+1)
 
-    Caller commits the transaction — this helper only issues the UPDATE.
-    """
+ Caller commits the transaction — this helper only issues the UPDATE.
+"""
     if status not in VALID_STATUSES:
         raise ValueError(
             f"invalid status {status!r}; must be one of {sorted(VALID_STATUSES)}"

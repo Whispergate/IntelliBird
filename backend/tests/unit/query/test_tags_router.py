@@ -1,14 +1,14 @@
 """Unit tests for PATCH /events/{id}/tags — FIL-03.
 
 NOTE on SQLite ARRAY limitation:
-    PostgreSQL ARRAY(Text) semantics (reading list, writing list) are not supported by
-    SQLite in-memory. These unit tests therefore focus on:
-    - 404 dispatch (unknown event UUID)
-    - 422 pydantic validation (invalid/missing tag format)
-    - 422 for invalid tags in remove field
+ PostgreSQL ARRAY(Text) semantics (reading list, writing list) are not supported by
+ SQLite in-memory. These unit tests therefore focus on:
+ - 404 dispatch (unknown event UUID)
+ - 422 pydantic validation (invalid/missing tag format)
+ - 422 for invalid tags in remove field
 
-    Full add/remove/idempotent/sorted/NULL-transition behaviors are covered by the
-    integration tests in tests/integration/test_tags_patch.py which run against live PG.
+ Full add/remove/idempotent/sorted/NULL-transition behaviors are covered by the
+ integration tests in tests/integration/test_tags_patch.py which run against live PG.
 """
 from __future__ import annotations
 

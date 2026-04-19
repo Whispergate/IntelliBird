@@ -1,9 +1,9 @@
 """Integration: poll_rss end-to-end against captured Krebs fixture + live PG.
 
-INGR-01 (schedule + persist) via direct invocation (APScheduler wiring in plan 06).
+INGR-01 (schedule + persist) via direct invocation (APScheduler wiring in).
 INGR-02 (normalisation) — SYS-01 provenance asserted.
 INGR-03 (dedup) — re-poll yields zero new rows.
-D-33 — sources.last_polled_at / last_status / consecutive_failures updated.
+ — sources.last_polled_at / last_status / consecutive_failures updated.
 """
 from __future__ import annotations
 
@@ -60,9 +60,9 @@ def rss_source_id(live_db):
     fixture_url = str(FIXTURE)
     with Session(engine) as s:
         s.execute(text("""
-            INSERT INTO sources (id, name, feed_type, url, poll_interval_sec)
-            VALUES (:id, 'krebs-fixture', 'rss', :url, 3600)
-        """), {"id": str(sid), "url": fixture_url})
+ INSERT INTO sources (id, name, feed_type, url, poll_interval_sec)
+ VALUES (:id, 'krebs-fixture', 'rss',:url, 3600)
+"""), {"id": str(sid), "url": fixture_url})
         s.commit()
     return sid
 
@@ -87,7 +87,7 @@ def test_rss_poll_end_to_end(live_db, rss_source_id, monkeypatch: pytest.MonkeyP
 
         row = s.execute(
             text("""SELECT title, raw_reference, source_id, stix_type, content_hash
-                     FROM events WHERE source_id = :sid ORDER BY observed_at"""),
+ FROM events WHERE source_id =:sid ORDER BY observed_at"""),
             {"sid": str(rss_source_id)},
         ).all()
         titles = [r.title for r in row]
@@ -128,7 +128,7 @@ def test_rss_poll_source_health_on_success(live_db, rss_source_id, monkeypatch: 
     with Session(engine) as s:
         row = s.execute(
             text("""SELECT last_polled_at, last_status, consecutive_failures
-                     FROM sources WHERE id = :id"""),
+ FROM sources WHERE id =:id"""),
             {"id": str(rss_source_id)},
         ).one()
         assert row.last_polled_at is not None

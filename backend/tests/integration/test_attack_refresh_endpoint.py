@@ -9,7 +9,7 @@ pytestmark = pytest.mark.integration
 
 
 def test_refresh_endpoint_returns_202(monkeypatch):
-    # Stub the actor's .send() so the test does not require Redis
+    # Stub the actor's.send so the test does not require Redis
     sent = {}
 
     class FakeMessage:

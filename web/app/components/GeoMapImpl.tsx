@@ -253,7 +253,7 @@ export function GeoMapImpl({
         // Swallow runtime tile fetch errors so browser console stays clean.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         map.on("error", (_ev: any) => {
-          /* intentional no-op */
+          /* intentional no-op*/
         });
 
         // Register GeoJSON source, layers and click handlers on map load.
@@ -363,7 +363,7 @@ export function GeoMapImpl({
               const coords = feature.geometry.coordinates as [number, number];
               map.easeTo({ center: coords, zoom });
             } catch {
-              /* noop */
+              /* noop*/
             }
           });
         });
@@ -435,7 +435,7 @@ export function GeoMapImpl({
     >
       <div ref={containerRef} style={{ height: "100%", width: "100%" }} />
 
-      {/* Phase 5 overlayText prop — kept for backward compatibility with tests */}
+      {/* overlayText prop — kept for backward compatibility with tests*/}
       {overlayText ? (
         <div
           data-testid="geomap-overlay"
@@ -454,7 +454,7 @@ export function GeoMapImpl({
         </div>
       ) : null}
 
-      {/* Phase 6 empty-state overlay — fires when 0 geo-resolved events after fetch */}
+      {/* empty-state overlay — fires when 0 geo-resolved events after fetch*/}
       {eventsLoaded && events.length === 0 ? (
         <div
           data-testid="geomap-empty"

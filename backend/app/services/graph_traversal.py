@@ -1,7 +1,7 @@
-"""Depth-limited graph traversal for Phase 4 /events/{id}/graph endpoint.
+"""Depth-limited graph traversal for /events/{id}/graph endpoint.
 
 M1 implementation: Python BFS over relational tables + raw_stix SROs.
-AGE Cypher path deferred to M2 (see Phase 1 D-05).
+AGE Cypher path deferred to M2 (see).
 """
 from __future__ import annotations
 
@@ -65,33 +65,40 @@ class GraphResult:
         return len(self.nodes) >= NODE_CAP
 
 
-def _visibility_ok(ev_vis: str, role: str | None) -> bool:
-    if role == "red":
-        return ev_vis in ("red_only", "shared")
-    if role == "blue":
-        return ev_vis in ("blue_only", "shared")
-    return True
+def _visibility_ok(ev_vis: str, dashboard_roles: list[str] | None) -> bool:
+    """Visibility gating by dashboard_roles claim (AUTH-02 / C-2 closure).
+
+    Empty / None list = unauthenticated (AUTH_ENABLED=false) or admin view -> pass through.
+    """
+    if not dashboard_roles:
+        return True
+    allowed: set[str] = {"shared"}
+    if "red" in dashboard_roles:
+        allowed.add("red_only")
+    if "blue" in dashboard_roles:
+        allowed.add("blue_only")
+    return ev_vis in allowed
 
 
 async def traverse_graph(
     session: AsyncSession,
     event_id: uuid.UUID,
     depth: int,
-    role: str | None = None,
+    dashboard_roles: list[str] | None = None,
 ) -> GraphResult | None:
     """BFS graph traversal from a seed event. Returns None if seed not found
-    or visibility-excluded for the given role.
+ or visibility-excluded for the given dashboard_roles.
 
-    Raises ValueError for invalid depth (router should catch and return 400).
-    """
+ Raises ValueError for invalid depth (router should catch and return 400).
+"""
     if depth < MIN_DEPTH or depth > MAX_DEPTH:
         raise ValueError(f"depth must be {MIN_DEPTH}..{MAX_DEPTH}, got {depth}")
 
-    # Load seed event (composite PK — use where())
+    # Load seed event (composite PK — use where)
     seed = (await session.execute(
         select(Event).where(Event.id == event_id)
     )).scalar_one_or_none()
-    if seed is None or not _visibility_ok(seed.visibility, role):
+    if seed is None or not _visibility_ok(seed.visibility, dashboard_roles):
         return None
 
     result = GraphResult()
@@ -209,7 +216,7 @@ async def traverse_graph(
             events_by_id = {str(e.id): e for e in other_events}
             for ev_id, tid in cross_rows:
                 ev = events_by_id.get(str(ev_id))
-                if ev is None or not _visibility_ok(ev.visibility, role):
+                if ev is None or not _visibility_ok(ev.visibility, dashboard_roles):
                     continue
                 other_node_id = f"event:{ev.id}"
                 result.add_node(other_node_id, ev.title or str(ev.id), "event")

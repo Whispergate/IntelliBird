@@ -15,20 +15,20 @@ export function DashboardShell({ role, children }: Props) {
   return (
     <RoleProvider value={role}>
       <div data-testid="dashboard-shell" data-role={role}>
-        {/* TopNav breaks out of layout.tsx padding to reach full viewport width */}
+        {/* TopNav breaks out of layout.tsx padding to reach full viewport width*/}
         <div style={{ margin: "-1.5rem -1.5rem 0" }}>
           <TopNav />
         </div>
 
-        {/* Below 1024px: only DesktopRequiredBanner renders */}
+        {/* Below 1024px: only DesktopRequiredBanner renders*/}
         <DesktopRequiredBanner />
 
-        {/* Above 1024px: full dashboard */}
+        {/* Above 1024px: full dashboard*/}
         <div
           data-testid="dashboard-content"
           className="max-[1023px]:hidden block"
         >
-          {/* GeoMap bleeds to the viewport edge via negative margin. */}
+          {/* GeoMap bleeds to the viewport edge via negative margin.*/}
           <div
             data-testid="geomap-bleed"
             style={{ margin: "0 -1.5rem", height: "50vh" }}
@@ -48,7 +48,7 @@ export function DashboardShell({ role, children }: Props) {
             </Suspense>
           </div>
 
-          {/* Bottom half slot — widgets + events list inject here from 05-04+05-05 */}
+          {/* Bottom half slot — widgets + events list inject here from 05-04+05-05*/}
           <Suspense fallback={null}>
             <div
               data-testid="dashboard-bottom-half"

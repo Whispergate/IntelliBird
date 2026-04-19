@@ -1,10 +1,10 @@
 """Fire-and-forget Redis pub/sub publisher — signals scheduler to reload source jobs.
 
 Consumers: Plan 02 CRUD router (POST/PATCH/DELETE handlers).
-Listener:  Plan 06 scheduler listener (app.scheduler.jobs, daemon thread).
+Listener: Plan 06 scheduler listener (app.scheduler.jobs, daemon thread).
 
-Pitfall 8: DELETE payloads must include {feed_type, source_id} so the listener
-can call scheduler.remove_job() on the orphaned APScheduler job.
+: DELETE payloads must include {feed_type, source_id} so the listener
+can call scheduler.remove_job on the orphaned APScheduler job.
 """
 from __future__ import annotations
 

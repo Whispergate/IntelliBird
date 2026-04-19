@@ -1,4 +1,4 @@
-"""Pydantic schemas for filter presets — FIL-04 (D-24..D-28)."""
+"""Pydantic schemas for filter presets — FIL-04."""
 from __future__ import annotations
 
 import re

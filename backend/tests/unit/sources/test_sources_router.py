@@ -1,4 +1,4 @@
-"""Unit tests for admin/sources CRUD router — Plan 03-02.
+"""Unit tests for admin/sources CRUD router —.
 
 Uses httpx.AsyncClient + ASGITransport with an in-memory aiosqlite DB
 backed by SQLAlchemy async engine. All 17 tests run without Postgres or Redis.
@@ -22,49 +22,49 @@ from app.models.sources import Source
 from app.routers.admin.sources import router
 
 # SQLite-compatible DDL for the tables we need.
-# IDs are set from Python side (uuid.uuid4()) — no server-side gen_random_uuid() needed.
+# IDs are set from Python side (uuid.uuid4) — no server-side gen_random_uuid needed.
 _SOURCES_DDL = """
 CREATE TABLE IF NOT EXISTS sources (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    feed_type TEXT NOT NULL,
-    url TEXT NOT NULL,
-    credentials_enc TEXT,
-    poll_interval_sec INTEGER NOT NULL DEFAULT 3600,
-    hot_retention_days INTEGER NOT NULL DEFAULT 30,
-    enabled INTEGER NOT NULL DEFAULT 1,
-    last_polled_at TEXT,
-    last_cursor TEXT,
-    last_status TEXT,
-    consecutive_failures INTEGER NOT NULL DEFAULT 0,
-    archive_policy TEXT NOT NULL DEFAULT 'drop',
-    silent_failure_count INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now'))
+ id TEXT PRIMARY KEY,
+ name TEXT NOT NULL,
+ feed_type TEXT NOT NULL,
+ url TEXT NOT NULL,
+ credentials_enc TEXT,
+ poll_interval_sec INTEGER NOT NULL DEFAULT 3600,
+ hot_retention_days INTEGER NOT NULL DEFAULT 30,
+ enabled INTEGER NOT NULL DEFAULT 1,
+ last_polled_at TEXT,
+ last_cursor TEXT,
+ last_status TEXT,
+ consecutive_failures INTEGER NOT NULL DEFAULT 0,
+ archive_policy TEXT NOT NULL DEFAULT 'drop',
+ silent_failure_count INTEGER NOT NULL DEFAULT 0,
+ created_at TEXT DEFAULT (datetime('now'))
 )
 """
 
 _EVENTS_DDL = """
 CREATE TABLE IF NOT EXISTS events (
-    id TEXT PRIMARY KEY,
-    stix_id TEXT,
-    stix_type TEXT NOT NULL,
-    source_id TEXT,
-    fetched_at TEXT DEFAULT (datetime('now')) NOT NULL,
-    raw_reference TEXT,
-    observed_at TEXT NOT NULL,
-    title TEXT,
-    description TEXT,
-    confidence INTEGER,
-    tlp_marking_id TEXT,
-    content_hash TEXT NOT NULL,
-    geo_lat REAL,
-    geo_lon REAL,
-    country_code TEXT,
-    visibility TEXT NOT NULL DEFAULT 'shared',
-    raw_stix TEXT,
-    tags TEXT,
-    archived INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now'))
+ id TEXT PRIMARY KEY,
+ stix_id TEXT,
+ stix_type TEXT NOT NULL,
+ source_id TEXT,
+ fetched_at TEXT DEFAULT (datetime('now')) NOT NULL,
+ raw_reference TEXT,
+ observed_at TEXT NOT NULL,
+ title TEXT,
+ description TEXT,
+ confidence INTEGER,
+ tlp_marking_id TEXT,
+ content_hash TEXT NOT NULL,
+ geo_lat REAL,
+ geo_lon REAL,
+ country_code TEXT,
+ visibility TEXT NOT NULL DEFAULT 'shared',
+ raw_stix TEXT,
+ tags TEXT,
+ archived INTEGER NOT NULL DEFAULT 0,
+ created_at TEXT DEFAULT (datetime('now'))
 )
 """
 

@@ -7,9 +7,9 @@ Create Date: 2026-04-17
 Adds events.search_tsv STORED GENERATED column + GIN index (FIL-05).
 Adds filter_presets table (FIL-04).
 
-TimescaleDB note: ALTER TABLE ... ADD COLUMN ... GENERATED ALWAYS AS ... STORED
+TimescaleDB note: ALTER TABLE... ADD COLUMN... GENERATED ALWAYS AS... STORED
 triggers a backfill over all existing chunks. Non-concurrent; accept block on
-bootstrapped datasets. Pitfall 3 (CREATE INDEX CONCURRENTLY in a txn) NOT used
+bootstrapped datasets. (CREATE INDEX CONCURRENTLY in a txn) NOT used
 here — standard CREATE INDEX propagates to chunks via TimescaleDB 2.x.
 
 Name check constraint: ^[a-z0-9_-]{1,64}$ applied on filter_presets.name.
@@ -32,16 +32,16 @@ def upgrade() -> None:
     # Standard (non-CONCURRENTLY) CREATE INDEX propagates to all TimescaleDB chunks.
     op.execute(
         """
-        ALTER TABLE events
-        ADD COLUMN IF NOT EXISTS search_tsv tsvector
-        GENERATED ALWAYS AS (
-            to_tsvector('english',
-                COALESCE(title, '') || ' ' ||
-                COALESCE(description, '') || ' ' ||
-                COALESCE(raw_stix->>'description', '') || ' ' ||
-                COALESCE(raw_stix->>'name', ''))
-        ) STORED
-        """
+ ALTER TABLE events
+ ADD COLUMN IF NOT EXISTS search_tsv tsvector
+ GENERATED ALWAYS AS (
+ to_tsvector('english',
+ COALESCE(title, '') || ' ' ||
+ COALESCE(description, '') || ' ' ||
+ COALESCE(raw_stix->>'description', '') || ' ' ||
+ COALESCE(raw_stix->>'name', ''))
+ ) STORED
+"""
     )
     op.execute(
         "CREATE INDEX IF NOT EXISTS ix_events_search_tsv "
@@ -52,16 +52,16 @@ def upgrade() -> None:
     # name CHECK constraint enforces ^[a-z0-9_-]{1,64}$ at DB level.
     op.execute(
         """
-        CREATE TABLE IF NOT EXISTS filter_presets (
-            id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-            name text NOT NULL UNIQUE,
-            query_params jsonb NOT NULL,
-            created_at timestamptz NOT NULL DEFAULT now(),
-            updated_at timestamptz NOT NULL DEFAULT now(),
-            CONSTRAINT filter_presets_name_check
-                CHECK (name ~ '^[a-z0-9_-]{1,64}$')
-        )
-        """
+ CREATE TABLE IF NOT EXISTS filter_presets (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid,
+ name text NOT NULL UNIQUE,
+ query_params jsonb NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT now,
+ updated_at timestamptz NOT NULL DEFAULT now,
+ CONSTRAINT filter_presets_name_check
+ CHECK (name ~ '^[a-z0-9_-]{1,64}$')
+ )
+"""
     )
 
 

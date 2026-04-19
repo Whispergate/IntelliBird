@@ -4,10 +4,10 @@ These helpers run in the HTTP request handler path — they must be SHORT,
 never touch the DB, never dispatch Dramatiq actors. Return a 4-tuple
 (ok, latency_ms, item_count_sampled, error_detail).
 
-Reuses Phase 2 parsers:
-  - RSS:   app.ingest.rss_parser.parse_rss_feed (HTTP GET + feedparser)
-  - NVD:   nvdlib.searchCVE_V2 with limit=1
-  - TAXII: taxii2client.v21.Server discovery
+Reuses parsers:
+ - RSS: app.ingest.rss_parser.parse_rss_feed (HTTP GET + feedparser)
+ - NVD: nvdlib.searchCVE_V2 with limit=1
+ - TAXII: taxii2client.v21.Server discovery
 """
 from __future__ import annotations
 
@@ -54,9 +54,9 @@ def _probe_taxii(
     url: str, credentials: dict[str, Any] | None
 ) -> tuple[bool, int, int, str | None]:
     """Probe TAXII endpoint. Routes to 1.1 XML path for OTX (per TAXII-SPIKE.md),
-    2.1 path otherwise. Detects OTX by URL heuristic `/taxii/discovery`
-    (OTX endpoint shape) or auth type `otx-apikey`.
-    """
+ 2.1 path otherwise. Detects OTX by URL heuristic `/taxii/discovery`
+ (OTX endpoint shape) or auth type `otx-apikey`.
+"""
     t0 = time.monotonic()
     ctype = (credentials or {}).get("type") if credentials else None
     is_otx = "/taxii/discovery" in (url or "") or ctype == "otx-apikey"
@@ -97,11 +97,11 @@ def _probe_taxii1_otx(
 ) -> tuple[bool, int, int, str | None]:
     """OTX-specific TAXII 1.1 XML discovery probe (per TAXII-SPIKE.md).
 
-    POSTs XML Discovery_Request with X-TAXII-* headers + X-OTX-API-KEY.
-    Accepts `credentials.type == "otx-apikey"` with key in `credentials.key`
-    (preferred) or `credentials.token`, or `credentials.type == "basic"` with
-    password as the key (UI currently ships Basic auth for OTX).
-    """
+ POSTs XML Discovery_Request with X-TAXII-* headers + X-OTX-API-KEY.
+ Accepts `credentials.type == "otx-apikey"` with key in `credentials.key`
+ (preferred) or `credentials.token`, or `credentials.type == "basic"` with
+ password as the key (UI currently ships Basic auth for OTX).
+"""
     import requests  # noqa: PLC0415
 
     key = ""

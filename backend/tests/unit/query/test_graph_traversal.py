@@ -65,7 +65,7 @@ def test_graph_result_at_cap():
 async def test_seed_not_found_returns_none():
     """When session returns no seed event, traverse returns None."""
     session = AsyncMock()
-    # First execute() call (seed select) returns scalar_one_or_none → None
+    # First execute call (seed select) returns scalar_one_or_none → None
     exec_result = MagicMock()
     exec_result.scalar_one_or_none = MagicMock(return_value=None)
     session.execute.return_value = exec_result
@@ -85,7 +85,7 @@ async def test_visibility_red_excludes_blue_only_seed():
     exec_result = MagicMock()
     exec_result.scalar_one_or_none = MagicMock(return_value=fake_event)
     session.execute.return_value = exec_result
-    out = await traverse_graph(session, fake_event.id, depth=1, role="red")
+    out = await traverse_graph(session, fake_event.id, depth=1, dashboard_roles=["red"])
     assert out is None
 
 
@@ -106,7 +106,7 @@ async def test_raw_stix_none_no_error_at_depth_2():
     tech_result.all = MagicMock(return_value=[])
 
     session.execute = AsyncMock(side_effect=[seed_result, tech_result])
-    out = await traverse_graph(session, fake_event.id, depth=2, role=None)
+    out = await traverse_graph(session, fake_event.id, depth=2, dashboard_roles=None)
     assert out is not None
     assert len(out.nodes) == 1  # only seed event node
     assert out.truncated is False
@@ -135,7 +135,7 @@ async def test_visibility_blue_excludes_red_only_seed():
     exec_result = MagicMock()
     exec_result.scalar_one_or_none = MagicMock(return_value=fake_event)
     session.execute.return_value = exec_result
-    out = await traverse_graph(session, fake_event.id, depth=1, role="blue")
+    out = await traverse_graph(session, fake_event.id, depth=1, dashboard_roles=["blue"])
     assert out is None
 
 
@@ -155,7 +155,7 @@ async def test_depth_1_only_adds_seed_node_when_no_techniques():
     tech_result.all = MagicMock(return_value=[])
 
     session.execute = AsyncMock(side_effect=[seed_result, tech_result])
-    out = await traverse_graph(session, fake_event.id, depth=1, role=None)
+    out = await traverse_graph(session, fake_event.id, depth=1, dashboard_roles=None)
     assert out is not None
     assert len(out.nodes) == 1
     assert len(out.edges) == 0
@@ -179,7 +179,7 @@ async def test_depth_1_adds_technique_nodes():
     tech_result.all = MagicMock(return_value=[("T1190", "feed_asserted")])
 
     session.execute = AsyncMock(side_effect=[seed_result, tech_result])
-    out = await traverse_graph(session, eid, depth=1, role=None)
+    out = await traverse_graph(session, eid, depth=1, dashboard_roles=None)
     assert out is not None
     assert len(out.nodes) == 2
     ids = {n["data"]["id"] for n in out.nodes}

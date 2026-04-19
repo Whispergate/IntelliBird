@@ -27,8 +27,8 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 def live_db_005():
     """Start intellibird-db:m1, migrate to 005, yield (engine, env).
 
-    Leaves the DB at 005 — tests upgrade to 006 and can downgrade back.
-    """
+ Leaves the DB at 005 — tests upgrade to 006 and can downgrade back.
+"""
     with PostgresContainer("intellibird-db:m1") as pg:
         url = pg.get_connection_url()
         parsed = make_url(url)

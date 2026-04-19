@@ -3,10 +3,10 @@
 import type { Webhook } from "@/app/api-client";
 
 /**
- * Native confirm dialog for webhook deletion. D-36 verbatim copy.
+ * Native confirm dialog for webhook deletion. verbatim copy.
  * No extra API call — the webhook object's bound_preset_names is already
  * populated by listWebhooks (join-hydrated in the router).
- */
+*/
 export async function showDeleteConfirm(webhook: Webhook): Promise<boolean> {
   const n = webhook.bound_preset_names.length;
   const message =

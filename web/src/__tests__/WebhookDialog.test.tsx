@@ -182,7 +182,7 @@ describe("WebhookDialog", () => {
     });
   });
 
-  // Test 8: Save button NEVER disabled by test result (D-31 non-blocking)
+  // Test 8: Save button NEVER disabled by test result
   it("Save button is NEVER disabled by test result (non-blocking D-31)", async () => {
     mockTestWebhook.mockResolvedValue({
       ok: false,

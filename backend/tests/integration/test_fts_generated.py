@@ -1,6 +1,6 @@
 """Integration tests for migration 004 — search_tsv backfill + GIN + filter_presets.
 
-These tests run against the live stack (docker compose exec -T api ...).
+These tests run against the live stack (docker compose exec -T api...).
 They assume migration 004 has already been applied.
 
 Proves:
@@ -35,11 +35,11 @@ pytestmark = pytest.mark.integration
 async def test_search_tsv_populated_on_existing_rows() -> None:
     """Insert a row — confirm search_tsv is non-null immediately.
 
-    This proves GENERATED ALWAYS AS computation fires on insert to the
-    existing TimescaleDB hypertable without any explicit write to search_tsv.
-    Also confirms backfill: the column is non-null for rows inserted after
-    migration applied.
-    """
+ This proves GENERATED ALWAYS AS computation fires on insert to the
+ existing TimescaleDB hypertable without any explicit write to search_tsv.
+ Also confirms backfill: the column is non-null for rows inserted after
+ migration applied.
+"""
     async with async_session_factory() as session:
         # Ensure source exists (INSERT ON CONFLICT)
         await session.execute(

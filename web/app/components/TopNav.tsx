@@ -4,13 +4,45 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useRole } from "@/app/lib/role-context";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { CircleUser } from "lucide-react";
+import { useSession } from "next-auth/react";
+import React from "react";
+
+const ROLE_BADGE_STYLES: Record<string, React.CSSProperties> = {
+  Admin:   { background: "rgba(29,158,117,0.15)", border: "1px solid #1D9E75", color: "#1D9E75" },
+  Analyst: { background: "rgba(159,225,203,0.20)", border: "1px solid #9FE1CB", color: "#9FE1CB" },
+  Viewer:  { background: "rgba(136,135,128,0.15)", border: "1px solid #888780", color: "#888780" },
+};
+
+function RoleBadge({ role }: { role?: string }) {
+  const style = ROLE_BADGE_STYLES[role ?? "Viewer"] ?? ROLE_BADGE_STYLES.Viewer;
+  return (
+    <span
+      className="brand-caption h-5 px-3 inline-flex items-center rounded"
+      style={style}
+    >
+      {role ?? "Viewer"}
+    </span>
+  );
+}
+
+async function onSignOut() {
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } catch {
+    // ignore — proceed to redirect
+  }
+  window.location.href = "/login?reason=logged_out";
+}
 
 const BLUE_PILL_STYLE = {
   backgroundColor: "rgba(29, 158, 117, 0.15)",
@@ -28,6 +60,8 @@ export function TopNav() {
   const role = useRole();
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const user = (session?.user as any) ?? null;
 
   const dashboardHref = role === "red" ? "/red" : "/blue";
   const pillStyle = role === "red" ? RED_PILL_STYLE : BLUE_PILL_STYLE;
@@ -75,7 +109,7 @@ export function TopNav() {
         boxShadow: borderTint,
       }}
     >
-      {/* Logo / wordmark */}
+      {/* Logo / wordmark*/}
       <Link
         href={dashboardHref}
         className="brand-heading shrink-0"
@@ -84,7 +118,7 @@ export function TopNav() {
         IntelliBird
       </Link>
 
-      {/* Dashboard nav link */}
+      {/* Dashboard nav link*/}
       <Link
         href={dashboardHref}
         className={`${linkBase} ${isActive(dashboardHref) ? linkActiveClass : linkInactive}`}
@@ -101,7 +135,7 @@ export function TopNav() {
         Dashboard
       </Link>
 
-      {/* Sources nav link */}
+      {/* Sources nav link*/}
       <Link
         href="/sources"
         className={`${linkBase} ${isActive("/sources") ? linkActiveClass : linkInactive}`}
@@ -118,7 +152,7 @@ export function TopNav() {
         Sources
       </Link>
 
-      {/* Events nav link */}
+      {/* Events nav link*/}
       <Link
         href="/events"
         className={`${linkBase} ${isActive("/events") ? linkActiveClass : linkInactive}`}
@@ -135,7 +169,7 @@ export function TopNav() {
         Events
       </Link>
 
-      {/* Webhooks nav link */}
+      {/* Webhooks nav link*/}
       <Link
         href="/webhooks"
         className={`${linkBase} ${isActive("/webhooks") ? linkActiveClass : linkInactive}`}
@@ -152,10 +186,10 @@ export function TopNav() {
         Webhooks
       </Link>
 
-      {/* Spacer */}
+      {/* Spacer*/}
       <div className="flex-1" />
 
-      {/* Role pill + dropdown */}
+      {/* Role pill + dropdown*/}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -182,6 +216,30 @@ export function TopNav() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* CircleUser user menu — to the right of role pill */}
+      {user && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="User menu"
+              className="ml-2"
+            >
+              <CircleUser size={24} style={{ color: "var(--brand-fog)" }} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[160px]">
+            <DropdownMenuLabel className="flex flex-col gap-1 px-2 py-1.5">
+              <span style={{ color: "var(--muted-foreground)" }}>{user.name}</span>
+              <RoleBadge role={user.role} />
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onSignOut}>Sign out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </nav>
   );
 }

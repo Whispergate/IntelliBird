@@ -1,4 +1,4 @@
-"""PATCH /api/events/{event_id}/tags — FIL-03 (D-21..D-23)."""
+"""PATCH /api/events/{event_id}/tags — FIL-03."""
 from __future__ import annotations
 
 import uuid
@@ -24,20 +24,20 @@ async def patch_event_tags(
 ) -> TagPatchResponse:
     """Add/remove free-text tags on an event.
 
-    - Input tags are lowercased server-side before validation and storage.
-    - Any invalid tag (after lowercasing) in add OR remove → 422 (whole request rejected).
-    - Re-adding an existing tag is a no-op; removing an absent tag is a no-op (idempotent).
-    - Response: sorted tag array after the operation.
-    - 404 if event_id not found (visibility not gated in M1 — auth deferred to M2).
-    """
-    # Composite-PK aware lookup — NOT session.get() (Pitfall 1: composite PK on hypertable)
+ - Input tags are lowercased server-side before validation and storage.
+ - Any invalid tag (after lowercasing) in add OR remove → 422 (whole request rejected).
+ - Re-adding an existing tag is a no-op; removing an absent tag is a no-op (idempotent).
+ - Response: sorted tag array after the operation.
+ - 404 if event_id not found (visibility not gated in M1 — auth deferred to M2).
+"""
+    # Composite-PK aware lookup — NOT session.get (: composite PK on hypertable)
     row = (
         await db.execute(select(Event).where(Event.id == event_id))
     ).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="event not found")
 
-    # Read-modify-write: COALESCE(tags, '{}') — handle NULL tags column (Pitfall 6)
+    # Read-modify-write: COALESCE(tags, '{}') — handle NULL tags column
     current: set[str] = set(row.tags or [])
     add_set: set[str] = set(body.add)
     remove_set: set[str] = set(body.remove)

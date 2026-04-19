@@ -1,4 +1,4 @@
-"""Integration tests for admin/sources CRUD router — Plan 03-02.
+"""Integration tests for admin/sources CRUD router —.
 
 Uses testcontainers Postgres (intellibird-db:m1 image) + alembic upgrade head
 to prove the full HTTP round-trip against a live Postgres database.
@@ -85,7 +85,7 @@ async def sources_client(live_db_sources):
 @pytest.mark.asyncio
 async def test_sources_full_crud_roundtrip(sources_client):
     """POST create → GET list → GET /{id} → PATCH → GET /{id} reflect update
-    → GET /{id}/event-count → DELETE → GET /{id} 404."""
+ → GET /{id}/event-count → DELETE → GET /{id} 404."""
     payload = {
         "name": "Integration RSS Feed",
         "feed_type": "rss",

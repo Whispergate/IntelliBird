@@ -4,9 +4,9 @@
 AlienVault OTX speaks TAXII 1.1 XML — not TAXII 2.1 JSON. The taxii2-client
 library cannot communicate with it. This module hand-rolls the three required
 TAXII 1.1 messages:
-  1. Discovery_Request → Discovery_Response (locate poll service URL)
-  2. Collection_Information_Request → Collection_Information_Response (list collections)
-  3. Poll_Request (with Exclusive_Begin_Timestamp cursor) → Poll_Response
+ 1. Discovery_Request → Discovery_Response (locate poll service URL)
+ 2. Collection_Information_Request → Collection_Information_Response (list collections)
+ 3. Poll_Request (with Exclusive_Begin_Timestamp cursor) → Poll_Response
 
 Auth: X-OTX-API-KEY header injected from credentials_enc {"type": "otx-apikey", "key": "..."}.
 
@@ -43,36 +43,36 @@ _TAXII_11_HEADERS = {
 _DISCOVERY_REQUEST_TEMPLATE = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <taxii_11:Discovery_Request
-    xmlns:taxii_11="{ns}"
-    message_id="1"/>
+ xmlns:taxii_11="{ns}"
+ message_id="1"/>
 """.format(ns=_TAXII_11_NS)
 
 _COLLECTION_REQUEST_TEMPLATE = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <taxii_11:Collection_Information_Request
-    xmlns:taxii_11="{ns}"
-    message_id="2"/>
+ xmlns:taxii_11="{ns}"
+ message_id="2"/>
 """.format(ns=_TAXII_11_NS)
 
 
 def _poll_request_xml(collection_name: str, begin_ts: str | None) -> str:
     """Build a TAXII 1.1 Poll_Request XML string.
 
-    begin_ts: ISO 8601 UTC timestamp for Exclusive_Begin_Timestamp, or None.
-    """
+ begin_ts: ISO 8601 UTC timestamp for Exclusive_Begin_Timestamp, or None.
+"""
     begin_elem = ""
     if begin_ts:
         begin_elem = f"""
-    <taxii_11:Exclusive_Begin_Timestamp>{begin_ts}</taxii_11:Exclusive_Begin_Timestamp>"""
+ <taxii_11:Exclusive_Begin_Timestamp>{begin_ts}</taxii_11:Exclusive_Begin_Timestamp>"""
     return f"""\
 <?xml version="1.0" encoding="UTF-8"?>
 <taxii_11:Poll_Request
-    xmlns:taxii_11="{_TAXII_11_NS}"
-    message_id="3"
-    collection_name="{collection_name}">{begin_elem}
-    <taxii_11:Poll_Parameters allow_asynch="false">
-        <taxii_11:Response_Type>FULL</taxii_11:Response_Type>
-    </taxii_11:Poll_Parameters>
+ xmlns:taxii_11="{_TAXII_11_NS}"
+ message_id="3"
+ collection_name="{collection_name}">{begin_elem}
+ <taxii_11:Poll_Parameters allow_asynch="false">
+ <taxii_11:Response_Type>FULL</taxii_11:Response_Type>
+ </taxii_11:Poll_Parameters>
 </taxii_11:Poll_Request>"""
 
 
@@ -88,9 +88,9 @@ def _make_otx_session(api_key: str) -> Any:
 def _discover_services(session: Any, discovery_url: str) -> dict[str, str]:
     """POST Discovery_Request → extract service addresses from Discovery_Response.
 
-    Returns dict keyed by service type (lowercase) → address URL.
-    e.g. {"discovery": "...", "collection-management": "...", "poll": "..."}
-    """
+ Returns dict keyed by service type (lowercase) → address URL.
+ e.g. {"discovery": "...", "collection-management": "...", "poll": "..."}
+"""
     try:
         from lxml import etree  # noqa: PLC0415
     except ImportError as e:
@@ -136,8 +136,8 @@ def _poll_collection(
 ) -> list[dict]:
     """POST Poll_Request → extract Content_Block payloads → return list of raw dicts.
 
-    Each returned dict has at least: 'type', 'id' (synthesized if STIX 1.x).
-    """
+ Each returned dict has at least: 'type', 'id' (synthesized if STIX 1.x).
+"""
     try:
         from lxml import etree  # noqa: PLC0415
     except ImportError as e:
@@ -186,7 +186,7 @@ def _poll_collection(
             obj_id = child.get("id") or f"x-stix1-{tag}--{uuid.uuid4()}"
             now_iso = datetime.now(timezone.utc).isoformat()
 
-            # Extract Title + Description via local-name() XPath (stix namespace varies)
+            # Extract Title + Description via local-name XPath (stix namespace varies)
             title_text: str | None = None
             desc_text: str | None = None
             for t in child.xpath(
@@ -230,11 +230,11 @@ def poll_otx_taxii1(
     tlp_cache: dict[uuid.UUID, str],
 ) -> None:
     """OTX TAXII 1.1 poll entry point — called by taxii.poll_taxii_impl when
-    the URL heuristic matches /taxii/discovery.
+ the URL heuristic matches /taxii/discovery.
 
-    Performs Discovery → Collections → Poll → normalise → persist → cursor advance.
-    Cursor advance ONLY after all objects committed (D-15/D-16).
-    """
+ Performs Discovery → Collections → Poll → normalise → persist → cursor advance.
+ Cursor advance ONLY after all objects committed.
+"""
     from app.ingest.normalise import _persist_event, update_source_health  # noqa: PLC0415
     from app.ingest.taxii_parser import normalise_stix_object  # noqa: PLC0415
     from sqlalchemy import update as sa_update  # noqa: PLC0415
@@ -308,7 +308,7 @@ def poll_otx_taxii1(
             session.commit()
             return
 
-    # Normalise + persist (all objects, then advance cursor — D-15/D-16)
+    # Normalise + persist (all objects, then advance cursor —)
     inserted = 0
     latest_modified_str: str | None = None
 

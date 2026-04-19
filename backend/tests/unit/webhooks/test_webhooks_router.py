@@ -29,37 +29,37 @@ from app.schemas.webhooks import WebhookCreate, WebhookResponse, WebhookUpdate
 
 _FILTER_PRESETS_DDL = """
 CREATE TABLE IF NOT EXISTS filter_presets (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    query_params TEXT NOT NULL DEFAULT '{}',
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+ id TEXT PRIMARY KEY,
+ name TEXT NOT NULL UNIQUE,
+ query_params TEXT NOT NULL DEFAULT '{}',
+ created_at TEXT DEFAULT (datetime('now')),
+ updated_at TEXT DEFAULT (datetime('now'))
 )
 """
 
 _WEBHOOKS_DDL = """
 CREATE TABLE IF NOT EXISTS webhooks (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    destination_type TEXT NOT NULL,
-    url TEXT NOT NULL,
-    auth_enc TEXT,
-    batching_window_sec INTEGER NOT NULL DEFAULT 300,
-    enabled INTEGER NOT NULL DEFAULT 1,
-    last_dispatch_at TEXT,
-    last_delivery_at TEXT,
-    last_delivery_status TEXT,
-    consecutive_failures INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT DEFAULT (datetime('now')),
-    updated_at TEXT DEFAULT (datetime('now'))
+ id TEXT PRIMARY KEY,
+ name TEXT NOT NULL UNIQUE,
+ destination_type TEXT NOT NULL,
+ url TEXT NOT NULL,
+ auth_enc TEXT,
+ batching_window_sec INTEGER NOT NULL DEFAULT 300,
+ enabled INTEGER NOT NULL DEFAULT 1,
+ last_dispatch_at TEXT,
+ last_delivery_at TEXT,
+ last_delivery_status TEXT,
+ consecutive_failures INTEGER NOT NULL DEFAULT 0,
+ created_at TEXT DEFAULT (datetime('now')),
+ updated_at TEXT DEFAULT (datetime('now'))
 )
 """
 
 _BINDINGS_DDL = """
 CREATE TABLE IF NOT EXISTS webhook_preset_bindings (
-    webhook_id TEXT NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
-    preset_name TEXT NOT NULL REFERENCES filter_presets(name) ON DELETE CASCADE,
-    PRIMARY KEY (webhook_id, preset_name)
+ webhook_id TEXT NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
+ preset_name TEXT NOT NULL REFERENCES filter_presets(name) ON DELETE CASCADE,
+ PRIMARY KEY (webhook_id, preset_name)
 )
 """
 
@@ -161,7 +161,7 @@ def test_auth_enc_never_returned_in_response():
 
 
 def test_feed_type_locked_on_update():
-    """WebhookUpdate must NOT include destination_type field (locked on edit — D-35)."""
+    """WebhookUpdate must NOT include destination_type field (locked on edit —)."""
     assert "destination_type" not in WebhookUpdate.model_fields, (
         "destination_type must be absent from WebhookUpdate (locked on edit per D-35)"
     )

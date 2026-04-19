@@ -2,7 +2,7 @@
 
 INGR-02: normalise into canonical STIX 2.1-aligned schema with
 source_id, observed_at, raw content reference, and extracted link.
-D-09: Entries missing both link and id are dropped (returns None) —
+: Entries missing both link and id are dropped (returns None) —
 the caller logs a WARNING so operators see broken feeds.
 """
 from __future__ import annotations
@@ -27,9 +27,9 @@ def parse_rss_feed(
 ) -> Any:
     """Fetch RSS/Atom from url or parse from local path. Returns FeedParserDict.
 
-    `etag` + `modified` enable HTTP conditional GET for 304 Not Modified.
-    Over local file paths these are ignored by feedparser.
-    """
+ `etag` + `modified` enable HTTP conditional GET for 304 Not Modified.
+ Over local file paths these are ignored by feedparser.
+"""
     return feedparser.parse(url_or_path, etag=etag, modified=modified)
 
 
@@ -45,10 +45,10 @@ def _struct_time_to_utc(st: Any) -> datetime:
 def normalise_rss_entry(entry: Any, source_id: uuid.UUID) -> dict | None:
     """Normalise one feedparser entry to an Event row dict.
 
-    Returns None when the entry is unhashable (D-09): neither link nor id
-    present, or title is empty after stripping. Caller MUST log a
-    structured WARNING before discarding.
-    """
+ Returns None when the entry is unhashable: neither link nor id
+ present, or title is empty after stripping. Caller MUST log a
+ structured WARNING before discarding.
+"""
     # Use dict-get so we work on both FeedParserDict and plain dicts (tests).
     get = entry.get if hasattr(entry, "get") else (lambda k, default=None: entry.get(k, default))
 
