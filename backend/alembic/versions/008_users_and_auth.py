@@ -58,7 +58,10 @@ def upgrade() -> None:
         sa.Column("oidc_sub", sa.Text(), nullable=True),
         sa.Column(
             "role",
-            sa.Enum("Admin", "Analyst", "Viewer", name="user_role", create_type=False),
+            postgresql.ENUM(
+                "Admin", "Analyst", "Viewer",
+                name="user_role", create_type=False,
+            ),
             nullable=False,
         ),
         sa.Column(

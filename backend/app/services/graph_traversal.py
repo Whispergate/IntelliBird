@@ -85,9 +85,19 @@ async def traverse_graph(
     event_id: uuid.UUID,
     depth: int,
     dashboard_roles: list[str] | None = None,
+    project_id: uuid.UUID | None = None,
 ) -> GraphResult | None:
     """BFS graph traversal from a seed event. Returns None if seed not found
  or visibility-excluded for the given dashboard_roles.
+
+ Phase 10 kwarg (default None): project_id narrows traversal to events in the
+ given project. When set:
+   - Seed event must have seed.project_id == project_id (else return None)
+   - Layer 3 cross-event expansion JOINs events with .where(project_id == X)
+     so no event from another project can leak into the result (H-3 closure —
+     never via AGE node properties).
+   - Layers 1+2 are seed-scoped (no cross-event fetch) so no additional filter
+     needed beyond the seed guard.
 
  Raises ValueError for invalid depth (router should catch and return 400).
 """
@@ -99,6 +109,12 @@ async def traverse_graph(
         select(Event).where(Event.id == event_id)
     )).scalar_one_or_none()
     if seed is None or not _visibility_ok(seed.visibility, dashboard_roles):
+        return None
+
+    # Phase 10 / PRJ-04 / H-3: seed must belong to the project when project_id
+    # is set. Return None (indistinguishable from 'not found') to avoid
+    # information disclosure across project boundaries.
+    if project_id is not None and seed.project_id != project_id:
         return None
 
     result = GraphResult()
@@ -210,9 +226,13 @@ async def traverse_graph(
         )).all()
         if cross_rows:
             other_event_ids = list({r[0] for r in cross_rows})
-            other_events = (await session.execute(
-                select(Event).where(Event.id.in_(other_event_ids))
-            )).scalars().all()
+            other_q = select(Event).where(Event.id.in_(other_event_ids))
+            # Phase 10 / PRJ-04 / H-3: every cross-event expansion hop must
+            # re-apply the project filter via JOIN-to-events. This is the
+            # enforcement point — seed-match at layer 0 is not sufficient.
+            if project_id is not None:
+                other_q = other_q.where(Event.project_id == project_id)
+            other_events = (await session.execute(other_q)).scalars().all()
             events_by_id = {str(e.id): e for e in other_events}
             for ev_id, tid in cross_rows:
                 ev = events_by_id.get(str(ev_id))

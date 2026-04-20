@@ -55,7 +55,7 @@ async def test_depth_default_is_2(app_with_router, monkeypatch):
 
     captured: dict = {}
 
-    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
         captured["depth"] = depth
         return None  # triggers 404 — we only need to capture arg
 
@@ -76,7 +76,7 @@ async def test_depth_default_is_2(app_with_router, monkeypatch):
 async def test_404_when_service_returns_none(app_with_router, monkeypatch):
     from app.database import get_session  # noqa: PLC0415
 
-    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
         return None
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -95,7 +95,7 @@ async def test_404_when_service_returns_none(app_with_router, monkeypatch):
 async def test_400_on_value_error(app_with_router, monkeypatch):
     from app.database import get_session  # noqa: PLC0415
 
-    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
         raise ValueError("bad depth")
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -123,7 +123,7 @@ async def test_successful_response_shape(app_with_router, monkeypatch):
     fake_result.add_node("technique:T1190", "T1190", "technique")
     fake_result.add_edge(f"event:{eid}", "technique:T1190", "uses")
 
-    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
         return fake_result
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -151,7 +151,7 @@ async def test_depth_3_accepted(app_with_router, monkeypatch):
     from app.database import get_session  # noqa: PLC0415
     from app.services.graph_traversal import MAX_DEPTH  # noqa: PLC0415
 
-    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
         return None
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
@@ -177,7 +177,7 @@ async def test_dashboard_roles_sourced_from_request_state(app_with_router, monke
 
     captured: dict = {}
 
-    async def fake_traverse(session, event_id, depth, dashboard_roles=None):
+    async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
         captured["dashboard_roles"] = dashboard_roles
         return None
 

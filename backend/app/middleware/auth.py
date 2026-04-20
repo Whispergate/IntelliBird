@@ -143,13 +143,25 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if revoked:
             return JSONResponse({"detail": "revoked_token"}, status_code=401)
 
-        # 6. Populate request.state.user
+        # 6. Populate request.state.user (Phase 10: includes project_memberships +
+        #    pm_truncated — claim keys default to [] and False for tokens minted
+        #    pre-Phase-10.)
+        pm_raw = claims.get("pm", [])
+        project_memberships: dict[str, int] = {}
+        if isinstance(pm_raw, list):
+            for entry in pm_raw:
+                if isinstance(entry, list) and len(entry) == 2:
+                    pid_str, rank_int = entry
+                    if isinstance(pid_str, str) and isinstance(rank_int, int):
+                        project_memberships[pid_str] = rank_int
         request.state.user = AuthUser(
             id=claims["sub"],
             role=claims["role"],
             dashboard_roles=list(claims.get("dashboard_roles", [])),
             jti=claims["jti"],
             token_version=int(claims["token_version"]),
+            project_memberships=project_memberships,
+            pm_truncated=bool(claims.get("pm_truncated", False)),
         )
         return await call_next(request)
 

@@ -26,6 +26,13 @@ class Webhook(Base):
         server_default=text("gen_random_uuid()"),
     )
     name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    # Phase 10 / PRJ-01 — every webhook pins to a project. Pre-Phase-10 rows
+    # carry LEGACY_PROJECT_ID; new rows must pass project_id explicitly.
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
     destination_type: Mapped[str] = mapped_column(
         PgEnum(
             "slack", "teams", "discord", "generic",

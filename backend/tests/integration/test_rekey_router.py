@@ -5,6 +5,7 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
 os.environ.setdefault("SECRET_KEY", "a" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
 import pytest  # noqa: E402

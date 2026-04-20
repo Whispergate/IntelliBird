@@ -26,6 +26,7 @@ async def get_event_graph(
     event_id: uuid.UUID,
     request: Request,
     depth: int = Query(default=DEFAULT_DEPTH, ge=MIN_DEPTH, le=MAX_DEPTH),
+    project_id: uuid.UUID | None = Query(default=None),
     db: AsyncSession = Depends(get_session),
 ) -> GraphResponse:
     # AUTH-02 / C-2: dashboard_roles sourced from JWT claim (request.state.user),
@@ -34,8 +35,15 @@ async def get_event_graph(
     user = getattr(request.state, "user", None)
     dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
 
+    # Phase 10 / PRJ-04: project_id query param narrows BFS to events in the
+    # given project. traverse_graph re-applies project_id at every cross-event
+    # expansion hop (H-3 enforcement).
     try:
-        result = await traverse_graph(db, event_id, depth=depth, dashboard_roles=dashboard_roles)
+        result = await traverse_graph(
+            db, event_id, depth=depth,
+            dashboard_roles=dashboard_roles,
+            project_id=project_id,
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     if result is None:

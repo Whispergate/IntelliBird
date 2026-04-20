@@ -33,6 +33,11 @@ from app.services.events_query import (
     encode_cursor,
     encode_fts_cursor,
 )
+from app.services.project_scope import (
+    build_scope_predicate,
+    fetch_bound_sources,
+    fetch_scope_rows_intel,
+)
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/events", tags=["events"])
@@ -111,6 +116,7 @@ async def list_events(
     include_total: bool = Query(default=False),
     cursor: str | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
+    project_id: uuid.UUID | None = Query(default=None),
     db: AsyncSession = Depends(get_session),
 ) -> EventListResponse:
     # AUTH-02 / C-2: dashboard_roles sourced from JWT claim (request.state.user),
@@ -118,6 +124,16 @@ async def list_events(
     # When AUTH_ENABLED=false, request.state.user is unset → dashboard_roles=None → no filter.
     user = getattr(request.state, "user", None)
     dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
+
+    # Phase 10 / PRJ-03: pre-compute scope predicate + bound sources when project-scoped.
+    # build_events_query + build_fts_query stay sync — routers fetch the DB-dependent
+    # pieces up-front and pass them in as kwargs.
+    scope_predicate = None
+    bound_sources: list[uuid.UUID] | None = None
+    if project_id is not None:
+        scope_rows = await fetch_scope_rows_intel(db, project_id)
+        scope_predicate = build_scope_predicate(scope_rows)
+        bound_sources = await fetch_bound_sources(db, project_id)
 
     if free_text is not None:
         q = free_text.strip()
@@ -139,7 +155,12 @@ async def list_events(
             has_geo=has_geo,
             tag_mode=tag_mode,
         )
-        fts_stmt = build_fts_query(params, dashboard_roles, q)
+        fts_stmt = build_fts_query(
+            params, dashboard_roles, q,
+            project_id=project_id,
+            scope_predicate=scope_predicate,
+            bound_sources=bound_sources,
+        )
 
         if cursor:
             try:
@@ -162,7 +183,12 @@ async def list_events(
         total: int | None = None
         if include_total:
             count_stmt = select(func.count()).select_from(
-                build_fts_query(params, dashboard_roles, q).subquery()
+                build_fts_query(
+                    params, dashboard_roles, q,
+                    project_id=project_id,
+                    scope_predicate=scope_predicate,
+                    bound_sources=bound_sources,
+                ).subquery()
             )
             total = int((await db.execute(count_stmt)).scalar_one())
 
@@ -190,7 +216,12 @@ async def list_events(
         tag_mode=tag_mode,
     )
 
-    stmt = build_events_query(params, dashboard_roles)
+    stmt = build_events_query(
+        params, dashboard_roles,
+        project_id=project_id,
+        scope_predicate=scope_predicate,
+        bound_sources=bound_sources,
+    )
 
     if cursor:
         try:
@@ -213,7 +244,12 @@ async def list_events(
         # Total uses the FILTER-only stmt (no cursor, no limit) to avoid
         # counting only rows after the cursor position.
         count_stmt = select(func.count()).select_from(
-            build_events_query(params, dashboard_roles).subquery()
+            build_events_query(
+                params, dashboard_roles,
+                project_id=project_id,
+                scope_predicate=scope_predicate,
+                bound_sources=bound_sources,
+            ).subquery()
         )
         total_std = int((await db.execute(count_stmt)).scalar_one())
 

@@ -25,6 +25,14 @@ class Event(Base):
     source_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("sources.id", ondelete="SET NULL"), nullable=True
     )
+    # Phase 10 / PRJ-01 — every event carries a project_id. Pre-Phase-10 rows
+    # point at LEGACY_PROJECT_ID (app.models.projects); new rows must pass
+    # project_id explicitly (migration 009 dropped the DEFAULT).
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
     fetched_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )

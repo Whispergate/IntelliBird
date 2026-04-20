@@ -113,10 +113,21 @@ describe("GeoMap pins (plan 06-04, MAP-01)", () => {
   });
 
   it("test_empty_state_overlay_renders_exact_copy — shows empty overlay when no events", async () => {
-    vi.mocked(apiClient.listEvents).mockResolvedValue({
+    // GeoMapImpl fires two listEvents calls: has_geo=true for pins, then a
+    // probe (limit=1) to distinguish "no events at all" from "no geo-resolved
+    // events". The "No geo-resolved events…" copy renders only when the probe
+    // proves the DB has events but none have coordinates.
+    // Call 1 (has_geo=true) → empty
+    vi.mocked(apiClient.listEvents).mockResolvedValueOnce({
       items: [],
       next_cursor: null,
       total: 0,
+    });
+    // Call 2 (probe, limit=1) → at least one event (non-geo)
+    vi.mocked(apiClient.listEvents).mockResolvedValueOnce({
+      items: [twoGeoEvents[0]],
+      next_cursor: null,
+      total: 1,
     });
 
     render(

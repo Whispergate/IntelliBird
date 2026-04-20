@@ -53,11 +53,11 @@ def upgrade() -> None:
     op.execute(
         """
  CREATE TABLE IF NOT EXISTS filter_presets (
- id uuid PRIMARY KEY DEFAULT gen_random_uuid,
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  name text NOT NULL UNIQUE,
  query_params jsonb NOT NULL,
- created_at timestamptz NOT NULL DEFAULT now,
- updated_at timestamptz NOT NULL DEFAULT now,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now(),
  CONSTRAINT filter_presets_name_check
  CHECK (name ~ '^[a-z0-9_-]{1,64}$')
  )

@@ -13,6 +13,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // ---------------------------------------------------------------------------
 vi.mock("@/app/api-client", () => ({
   testConnection: vi.fn(),
+  // SourceDialog fetches the template list on mount in add mode.
+  // Return an empty list so the effect resolves cleanly.
+  fetchSourceTemplates: vi.fn().mockResolvedValue([]),
 }));
 
 import * as apiClient from "@/app/api-client";

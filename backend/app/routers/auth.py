@@ -33,14 +33,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_session
 from app.middleware.auth import require_auth
+from app.models.projects import Project, ProjectMembership
 from app.models.users import User
+from app.schemas.projects import MembershipResponse
 from app.security.jwt import (
     ACCESS_TOKEN_TTL_SECONDS,
     REFRESH_TOKEN_TTL_SECONDS,
     AuthUser,
+    build_membership_claim,
     decode_token,
-    mint_access_token,
-    mint_refresh_token,
+    mint_access_token_with_pm,
+    mint_refresh_token_with_pm,
 )
 from app.security.lockout import (
     FAILS_THRESHOLD,
@@ -74,12 +77,31 @@ OIDC_COOKIE_TTL = 300  # 5 minutes — state round-trip must complete quickly
 # Pydantic models
 # ---------------------------------------------------------------------------
 
+class MembershipSummary(BaseModel):
+    """Hydrated project_memberships entry for /api/auth/me (project_name + archived flag).
+
+    Truncated on /me when the JWT pm_truncated flag is set — clients must call
+    /api/auth/memberships for the full paginated list.
+    """
+
+    project_id: uuid.UUID
+    project_name: str
+    project_archived: bool
+    role: str
+
+
 class UserPublic(BaseModel):
     id: str
     username: str
     role: str
     dashboard_roles: list[str]
     must_change_password: bool
+    # Phase 10 additions — populated by /api/auth/me; defaults keep other
+    # /auth/* endpoints (login, refresh, change-password, oidc-callback) that
+    # serialize UserPublic in their TokenResponse compatible without touching
+    # the DB for membership hydration.
+    project_memberships: list[MembershipSummary] = Field(default_factory=list)
+    project_memberships_truncated: bool = False
 
 
 class LoginRequest(BaseModel):
@@ -137,15 +159,28 @@ def _build_user_public(u: User) -> UserPublic:
 
 
 async def _issue_tokens_and_cookie(
-    u: User, request: Request, response: Response,
+    u: User, request: Request, response: Response, db: AsyncSession,
 ) -> TokenResponse:
-    access, _ = mint_access_token(
+    """Mint access + refresh tokens carrying the pm membership claim (Phase 10).
+
+    The membership claim is rebuilt fresh on every mint so that additions /
+    removals propagate within the access-TTL window (15 min). See RESEARCH.md
+    §Refresh token handling.
+
+    `db` is required — every mint site in this router has a session available.
+    """
+    sub_candidates: list[str] = [str(u.id)]
+    if u.oidc_sub:
+        sub_candidates.append(u.oidc_sub)
+    pm, pm_truncated = await build_membership_claim(db, sub_candidates)
+
+    access, _ = mint_access_token_with_pm(
         str(u.id), u.role, list(u.dashboard_roles or []), u.token_version,
-        settings.JWT_SIGNING_KEY,
+        settings.JWT_SIGNING_KEY, pm, pm_truncated,
     )
-    refresh, _ = mint_refresh_token(
+    refresh, _ = mint_refresh_token_with_pm(
         str(u.id), u.role, list(u.dashboard_roles or []), u.token_version,
-        settings.JWT_SIGNING_KEY,
+        settings.JWT_SIGNING_KEY, pm, pm_truncated,
     )
     _set_refresh_cookie(response, refresh, request)
     return TokenResponse(
@@ -207,7 +242,7 @@ async def login(
         await clear_lockout(redis, body.username)
 
         log.info("auth_login_ok", user_id=str(user.id), username=user.username)
-        return await _issue_tokens_and_cookie(user, request, response)
+        return await _issue_tokens_and_cookie(user, request, response, db=db)
     finally:
         await redis.aclose()
 
@@ -279,7 +314,7 @@ async def refresh(
         if int(claims["token_version"]) < user.token_version:
             raise HTTPException(status_code=401, detail="revoked_token")
 
-        return await _issue_tokens_and_cookie(user, request, response)
+        return await _issue_tokens_and_cookie(user, request, response, db=db)
     finally:
         await redis.aclose()
 
@@ -336,7 +371,97 @@ async def me(
     )).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="user_not_found")
-    return _build_user_public(row)
+
+    base = _build_user_public(row)
+    # Phase 10: hydrate project_memberships list with project_name + archived
+    # flag when the pm claim is not truncated. Truncated users must fetch
+    # /api/auth/memberships for the full paginated list.
+    if not user.pm_truncated:
+        sub_candidates: list[str] = [str(row.id)]
+        if row.oidc_sub:
+            sub_candidates.append(row.oidc_sub)
+        rows = (await db.execute(
+            select(
+                Project.id, Project.name, Project.archived, ProjectMembership.project_role,
+            )
+            .join(ProjectMembership, Project.id == ProjectMembership.project_id)
+            .where(ProjectMembership.user_sub.in_(sub_candidates))
+            .order_by(Project.created_at.desc())
+        )).all()
+        base.project_memberships = [
+            MembershipSummary(
+                project_id=pid, project_name=name, project_archived=archived, role=role,
+            )
+            for pid, name, archived, role in rows
+        ]
+    base.project_memberships_truncated = user.pm_truncated
+    return base
+
+
+# ---------------------------------------------------------------------------
+# /memberships — paginated hydrated list for users with pm_truncated=true
+# ---------------------------------------------------------------------------
+
+@router.get("/memberships", response_model=list[MembershipResponse])
+async def list_my_memberships(
+    cursor: str | None = None,
+    limit: int = 100,
+    user: AuthUser = Depends(require_auth),
+    db: AsyncSession = Depends(get_session),
+) -> list[MembershipResponse]:
+    """Paginated memberships for the current user.
+
+    Used when the JWT pm claim was truncated (pm_truncated=true; >PM_CUTOFF
+    memberships). Returns up to `limit` (default 100, max 100) rows ordered by
+    created_at DESC, id DESC. `cursor` is an ISO8601 timestamp — only rows
+    with created_at < cursor are returned (keyset pagination).
+    """
+    if limit < 1 or limit > 100:
+        raise HTTPException(status_code=400, detail="limit must be 1..100")
+
+    # Resolve user_sub candidates — include oidc_sub when present so OIDC and
+    # local accounts surface identically.
+    sub_candidates: list[str] = [user.id]
+    oidc_row = (await db.execute(
+        select(User.oidc_sub).where(User.id == uuid.UUID(user.id))
+    )).scalar_one_or_none()
+    if oidc_row:
+        sub_candidates.append(oidc_row)
+
+    stmt = (
+        select(
+            ProjectMembership.id,
+            ProjectMembership.project_id,
+            ProjectMembership.user_sub,
+            ProjectMembership.project_role,
+            ProjectMembership.added_by,
+            ProjectMembership.created_at,
+            Project.name.label("project_name"),
+        )
+        .join(Project, Project.id == ProjectMembership.project_id)
+        .where(ProjectMembership.user_sub.in_(sub_candidates))
+        .order_by(ProjectMembership.created_at.desc(), ProjectMembership.id.desc())
+        .limit(limit)
+    )
+    if cursor:
+        try:
+            ts = datetime.fromisoformat(cursor)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="invalid cursor")
+        stmt = stmt.where(ProjectMembership.created_at < ts)
+    rows = (await db.execute(stmt)).all()
+    return [
+        MembershipResponse(
+            id=r.id,
+            project_id=r.project_id,
+            user_sub=r.user_sub,
+            project_role=r.project_role,
+            added_by=r.added_by,
+            created_at=r.created_at,
+            project_name=r.project_name,
+        )
+        for r in rows
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -371,7 +496,7 @@ async def change_password(
     await db.commit()
 
     log.info("auth_password_changed", user_id=str(row.id))
-    return await _issue_tokens_and_cookie(row, request, response)
+    return await _issue_tokens_and_cookie(row, request, response, db=db)
 
 
 # ---------------------------------------------------------------------------
@@ -515,8 +640,8 @@ async def oidc_callback(
 
     response = Response(status_code=302)
     response.headers["Location"] = landing_dashboard
-    # Issue tokens + refresh cookie (same helper)
-    await _issue_tokens_and_cookie(u, request, response)
+    # Issue tokens + refresh cookie (same helper); pass db so pm claim is minted.
+    await _issue_tokens_and_cookie(u, request, response, db=db)
     # Clear PKCE cookies
     for c in (OIDC_STATE_COOKIE, OIDC_VERIFIER_COOKIE, OIDC_NONCE_COOKIE):
         response.delete_cookie(c, path="/")

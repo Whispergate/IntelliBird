@@ -26,6 +26,14 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(scope="module")
+def monkeypatch_module():
+    """Module-scoped monkeypatch — stdlib's monkeypatch is function-scoped."""
+    mp = pytest.MonkeyPatch()
+    yield mp
+    mp.undo()
+
+
+@pytest.fixture(scope="module")
 def pg_url(pg_container):
     """Derive async DSN from the testcontainer Postgres instance."""
     sync_url = pg_container.get_connection_url()

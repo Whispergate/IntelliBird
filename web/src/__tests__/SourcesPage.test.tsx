@@ -11,6 +11,9 @@ vi.mock("../../app/api-client", () => ({
   deleteSource: vi.fn(),
   getSourceEventCount: vi.fn(),
   testConnection: vi.fn(),
+  // SourceDialog (rendered inside SourcesClient) calls fetchSourceTemplates
+  // on mount in add mode. Return an empty list so the effect resolves cleanly.
+  fetchSourceTemplates: vi.fn().mockResolvedValue([]),
 }));
 
 // Mock sonner

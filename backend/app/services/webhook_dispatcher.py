@@ -35,10 +35,12 @@ from app.crypto import decrypt_credentials
 from app.models.events import Event
 from app.models.filter_presets import FilterPreset
 from app.models.markings import TlpMarking
+from app.models.projects import ProjectScopeRow, ProjectSource
 from app.models.sources import Source
 from app.models.tags import AttackTechniqueTag
 from app.models.webhooks import Webhook, WebhookPresetBinding
 from app.services.events_query import EventsQueryParams, build_events_query
+from app.services.project_scope import build_scope_predicate
 from app.services.webhook_payloads import build_payload_for_type
 
 log = structlog.get_logger(__name__)
@@ -127,12 +129,21 @@ def _process_webhook(
 
     # Collect matching events across all bound presets, dedup by event.id
     # all_matched: event_id str -> (event dict, first-matching FilterPreset)
+    # Phase 10: pre-compute scope predicate + bound sources once per webhook
+    # (webhook.project_id is NOT NULL post-migration 009 — every webhook pins
+    # to exactly one project).
+    scope_predicate, bound_sources = _fetch_project_scope_sync(
+        session, webhook.project_id,
+    )
     all_matched: dict[str, tuple[dict, FilterPreset]] = {}
     for preset in bindings:
         events = _fetch_matching_events(
             session,
             preset.query_params,
             webhook.last_dispatch_at,
+            project_id=webhook.project_id,
+            scope_predicate=scope_predicate,
+            bound_sources=bound_sources,
         )
         for ev in events:
             eid = str(ev["id"])
@@ -187,15 +198,50 @@ def _process_webhook(
 
 
 # ---- event matching --------------------------------------------------------
+def _fetch_project_scope_sync(
+    session: SyncSession, project_id: uuid.UUID,
+) -> tuple[Any, list[uuid.UUID] | None]:
+    """Sync equivalent of project_scope.fetch_scope_rows_intel + fetch_bound_sources.
+
+    The dispatcher runs against a sync Session (APScheduler + Dramatiq worker);
+    project_scope's async helpers would need an event loop. Inline sync SELECT
+    returns (scope_predicate, bound_sources) ready to pass into build_events_query.
+    Pre-Phase-10 webhooks point at LEGACY_PROJECT_ID sentinel — with zero scope
+    rows the predicate is sa.text('false'), so those dispatches correctly match
+    zero events going forward (M-6 enforcement).
+    """
+    rows = session.execute(
+        select(ProjectScopeRow)
+        .where(ProjectScopeRow.project_id == project_id)
+        .where(ProjectScopeRow.intel_scope == True)  # noqa: E712
+    ).scalars().all()
+    scope_predicate = build_scope_predicate(list(rows))
+
+    bound = session.execute(
+        select(ProjectSource.source_id).where(
+            ProjectSource.project_id == project_id
+        )
+    ).scalars().all()
+    bound_sources = list(bound) if bound else None
+    return scope_predicate, bound_sources
+
+
 def _fetch_matching_events(
     session: SyncSession,
     preset_query_params: dict,
     last_dispatch_at: datetime | None,
+    project_id: uuid.UUID,
+    scope_predicate: Any = None,
+    bound_sources: list[uuid.UUID] | None = None,
 ) -> list[dict]:
     """Reuse build_events_query with observed_from cursor.
 
 : NULL cursor -> scan last 24h only.
 : dashboard_roles=None (admin operation, no dashboard-scope gating).
+Phase 10: project_id + scope_predicate + bound_sources threaded through so
+per-webhook dispatch only surfaces events inside the webhook's project and
+scope. project_id is mandatory — post-migration-009 webhooks.project_id is
+NOT NULL.
 """
     if last_dispatch_at is None:
         cutoff = datetime.now(timezone.utc) - timedelta(hours=NULL_CURSOR_LOOKBACK_HOURS)
@@ -214,7 +260,12 @@ def _fetch_matching_events(
         has_geo=preset_query_params.get("has_geo", False),
         tag_mode=preset_query_params.get("tag_mode", "all"),
     )
-    stmt = build_events_query(params, dashboard_roles=None)  # — no role filter (admin operation)
+    stmt = build_events_query(
+        params, dashboard_roles=None,  # no role filter (admin operation)
+        project_id=project_id,
+        scope_predicate=scope_predicate,
+        bound_sources=bound_sources,
+    )
     stmt = stmt.limit(MAX_DIGEST_EVENTS)
 
     rows = session.execute(stmt).scalars().all()

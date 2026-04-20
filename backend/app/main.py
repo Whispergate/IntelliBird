@@ -43,6 +43,7 @@ from app.routers.admin.webhooks import router as admin_webhooks_router
 from app.routers.events import router as events_router
 from app.routers.graph import router as graph_router
 from app.routers.presets import router as presets_router
+from app.routers.projects import router as projects_router
 from app.routers.system import router as system_router
 from app.routers.tags import router as tags_router
 from app.workers import broker as _broker  # noqa: F401 — registers actors
@@ -193,6 +194,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(tags_router, prefix="/api")
     fastapi_app.include_router(presets_router, prefix="/api")
     fastapi_app.include_router(graph_router, prefix="/api")
+    fastapi_app.include_router(projects_router, prefix="/api")
 
     return fastapi_app
 

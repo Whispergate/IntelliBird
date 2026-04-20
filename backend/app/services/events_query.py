@@ -14,6 +14,7 @@ from typing import Literal
 import sqlalchemy as sa
 from sqlalchemy import Select, select, tuple_
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.models.events import Event
 from app.models.markings import TlpMarking
@@ -57,7 +58,23 @@ def decode_cursor(cursor: str) -> tuple[datetime, uuid.UUID]:
         raise CursorError(f"invalid cursor: {exc}") from exc
 
 
-def build_events_query(params: EventsQueryParams, dashboard_roles: list[str] | None) -> Select:
+def build_events_query(
+    params: EventsQueryParams,
+    dashboard_roles: list[str] | None,
+    project_id: uuid.UUID | None = None,
+    scope_predicate: ColumnElement[bool] | None = None,
+    bound_sources: list[uuid.UUID] | None = None,
+) -> Select:
+    """Compose a Select of Event rows honouring dashboard_roles + project filters.
+
+    Phase 10 kwargs (all default None — unchanged when omitted, preserving Phase 9
+    dashboard contract):
+      project_id: when set, filters events.project_id = project_id
+      scope_predicate: when set, applies the scope-intersection predicate
+        (router pre-builds via app.services.project_scope.build_scope_predicate)
+      bound_sources: when non-empty, filters events.source_id IN (bound_sources)
+        (router pre-builds via app.services.project_scope.fetch_bound_sources)
+    """
     stmt: Select = select(Event)
 
     if params.source:
@@ -123,6 +140,15 @@ def build_events_query(params: EventsQueryParams, dashboard_roles: list[str] | N
             allowed.append("blue_only")
         stmt = stmt.where(Event.visibility.in_(allowed))
 
+    # Phase 10 / PRJ-03: project_id narrowing + bound-sources + scope-intersection
+    # Applied AFTER role gating so cross-cutting filters compose correctly.
+    if project_id is not None:
+        stmt = stmt.where(Event.project_id == project_id)
+        if bound_sources:
+            stmt = stmt.where(Event.source_id.in_(bound_sources))
+        if scope_predicate is not None:
+            stmt = stmt.where(scope_predicate)
+
     stmt = stmt.order_by(Event.observed_at.desc(), Event.id.desc())
     return stmt
 
@@ -145,12 +171,21 @@ def _rank_expression(q: str):
     return sa.func.ts_rank_cd(sa.column("search_tsv"), tsquery)
 
 
-def build_fts_query(params: EventsQueryParams, dashboard_roles: list[str] | None, q: str) -> Select:
+def build_fts_query(
+    params: EventsQueryParams,
+    dashboard_roles: list[str] | None,
+    q: str,
+    project_id: uuid.UUID | None = None,
+    scope_predicate: ColumnElement[bool] | None = None,
+    bound_sources: list[uuid.UUID] | None = None,
+) -> Select:
     """FTS variant of build_events_query.
 
  Adds WHERE search_tsv @@ plainto_tsquery('english',:q) and
  ORDER BY ts_rank_cd DESC, observed_at DESC, id DESC.
  The select projects (Event, rank) so routers can read rank off rows for cursor.
+
+ Phase 10 kwargs (all default None): see build_events_query for semantics.
 """
     if not q or not q.strip():
         raise ValueError("free_text query cannot be empty")
@@ -213,6 +248,14 @@ def build_fts_query(params: EventsQueryParams, dashboard_roles: list[str] | None
         if "blue" in dashboard_roles:
             allowed.append("blue_only")
         stmt = stmt.where(Event.visibility.in_(allowed))
+
+    # Phase 10 / PRJ-03: project_id narrowing + bound-sources + scope-intersection
+    if project_id is not None:
+        stmt = stmt.where(Event.project_id == project_id)
+        if bound_sources:
+            stmt = stmt.where(Event.source_id.in_(bound_sources))
+        if scope_predicate is not None:
+            stmt = stmt.where(scope_predicate)
 
     stmt = stmt.order_by(rank_col.desc(), Event.observed_at.desc(), Event.id.desc())
     return stmt

@@ -101,9 +101,10 @@ async def test_no_user_passes_none_dashboard_roles():
     captured: dict = {}
     from app.services.events_query import build_events_query as _real_build
 
-    def spy_build(params, dashboard_roles):
+    def spy_build(params, dashboard_roles, **kwargs):
+        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
-        return _real_build(params, dashboard_roles)
+        return _real_build(params, dashboard_roles, **kwargs)
 
     app = _build_app_with_user(user_obj=None)
 
@@ -121,9 +122,10 @@ async def test_red_claim_sets_dashboard_roles_red():
     captured: dict = {}
     from app.services.events_query import build_events_query as _real_build
 
-    def spy_build(params, dashboard_roles):
+    def spy_build(params, dashboard_roles, **kwargs):
+        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
-        return _real_build(params, dashboard_roles)
+        return _real_build(params, dashboard_roles, **kwargs)
 
     user = _make_user(["red"])
     app = _build_app_with_user(user_obj=user)
@@ -142,9 +144,10 @@ async def test_blue_claim_sets_dashboard_roles_blue():
     captured: dict = {}
     from app.services.events_query import build_events_query as _real_build
 
-    def spy_build(params, dashboard_roles):
+    def spy_build(params, dashboard_roles, **kwargs):
+        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
-        return _real_build(params, dashboard_roles)
+        return _real_build(params, dashboard_roles, **kwargs)
 
     user = _make_user(["blue"])
     app = _build_app_with_user(user_obj=user)
@@ -166,9 +169,10 @@ async def test_header_ignored_when_claim_is_blue():
     captured: dict = {}
     from app.services.events_query import build_events_query as _real_build
 
-    def spy_build(params, dashboard_roles):
+    def spy_build(params, dashboard_roles, **kwargs):
+        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
-        return _real_build(params, dashboard_roles)
+        return _real_build(params, dashboard_roles, **kwargs)
 
     user = _make_user(["blue"])
     app = _build_app_with_user(user_obj=user)
@@ -192,9 +196,10 @@ async def test_header_ignored_when_no_user():
     captured: dict = {}
     from app.services.events_query import build_events_query as _real_build
 
-    def spy_build(params, dashboard_roles):
+    def spy_build(params, dashboard_roles, **kwargs):
+        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
-        return _real_build(params, dashboard_roles)
+        return _real_build(params, dashboard_roles, **kwargs)
 
     app = _build_app_with_user(user_obj=None)
 
