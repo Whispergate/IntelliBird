@@ -36,9 +36,15 @@ def test_preset_create_over_64_chars_rejected() -> None:
 
 
 def test_preset_create_accepts_valid_params() -> None:
-    p = PresetCreate(name="default-red", query_params={"source_type": ["rss"]})
+    from app.models.projects import LEGACY_PROJECT_ID
+    p = PresetCreate(
+        name="default-red",
+        query_params={"source_type": ["rss"]},
+        project_id=LEGACY_PROJECT_ID,
+    )
     assert p.name == "default-red"
     assert p.query_params == {"source_type": ["rss"]}
+    assert p.project_id == LEGACY_PROJECT_ID
 
 
 def test_preset_upsert_has_no_name_field() -> None:

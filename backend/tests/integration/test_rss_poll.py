@@ -38,6 +38,7 @@ def live_db():
         env = os.environ | {
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
+            "JWT_SIGNING_KEY": "j" * 64,
             "REDIS_URL": "redis://localhost:1",  # actor runs sync in tests, broker not touched
         }
         r = subprocess.run(["uv", "run", "alembic", "upgrade", "head"],

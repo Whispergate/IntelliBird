@@ -12,13 +12,20 @@ NOTE on SQLite ARRAY limitation:
 """
 from __future__ import annotations
 
+import os
 import uuid
 
-import pytest
-from fastapi import FastAPI
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+# Set required env vars before any app imports happen at module load.
+# This is safe: unit tests never connect to a real DB or use the actual secret.
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("SECRET_KEY", "a" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
+
+import pytest  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
+from httpx import ASGITransport, AsyncClient  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
 
 
 @pytest.fixture
@@ -42,6 +49,9 @@ async def app_with_session():
                 "stix_id TEXT, "
                 "stix_type TEXT NOT NULL DEFAULT 'indicator', "
                 "source_id TEXT, "
+                # Phase 10: events.project_id NOT NULL — defaulting to
+                # LEGACY_PROJECT_ID sentinel for SQLite test rows.
+                "project_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001', "
                 "fetched_at TEXT NOT NULL DEFAULT '2025-01-01T00:00:00+00:00', "
                 "raw_reference TEXT, "
                 "title TEXT, "

@@ -61,44 +61,62 @@ async def test_middleware_generates_request_id_when_absent(app_with_middleware):
         assert len(r.headers["X-Request-Id"]) >= 32  # UUID-ish
 
 
+def _render_caplog(caplog) -> str:
+    """Join all caplog records into a single string for substring assertions.
+
+    Phase 10 note: middleware log records (structlog → stdlib bridge) flow
+    through the Python logging system and are captured by caplog regardless of
+    where StreamHandler's stored sys.stdout reference points. Using caplog is
+    resilient to the app.main pre-import that captures stdout before pytest's
+    capsys replaces it (configure_logging in main runs once at module import).
+    """
+    return "\n".join(str(r.msg) for r in caplog.records)
+
+
 @pytest.mark.asyncio
-async def test_middleware_emits_http_request_event(app_with_middleware, capsys):
+async def test_middleware_emits_http_request_event(app_with_middleware, caplog):
+    import logging as _logging_mod
+    caplog.set_level(_logging_mod.INFO)
     async with AsyncClient(
         transport=ASGITransport(app=app_with_middleware), base_url="http://t"
     ) as c:
         await c.get("/hello", headers={"X-Dashboard-Role": "red"})
-    captured = capsys.readouterr()
-    # JSON log line includes event="http_request", method=GET, path=/hello, status=200, duration_ms, dashboard_role=red
-    assert '"event": "http_request"' in captured.out or '"event":"http_request"' in captured.out
-    assert '"method":' in captured.out.replace(" ", "")
-    assert '"path":' in captured.out.replace(" ", "") or '"path": ' in captured.out
-    assert '"status":' in captured.out.replace(" ", "")
-    assert '"duration_ms":' in captured.out.replace(" ", "")
-    assert "red" in captured.out  # dashboard_role value
+    rendered = _render_caplog(caplog)
+    # Middleware log record carries event="http_request" + method/path/status/duration_ms/dashboard_role
+    assert "'event': 'http_request'" in rendered or '"event": "http_request"' in rendered
+    assert "'method':" in rendered or '"method":' in rendered
+    assert "'path':" in rendered or '"path":' in rendered
+    assert "'status':" in rendered or '"status":' in rendered
+    assert "'duration_ms':" in rendered or '"duration_ms":' in rendered
+    assert "red" in rendered  # dashboard_role value
 
 
 @pytest.mark.asyncio
-async def test_middleware_reraises_exception_and_logs(app_with_middleware, capsys):
+async def test_middleware_reraises_exception_and_logs(app_with_middleware, caplog):
     """Exception should be logged then re-raised; test verifies log emission."""
+    import logging as _logging_mod
+    caplog.set_level(_logging_mod.INFO)
     with pytest.raises(Exception):
         async with AsyncClient(
             transport=ASGITransport(app=app_with_middleware), base_url="http://t"
         ) as c:
             await c.get("/boom")
-    captured = capsys.readouterr()
-    assert "http_request_exception" in captured.out
+    rendered = _render_caplog(caplog)
+    assert "http_request_exception" in rendered
 
 
 @pytest.mark.asyncio
-async def test_middleware_binds_request_id_to_context(app_with_middleware, capsys):
+async def test_middleware_binds_request_id_to_context(app_with_middleware, caplog):
     """Downstream log calls (inner_handler_log) should include request_id thanks to merge_contextvars."""
+    import logging as _logging_mod
+    caplog.set_level(_logging_mod.INFO)
     async with AsyncClient(
         transport=ASGITransport(app=app_with_middleware), base_url="http://t"
     ) as c:
         await c.get("/hello", headers={"X-Request-Id": "bind-test-xyz"})
-    captured = capsys.readouterr()
+    rendered = _render_caplog(caplog)
     # Both the middleware log and the inner log should carry request_id=bind-test-xyz
-    assert "bind-test-xyz" in captured.out
+    assert "bind-test-xyz" in rendered
     # Find both event names in output
-    assert "inner_handler_log" in captured.out
-    assert "http_request" in captured.out
+    assert "inner_handler_log" in rendered
+    assert "http_request" in rendered

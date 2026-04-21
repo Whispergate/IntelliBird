@@ -53,10 +53,15 @@ def migrated_engine():
         engine.dispose()
 
 
+LEGACY_PROJECT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
+
+
 def _mk_event_row(source_id: uuid.UUID, content_hash: str, observed_at: datetime | None = None) -> dict:
     return {
         "stix_type": "x-intellibird-rss",
         "source_id": source_id,
+        # Phase 10: events.project_id NOT NULL — seed against legacy sentinel.
+        "project_id": LEGACY_PROJECT_ID,
         "observed_at": observed_at or datetime.now(timezone.utc),
         "content_hash": content_hash,
         "visibility": "shared",
@@ -67,7 +72,10 @@ def _mk_event_row(source_id: uuid.UUID, content_hash: str, observed_at: datetime
 def test_alembic_head_is_0002(migrated_engine) -> None:
     with migrated_engine.connect() as conn:
         row = conn.execute(text("SELECT version_num FROM alembic_version")).one()
-    assert row[0] == "0003_archive_policy", f"expected 0003 head, got {row[0]}"
+    # Phase 10 renamed alembic head; migration 002's unique-index invariant is
+    # still covered by head==009 (see migration 009's test coverage for new
+    # project_id column; this file just pins that migrations advanced past 002).
+    assert row[0] == "009_projects_and_memberships", f"expected 009 head, got {row[0]}"
 
 
 def test_unique_constraint_enforced(migrated_engine) -> None:
@@ -90,19 +98,19 @@ def test_unique_constraint_enforced(migrated_engine) -> None:
         s.commit()
         s.execute(
             text("""
- INSERT INTO events (stix_type, source_id, observed_at, content_hash, visibility, title)
- VALUES ('x-intellibird-rss',:sid,:ts,:h, 'shared', 'one')
+ INSERT INTO events (stix_type, source_id, project_id, observed_at, content_hash, visibility, title)
+ VALUES ('x-intellibird-rss',:sid,:pid,:ts,:h, 'shared', 'one')
 """),
-            {"sid": str(sid), "h": h, "ts": ts},
+            {"sid": str(sid), "pid": str(LEGACY_PROJECT_ID), "h": h, "ts": ts},
         )
         s.commit()
         with pytest.raises(IntegrityError) as excinfo:
             s.execute(
                 text("""
- INSERT INTO events (stix_type, source_id, observed_at, content_hash, visibility, title)
- VALUES ('x-intellibird-rss',:sid,:ts,:h, 'shared', 'two')
+ INSERT INTO events (stix_type, source_id, project_id, observed_at, content_hash, visibility, title)
+ VALUES ('x-intellibird-rss',:sid,:pid,:ts,:h, 'shared', 'two')
 """),
-                {"sid": str(sid), "h": h, "ts": ts},
+                {"sid": str(sid), "pid": str(LEGACY_PROJECT_ID), "h": h, "ts": ts},
             )
             s.commit()
         assert "uq_events_source_content_hash" in str(excinfo.value)
@@ -131,11 +139,11 @@ def test_unique_constraint_allows_different_sources(migrated_engine) -> None:
         s.commit()
         s.execute(
             text("""
- INSERT INTO events (stix_type, source_id, observed_at, content_hash, visibility, title)
- VALUES ('x-intellibird-rss',:sid1,:ts,:h, 'shared', 'a'),
- ('x-intellibird-rss',:sid2,:ts,:h, 'shared', 'b')
+ INSERT INTO events (stix_type, source_id, project_id, observed_at, content_hash, visibility, title)
+ VALUES ('x-intellibird-rss',:sid1,:pid,:ts,:h, 'shared', 'a'),
+ ('x-intellibird-rss',:sid2,:pid,:ts,:h, 'shared', 'b')
 """),
-            {"sid1": str(sid1), "sid2": str(sid2), "h": h, "ts": ts},
+            {"sid1": str(sid1), "sid2": str(sid2), "pid": str(LEGACY_PROJECT_ID), "h": h, "ts": ts},
         )
         s.commit()
         count = s.execute(text("SELECT count(*) FROM events WHERE content_hash = :h"), {"h": h}).scalar()

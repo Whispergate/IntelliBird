@@ -74,7 +74,7 @@ def backfill_geo_once_impl() -> dict:
  AND raw_stix IS NOT NULL
  AND archived = false
  ORDER BY observed_at DESC, id DESC
- LIMIT:batch_size
+ LIMIT :batch_size
 """),
                     {"batch_size": BATCH_SIZE},
                 ).all()
@@ -87,9 +87,9 @@ def backfill_geo_once_impl() -> dict:
  AND geo_lon IS NULL
  AND raw_stix IS NOT NULL
  AND archived = false
- AND (observed_at, id) < (:cursor_ts,:cursor_id)
+ AND (observed_at, id) < (:cursor_ts, :cursor_id)
  ORDER BY observed_at DESC, id DESC
- LIMIT:batch_size
+ LIMIT :batch_size
 """),
                     {
                         "batch_size": BATCH_SIZE,

@@ -43,6 +43,7 @@ def live_db_graph():
         env = os.environ | {
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
+            "JWT_SIGNING_KEY": "j" * 64,
             "REDIS_URL": "redis://localhost:1",
         }
         for k, v in env.items():
@@ -175,7 +176,12 @@ async def test_response_shape_cytoscape_compatible(graph_client):
     r = await c.get(f"/api/events/{eid}/graph?depth=2")
     body = r.json()
     assert set(body.keys()) >= {"nodes", "edges", "truncated"}
+    # graph_traversal may add optional 'tag_source' to technique nodes
+    # (feed_asserted / stix_inferred / etc) — allow it alongside core keys.
+    core = {"id", "label", "type"}
     for n in body["nodes"]:
-        assert set(n["data"].keys()) == {"id", "label", "type"}
+        keys = set(n["data"].keys())
+        assert core <= keys, f"node missing core keys: {keys}"
+        assert keys <= core | {"tag_source"}, f"unexpected keys: {keys - core}"
     for e in body["edges"]:
         assert set(e["data"].keys()) == {"source", "target", "relation"}

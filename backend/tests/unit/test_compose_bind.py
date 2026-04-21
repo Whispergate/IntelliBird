@@ -16,6 +16,9 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[3]
 COMPOSE_PATH = REPO_ROOT / "ops" / "docker-compose.yml"
 
+# Core services required for the M1/M2 stack. Phase 9 added Authentik
+# (authentik-db/server/worker) + GeoIP auto-update (geoip-update). This assertion
+# requires the core set be present; additional services are tolerated.
 REQUIRED_SERVICES = {"db", "redis", "api", "worker", "scheduler", "web"}
 
 
@@ -27,7 +30,8 @@ def compose() -> dict:
 
 def test_all_six_services_present(compose: dict) -> None:
     actual = set(compose["services"].keys())
-    assert actual == REQUIRED_SERVICES, f"services mismatch: {actual}"
+    missing = REQUIRED_SERVICES - actual
+    assert not missing, f"missing required services: {missing}"
 
 
 def test_every_port_is_loopback_only(compose: dict) -> None:

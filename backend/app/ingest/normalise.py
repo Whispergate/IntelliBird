@@ -43,7 +43,19 @@ def _persist_event(session: Session, row: dict) -> int:
  hypertable. The row dict MUST include observed_at (set to the feed
  item's published/modified timestamp so re-fetches produce identical
  triples and are silently dropped).
+
+ Phase 10: events.project_id is NOT NULL (migration 009 dropped the default).
+ Workers that don't know a project binding yet (RSS/NVD/TAXII ingest) default
+ to LEGACY_PROJECT_ID so pre-project-scoping feeds continue to land. A future
+ plan will thread project_id through the worker → source-binding resolution.
 """
+    # Phase 10: ensure every row carries a project_id. Default to the LEGACY
+    # sentinel when unset so feed workers (rss/nvd/taxii) that haven't been
+    # updated yet don't blow up against the NOT NULL constraint.
+    if row.get("project_id") is None:
+        from app.models.projects import LEGACY_PROJECT_ID  # lazy import (avoids cycles)
+        row["project_id"] = LEGACY_PROJECT_ID
+
     # MAP-05 — resolve geo at ingest if worker has not pre-populated
     if row.get("geo_lat") is None or row.get("geo_lon") is None:
         from app.services.geo import resolve_geo  # lazy import — keeps worker boot cheap

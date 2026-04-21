@@ -24,17 +24,21 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 # These tests use the router directly with a real DB + Redis container.
 # ---------------------------------------------------------------------------
 
-@pytest_asyncio.fixture
-async def full_client(pg_container, redis_container, argon2_fast):
-    """Stand up a minimal FastAPI app with the auth router + real DB + Redis."""
-    # Resolve URLs
-    pg_url = pg_container.get_connection_url().replace(
-        "postgresql+psycopg2://", "postgresql+asyncpg://"
-    ).replace("postgresql://", "postgresql+asyncpg://")
-    redis_host = redis_container.get_container_host_ip()
-    redis_port = redis_container.get_exposed_port(6379)
-    redis_url = f"redis://{redis_host}:{redis_port}/10"
+@pytest.fixture(scope="module")
+def monkeypatch_module():
+    """Module-scoped monkeypatch — stdlib's monkeypatch is function-scoped."""
+    mp = pytest.MonkeyPatch()
+    yield mp
+    mp.undo()
 
+
+@pytest_asyncio.fixture
+async def full_client(pg_url, redis_url, _migrations_applied, argon2_fast):
+    """Stand up a minimal FastAPI app with the auth router + real DB + Redis.
+
+    Uses the session-scoped pg_url / redis_url / _migrations_applied from
+    integration/conftest.py (no nested asyncio.run alembic call here).
+    """
     from app.config import settings
     settings.DATABASE_URL = pg_url  # type: ignore[assignment]
     settings.REDIS_URL = redis_url  # type: ignore[assignment]
@@ -42,19 +46,8 @@ async def full_client(pg_container, redis_container, argon2_fast):
     os.environ["DATABASE_URL"] = pg_url
     os.environ["REDIS_URL"] = redis_url
 
-    # Run migrations
-    import alembic.config
-    import alembic.command
-    alembic_ini = os.path.join(os.path.dirname(__file__), "..", "..", "alembic.ini")
-    alembic_cfg = alembic.config.Config(alembic_ini)
-    alembic_cfg.set_main_option("script_location", "alembic")
-    alembic_cfg.set_main_option(
-        "sqlalchemy.url",
-        pg_url.replace("postgresql+asyncpg://", "postgresql://"),
-    )
-    alembic.command.upgrade(alembic_cfg, "head")
-
     from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+    import redis.asyncio as aioredis
     engine = create_async_engine(pg_url, future=True)
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
@@ -128,7 +121,7 @@ async def test_refresh_happy_path_new_pair_issued(full_client):
     """Refresh with valid cookie returns a new access_token + new refresh_token."""
     client, factory, user_id, redis_url = full_client
     # Login to get initial pair
-    r = await client.post("/login", json={
+    r = await client.post("/auth/login", json={
         "username": "refresh-test-user",
         "password": "test-password-12",
     })
@@ -136,7 +129,7 @@ async def test_refresh_happy_path_new_pair_issued(full_client):
     access_1 = r.json()["access_token"]
 
     # POST /refresh — httpx stores the Set-Cookie automatically
-    r2 = await client.post("/refresh")
+    r2 = await client.post("/auth/refresh")
     assert r2.status_code == 200, r2.text
     access_2 = r2.json()["access_token"]
     assert access_1 != access_2  # new JTI issued
@@ -148,7 +141,7 @@ async def test_refresh_old_jti_blocklisted_before_new_pair_returned(full_client)
     import redis.asyncio as aioredis
     client, factory, user_id, redis_url = full_client
 
-    r = await client.post("/login", json={
+    r = await client.post("/auth/login", json={
         "username": "refresh-test-user",
         "password": "test-password-12",
     })
@@ -162,7 +155,7 @@ async def test_refresh_old_jti_blocklisted_before_new_pair_returned(full_client)
     old_jti = old_claims["jti"]
 
     # Rotate
-    r2 = await client.post("/refresh")
+    r2 = await client.post("/auth/refresh")
     assert r2.status_code == 200
 
     # Old JTI must be revoked
@@ -182,7 +175,7 @@ async def test_refresh_reuse_detection_bumps_token_version(full_client):
     client, factory, user_id, redis_url = full_client
 
     # Login
-    r = await client.post("/login", json={
+    r = await client.post("/auth/login", json={
         "username": "refresh-test-user",
         "password": "test-password-12",
     })
@@ -190,12 +183,12 @@ async def test_refresh_reuse_detection_bumps_token_version(full_client):
     old_refresh = r.cookies.get("refresh_token")
 
     # First refresh — rotates old cookie
-    r2 = await client.post("/refresh")
+    r2 = await client.post("/auth/refresh")
     assert r2.status_code == 200
 
     # Manually inject the old (now revoked) refresh cookie and POST /refresh again
     old_client_kwargs = {"cookies": {"refresh_token": old_refresh}}
-    r3 = await client.post("/refresh", cookies={"refresh_token": old_refresh})
+    r3 = await client.post("/auth/refresh", cookies={"refresh_token": old_refresh})
     assert r3.status_code == 401
     assert r3.json()["detail"] == "revoked_token"
     assert r3.headers.get("X-Session-Revoked") == "reuse_detected"
@@ -214,7 +207,7 @@ async def test_refresh_with_access_token_type_returns_401(full_client):
     client, _, user_id, _ = full_client
 
     access, _ = mint_access_token(str(user_id), "Analyst", ["blue"], 0, "j" * 64)
-    r = await client.post("/refresh", cookies={"refresh_token": access})
+    r = await client.post("/auth/refresh", cookies={"refresh_token": access})
     assert r.status_code == 401
 
 
@@ -224,7 +217,7 @@ async def test_refresh_no_cookie_returns_401(full_client):
     client, _, _, _ = full_client
     # Clear cookies explicitly
     client.cookies.clear()
-    r = await client.post("/refresh")
+    r = await client.post("/auth/refresh")
     assert r.status_code == 401
 
 
@@ -274,7 +267,7 @@ async def test_change_password_bumps_token_version(full_client):
     auth_module._redis_client = test_redis
 
     async with AsyncClient(transport=ASGITransport(app=mini_app), base_url="http://t") as c:
-        r = await c.post("/change-password", json={
+        r = await c.post("/auth/change-password", json={
             "current_password": "test-password-12",
             "new_password": "new-password-that-is-long-enough",
         })
@@ -338,7 +331,7 @@ async def test_change_password_same_as_current_returns_400(full_client):
     auth_module._redis_client = test_redis
 
     async with AsyncClient(transport=ASGITransport(app=mini_app), base_url="http://t") as c:
-        r = await c.post("/change-password", json={
+        r = await c.post("/auth/change-password", json={
             "current_password": "test-password-12",
             "new_password": "test-password-12",
         })
@@ -379,7 +372,7 @@ async def test_change_password_too_short_returns_422(full_client):
     mini_app.dependency_overrides[require_auth] = lambda: test_auth_user
 
     async with AsyncClient(transport=ASGITransport(app=mini_app), base_url="http://t") as c:
-        r = await c.post("/change-password", json={
+        r = await c.post("/auth/change-password", json={
             "current_password": "test-password-12",
             "new_password": "short",  # < 12 chars
         })

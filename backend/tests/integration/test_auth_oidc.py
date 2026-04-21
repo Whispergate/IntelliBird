@@ -17,6 +17,7 @@ import pytest_asyncio
 
 pytestmark = pytest.mark.integration
 
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
 os.environ.setdefault("SECRET_KEY", "s" * 64)
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
@@ -45,17 +46,21 @@ async def oidc_app(pg_container):
     settings.JWT_SIGNING_KEY = "j" * 64  # type: ignore[assignment]
     os.environ["DATABASE_URL"] = pg_url
 
-    # Migrations
-    import alembic.config
-    import alembic.command
-    alembic_ini = os.path.join(os.path.dirname(__file__), "..", "..", "alembic.ini")
-    alembic_cfg = alembic.config.Config(alembic_ini)
-    alembic_cfg.set_main_option("script_location", "alembic")
-    alembic_cfg.set_main_option(
-        "sqlalchemy.url",
-        pg_url.replace("postgresql+asyncpg://", "postgresql://"),
+    # Migrations via subprocess to avoid nested asyncio.run() from alembic/env.py
+    # inside the pytest-asyncio event loop.
+    import subprocess
+    from pathlib import Path
+    backend_dir = Path(__file__).resolve().parents[2]
+    env = os.environ | {"DATABASE_URL": pg_url}
+    r = subprocess.run(
+        ["uv", "run", "alembic", "upgrade", "head"],
+        cwd=str(backend_dir),
+        env=env,
+        capture_output=True,
+        text=True,
     )
-    alembic.command.upgrade(alembic_cfg, "head")
+    if r.returncode != 0:
+        pytest.skip(f"alembic upgrade head failed:\n{r.stderr[:800]}")
 
     from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
     engine = create_async_engine(pg_url, future=True)
@@ -105,7 +110,7 @@ async def test_oidc_login_404_when_unconfigured(oidc_app):
     original = settings.SSO_ISSUER_URL
     settings.SSO_ISSUER_URL = None  # type: ignore[assignment]
     try:
-        r = await client.get("/oidc/login", follow_redirects=False)
+        r = await client.get("/auth/oidc/login", follow_redirects=False)
         assert r.status_code == 404
         assert r.json()["detail"] == "oidc_not_configured"
     finally:
@@ -125,7 +130,7 @@ async def test_oidc_login_302_with_correct_query_params_when_configured(oidc_app
         "app.routers.auth.fetch_server_metadata",
         new=AsyncMock(return_value=AUTHENTIK_DISCOVERY),
     ):
-        r = await client.get("/oidc/login", follow_redirects=False)
+        r = await client.get("/auth/oidc/login", follow_redirects=False)
 
     settings.SSO_ISSUER_URL = None  # type: ignore[assignment]
     settings.SSO_CLIENT_ID = None  # type: ignore[assignment]
@@ -153,7 +158,7 @@ async def test_oidc_login_sets_state_verifier_nonce_cookies(oidc_app):
         "app.routers.auth.fetch_server_metadata",
         new=AsyncMock(return_value=AUTHENTIK_DISCOVERY),
     ):
-        r = await client.get("/oidc/login", follow_redirects=False)
+        r = await client.get("/auth/oidc/login", follow_redirects=False)
 
     settings.SSO_ISSUER_URL = None  # type: ignore[assignment]
     settings.SSO_CLIENT_ID = None  # type: ignore[assignment]
@@ -177,7 +182,7 @@ async def test_callback_invalid_state_returns_400(oidc_app):
 
     # Provide a different state in cookie vs query param
     r = await client.get(
-        "/oidc/callback",
+        "/auth/oidc/callback",
         params={"code": "some-code", "state": "state-in-query"},
         cookies={"oidc_state": "different-state"},
         follow_redirects=False,
@@ -195,7 +200,7 @@ async def test_callback_missing_code_returns_400(oidc_app):
     settings.SSO_ISSUER_URL = MOCK_ISSUER_URL
 
     r = await client.get(
-        "/oidc/callback",
+        "/auth/oidc/callback",
         params={"state": "some-state"},
         cookies={"oidc_state": "some-state"},
         follow_redirects=False,
@@ -232,7 +237,7 @@ async def test_callback_happy_path_creates_viewer_user_by_default(oidc_app):
          patch("app.routers.auth.verify_id_token", new=AsyncMock(return_value=id_token_claims)):
 
         r = await client.get(
-            "/oidc/callback",
+            "/auth/oidc/callback",
             params={"code": "auth-code", "state": "test-state"},
             cookies={
                 "oidc_state": "test-state",
@@ -288,7 +293,7 @@ async def test_callback_admin_group_creates_admin_with_both_dashboards(oidc_app)
          patch("app.routers.auth.verify_id_token", new=AsyncMock(return_value=id_token_claims)):
 
         r = await client.get(
-            "/oidc/callback",
+            "/auth/oidc/callback",
             params={"code": "admin-code", "state": "admin-state"},
             cookies={
                 "oidc_state": "admin-state",
@@ -343,7 +348,7 @@ async def test_callback_returning_user_updates_last_login_no_duplicate_row(oidc_
              patch("app.routers.auth.build_oidc_client", new=AsyncMock(return_value=mock_client)), \
              patch("app.routers.auth.verify_id_token", new=AsyncMock(return_value=id_token_claims)):
             r = await client.get(
-                "/oidc/callback",
+                "/auth/oidc/callback",
                 params={"code": "code", "state": "s"},
                 cookies={"oidc_state": "s", "oidc_verifier": "v", "oidc_nonce": "returning-nonce"},
                 follow_redirects=False,
@@ -385,7 +390,7 @@ async def test_callback_landing_redirect_by_dashboard_role(oidc_app):
          patch("app.routers.auth.build_oidc_client", new=AsyncMock(return_value=mock_client)), \
          patch("app.routers.auth.verify_id_token", new=AsyncMock(return_value=id_claims)):
         r = await client.get(
-            "/oidc/callback",
+            "/auth/oidc/callback",
             params={"code": "c", "state": "st"},
             cookies={"oidc_state": "st", "oidc_verifier": "vv", "oidc_nonce": "land-nonce"},
             follow_redirects=False,

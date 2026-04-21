@@ -42,6 +42,7 @@ def live_db():
         env = os.environ | {
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
+            "JWT_SIGNING_KEY": "j" * 64,
             "REDIS_URL": "redis://localhost:1",
         }
         r = subprocess.run(
@@ -107,8 +108,10 @@ def _insert_event(
     with Session(engine) as s:
         s.execute(
             text("""
- INSERT INTO events (id, source_id, stix_type, observed_at, content_hash)
- VALUES (:id,:sid, 'indicator',:observed_at,:ch)
+ INSERT INTO events (id, source_id, project_id, stix_type, observed_at, content_hash)
+ VALUES (:id,:sid,
+ '00000000-0000-0000-0000-000000000001'::uuid,
+ 'indicator',:observed_at,:ch)
 """),
             {
                 "id": str(eid),

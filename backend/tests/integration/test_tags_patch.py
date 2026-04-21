@@ -50,6 +50,7 @@ def live_db_tags():
         env = os.environ | {
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
+            "JWT_SIGNING_KEY": "j" * 64,
             "REDIS_URL": "redis://localhost:1",  # unreachable — not needed for these tests
         }
         for k, v in env.items():

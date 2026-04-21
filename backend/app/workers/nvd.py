@@ -203,6 +203,12 @@ def poll_nvd_impl(source_id_str: str) -> None:
                 continue
             event_row, cve_details_row, attack_links = result
 
+            # Phase 10: events.project_id is NOT NULL. Default to the LEGACY
+            # sentinel until NVD is wired to per-source project bindings.
+            if event_row.get("project_id") is None:
+                from app.models.projects import LEGACY_PROJECT_ID  # lazy import
+                event_row["project_id"] = LEGACY_PROJECT_ID
+
             # Insert the event row with RETURNING id so we can link child rows.
             # ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING matches
             # the 3-column unique index from migration 002 (TimescaleDB hypertable).

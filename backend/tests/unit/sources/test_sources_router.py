@@ -7,19 +7,26 @@ ARRAY, UUID types that SQLite can't render).
 """
 from __future__ import annotations
 
-import uuid
-from datetime import datetime, timezone
-from typing import AsyncIterator
+import os
 
-import pytest
-import pytest_asyncio
-from fastapi import FastAPI
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+os.environ.setdefault("SECRET_KEY", "a" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
-from app.models.sources import Source
-from app.routers.admin.sources import router
+import uuid  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
+from typing import AsyncIterator  # noqa: E402
+
+import pytest  # noqa: E402
+import pytest_asyncio  # noqa: E402
+from fastapi import FastAPI  # noqa: E402
+from httpx import ASGITransport, AsyncClient  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine  # noqa: E402
+
+from app.models.sources import Source  # noqa: E402
+from app.routers.admin.sources import router  # noqa: E402
 
 # SQLite-compatible DDL for the tables we need.
 # IDs are set from Python side (uuid.uuid4) — no server-side gen_random_uuid needed.
@@ -30,6 +37,7 @@ CREATE TABLE IF NOT EXISTS sources (
  feed_type TEXT NOT NULL,
  url TEXT NOT NULL,
  credentials_enc TEXT,
+ credentials_key_version INTEGER NOT NULL DEFAULT 1,
  poll_interval_sec INTEGER NOT NULL DEFAULT 3600,
  hot_retention_days INTEGER NOT NULL DEFAULT 30,
  enabled INTEGER NOT NULL DEFAULT 1,
@@ -95,7 +103,21 @@ async def client(db_session: AsyncSession):
         yield db_session
 
     from app.database import get_session
+    from app.middleware.auth import require_admin, require_analyst_or_above, require_auth
+    from app.security.jwt import AuthUser
+
+    fake_admin = AuthUser(
+        id=str(uuid.uuid4()),
+        role="Admin",
+        dashboard_roles=["red", "blue"],
+        jti=str(uuid.uuid4()),
+        token_version=0,
+    )
+
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[require_admin] = lambda: fake_admin
+    app.dependency_overrides[require_analyst_or_above] = lambda: fake_admin
+    app.dependency_overrides[require_auth] = lambda: fake_admin
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c

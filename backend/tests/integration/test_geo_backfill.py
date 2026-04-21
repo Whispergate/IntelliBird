@@ -73,6 +73,7 @@ def live_db():
         env = os.environ | {
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
+            "JWT_SIGNING_KEY": "j" * 64,
             "REDIS_URL": "redis://localhost:1",
             # Point to a non-existent MMDB so MaxMind path is disabled;
             # tests rely on STIX location SDO path only.
@@ -131,11 +132,11 @@ def _insert_event(
         s.execute(
             text("""
  INSERT INTO events
- (id, source_id, stix_type, observed_at, content_hash,
+ (id, source_id, project_id, stix_type, observed_at, content_hash,
  raw_stix, geo_lat, geo_lon, archived)
  VALUES
- (:id,:sid, 'indicator', now,:ch,
-:raw_stix::jsonb,:geo_lat,:geo_lon, false)
+ (:id, :sid, '00000000-0000-0000-0000-000000000001'::uuid, 'indicator', now(), :ch,
+ CAST(:raw_stix AS jsonb), :geo_lat, :geo_lon, false)
 """),
             {
                 "id": str(eid),

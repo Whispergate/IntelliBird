@@ -63,11 +63,15 @@ async def create_preset(
     try:
         result = await db.execute(
             text(
-                "INSERT INTO filter_presets (name, query_params) "
-                "VALUES (:name, CAST(:params AS jsonb)) "
+                "INSERT INTO filter_presets (name, project_id, query_params) "
+                "VALUES (:name, :project_id, CAST(:params AS jsonb)) "
                 "RETURNING id, name, query_params, created_at, updated_at"
             ),
-            {"name": payload.name, "params": json.dumps(payload.query_params)},
+            {
+                "name": payload.name,
+                "project_id": str(payload.project_id),
+                "params": json.dumps(payload.query_params),
+            },
         )
         row = result.one()
         await db.commit()
@@ -116,8 +120,9 @@ async def upsert_preset(
 """
     result = await db.execute(
         text(
-            "INSERT INTO filter_presets (name, query_params) "
-            "VALUES (:name, CAST(:params AS jsonb)) "
+            "INSERT INTO filter_presets (name, project_id, query_params) "
+            "VALUES (:name, '00000000-0000-0000-0000-000000000001'::uuid, "
+            "        CAST(:params AS jsonb)) "
             "ON CONFLICT (name) DO UPDATE "
             "  SET query_params = EXCLUDED.query_params, "
             "      updated_at   = now() "

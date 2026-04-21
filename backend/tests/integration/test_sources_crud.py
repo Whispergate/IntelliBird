@@ -35,6 +35,7 @@ def live_db_sources():
         env = os.environ | {
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
+            "JWT_SIGNING_KEY": "j" * 64,
             "REDIS_URL": "redis://localhost:1",  # unreachable — pub/sub fire-and-forget
         }
         r = subprocess.run(
@@ -53,11 +54,13 @@ def live_db_sources():
 async def sources_client(live_db_sources):
     asyncpg_url, env = live_db_sources
 
-    # Patch settings to point at the test DB
-    import importlib
-    import app.config as cfg_module
+    # Patch settings to point at the test DB. Env must be set BEFORE the first
+    # import of app.config so module-level `settings = Settings()` sees the
+    # required SECRET_KEY + JWT_SIGNING_KEY (Phase 10 / Phase 9 respectively).
     for k, v in env.items():
         os.environ[k] = v
+    import importlib
+    import app.config as cfg_module
     importlib.reload(cfg_module)
     settings = cfg_module.settings
 
@@ -65,7 +68,9 @@ async def sources_client(live_db_sources):
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
     from app.database import get_session
+    from app.middleware.auth import require_admin, require_analyst_or_above, require_auth
     from app.routers.admin.sources import router
+    from app.security.jwt import AuthUser
 
     app = FastAPI()
     app.include_router(router)
@@ -74,7 +79,24 @@ async def sources_client(live_db_sources):
         async with factory() as session:
             yield session
 
+    def _fake_admin() -> AuthUser:
+        # Phase 9 AUTH-02 guards admin routes. Bypass the middleware chain
+        # (not mounted on this minimal test app) by overriding the dependency
+        # so the CRUD test exercises the business logic, not auth plumbing.
+        return AuthUser(
+            id="00000000-0000-0000-0000-000000000099",
+            role="Admin",
+            dashboard_roles=["red", "blue"],
+            jti="test-jti",
+            token_version=0,
+            project_memberships={},
+            pm_truncated=False,
+        )
+
     app.dependency_overrides[get_session] = override_session
+    app.dependency_overrides[require_admin] = _fake_admin
+    app.dependency_overrides[require_analyst_or_above] = _fake_admin
+    app.dependency_overrides[require_auth] = _fake_admin
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c

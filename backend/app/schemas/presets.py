@@ -13,6 +13,7 @@ PRESET_NAME_REGEX = re.compile(r"^[a-z0-9_-]{1,64}$")
 
 class PresetCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=64)
+    project_id: uuid.UUID
     query_params: dict[str, Any]
 
     @field_validator("name", mode="after")

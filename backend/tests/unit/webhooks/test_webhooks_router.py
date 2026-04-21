@@ -6,10 +6,17 @@ All tests run without Postgres, Redis, or network access.
 """
 from __future__ import annotations
 
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import AsyncIterator
 from unittest.mock import MagicMock
+
+# Settings env must be set BEFORE any app import — config.Settings() runs at import time.
+os.environ.setdefault("SECRET_KEY", "s" * 64)
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
+os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 import pytest
 import pytest_asyncio
@@ -20,7 +27,23 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.config import settings
 from app.crypto import decrypt_credentials, encrypt_credentials
+from app.middleware.auth import require_admin
+from app.models.projects import LEGACY_PROJECT_ID
 from app.schemas.webhooks import WebhookCreate, WebhookResponse, WebhookUpdate
+from app.security.jwt import AuthUser
+
+
+def _fake_admin() -> AuthUser:
+    """Admin override for require_admin dependency — bypasses JWT middleware chain."""
+    return AuthUser(
+        id="00000000-0000-0000-0000-000000000000",
+        role="Admin",
+        dashboard_roles=["red", "blue"],
+        jti="test-jti",
+        token_version=0,
+        project_memberships={},
+        pm_truncated=False,
+    )
 
 # ---------------------------------------------------------------------------
 # SQLite-compatible DDL
@@ -31,6 +54,7 @@ _FILTER_PRESETS_DDL = """
 CREATE TABLE IF NOT EXISTS filter_presets (
  id TEXT PRIMARY KEY,
  name TEXT NOT NULL UNIQUE,
+ project_id TEXT,
  query_params TEXT NOT NULL DEFAULT '{}',
  created_at TEXT DEFAULT (datetime('now')),
  updated_at TEXT DEFAULT (datetime('now'))
@@ -41,6 +65,7 @@ _WEBHOOKS_DDL = """
 CREATE TABLE IF NOT EXISTS webhooks (
  id TEXT PRIMARY KEY,
  name TEXT NOT NULL UNIQUE,
+ project_id TEXT,
  destination_type TEXT NOT NULL,
  url TEXT NOT NULL,
  auth_enc TEXT,
@@ -119,6 +144,7 @@ async def client(db_session: AsyncSession):
         yield db_session
 
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[require_admin] = _fake_admin
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
@@ -304,6 +330,7 @@ async def test_test_send_returns_200_on_ok(monkeypatch):
     from app.routers.admin.webhooks import router
     app = FastAPI()
     app.include_router(router)
+    app.dependency_overrides[require_admin] = _fake_admin
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         resp = await c.post(
@@ -340,6 +367,7 @@ async def test_test_send_returns_200_on_failure(monkeypatch):
     from app.routers.admin.webhooks import router
     app = FastAPI()
     app.include_router(router)
+    app.dependency_overrides[require_admin] = _fake_admin
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         resp = await c.post(

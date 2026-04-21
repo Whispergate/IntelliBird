@@ -20,6 +20,7 @@ from unittest.mock import MagicMock, call, patch
 
 # --- env setup MUST be before any app.* import ---
 os.environ.setdefault("SECRET_KEY", "a" * 48)
+os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:x@localhost/test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 

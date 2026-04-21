@@ -129,6 +129,7 @@ import os
 os.environ.setdefault("SECRET_KEY", "a" * 34)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
+os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 import app.services.webhook_dispatcher as disp
 
@@ -248,7 +249,7 @@ class TestBatching:
         """: NULL cursor → observed_from = now - 24h (within 1s tolerance)."""
         captured_params = []
 
-        def fake_build_events_query(params, role):
+        def fake_build_events_query(params, **kwargs):
             captured_params.append(params)
             return MagicMock()  # stmt that session.execute can handle
 
@@ -259,7 +260,9 @@ class TestBatching:
         session.execute.return_value.scalars.return_value.all.return_value = []
 
         before = datetime.now(timezone.utc)
-        disp._fetch_matching_events(session, {}, last_dispatch_at=None)
+        disp._fetch_matching_events(
+            session, {}, last_dispatch_at=None, project_id=uuid.uuid4(),
+        )
         after = datetime.now(timezone.utc)
 
         assert len(captured_params) == 1
@@ -411,8 +414,8 @@ def test_event_matching_reuses_build_events_query(monkeypatch):
     """: _fetch_matching_events calls build_events_query with dashboard_roles=None."""
     spy_calls: list[tuple] = []
 
-    def spy_build_events_query(params, dashboard_roles):
-        spy_calls.append((params, dashboard_roles))
+    def spy_build_events_query(params, **kwargs):
+        spy_calls.append((params, kwargs.get("dashboard_roles")))
         return MagicMock()
 
     monkeypatch.setattr(disp, "build_events_query", spy_build_events_query)
@@ -421,7 +424,9 @@ def test_event_matching_reuses_build_events_query(monkeypatch):
     session.execute.return_value.scalars.return_value.all.return_value = []
 
     cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
-    disp._fetch_matching_events(session, {}, last_dispatch_at=cutoff)
+    disp._fetch_matching_events(
+        session, {}, last_dispatch_at=cutoff, project_id=uuid.uuid4(),
+    )
 
     assert len(spy_calls) == 1
     _, dashboard_roles_passed = spy_calls[0]

@@ -50,11 +50,36 @@ def test_age_concurrent_write_read(pg_container, monkeypatch) -> None:
     import importlib
     import app.config as cfg
     importlib.reload(cfg)
-    import app.workers.age_spike as spike
-    importlib.reload(spike)
+    # Dramatiq actors can only be registered once per process — avoid re-registering
+    # when the module has already been imported by earlier tests in the suite.
+    import sys
+    if "app.workers.age_spike" in sys.modules:
+        import app.workers.age_spike as spike
+    else:
+        import app.workers.age_spike as spike  # noqa: F401 — first import registers actors
 
     batch_a = f"A-{uuid.uuid4().hex[:6]}"
     batch_b = f"B-{uuid.uuid4().hex[:6]}"
+
+    # Pre-create the graph and the Spike vertex label so concurrent writers
+    # don't race on create_graph / CREATE LABEL DDL.
+    sync_pre_url = url.replace("+asyncpg", "")
+    pre_engine = create_engine(sync_pre_url, future=True)
+    with pre_engine.begin() as conn:
+        spike._ensure_graph(conn, GRAPH_NAME)
+        # Create one vertex + delete it to materialise the 'Spike' label table
+        # ahead of the concurrent writers.
+        conn.execute(text(
+            f"SELECT * FROM cypher('{GRAPH_NAME}', $$ "
+            f"CREATE (n:Spike {{batch:'warm', idx:-1}}) RETURN n "
+            f"$$) AS (n ag_catalog.agtype)"
+        ))
+        conn.execute(text(
+            f"SELECT * FROM cypher('{GRAPH_NAME}', $$ "
+            f"MATCH (n:Spike {{batch:'warm'}}) DELETE n "
+            f"$$) AS (n ag_catalog.agtype)"
+        ))
+    pre_engine.dispose()
 
     t1 = threading.Thread(target=spike.age_spike_writer.fn,
                           args=(GRAPH_NAME, batch_a, 10))

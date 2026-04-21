@@ -456,6 +456,7 @@ def test_poll_taxii_decrypts_basic_auth(monkeypatch: pytest.MonkeyPatch):
     # runs (e.g. after importing app.routers.admin.sources in another test).
     monkeypatch.setenv("SECRET_KEY", _TEST_SECRET)
     monkeypatch.setenv("DATABASE_URL", "postgresql+asyncpg://u:p@localhost/db")
+    monkeypatch.setenv("JWT_SIGNING_KEY", "j" * 64)
     import app.config as _cfg
     monkeypatch.setattr(_cfg.settings, "SECRET_KEY", _TEST_SECRET)
 

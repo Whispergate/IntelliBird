@@ -83,8 +83,13 @@ def _viewer_headers() -> dict[str, str]:
 
 
 def _patch_auth(monkeypatch) -> None:
-    """Bypass DB token_version and Redis revocation checks for unit-style tests."""
+    """Bypass DB token_version and Redis revocation checks for unit-style tests.
+
+    Also pins settings.JWT_SIGNING_KEY to TEST_SIGNING_KEY so the AuthMiddleware
+    can verify tokens minted with TEST_SIGNING_KEY even after earlier tests
+    (e.g. tests/unit/auth) changed the env-loaded signing key."""
     import app.middleware.auth as auth_mod
+    from app.config import settings
 
     async def _fake_token_version(user_id: str):
         return 0  # matches token_version=0 minted in test tokens
@@ -94,6 +99,7 @@ def _patch_auth(monkeypatch) -> None:
 
     monkeypatch.setattr(auth_mod, "_get_cached_token_version", _fake_token_version)
     monkeypatch.setattr(auth_mod, "_is_jti_revoked", _fake_jti_revoked)
+    monkeypatch.setattr(settings, "JWT_SIGNING_KEY", TEST_SIGNING_KEY, raising=False)
 
 
 VALID_CREATE_BODY = {

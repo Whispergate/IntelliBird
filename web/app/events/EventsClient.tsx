@@ -79,7 +79,19 @@ function buildSearchParams(filter: EventsQuery): URLSearchParams {
 // EventsClient
 // ---------------------------------------------------------------------------
 
-export function EventsClient() {
+export interface EventsClientProps {
+  projectId?: string;
+  projectName?: string;
+  basePath?: string;
+}
+
+export function EventsClient({ projectId, projectName, basePath }: EventsClientProps = {}) {
+  // projectId / projectName / basePath are accepted for /projects/[id]/intel route.
+  // Full project-scoping (URL pinning, fetch threading, source-bound check) wired
+  // by plan 10-12; this signature ensures the page.tsx call typechecks.
+  void projectId;
+  void projectName;
+  void basePath;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();

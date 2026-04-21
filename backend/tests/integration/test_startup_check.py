@@ -5,6 +5,7 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
 os.environ.setdefault("SECRET_KEY", "a" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
 import uuid  # noqa: E402
@@ -14,6 +15,22 @@ import pytest  # noqa: E402
 pytestmark = pytest.mark.integration
 
 CANARY_ID = uuid.UUID("00000000-0000-0000-0000-000000000000")
+
+
+@pytest.fixture(autouse=True)
+def _rebind_main_session_factory(pg_url):
+    """If another test (unit/infra) has already imported app.main with a dummy
+    DATABASE_URL, app.main.async_session_factory references a stale engine.
+    Rebind it here to the live-container factory so _run_startup_decrypt_check
+    hits the real DB."""
+    import app.main as main_mod
+    import app.database as db_mod
+    prev = main_mod.async_session_factory
+    main_mod.async_session_factory = db_mod.async_session_factory
+    try:
+        yield
+    finally:
+        main_mod.async_session_factory = prev
 
 
 @pytest.mark.asyncio

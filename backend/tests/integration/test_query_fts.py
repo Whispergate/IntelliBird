@@ -48,6 +48,7 @@ def live_db_fts():
         env = os.environ | {
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
+            "JWT_SIGNING_KEY": "j" * 64,
             "REDIS_URL": "redis://localhost:1",
         }
         for k, v in env.items():
@@ -150,14 +151,21 @@ async def test_fts_cursor_paginates_without_duplicates(fts_client):
 
 
 @pytest.mark.asyncio
-async def test_fts_respects_visibility_header(fts_client):
+async def test_fts_visibility_header_has_no_effect(fts_client):
+    """AUTH_ENABLED=false + no JWT → X-Dashboard-Role header has no filtering effect.
+
+    Phase 9 / plan 09-05: dashboard role header trust removed; visibility is
+    sourced from the JWT claim (request.state.user). With no auth middleware
+    and no JWT, dashboard_roles=None so FTS returns every matching row.
+    """
     r_red = await fts_client.get(
         "/events?free_text=phishing&limit=50",
         headers={"X-Dashboard-Role": "red"},
     )
     assert r_red.status_code == 200
     body = r_red.json()
-    assert all(e["visibility"] != "blue_only" for e in body["items"])
+    # Header is ignored — items are returned regardless of visibility bucket.
+    assert isinstance(body["items"], list)
 
 
 @pytest.mark.asyncio

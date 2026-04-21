@@ -20,7 +20,9 @@ import pytest
 
 # Ensure Settings can initialize before any app import touches it.
 os.environ.setdefault("SECRET_KEY", "a" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
 # ---------------------------------------------------------------------------
 # Probe helper tests
@@ -194,9 +196,22 @@ def mini_app():
     """Mini FastAPI with only the sources router — no DB required for test-connection."""
     from fastapi import FastAPI
     from app.routers.admin.sources import router
+    from app.middleware.auth import require_admin, require_analyst_or_above, require_auth
+    from app.security.jwt import AuthUser
+
+    fake_admin = AuthUser(
+        id=str(uuid.uuid4()),
+        role="Admin",
+        dashboard_roles=["red", "blue"],
+        jti=str(uuid.uuid4()),
+        token_version=0,
+    )
 
     app = FastAPI()
     app.include_router(router)
+    app.dependency_overrides[require_admin] = lambda: fake_admin
+    app.dependency_overrides[require_analyst_or_above] = lambda: fake_admin
+    app.dependency_overrides[require_auth] = lambda: fake_admin
     return app
 
 

@@ -18,6 +18,9 @@ def _spawn_with_env(secret_key: str) -> subprocess.CompletedProcess[str]:
         "PATH": os.environ.get("PATH", ""),
         "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
         "SECRET_KEY": secret_key,
+        # Phase 9 added JWT_SIGNING_KEY placeholder validation; must provide a
+        # non-placeholder 64-hex key so the subprocess reaches SECRET_KEY validation.
+        "JWT_SIGNING_KEY": "b" * 64,
         "DATABASE_URL": "postgresql+asyncpg://u:p@h:5432/d",
         "REDIS_URL": "redis://r:6379/0",
         "HOST": "127.0.0.1",

@@ -14,16 +14,30 @@ stack safely is out of scope for M1.
 """
 from __future__ import annotations
 
-import json
-import uuid
+import os
 
-import pytest
-from sqlalchemy import text
+# Required env vars for app.config.Settings — live stack normally supplies these.
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
+os.environ.setdefault("SECRET_KEY", "x" * 48)
+os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
-from app.database import async_session_factory
-from tests.fixtures.events_seed import SOURCE_RSS, TLP_CLEAR
+import json  # noqa: E402
+import uuid  # noqa: E402
 
-pytestmark = pytest.mark.integration
+import pytest  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+
+from tests.fixtures.events_seed import SOURCE_RSS, TLP_CLEAR  # noqa: E402
+
+pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("_migrations_applied")]
+
+
+def _session_factory():
+    """Late-bound session factory — conftest rebuilds app.database.engine
+    session factory against the live container URL via autouse fixture."""
+    from app import database as db_mod
+    return db_mod.async_session_factory
 
 
 # ---------------------------------------------------------------------------
@@ -40,7 +54,7 @@ async def test_search_tsv_populated_on_existing_rows() -> None:
  Also confirms backfill: the column is non-null for rows inserted after
  migration applied.
 """
-    async with async_session_factory() as session:
+    async with _session_factory()() as session:
         # Ensure source exists (INSERT ON CONFLICT)
         await session.execute(
             text(
@@ -56,9 +70,10 @@ async def test_search_tsv_populated_on_existing_rows() -> None:
         await session.execute(
             text(
                 "INSERT INTO events "
-                "(id, observed_at, stix_type, source_id, "
+                "(id, observed_at, stix_type, source_id, project_id, "
                 "raw_reference, title, description, content_hash, tlp_marking_id, visibility, archived) "
-                "VALUES (:eid, now(), 'report', :sid, 'test', "
+                "VALUES (:eid, now(), 'report', :sid, "
+                "'00000000-0000-0000-0000-000000000001'::uuid, 'test', "
                 ":title, :desc, :hash, :tlp, 'shared', false)"
             ),
             {
@@ -107,7 +122,7 @@ async def test_search_tsv_populated_on_existing_rows() -> None:
 @pytest.mark.asyncio
 async def test_search_tsv_indexed_by_gin() -> None:
     """ix_events_search_tsv must exist in pg_indexes with am=gin."""
-    async with async_session_factory() as session:
+    async with _session_factory()() as session:
         row = (
             await session.execute(
                 text(
@@ -129,13 +144,14 @@ async def test_search_tsv_indexed_by_gin() -> None:
 @pytest.mark.asyncio
 async def test_filter_presets_table_exists() -> None:
     """Direct INSERT + SELECT on filter_presets confirms table is usable."""
-    async with async_session_factory() as session:
+    async with _session_factory()() as session:
         unique_name = "fts-test-" + uuid.uuid4().hex[:8]
         params_dict = {"source_type": ["rss"], "tlp": ["clear"]}
         await session.execute(
             text(
-                "INSERT INTO filter_presets (name, query_params) "
-                "VALUES (:name, CAST(:params AS jsonb))"
+                "INSERT INTO filter_presets (name, project_id, query_params) "
+                "VALUES (:name, '00000000-0000-0000-0000-000000000001'::uuid, "
+                "CAST(:params AS jsonb))"
             ),
             {"name": unique_name, "params": json.dumps(params_dict)},
         )
@@ -168,7 +184,7 @@ async def test_filter_presets_table_exists() -> None:
 @pytest.mark.asyncio
 async def test_fts_query_uses_index_smoke() -> None:
     """plainto_tsquery against search_tsv returns the inserted row (GIN usable)."""
-    async with async_session_factory() as session:
+    async with _session_factory()() as session:
         # Ensure source exists
         await session.execute(
             text(
@@ -184,9 +200,10 @@ async def test_fts_query_uses_index_smoke() -> None:
         await session.execute(
             text(
                 "INSERT INTO events "
-                "(id, observed_at, stix_type, source_id, "
+                "(id, observed_at, stix_type, source_id, project_id, "
                 "raw_reference, title, description, content_hash, tlp_marking_id, visibility, archived) "
-                "VALUES (:eid, now(), 'report', :sid, 'smoke', "
+                "VALUES (:eid, now(), 'report', :sid, "
+                "'00000000-0000-0000-0000-000000000001'::uuid, 'smoke', "
                 ":title, 'smoke-body', :hash, :tlp, 'shared', false)"
             ),
             {

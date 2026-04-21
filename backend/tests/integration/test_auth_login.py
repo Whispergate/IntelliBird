@@ -25,70 +25,15 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 # Fixtures
 # ---------------------------------------------------------------------------
 
-@pytest.fixture(scope="module")
-def monkeypatch_module():
-    """Module-scoped monkeypatch — stdlib's monkeypatch is function-scoped."""
-    mp = pytest.MonkeyPatch()
-    yield mp
-    mp.undo()
-
-
-@pytest.fixture(scope="module")
-def pg_url(pg_container):
-    """Derive async DSN from the testcontainer Postgres instance."""
-    sync_url = pg_container.get_connection_url()
-    # testcontainers returns postgresql+psycopg2://... — swap driver
-    return sync_url.replace("postgresql+psycopg2://", "postgresql+asyncpg://").replace(
-        "postgresql://", "postgresql+asyncpg://"
-    )
-
-
-@pytest.fixture(scope="module")
-def redis_url(redis_container):
-    host = redis_container.get_container_host_ip()
-    port = redis_container.get_exposed_port(6379)
-    return f"redis://{host}:{port}/9"  # DB 9 to isolate from other test suites
-
-
-@pytest.fixture(scope="module", autouse=True)
-def patch_settings(pg_url, redis_url, monkeypatch_module):
-    """Patch settings singletons for the whole module."""
-    os.environ["DATABASE_URL"] = pg_url
-    os.environ["REDIS_URL"] = redis_url
+@pytest.fixture(autouse=True)
+def _auth_disabled(monkeypatch):
+    """Bypass AuthMiddleware for this module — tokens are still validated elsewhere."""
     from app.config import settings
-    monkeypatch_module.setattr(settings, "DATABASE_URL", pg_url, raising=False)
-    monkeypatch_module.setattr(settings, "REDIS_URL", redis_url, raising=False)
-    monkeypatch_module.setattr(settings, "AUTH_ENABLED", False, raising=False)  # bypass middleware in tests
+    monkeypatch.setattr(settings, "AUTH_ENABLED", False, raising=False)
 
 
-@pytest_asyncio.fixture(scope="module")
-async def db_engine(pg_url):
-    """Run alembic migrations against the test container."""
-    import alembic.config
-    import alembic.command
-    from sqlalchemy.ext.asyncio import create_async_engine
-
-    os.environ["DATABASE_URL"] = pg_url
-    # Run migrations
-    alembic_cfg = alembic.config.Config(
-        str(__file__.replace("/tests/integration/test_auth_login.py", "/alembic.ini"))
-    )
-    alembic_cfg.set_main_option("script_location", "alembic")
-    alembic_cfg.set_main_option("sqlalchemy.url", pg_url.replace("postgresql+asyncpg://", "postgresql://"))
-    alembic.command.upgrade(alembic_cfg, "head")
-
-    engine = create_async_engine(pg_url, future=True)
-    yield engine
-    await engine.dispose()
-
-
-@pytest_asyncio.fixture
-async def db_session(db_engine):
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-    factory = async_sessionmaker(db_engine, expire_on_commit=False, class_=AsyncSession)
-    async with factory() as session:
-        yield session
-        await session.rollback()
+# pg_url / redis_url / db_session come from tests/integration/conftest.py
+# (session-scoped; use the live testcontainer + alembic-applied schema).
 
 
 @pytest_asyncio.fixture
@@ -172,7 +117,7 @@ async def admin_user(db_session, argon2_fast):
 
 @pytest.mark.asyncio
 async def test_login_happy_path(auth_client, admin_user):
-    r = await auth_client.post("/login", json={
+    r = await auth_client.post("/auth/login", json={
         "username": "test-admin",
         "password": "correct-password-12",
     })
@@ -189,7 +134,7 @@ async def test_login_happy_path(auth_client, admin_user):
 
 @pytest.mark.asyncio
 async def test_login_sets_refresh_cookie_httponly(auth_client, admin_user):
-    r = await auth_client.post("/login", json={
+    r = await auth_client.post("/auth/login", json={
         "username": "test-admin",
         "password": "correct-password-12",
     })
@@ -202,7 +147,7 @@ async def test_login_sets_refresh_cookie_httponly(auth_client, admin_user):
 
 @pytest.mark.asyncio
 async def test_login_invalid_password_401(auth_client, admin_user):
-    r = await auth_client.post("/login", json={
+    r = await auth_client.post("/auth/login", json={
         "username": "test-admin",
         "password": "wrong-password-here",
     })
@@ -213,7 +158,7 @@ async def test_login_invalid_password_401(auth_client, admin_user):
 @pytest.mark.asyncio
 async def test_login_nonexistent_user_401(auth_client):
     """Non-existent user must return 401 (same code as wrong password — PITFALL 7)."""
-    r = await auth_client.post("/login", json={
+    r = await auth_client.post("/auth/login", json={
         "username": "no-such-user",
         "password": "doesnt-matter-12",
     })
@@ -229,7 +174,7 @@ async def test_login_disabled_user_403(auth_client, db_session, admin_user):
         update(User).where(User.id == admin_user.id).values(enabled=False)
     )
     await db_session.commit()
-    r = await auth_client.post("/login", json={
+    r = await auth_client.post("/auth/login", json={
         "username": "test-admin",
         "password": "correct-password-12",
     })
@@ -246,12 +191,12 @@ async def test_login_disabled_user_403(auth_client, db_session, admin_user):
 async def test_login_lockout_after_5_fails_returns_429(auth_client, admin_user, redis_client):
     """5 consecutive failures must lock the account."""
     for _ in range(5):
-        r = await auth_client.post("/login", json={
+        r = await auth_client.post("/auth/login", json={
             "username": "test-admin",
             "password": "wrong-12",
         })
     # 6th attempt should be 429
-    r = await auth_client.post("/login", json={
+    r = await auth_client.post("/auth/login", json={
         "username": "test-admin",
         "password": "wrong-12",
     })
@@ -264,12 +209,12 @@ async def test_login_success_clears_fails_counter(auth_client, admin_user, redis
     """Successful login must clear the fails counter."""
     # Record 2 failures
     for _ in range(2):
-        await auth_client.post("/login", json={
+        await auth_client.post("/auth/login", json={
             "username": "test-admin",
             "password": "wrong",
         })
     # Successful login
-    r = await auth_client.post("/login", json={
+    r = await auth_client.post("/auth/login", json={
         "username": "test-admin",
         "password": "correct-password-12",
     })
@@ -337,7 +282,7 @@ async def test_me_returns_user_shape(auth_client, admin_user):
     app.dependency_overrides[get_session] = final_session
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-        r = await c.get("/me")
+        r = await c.get("/auth/me")
         assert r.status_code == 200, r.text
         body = r.json()
         assert body["username"] == "test-admin"
@@ -394,7 +339,7 @@ async def test_logout_revokes_access_jti(auth_client, admin_user, redis_client):
     app.dependency_overrides[require_auth] = lambda: test_user
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-        r = await c.post("/logout")
+        r = await c.post("/auth/logout")
         assert r.status_code == 204
 
     # Check JTI is in blocklist

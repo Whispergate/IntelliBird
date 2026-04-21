@@ -1,21 +1,30 @@
 """Integration: /api/presets CRUD lifecycle — FIL-04."""
 from __future__ import annotations
 
-import asyncio
-import uuid
+import os
 
-import pytest
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy import text
+# Required env vars for app.config.Settings — live stack normally supplies these.
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
+os.environ.setdefault("SECRET_KEY", "x" * 48)
+os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
-from app.database import async_session_factory
-from app.main import app
+import asyncio  # noqa: E402
+import uuid  # noqa: E402
 
-pytestmark = pytest.mark.integration
+import pytest  # noqa: E402
+from httpx import ASGITransport, AsyncClient  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+
+from app.main import app  # noqa: E402
+from app.models.projects import LEGACY_PROJECT_ID  # noqa: E402
+
+pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("_migrations_applied")]
 
 
 async def _cleanup_preset(name: str) -> None:
-    async with async_session_factory() as s:
+    from app import database as db_mod
+    async with db_mod.async_session_factory() as s:
         await s.execute(text("DELETE FROM filter_presets WHERE name = :n"), {"n": name})
         await s.commit()
 
@@ -32,7 +41,7 @@ async def test_preset_full_crud_lifecycle() -> None:
             # Create
             r = await c.post(
                 "/api/presets",
-                json={"name": name, "query_params": {"tlp": ["clear"]}},
+                json={"name": name, "project_id": str(LEGACY_PROJECT_ID), "query_params": {"tlp": ["clear"]}},
             )
             assert r.status_code == 201
             body = r.json()
@@ -73,9 +82,9 @@ async def test_post_duplicate_409() -> None:
     name = f"dup-{uuid.uuid4().hex[:8]}"
     try:
         async with await _client() as c:
-            r1 = await c.post("/api/presets", json={"name": name, "query_params": {}})
+            r1 = await c.post("/api/presets", json={"name": name, "project_id": str(LEGACY_PROJECT_ID), "query_params": {}})
             assert r1.status_code == 201
-            r2 = await c.post("/api/presets", json={"name": name, "query_params": {}})
+            r2 = await c.post("/api/presets", json={"name": name, "project_id": str(LEGACY_PROJECT_ID), "query_params": {}})
             assert r2.status_code == 409
     finally:
         await _cleanup_preset(name)
@@ -102,7 +111,7 @@ async def test_put_upsert_bumps_updated_at() -> None:
     name = f"stamp-{uuid.uuid4().hex[:8]}"
     try:
         async with await _client() as c:
-            r1 = await c.post("/api/presets", json={"name": name, "query_params": {"v": 1}})
+            r1 = await c.post("/api/presets", json={"name": name, "project_id": str(LEGACY_PROJECT_ID), "query_params": {"v": 1}})
             assert r1.status_code == 201
             created_at_1 = r1.json()["created_at"]
             updated_at_1 = r1.json()["updated_at"]
@@ -147,7 +156,7 @@ async def test_invalid_name_in_path_422() -> None:
 @pytest.mark.asyncio
 async def test_invalid_name_in_post_body_422() -> None:
     async with await _client() as c:
-        r = await c.post("/api/presets", json={"name": "Bad Name", "query_params": {}})
+        r = await c.post("/api/presets", json={"name": "Bad Name", "project_id": str(LEGACY_PROJECT_ID), "query_params": {}})
         assert r.status_code == 422
 
 

@@ -33,6 +33,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 SOURCE_RSS   = uuid.UUID("00000000-0000-4000-8000-000000000001")
 SOURCE_TAXII = uuid.UUID("00000000-0000-4000-8000-000000000002")
 SOURCE_NVD   = uuid.UUID("00000000-0000-4000-8000-000000000003")
+# Phase 10: every event row must carry a project_id; pre-Phase-10 seeds map to
+# the LEGACY_PROJECT_ID sentinel row created by migration 009.
+LEGACY_PROJECT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 # TLP markings — STIX 2.1 TLP 2.0 canonical names + stable test UUIDs
 # seed_50_events upserts these into tlp_markings so filters resolve correctly.
 TLP_CLEAR    = uuid.UUID("00000000-0000-4000-9000-000000000001")
@@ -162,6 +165,7 @@ async def seed_50_events(session: AsyncSession) -> list[dict]:
             params: dict = {
                 "id": str(eid),
                 "source_id": source_id,
+                "project_id": str(LEGACY_PROJECT_ID),
                 "stix_type": "indicator",
                 "observed_at": observed_at,
                 "title": title,
@@ -176,10 +180,10 @@ async def seed_50_events(session: AsyncSession) -> list[dict]:
             await session.execute(
                 sa.text(f"""
  INSERT INTO events
- (id, source_id, stix_type, observed_at, title, description,
+ (id, source_id, project_id, stix_type, observed_at, title, description,
  tlp_marking_id, visibility, content_hash, raw_stix, tags)
  VALUES
- (:id,:source_id,:stix_type,:observed_at,:title,:description,
+ (:id,:source_id,:project_id,:stix_type,:observed_at,:title,:description,
 :tlp_marking_id,:visibility,:content_hash,
  CAST(:raw_stix AS jsonb), {tags_sql})
 """),
