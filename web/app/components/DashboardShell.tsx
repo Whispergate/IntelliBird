@@ -2,7 +2,6 @@
 
 import { Suspense, type ReactNode } from "react";
 import { RoleProvider, type DashboardRole } from "@/app/lib/role-context";
-import { TopNav } from "./TopNav";
 import { DesktopRequiredBanner } from "./DesktopRequiredBanner";
 import { GeoMap } from "./GeoMap";
 
@@ -15,10 +14,10 @@ export function DashboardShell({ role, children }: Props) {
   return (
     <RoleProvider value={role}>
       <div data-testid="dashboard-shell" data-role={role}>
-        {/* TopNav breaks out of layout.tsx padding to reach full viewport width*/}
-        <div style={{ margin: "-1.5rem -1.5rem 0" }}>
-          <TopNav />
-        </div>
+        {/* TopNav now rendered globally via root layout's <AppHeader />.
+            Local RoleProvider still wraps the dashboard subtree so role-aware
+            children (widgets, EventDetailDrawer) read the correct role
+            independent of the localStorage-driven AppHeader value. */}
 
         {/* Below 1024px: only DesktopRequiredBanner renders*/}
         <DesktopRequiredBanner />

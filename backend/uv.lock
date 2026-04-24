@@ -320,6 +320,15 @@ wheels = [
 ]
 
 [[package]]
+name = "dnstwist"
+version = "20250130"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/0e/88b4c5c7f3077c0d2e8544a14e321fce80b3cf0148a46dec9724e27c61d3/dnstwist-20250130.tar.gz", hash = "sha256:8b6dd9c42a643a0e8b087903c0e6d75c0f6cebf94920ab0b7760ac2522c6bb42", size = 22718, upload-time = "2025-01-30T19:42:34.894Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5e/ce/46904c85804952c8d42c67603e7a14b7bf26f0277fc4ea1fd6048308b82a/dnstwist-20250130-py3-none-any.whl", hash = "sha256:41dbe883097696b07f293069cf4c88cca52279d7881d90e53017062cece2ce34", size = 22279, upload-time = "2025-01-30T19:42:33.588Z" },
+]
+
+[[package]]
 name = "docker"
 version = "7.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -527,6 +536,7 @@ dependencies = [
     { name = "asyncpg" },
     { name = "authlib" },
     { name = "cryptography" },
+    { name = "dnstwist" },
     { name = "dramatiq", extra = ["redis"] },
     { name = "fastapi" },
     { name = "feedparser" },
@@ -568,6 +578,7 @@ requires-dist = [
     { name = "asyncpg", specifier = ">=0.29,<0.30" },
     { name = "authlib", specifier = ">=1.6,<2" },
     { name = "cryptography", specifier = ">=42,<43" },
+    { name = "dnstwist", specifier = ">=20240219" },
     { name = "dramatiq", extras = ["redis"], specifier = ">=1.17,<2" },
     { name = "fastapi", specifier = ">=0.115,<0.116" },
     { name = "feedparser", specifier = "==6.0.12" },

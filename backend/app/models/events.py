@@ -59,3 +59,10 @@ class Event(Base):
     # H-7 soft-delete for retention with attack-graph reference preservation:
     archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    # Phase 11 / EASM-06: provenance FK — L-4: ON DELETE SET NULL so promoted events
+    # survive scan cleanup (scan delete does NOT cascade to events).
+    easm_scan_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("easm_scans.id", ondelete="SET NULL"),
+        nullable=True,
+    )

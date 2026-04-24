@@ -6,10 +6,8 @@ Startup sequence:
  2. configure_logging sets structlog JSON output.
  3. Log a prominent HOST-binding banner. If HOST != 127.0.0.1,
     the log line is ERROR level so operators notice.
- 4. FastAPI lifespan runs _run_startup_decrypt_check — canary seed/verify
-    (Phase 8 / INFRA-03).
- 5. AuthMiddleware stub sits between CORSMiddleware and RequestLogMiddleware
-    (Phase 8 / INFRA-04).
+ 4. FastAPI lifespan runs _run_startup_decrypt_check — canary seed/verify.
+ 5. AuthMiddleware stub sits between CORSMiddleware and RequestLogMiddleware.
  6. /healthz responds 200 so docker compose healthcheck passes.
 """
 from __future__ import annotations
@@ -36,6 +34,7 @@ from app.routers.admin.attack import router as admin_attack_router
 from app.routers.admin.rekey import router as admin_rekey_router
 from app.routers.admin.setup import router as admin_setup_router
 from app.routers.admin.users import router as admin_users_router
+from app.routers.assets import router as assets_router
 from app.routers.auth import router as auth_router
 from app.routers.admin.sources import router as admin_sources_router
 from app.routers.admin.source_templates import router as admin_source_templates_router
@@ -43,6 +42,9 @@ from app.routers.admin.webhooks import router as admin_webhooks_router
 from app.routers.events import router as events_router
 from app.routers.graph import router as graph_router
 from app.routers.presets import router as presets_router
+from app.routers.easm import router as easm_router
+from app.routers.easm import safelist_router as easm_safelist_router
+from app.routers.brand import router as brand_router
 from app.routers.projects import router as projects_router
 from app.routers.system import router as system_router
 from app.routers.tags import router as tags_router
@@ -195,6 +197,14 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(presets_router, prefix="/api")
     fastapi_app.include_router(graph_router, prefix="/api")
     fastapi_app.include_router(projects_router, prefix="/api")
+    # EASM: safelist_router before easm_router — /api/easm/safelist must not collide
+    # with /api/projects/.../easm/... path (no collision, but consistent with Phase 10
+    # compare_router-before-projects_router ordering for sibling routers).
+    fastapi_app.include_router(easm_safelist_router, prefix="/api")
+    fastapi_app.include_router(easm_router, prefix="/api")
+    fastapi_app.include_router(brand_router, prefix="/api")
+    # Assets router has absolute prefix baked in (/api/projects/{id}/assets)
+    fastapi_app.include_router(assets_router)
 
     return fastapi_app
 

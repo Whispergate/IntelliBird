@@ -112,10 +112,15 @@ export function TopNav() {
       {/* Logo / wordmark*/}
       <Link
         href={dashboardHref}
-        className="brand-heading shrink-0"
-        style={{ color: "var(--brand-primary)", textDecoration: "none" }}
+        className="shrink-0"
+        aria-label="IntelliBird"
+        style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}
       >
-        IntelliBird
+        <img
+          src="/brand/text.svg"
+          alt="IntelliBird"
+          style={{ height: "108px", width: "auto", display: "block" }}
+        />
       </Link>
 
       {/* Dashboard nav link*/}
@@ -135,21 +140,21 @@ export function TopNav() {
         Dashboard
       </Link>
 
-      {/* Sources nav link*/}
+      {/* Projects nav link (active for any /projects/* path) */}
       <Link
-        href="/sources"
-        className={`${linkBase} ${isActive("/sources") ? linkActiveClass : linkInactive}`}
+        href="/projects"
+        className={`${linkBase} ${pathname?.startsWith("/projects") ? linkActiveClass : linkInactive}`}
         style={
-          isActive("/sources")
+          pathname?.startsWith("/projects")
             ? {
                 color: "var(--brand-primary)",
                 borderColor: "var(--brand-primary)",
               }
             : { color: "var(--brand-fog)" }
         }
-        aria-current={isActive("/sources") ? "page" : undefined}
+        aria-current={pathname?.startsWith("/projects") ? "page" : undefined}
       >
-        Sources
+        Projects
       </Link>
 
       {/* Events nav link*/}
@@ -167,23 +172,6 @@ export function TopNav() {
         aria-current={isActive("/events") ? "page" : undefined}
       >
         Events
-      </Link>
-
-      {/* Webhooks nav link*/}
-      <Link
-        href="/webhooks"
-        className={`${linkBase} ${isActive("/webhooks") ? linkActiveClass : linkInactive}`}
-        style={
-          isActive("/webhooks")
-            ? {
-                color: "var(--brand-primary)",
-                borderColor: "var(--brand-primary)",
-              }
-            : { color: "var(--brand-fog)" }
-        }
-        aria-current={isActive("/webhooks") ? "page" : undefined}
-      >
-        Webhooks
       </Link>
 
       {/* Spacer*/}
@@ -211,8 +199,12 @@ export function TopNav() {
             {switchLabel}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuLabel>Admin</DropdownMenuLabel>
           <DropdownMenuItem onClick={() => router.push("/sources")}>
             Sources
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/webhooks")}>
+            Webhooks
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

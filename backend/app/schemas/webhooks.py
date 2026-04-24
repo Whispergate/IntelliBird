@@ -59,6 +59,7 @@ class WebhookCreate(BaseModel):
     """Payload to create a new webhook destination. (HOOK-01)"""
 
     name: str = Field(pattern=_NAME_REGEX, min_length=1, max_length=64)
+    project_id: uuid.UUID
     destination_type: DestinationType
     url: str = Field(min_length=1, max_length=2000)
     auth: AuthSpec | None = None

@@ -48,3 +48,7 @@ from app.workers import nvd  # noqa: E402,F401
 from app.workers import taxii  # noqa: E402,F401
 from app.services import geo_backfill  # noqa: E402,F401 — MAP-05 maintenance actor
 from app.workers import webhook_dispatcher_actor  # noqa: E402,F401 — HOOK-02
+# Register EASM actors (Phase 11)
+from app.workers import easm  # noqa: E402,F401
+# Register Brand Protection actor (Phase 12 / BRP-02)
+from app.workers import brand  # noqa: E402,F401

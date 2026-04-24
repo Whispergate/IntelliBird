@@ -20,6 +20,7 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 import pytest
 import pytest_asyncio
+from pydantic import ValidationError
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import event, text
@@ -153,6 +154,7 @@ async def client(db_session: AsyncSession):
 def _make_payload(**overrides) -> dict:
     base = {
         "name": "test-hook",
+        "project_id": str(LEGACY_PROJECT_ID),
         "destination_type": "generic",
         "url": "https://example.com/hook",
         "batching_window_sec": 300,
@@ -193,6 +195,23 @@ def test_feed_type_locked_on_update():
     )
 
 
+def test_webhook_create_requires_project_id():
+    """WebhookCreate must reject payloads missing project_id (WC7 regression)."""
+    with pytest.raises(ValidationError) as exc_info:
+        WebhookCreate(
+            name="x",
+            destination_type="generic",
+            url="https://e.com",
+            batching_window_sec=300,
+            enabled=True,
+            bound_preset_names=[],
+        )
+    locs = {err["loc"] for err in exc_info.value.errors()}
+    assert ("project_id",) in locs, (
+        f"expected project_id in validation errors, got locs={locs}"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Router tests (unskipped by 07-04)
 # ---------------------------------------------------------------------------
@@ -225,6 +244,23 @@ async def test_create_webhook_encrypts_auth(client, db_session):
     assert auth_enc is not None
     decrypted = decrypt_credentials(settings.SECRET_KEY, auth_enc)
     assert decrypted == {"type": "bearer", "token": "xyz"}
+
+
+@pytest.mark.asyncio
+async def test_create_webhook_persists_project_id(client, db_session):
+    """POST /admin/webhooks must persist project_id to the DB row (WC7 regression)."""
+    resp = await client.post("/admin/webhooks", json=_make_payload(name="proj-hook"))
+    assert resp.status_code == 201, resp.text
+
+    row = await db_session.execute(
+        text("SELECT project_id FROM webhooks WHERE name='proj-hook'")
+    )
+    persisted = row.scalar_one()
+    # SQLite UUID(as_uuid=True) stores UUIDs without dashes — normalise for compare
+    expected_nohyphen = str(LEGACY_PROJECT_ID).replace("-", "")
+    assert persisted.replace("-", "") == expected_nohyphen, (
+        f"expected project_id {LEGACY_PROJECT_ID}, got {persisted}"
+    )
 
 
 @pytest.mark.asyncio

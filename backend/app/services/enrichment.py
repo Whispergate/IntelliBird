@@ -56,29 +56,35 @@ _ZERO_DAY_PATTERN = re.compile(r"\b(zero[- ]day|0-?day)\b", re.IGNORECASE)
 _RANSOMWARE_PATTERN = re.compile(r"\bransomware\b", re.IGNORECASE)
 _PHISHING_PATTERN = re.compile(r"\bphishing\b", re.IGNORECASE)
 _APT_PATTERN = re.compile(r"\b(APT\d{1,3}|Lazarus|FIN\d{1,2}|Turla|Conti|LockBit|BlackCat|Scattered Spider)\b")
+# Offensive-tooling chatter (bare `tooling` + `offensive-tooling` tags drive Red dashboard widget)
+_TOOLING_PATTERN = re.compile(
+    r"\b(Cobalt Strike|Metasploit|Mimikatz|BloodHound|Sliver|Havoc|Brute Ratel|AsyncRAT|Empire|PoshC2|Covenant|Nighthawk|Mythic|Pupy|AdaptixC2)\b",
+    re.IGNORECASE,
+)
+# Vendor advisories — drives Blue dashboard widget
+_VENDOR_ADVISORY_PATTERN = re.compile(
+    r"\b(Patch Tuesday|CISA (?:alert|advisory)|MSRC advisory|Microsoft Security Bulletin|Cisco PSIRT|Adobe Security Bulletin|Google Chrome (?:update|advisory)|VMware Security Advisory|Oracle CPU|security advisory)\b",
+    re.IGNORECASE,
+)
+# C2 / command-and-control mentions — bare `c2` tag for ActorInfra widget
+_C2_PATTERN = re.compile(r"\b(C2|C&C|command[- ]and[- ]control)\b", re.IGNORECASE)
 
-# Minimal country mentions (operator-visible set; expand as needed)
-_COUNTRY_HINTS: dict[str, str] = {
-    r"\bUnited States\b|\bU\.S\.\b|\bUSA\b": "US",
-    r"\bRussia\b|\bRussian\b": "RU",
-    r"\bChina\b|\bChinese\b": "CN",
-    r"\bNorth Korea\b|\bDPRK\b": "KP",
-    r"\bIran\b|\bIranian\b": "IR",
-    r"\bUkraine\b|\bUkrainian\b": "UA",
-    r"\bGermany\b|\bGerman\b": "DE",
-    r"\bUnited Kingdom\b|\bBritish\b|\bU\.K\.\b": "GB",
-    r"\bFrance\b|\bFrench\b": "FR",
-    r"\bJapan\b|\bJapanese\b": "JP",
-    r"\bIsrael\b|\bIsraeli\b": "IL",
-    r"\bIndia\b|\bIndian\b": "IN",
-    r"\bSouth Korea\b|\bROK\b": "KR",
-    r"\bBrazil\b|\bBrazilian\b": "BR",
-    r"\bAustralia\b|\bAustralian\b": "AU",
-    r"\bCanada\b|\bCanadian\b": "CA",
-}
+# Country + keyword extraction: expanded to ISO 3166 (~210 countries) and a
+# curated security-domain wordlist. See country_data.py + keyword_data.py.
+from app.services.country_data import COUNTRY_PATTERNS, COUNTRY_PRIORITY
+from app.services.keyword_data import KEYWORD_PATTERNS
+
 _COUNTRY_COMPILED: list[tuple[re.Pattern[str], str]] = [
-    (re.compile(p, re.IGNORECASE), cc) for p, cc in _COUNTRY_HINTS.items()
+    (re.compile(rf"\b(?:{pattern})\b", re.IGNORECASE), cc)
+    for cc, pattern in COUNTRY_PATTERNS.items()
 ]
+_KEYWORD_COMPILED: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(rf"\b(?:{pattern})\b", re.IGNORECASE), term)
+    for term, pattern in KEYWORD_PATTERNS.items()
+]
+_COUNTRY_PRIORITY_INDEX: dict[str, int] = {
+    cc: i for i, cc in enumerate(COUNTRY_PRIORITY)
+}
 
 
 @dataclass
@@ -88,6 +94,8 @@ class Enrichment:
     cve_ids: set[str] = field(default_factory=set)
     iocs: dict[str, set[str]] = field(default_factory=dict)
     country_code: str | None = None
+    country_codes: set[str] = field(default_factory=set)  # ALL country mentions
+    keywords: set[str] = field(default_factory=set)        # curated wordlist hits
     auto_severity: str | None = None  # 'critical' | 'high-severity' | None
 
     def __post_init__(self) -> None:
@@ -237,6 +245,8 @@ def enrich_event(title: str | None, description: str | None) -> Enrichment:
     if _ZERO_DAY_PATTERN.search(text):
         e.tags.add("exploit")
         e.tags.add("zero-day")
+        e.tags.add("0day")
+        e.tags.add("0-day")
     if _RANSOMWARE_PATTERN.search(text):
         e.tags.add("ransomware")
         e.tags.add("malware")
@@ -245,6 +255,14 @@ def enrich_event(title: str | None, description: str | None) -> Enrichment:
     if _APT_PATTERN.search(text):
         e.tags.add("apt")
         e.tags.add("actor")
+    if _TOOLING_PATTERN.search(text):
+        e.tags.add("tooling")
+        e.tags.add("offensive-tooling")
+    if _VENDOR_ADVISORY_PATTERN.search(text):
+        e.tags.add("vendor-advisory")
+        e.tags.add("advisory")
+    if _C2_PATTERN.search(text):
+        e.tags.add("c2")
 
     # Severity auto-tag
     sev = _auto_severity(text)
@@ -252,11 +270,25 @@ def enrich_event(title: str | None, description: str | None) -> Enrichment:
         e.auto_severity = sev
         e.tags.add(sev)
 
-    # Country code from prose mentions (first match wins)
+    # Country mentions: collect ALL matches as `country:<CC>` tags + set.
+    # `country_code` field keeps a single value for the geo map pin —
+    # priority list selects (US > RU > CN > KP > IR > UA ...); unranked
+    # countries fall back to alpha-2 lex order so output is deterministic.
     for pattern, cc in _COUNTRY_COMPILED:
         if pattern.search(text):
-            e.country_code = cc
-            break
+            e.country_codes.add(cc)
+            e.tags.add(f"country:{cc}")
+    if e.country_codes:
+        e.country_code = min(
+            e.country_codes,
+            key=lambda c: (_COUNTRY_PRIORITY_INDEX.get(c, 10_000), c),
+        )
+
+    # Curated security keywords → `keyword:<term>` tags + set
+    for pattern, term in _KEYWORD_COMPILED:
+        if pattern.search(text):
+            e.keywords.add(term)
+            e.tags.add(f"keyword:{term}")
 
     return e
 
@@ -277,6 +309,17 @@ def merge_enrichment_into_event_row(
     # Country code fallback (don't override if already populated by STIX/MaxMind)
     if enrichment.country_code and not event_row.get("country_code"):
         event_row["country_code"] = enrichment.country_code
+
+    # Geo centroid fallback: when no IP-based geo and no STIX location SDO
+    # populated lat/lon, project the country code to its centroid so the
+    # event lands on the geo map. Coarse (~10km) but enough for clustering.
+    cc = event_row.get("country_code")
+    if cc and event_row.get("geo_lat") is None and event_row.get("geo_lon") is None:
+        from app.services.country_centroids import country_centroid
+        lat, lon = country_centroid(cc)
+        if lat is not None:
+            event_row["geo_lat"] = lat
+            event_row["geo_lon"] = lon
 
 
 def attack_technique_tag_rows(

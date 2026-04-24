@@ -28,6 +28,7 @@ const mockListPresets = apiClient.listPresets as ReturnType<typeof vi.fn>;
 const MINIMAL_WEBHOOK: Webhook = {
   id: "wh-1",
   name: "my-webhook",
+  project_id: "00000000-0000-0000-0000-000000000001",
   destination_type: "slack",
   url: "https://hooks.slack.com/services/T0/B0/xxx",
   batching_window_sec: 300,

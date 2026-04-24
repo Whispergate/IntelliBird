@@ -7,7 +7,12 @@ import type { components } from "./api-client.generated";
 // (These types are inlined in schema objects — no standalone OpenAPI schemas for them)
 // ============================================================
 
-export type FeedType = components["schemas"]["SourceResponse"]["feed_type"];
+// FeedType: "bbot" added locally (Phase 11 plan 11-05); "brand-monitor" added
+// locally (Phase 12 plan 12-10) — both pending api-client.generated.ts regen.
+export type FeedType =
+  | components["schemas"]["SourceResponse"]["feed_type"]
+  | "bbot"
+  | "brand-monitor";
 export type ArchivePolicy = components["schemas"]["SourceResponse"]["archive_policy"];
 // TlpName: non-nullable enum (generated EventItem.tlp is optional nullable; we normalise here)
 export type TlpName = "clear" | "green" | "amber" | "amber+strict" | "red";
@@ -35,6 +40,8 @@ export type SourceTemplate = components["schemas"]["SourceTemplate"];
 
 // EventItem: override optional fields to required (callers depend on required shapes;
 // generated schema marks source_name, source_type, tlp, tags, attack_techniques as optional)
+// easm_scan_id: added by Phase 11 migration 010 (plan 11-01); not yet in generated schema
+// (pending pnpm gen:api regen when backend is reachable). Typed locally as string|null.
 export type EventItem = Omit<
   components["schemas"]["EventItem"],
   "tlp" | "attack_techniques" | "tags" | "source_name" | "source_type"
@@ -44,6 +51,7 @@ export type EventItem = Omit<
   tags: string[];
   source_name: string | null;
   source_type: FeedType | null;
+  easm_scan_id?: string | null;
 };
 
 // EventDetail: same field overrides as EventItem plus raw_stix
@@ -104,6 +112,7 @@ export type EventsQuery = {
   free_text?: string;
   include_archived?: boolean;
   include_total?: boolean;
+  include_bbot?: boolean;
   cursor?: string;
   limit?: number;
   has_geo?: boolean;

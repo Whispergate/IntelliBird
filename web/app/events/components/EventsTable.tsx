@@ -1,6 +1,7 @@
 "use client";
 
 import type { EventItem, TlpName } from "@/app/api-client";
+import { BrandProvenanceBadge } from "@/app/events/EventsClient";
 import { TypeBadge } from "@/app/sources/components/TypeBadge";
 import { formatRelativeTime } from "@/app/sources/lib/relativeTime";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // TLP badge color map — matches DashboardEventsList / EventDetailDrawer pattern
 const TLP_STYLE: Record<string, { bg: string; fg: string; border: string }> = {
@@ -23,6 +30,32 @@ const TLP_STYLE: Record<string, { bg: string; fg: string; border: string }> = {
 };
 
 const NULL_TLP_STYLE = { bg: "rgba(136,135,128,0.10)", fg: "#888780", border: "#888780" };
+
+// BbotProvenanceBadge — rendered when event.source_type === "bbot".
+// Height: h-4 (16px), horizontal padding: px-2 (8px), font-mono text-xs (12px).
+// Signal-amber left-border (border-l-2 border-[var(--brand-signal)]) per 11-UI-SPEC §Surface 7.
+function BbotProvenanceBadge({ event }: { event: EventItem }) {
+  const tooltipText = event.easm_scan_id
+    ? `BBOT scan — ${new Date(event.observed_at).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })}`
+    : "BBOT (historical scan)";
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center h-4 px-2 border-l-2 border-[var(--brand-signal)] text-[12px] font-mono font-medium uppercase tracking-[0.15em] text-muted-foreground rounded-sm">
+            BBOT
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{tooltipText}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 function TlpBadge({ tlp }: { tlp: TlpName | null }) {
   const style = tlp ? (TLP_STYLE[tlp] ?? NULL_TLP_STYLE) : NULL_TLP_STYLE;
@@ -108,7 +141,11 @@ export function EventsTable({ items, loading, onRowClick }: Props) {
               {evt.title ?? "Untitled event"}
             </TableCell>
             <TableCell>
-              {evt.source_type ? <TypeBadge feed_type={evt.source_type} /> : null}
+              <div className="flex items-center gap-1">
+                {evt.source_type ? <TypeBadge feed_type={evt.source_type} /> : null}
+                {evt.source_type === "bbot" && <BbotProvenanceBadge event={evt} />}
+                {evt.source_type === "brand-monitor" && <BrandProvenanceBadge event={evt} />}
+              </div>
             </TableCell>
             <TableCell>
               <TlpBadge tlp={evt.tlp} />

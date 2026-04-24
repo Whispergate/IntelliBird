@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl build-esse
 WORKDIR /app
 
 # Resolve deps first for better layer caching.
+# dnstwist (Phase 12 / BRP-02) is pulled in via pyproject.toml dependencies and
+# runs in-process inside the `worker` container on the brand-monitor queue.
+# No docker.sock mount required (contrast Phase 11 BBOT easm-worker).
 COPY backend/pyproject.toml backend/uv.lock backend/.python-version ./
 RUN uv sync --no-dev --locked --no-install-project
 
@@ -29,10 +32,15 @@ RUN uv sync --no-dev --locked
 FROM python:3.12-slim-bookworm
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
+    && apt-get install -y --no-install-recommends curl docker.io \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 1001 appgroup \
-    && useradd --uid 1001 --gid appgroup --no-create-home appuser
+    && useradd --uid 1001 --gid appgroup --no-create-home appuser \
+    # Match host docker socket group (gid 981 on the dev host) so easm-worker
+    # can call /var/run/docker.sock without chmod 666. Override at build via
+    # --build-arg DOCKER_HOST_GID=<your gid> if your host differs.
+    && groupadd --gid 981 docker_host || true \
+    && usermod -aG docker_host appuser
 
 WORKDIR /app
 COPY --from=builder /app /app

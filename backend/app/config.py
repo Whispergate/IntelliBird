@@ -9,6 +9,7 @@ PITFALLS C-3 + FN.
 from __future__ import annotations
 
 import sys
+from typing import Literal
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -142,6 +143,77 @@ class Settings(BaseSettings):
             "Path to MaxMind GeoLite2 City MMDB file (operator-provided, optional). "
             "If absent, IP-based geo resolution is skipped; STIX location SDOs still resolve."
         ),
+    )
+
+    # Phase 11 — EASM / BBOT
+    BBOT_PASSIVE_MAX_SECONDS: int = Field(
+        default=7200,
+        description="Wallclock cap (seconds) on passive BBOT scans. Default 2h.",
+    )
+    BBOT_ACTIVE_MAX_SECONDS: int = Field(
+        default=1800,
+        description="Wallclock cap (seconds) on active BBOT scans. Default 30m.",
+    )
+    BBOT_CONCURRENT_LIMIT: int = Field(
+        default=2,
+        description="Host-wide concurrent scan cap enforced via Redis semaphore.",
+    )
+    BBOT_SCAN_HISTORY_LIMIT: int = Field(
+        default=5,
+        description=(
+            "Per-project scan retention count (L-4). "
+            "Nightly job deletes oldest scans beyond this cap."
+        ),
+    )
+    BBOT_EXPERIMENTAL_OVERRIDE: str = Field(
+        default="",
+        description=(
+            "Comma-separated extra module names unioned with BBOT_STABLE_PASSIVE_MODULES "
+            "at startup. Empty by default. Use for testing only — production operators "
+            "should update the verified safelist and redeploy."
+        ),
+    )
+    BBOT_IMAGE_TAG: str = Field(
+        default="blacklanternsecurity/bbot:stable",
+        description=(
+            "BBOT Docker image tag. Pin to a specific digest in production "
+            "per L-2 mitigation (see docs/ops/easm.md §Safelist)."
+        ),
+    )
+    BBOT_ACTIVE_AUTH_TTL_SECONDS: int = Field(
+        default=604800,
+        description=(
+            "Active-scan authorisation rolling TTL in seconds. Default 7 days. "
+            "Backend rejects active-mode scans when NOW() - active_auth_confirmed_at "
+            "exceeds this value (EASM-04 / C-3 closure)."
+        ),
+    )
+
+    # Phase 12 — Brand Protection
+    BRAND_STOPLIST_EXTRA: str | None = Field(
+        default=None,
+        description=(
+            "Comma-separated extra terms unioned with DEFAULT_STOPLIST at startup. "
+            "Case-insensitive; stripped. Used by app.services.brand_stoplist."
+        ),
+    )
+    BRAND_NOISE_THRESHOLD: int = Field(
+        default=100,
+        description=(
+            "Match-count threshold beyond which a brand term is flagged as "
+            "high-noise and auto-downgraded to watch-only mode."
+        ),
+    )
+    BRAND_WEBHOOK_SEVERITY_THRESHOLD: Literal["HIGH", "MEDIUM"] = Field(
+        default="HIGH",
+        description=(
+            "Minimum brand-match severity that fires a webhook. "
+            "HIGH = only HIGH severities; MEDIUM = HIGH and MEDIUM."
+        ),
+    )
+    BRAND_MONITOR_INTERVAL_SECONDS: int = Field(
+        default=900,
+        description="APScheduler poll interval for brand_monitor cycle. Default 15m.",
     )
 
     # webhook payload deep-links (HOOK-03..06,)

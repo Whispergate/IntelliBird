@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * ProjectTabs — 13-tab sub-navigation strip for /projects/[id]/*.
+ * ProjectTabs — 16-tab sub-navigation strip for /projects/[id]/*.
  *
- * Locked order (per 10-UI-SPEC §/projects/[id] detail §Tabs):
+ * Locked order (per 10-UI-SPEC §/projects/[id] detail §Tabs + 11-UI-SPEC §Surface 1):
  *   1. Overview
  *   2. Keyword scope          (?tab=scope-keyword)
  *   3. Service scope          (?tab=scope-service)
@@ -17,11 +17,14 @@
  *  11. Settings               (?tab=settings)
  *  12. Intel                  → navigates to /projects/[id]/intel (nested route)
  *  13. Graph                  → navigates to /projects/[id]/graph (nested route)
+ *  14. EASM                   → navigates to /projects/[id]/easm (nested route)
+ *  15. Assets                 → navigates to /projects/[id]/assets (nested route)
+ *  16. Brand                  → navigates to /projects/[id]/brand (nested route)
  *
  * Navigation rules:
  *   - Tabs 1..11 use ?tab= query param (router.replace so history doesn't
  *     pile up on every click).
- *   - Tabs 12..13 navigate to nested routes (router.push).
+ *   - Tabs 12..16 navigate to nested routes (router.push).
  *
  * Horizontal scroll + fade-edge (per 10-UI-SPEC §Tab scroll):
  *   - Container: overflow-x-auto with `scrollbarWidth: "none"` inline
@@ -43,6 +46,9 @@
  * Active tab detection:
  *   - pathname ends with /intel → "intel" active (no ?tab= read)
  *   - pathname ends with /graph → "graph" active
+ *   - pathname includes /easm → "easm" active (matches all /projects/[id]/easm* paths)
+ *   - pathname includes /assets → "assets" active (matches all /projects/[id]/assets* paths per 12.1-UI-SPEC §Surface 1)
+ *   - pathname includes /brand → "brand" active (matches /brand and /brand/terms per 12-UI-SPEC §Surface 1)
  *   - else: sp.get("tab") ?? "overview"
  *
  * Next.js 15 note: useSearchParams requires a Suspense boundary up the tree.
@@ -75,6 +81,9 @@ const TABS: TabDef[] = [
   { key: "settings", label: "Settings" },
   { key: "intel", label: "Intel", route: "intel" },
   { key: "graph", label: "Graph", route: "graph" },
+  { key: "easm", label: "EASM", route: "easm" },
+  { key: "assets", label: "Assets", route: "assets" },
+  { key: "brand", label: "Brand", route: "brand" },
 ];
 
 export function ProjectTabs({
@@ -94,6 +103,9 @@ export function ProjectTabs({
   const activeKey = (() => {
     if (pathname.endsWith("/intel")) return "intel";
     if (pathname.endsWith("/graph")) return "graph";
+    if (pathname.includes("/easm")) return "easm";
+    if (pathname.includes("/assets")) return "assets";
+    if (pathname.includes("/brand")) return "brand";
     return sp.get("tab") ?? "overview";
   })();
 

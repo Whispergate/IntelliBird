@@ -29,6 +29,7 @@ dependencies = [
   "PyJWT>=2.12,<3",
   "pwdlib[argon2]>=0.2,<0.3",
   "authlib>=1.6,<2",
+  "dnstwist>=20240219",
 ]
 
 [dependency-groups]

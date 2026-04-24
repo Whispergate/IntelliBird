@@ -16,5 +16,8 @@ from app.models.projects import (  # noqa: F401  — Phase 10 / PRJ-01, PRJ-02, 
     ProjectSource,
     ScopeType,
 )
+from app.models.brand import BrandMatch, BrandTerm  # noqa: F401  — Phase 12 / BRP-01..05
+from app.models.easm import EASMCredential, EASMFinding, EASMScan  # noqa: F401  — Phase 11 EASM
+from app.models.assets import AssetNote  # noqa: F401  — Phase 12.1 / ASSET-NOTE
 
-__all__ = ["Base"]
+__all__ = ["Base", "AssetNote"]

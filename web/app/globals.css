@@ -29,34 +29,34 @@
     --radius: 0.5rem;
 
     /* Brand tokens (direct hex for non-shadcn components) */
-    --brand-ink: #04342c;
-    --brand-primary: #1d9e75;
-    --brand-deep-teal: #0f6e56;
+    --brand-ink: #0D1B2A;               /* Midnight (background) */
+    --brand-primary: #1d9e75;           /* Teal (CTAs / active states — unchanged) */
+    --brand-deep-teal: #0f6e56;         /* Border accent against midnight */
     --brand-mist: #9fe1cb;
     --brand-fog: #e1f5ee;
-    --brand-signal: #ef9f27;
+    --brand-signal: #ef9f27;            /* Amber accent (reserved per UI-SPEC) */
     --brand-slate: #888780;
   }
 
   .dark {
-    --background: 168 85% 11%;          /* Ink */
+    --background: 213 53% 11%;          /* Midnight #0D1B2A */
     --foreground: 157 46% 92%;          /* Fog */
-    --card: 168 78% 14%;                /* slightly lighter than Ink */
+    --card: 217 37% 17%;                /* Slate-blue #1B263B */
     --card-foreground: 157 46% 92%;
-    --popover: 168 78% 14%;
+    --popover: 217 37% 17%;
     --popover-foreground: 157 46% 92%;
-    --primary: 160 69% 37%;             /* Primary teal */
-    --primary-foreground: 168 85% 11%;
-    --secondary: 164 76% 25%;           /* Deep teal */
+    --primary: 160 69% 37%;             /* Teal — unchanged */
+    --primary-foreground: 213 53% 11%;
+    --secondary: 217 37% 25%;           /* Slate-blue lifted */
     --secondary-foreground: 157 46% 92%;
-    --muted: 168 60% 18%;
-    --muted-foreground: 159 25% 70%;
-    --accent: 35 86% 54%;               /* Signal amber */
-    --accent-foreground: 168 85% 11%;
+    --muted: 217 37% 21%;
+    --muted-foreground: 213 25% 72%;
+    --accent: 35 86% 54%;               /* Signal amber — unchanged */
+    --accent-foreground: 213 53% 11%;
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 98%;
-    --border: 168 60% 22%;
-    --input: 168 60% 22%;
+    --border: 217 37% 24%;
+    --input: 217 37% 24%;
     --ring: 35 86% 54%;                 /* Signal for focus rings */
   }
 }

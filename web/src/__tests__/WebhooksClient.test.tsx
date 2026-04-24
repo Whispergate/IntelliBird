@@ -38,6 +38,7 @@ function makeWebhook(overrides: Partial<Webhook> = {}): Webhook {
   return {
     id: "wh-1",
     name: "Alpha Webhook",
+    project_id: "00000000-0000-0000-0000-000000000001",
     destination_type: "slack",
     url: "https://hooks.slack.com/services/T000/B000/xxxx",
     batching_window_sec: 300,

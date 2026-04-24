@@ -5,9 +5,11 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
+import sqlalchemy as sa
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
@@ -115,8 +117,27 @@ async def list_events(
     tag_mode: Literal["any", "all"] = Query(default="all"),
     include_total: bool = Query(default=False),
     cursor: str | None = Query(default=None),
-    limit: int = Query(default=50, ge=1, le=200),
+    # Cap raised from 200 → 1000 so dashboard KPI widgets (ActorInfra,
+    # FreshExploits, ToolingChatter) can fetch 24h windows of up to 1000
+    # events for sparkline bucketing. Below-200 list views ignore.
+    limit: int = Query(default=50, ge=1, le=1000),
     project_id: uuid.UUID | None = Query(default=None),
+    include_bbot: bool = Query(
+        default=False,
+        description=(
+            "Include BBOT-promoted events in results. "
+            "Default (false) excludes events where easm_scan_id IS NOT NULL "
+            "(H-4 feed contamination prevention). Set true to show BBOT provenance events."
+        ),
+    ),
+    include_brand_match: bool = Query(
+        default=False,
+        description=(
+            "Include brand-monitor (Phase 12) events in results. "
+            "Default (false) excludes events tagged 'brand-match' so the main "
+            "events feed is not polluted by brand alerts. Set true to show them."
+        ),
+    ),
     db: AsyncSession = Depends(get_session),
 ) -> EventListResponse:
     # AUTH-02 / C-2: dashboard_roles sourced from JWT claim (request.state.user),
@@ -161,6 +182,20 @@ async def list_events(
             scope_predicate=scope_predicate,
             bound_sources=bound_sources,
         )
+        # H-4 feed contamination prevention (Phase 11): exclude BBOT-promoted events
+        # by default. BBOT provenance is signalled by easm_scan_id IS NOT NULL.
+        # (events table has no source_type column — easm_scan_id is the sole indicator.)
+        if not include_bbot:
+            fts_stmt = fts_stmt.where(Event.easm_scan_id == None)  # noqa: E711
+
+        # Phase 12 / BRP-04: exclude brand-monitor events unless explicitly
+        # requested. Brand events are tagged 'brand-match' by brand_synth
+        # (no source_type column exists on events; tag is the canonical marker).
+        if not include_brand_match:
+            fts_stmt = fts_stmt.where(
+                ~func.coalesce(Event.tags, sa.cast(sa.literal("{}"), ARRAY(sa.Text)))
+                .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
+            )
 
         if cursor:
             try:
@@ -182,13 +217,21 @@ async def list_events(
 
         total: int | None = None
         if include_total:
+            _fts_count_base = build_fts_query(
+                params, dashboard_roles, q,
+                project_id=project_id,
+                scope_predicate=scope_predicate,
+                bound_sources=bound_sources,
+            )
+            if not include_bbot:
+                _fts_count_base = _fts_count_base.where(Event.easm_scan_id == None)  # noqa: E711
+            if not include_brand_match:
+                _fts_count_base = _fts_count_base.where(
+                    ~func.coalesce(Event.tags, sa.cast(sa.literal("{}"), ARRAY(sa.Text)))
+                    .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
+                )
             count_stmt = select(func.count()).select_from(
-                build_fts_query(
-                    params, dashboard_roles, q,
-                    project_id=project_id,
-                    scope_predicate=scope_predicate,
-                    bound_sources=bound_sources,
-                ).subquery()
+                _fts_count_base.subquery()
             )
             total = int((await db.execute(count_stmt)).scalar_one())
 
@@ -222,6 +265,18 @@ async def list_events(
         scope_predicate=scope_predicate,
         bound_sources=bound_sources,
     )
+    # H-4 feed contamination prevention (Phase 11): exclude BBOT-promoted events
+    # by default. BBOT provenance is signalled by easm_scan_id IS NOT NULL.
+    # (events table has no source_type column — easm_scan_id is the sole indicator.)
+    if not include_bbot:
+        stmt = stmt.where(Event.easm_scan_id == None)  # noqa: E711
+
+    # Phase 12 / BRP-04: exclude brand-monitor events unless requested.
+    if not include_brand_match:
+        stmt = stmt.where(
+            ~func.coalesce(Event.tags, sa.cast(sa.literal("{}"), ARRAY(sa.Text)))
+            .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
+        )
 
     if cursor:
         try:
@@ -243,14 +298,20 @@ async def list_events(
     if include_total:
         # Total uses the FILTER-only stmt (no cursor, no limit) to avoid
         # counting only rows after the cursor position.
-        count_stmt = select(func.count()).select_from(
-            build_events_query(
-                params, dashboard_roles,
-                project_id=project_id,
-                scope_predicate=scope_predicate,
-                bound_sources=bound_sources,
-            ).subquery()
+        _count_base = build_events_query(
+            params, dashboard_roles,
+            project_id=project_id,
+            scope_predicate=scope_predicate,
+            bound_sources=bound_sources,
         )
+        if not include_bbot:
+            _count_base = _count_base.where(Event.easm_scan_id == None)  # noqa: E711
+        if not include_brand_match:
+            _count_base = _count_base.where(
+                ~func.coalesce(Event.tags, sa.cast(sa.literal("{}"), ARRAY(sa.Text)))
+                .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
+            )
+        count_stmt = select(func.count()).select_from(_count_base.subquery())
         total_std = int((await db.execute(count_stmt)).scalar_one())
 
     items = [await _hydrate_item(r, db) for r in rows]

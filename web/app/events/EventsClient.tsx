@@ -23,8 +23,76 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { FilterChips } from "./components/FilterChips";
 import { EventsTable } from "./components/EventsTable";
+
+// ---------------------------------------------------------------------------
+// BrandProvenanceBadge — rendered in EventsTable when event.source_type === 'brand-monitor'.
+//
+// Per 12-UI-SPEC §Surface 7:
+//   - Height 16px (h-4), horizontal padding 8px (px-2)
+//   - Signal-amber left-border (border-l-2 border-[var(--brand-signal)])
+//   - Background colour dispatches on first matching brand-match:<source> tag:
+//       * brand-match:dnstwist → bg-orange-500/20 text-orange-300
+//       * brand-match:ct_log   → bg-teal-900/40  text-teal-300
+//       * brand-match:fts      → bg-muted        text-muted-foreground
+//       * fallback             → bg-accent/20    text-[var(--brand-signal)]
+//   - Tooltip: "Brand match — {match_source} — /projects/{project_id}/brand"
+//     match_source extracted from first brand-match:* tag
+//     project_id extracted from project:<uuid> tag
+//
+// Co-located here (not in EventsTable.tsx) to keep Surface 7 logic adjacent to
+// the include_brand_match toggle state — mirrors the BBOT precedent where all
+// Phase-11 provenance logic lives near the feed-level Switch owner.
+// ---------------------------------------------------------------------------
+export function BrandProvenanceBadge({ event }: { event: EventItem }) {
+  // Guard: only render for source_type === 'brand-monitor'.
+  if (event.source_type !== "brand-monitor") return null;
+
+  // Extract first brand-match:<source> tag — drives both colour + tooltip text.
+  const matchTag = event.tags.find((t) => t.startsWith("brand-match:"));
+  const matchSource = matchTag ? matchTag.slice("brand-match:".length) : "unknown";
+
+  // Extract project UUID from project:<uuid> tag (EventItem has no project_id field
+  // in the generated schema; project binding is tag-encoded per ingest contract).
+  const projectTag = event.tags.find((t) => t.startsWith("project:"));
+  const projectId = projectTag ? projectTag.slice("project:".length) : "";
+
+  // Background colour dispatch per 12-UI-SPEC §Surface 7.
+  const bgClass =
+    matchSource === "dnstwist"
+      ? "bg-orange-500/20 text-orange-300"
+      : matchSource === "ct_log"
+        ? "bg-teal-900/40 text-teal-300"
+        : matchSource === "fts"
+          ? "bg-muted text-muted-foreground"
+          : "bg-accent/20 text-[var(--brand-signal)]";
+
+  const tooltip = `Brand match — ${matchSource} — /projects/${projectId}/brand`;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className={`inline-flex items-center h-4 px-2 border-l-2 border-[var(--brand-signal)] text-[12px] font-medium uppercase tracking-[0.15em] rounded-sm ${bgClass}`}
+          >
+            Brand
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>{tooltip}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // URL ↔ filter helpers
@@ -98,6 +166,10 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
 
   const [role, setRole] = useState<"red" | "blue" | undefined>(undefined);
   const [filter, setFilter] = useState<EventsQuery>({});
+  const [includeBbot, setIncludeBbot] = useState(false);
+  // Phase 12 / BRP-05: off-by-default toggle that unhides source_type='brand-monitor'
+  // events in the main feed. Mirrors includeBbot placement / query-append pattern.
+  const [includeBrandMatch, setIncludeBrandMatch] = useState(false);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,7 +209,15 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
     setLoading(true);
     setError(null);
 
-    listEvents({ ...parsed, limit: parsed.limit ?? 50 }, role)
+    listEvents(
+      {
+        ...parsed,
+        limit: parsed.limit ?? 50,
+        ...(includeBbot ? { include_bbot: true } : {}),
+        ...(includeBrandMatch ? ({ include_brand_match: true } as Partial<EventsQuery>) : {}),
+      },
+      role,
+    )
       .then((res) => {
         if (!cancelled) {
           setEvents(res.items);
@@ -156,7 +236,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, role]);
+  }, [searchParams, role, includeBbot, includeBrandMatch]);
 
   // ---------------------------------------------------------------------------
   // URL manipulation helpers
@@ -359,6 +439,34 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         )}
       </div>
 
+      {/* include_bbot toggle — off by default; keeps main events feed clean (H-4) */}
+      <div className="flex items-center justify-end gap-2 mt-2 mb-2">
+        <Label htmlFor="include-bbot" className="text-sm text-muted-foreground cursor-pointer">
+          Include BBOT findings
+        </Label>
+        <Switch
+          id="include-bbot"
+          checked={includeBbot}
+          onCheckedChange={setIncludeBbot}
+        />
+      </div>
+
+      {/* include_brand_match toggle — off by default; hides brand-monitor events
+          from the main feed until user opts in (Phase 12 / BRP-05, 12-UI-SPEC §Surface 7). */}
+      <div className="flex items-center justify-end gap-2 mb-4">
+        <Label
+          htmlFor="include-brand-match"
+          className="text-sm text-muted-foreground cursor-pointer"
+        >
+          Include brand matches
+        </Label>
+        <Switch
+          id="include-brand-match"
+          checked={includeBrandMatch}
+          onCheckedChange={setIncludeBrandMatch}
+        />
+      </div>
+
       {/* Events table*/}
       {showError ? (
         <div
@@ -380,7 +488,17 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
             onClick={() => {
               setError(null);
               setLoading(true);
-              listEvents({ ...filter, limit: filter.limit ?? 50 }, role)
+              listEvents(
+                {
+                  ...filter,
+                  limit: filter.limit ?? 50,
+                  ...(includeBbot ? { include_bbot: true } : {}),
+                  ...(includeBrandMatch
+                    ? ({ include_brand_match: true } as Partial<EventsQuery>)
+                    : {}),
+                },
+                role,
+              )
                 .then((res) => {
                   setEvents(res.items);
                   setLoading(false);

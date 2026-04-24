@@ -75,7 +75,11 @@ services:
 
   worker:
     image: intellibird-api:m1
-    command: dramatiq app.workers.broker --processes 1 --threads 4
+    # Explicitly scope to non-easm queues. easm-worker owns the easm queue
+    # (only that container has /var/run/docker.sock mounted).
+    # brand-monitor queue (Phase 12 / BRP-02) co-located here — dnstwist runs in-process,
+    # no docker.sock needed (contrast Phase 11 BBOT).
+    command: dramatiq app.workers.broker --queues ingest maintenance webhooks brand-monitor --processes 1 --threads 4
     env_file: .env
     environment:
       GEOLITE_PATH: /app/geolite/GeoLite2-City.mmdb
@@ -118,6 +122,8 @@ services:
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
       AUTH_ENABLED: ${AUTH_ENABLED:-false}
+      AUTH_TRUST_HOST: "true"
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET required — generate with `openssl rand -hex 32`}
     depends_on:
       api:
         condition: service_healthy
@@ -179,6 +185,37 @@ services:
       authentik-server:
         condition: service_started
 
+  # --- EASM worker (opt-in — docker compose up easm-worker) ---
+  # ELEVATED PRIVILEGE: /var/run/docker.sock is mounted on THIS service only.
+  # Any code path that reaches easm-worker can docker-run arbitrary images with
+  # root-equivalent host access. See docs/ops/easm.md §Security for threat model.
+  # Do NOT copy this mount to api, worker, or scheduler (PITFALLS §Pitfall 7).
+  easm-worker:
+    image: intellibird-api:m1
+    command: dramatiq app.workers.broker --queues easm --processes 1 --threads 2
+    env_file: .env
+    environment:
+      BBOT_PASSIVE_MAX_SECONDS: ${BBOT_PASSIVE_MAX_SECONDS:-7200}
+      BBOT_ACTIVE_MAX_SECONDS: ${BBOT_ACTIVE_MAX_SECONDS:-1800}
+      BBOT_CONCURRENT_LIMIT: ${BBOT_CONCURRENT_LIMIT:-2}
+      BBOT_SCAN_HISTORY_LIMIT: ${BBOT_SCAN_HISTORY_LIMIT:-5}
+      BBOT_EXPERIMENTAL_OVERRIDE: ${BBOT_EXPERIMENTAL_OVERRIDE:-}
+      BBOT_IMAGE_TAG: ${BBOT_IMAGE_TAG:-blacklanternsecurity/bbot:stable}
+      BBOT_ACTIVE_AUTH_TTL_SECONDS: ${BBOT_ACTIVE_AUTH_TTL_SECONDS:-604800}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
+    volumes:
+      # ELEVATED PRIVILEGE — see docs/ops/easm.md §Security before copying this
+      # mount to any other service.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - bbot_scans:/bbot/scans
+    depends_on:
+      - redis
+      - db
+    # profiles: [easm]   # uncomment to make easm-worker opt-in (not started by default)
+
   # On-demand GeoLite2 downloader. Pulls City/ASN/Country mmdb via jsDelivr
   # from wp-statistics/geolite2-* packages (no MaxMind account needed).
   # Run explicitly:  docker compose --profile geoip run --rm geoip-update
@@ -209,3 +246,4 @@ volumes:
   redis_data:
   geoip:
   authentik_db_data:
+  bbot_scans:

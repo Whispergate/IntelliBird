@@ -27,9 +27,9 @@ import uuid
 from datetime import datetime, timezone
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel
-from sqlalchemy import and_, delete as sql_delete, func, select
+from sqlalchemy import and_, delete as sql_delete, func, select, update as sql_update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -56,7 +56,8 @@ from app.schemas.projects import (
     ScopeRowResponse,
     ScopeRowUpdate,
 )
-from app.security.jwt import AuthUser
+from app.schemas.easm import EASMGateFlipRequest
+from app.security.jwt import AuthUser, PROJECT_ROLE_RANK
 from app.security.project_membership import require_project_membership
 from app.services.scope_validators import validate_scope_row_value
 
@@ -96,6 +97,7 @@ async def _hydrate(
         active_scans_authorised=p.active_scans_authorised,
         scope_acknowledgement_text=p.scope_acknowledgement_text,
         active_auth_confirmed_at=p.active_auth_confirmed_at,
+        active_auth_confirmed_by=getattr(p, "active_auth_confirmed_by", None),
         created_at=p.created_at,
         updated_at=p.updated_at,
         member_count=int(count),
@@ -299,6 +301,153 @@ async def restore_project(
     await db.refresh(p)
     log.info("project_restored", project_id=str(project_id), restored_by=user.id)
     return await _hydrate(db, p, current_user_sub=user.id)
+
+
+# ---------------------------------------------------------------------------
+# EASM active-scan gate (EASM-04 / C-3) — flip + revoke
+# ---------------------------------------------------------------------------
+
+
+def _resolve_project_rank(user: AuthUser, project_id: uuid.UUID) -> int:
+    """Return the caller's numeric rank (1=Observer, 2=Contributor, 3=Lead) for the given
+    project, using the JWT pm claim cache only.
+
+    Global Admin callers should never reach this helper (they are short-circuited upstream).
+    Returns 0 when the user has no membership entry for the project.
+    """
+    pid_str = str(project_id)
+    return user.project_memberships.get(pid_str, 0)
+
+
+_GATE_AUTHORITY_MSG = (
+    "You do not have permission to authorise active scans. "
+    "Lead or Admin role required."
+)
+_GATE_NAME_MISMATCH_MSG = (
+    "Scope acknowledgement text does not match the project name."
+)
+_GATE_LEGACY_MSG = (
+    "Authorisation is not available for archived or legacy projects."
+)
+_LEAD_RANK = PROJECT_ROLE_RANK[ProjectRole.Lead.value]
+
+
+@router.patch("/{project_id}/easm-gate", response_model=ProjectResponse)
+async def flip_easm_gate(
+    project_id: uuid.UUID,
+    body: EASMGateFlipRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+) -> ProjectResponse:
+    """Flip active-scan gate ON (EASM-04 / C-3).
+
+    Canonical copy (UI-SPEC §Error states):
+    - 403: "You do not have permission to authorise active scans. Lead or Admin role required."
+    - 422 (name mismatch): "Scope acknowledgement text does not match the project name."
+    - 422 (archived/legacy): "Authorisation is not available for archived or legacy projects."
+    """
+    user: AuthUser = request.state.user
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one_or_none()
+    if project is None:
+        raise HTTPException(status_code=404, detail="project_not_found")
+
+    # Legacy + archived guards (checked before authority so attacker cannot probe via 403)
+    if project.id == LEGACY_PROJECT_ID:
+        raise HTTPException(status_code=422, detail=_GATE_LEGACY_MSG)
+    if project.archived:
+        raise HTTPException(status_code=422, detail=_GATE_LEGACY_MSG)
+
+    # Authority: Lead (rank 3) OR global Admin only
+    global_role = user.role
+    project_rank = _resolve_project_rank(user, project_id)
+    if not (global_role == "Admin" or project_rank >= _LEAD_RANK):
+        raise HTTPException(status_code=403, detail=_GATE_AUTHORITY_MSG)
+
+    # Byte-exact project name match — NO .strip(), NO .lower() (C-3 requirement)
+    if body.scope_acknowledgement_text != project.name:
+        raise HTTPException(status_code=422, detail=_GATE_NAME_MISMATCH_MSG)
+    # body.confirm_authorisation is Literal[True] — Pydantic enforces at deserialization.
+
+    now = datetime.now(timezone.utc)
+    user_sub = user.id
+    await db.execute(
+        sql_update(Project)
+        .where(Project.id == project_id)
+        .values(
+            active_scans_authorised=True,
+            scope_acknowledgement_text=body.scope_acknowledgement_text,
+            active_auth_confirmed_at=now,
+            active_auth_confirmed_by=user_sub,
+        )
+    )
+    await db.commit()
+
+    log.info(
+        "easm_gate_flipped",
+        user_sub=user_sub,
+        project_id=str(project_id),
+        action="flip",
+        timestamp=now.isoformat(),
+    )
+
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one()
+    return await _hydrate(db, project, current_user_sub=user_sub)
+
+
+@router.delete("/{project_id}/easm-gate", response_model=ProjectResponse)
+async def revoke_easm_gate(
+    project_id: uuid.UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+) -> ProjectResponse:
+    """Revoke active-scan gate. Clears all four gate fields.
+
+    Canonical copy (UI-SPEC §Error states):
+    - 403: "You do not have permission to authorise active scans. Lead or Admin role required."
+    """
+    user: AuthUser = request.state.user
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one_or_none()
+    if project is None:
+        raise HTTPException(status_code=404, detail="project_not_found")
+
+    # Authority: Lead OR global Admin only
+    global_role = user.role
+    project_rank = _resolve_project_rank(user, project_id)
+    if not (global_role == "Admin" or project_rank >= _LEAD_RANK):
+        raise HTTPException(status_code=403, detail=_GATE_AUTHORITY_MSG)
+
+    user_sub = user.id
+    now = datetime.now(timezone.utc)
+    await db.execute(
+        sql_update(Project)
+        .where(Project.id == project_id)
+        .values(
+            active_scans_authorised=False,
+            scope_acknowledgement_text=None,
+            active_auth_confirmed_at=None,
+            active_auth_confirmed_by=None,
+        )
+    )
+    await db.commit()
+
+    log.info(
+        "easm_gate_revoked",
+        user_sub=user_sub,
+        project_id=str(project_id),
+        action="revoke",
+        timestamp=now.isoformat(),
+    )
+
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one()
+    return await _hydrate(db, project, current_user_sub=user_sub)
 
 
 # ---------------------------------------------------------------------------
@@ -622,6 +771,16 @@ async def update_scope_row(
         row.active_test_scope = body.active_test_scope
     if body.intel_scope is not None:
         row.intel_scope = body.intel_scope
+    # Enforce the CHECK constraint invariant at the 422 layer against the
+    # merged (current + patch) state — ScopeRowUpdate's model_validator only
+    # sees the patch body, not the current row, so a patch of {intel_scope:
+    # false} passes Pydantic even when the row already has active_test_scope
+    # false. Without this guard the commit raises IntegrityError → 500.
+    if not (row.active_test_scope or row.intel_scope):
+        raise HTTPException(
+            status_code=422,
+            detail="Row must target at least intel or active test.",
+        )
     await db.commit()
     await db.refresh(row)
     return ScopeRowResponse.model_validate(row)

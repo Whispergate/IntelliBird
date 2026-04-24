@@ -226,3 +226,4 @@ Thumbs.db
 .vscode/
 .idea/
 
+web/.env.local

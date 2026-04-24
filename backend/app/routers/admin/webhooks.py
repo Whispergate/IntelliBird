@@ -211,6 +211,7 @@ async def create_webhook(
     wh = Webhook(
         id=uuid.uuid4(),
         name=payload.name,
+        project_id=payload.project_id,
         destination_type=payload.destination_type,
         url=payload.url,
         auth_enc=auth_enc,

@@ -17,9 +17,9 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, TIMESTAMP, Text, text
+from sqlalchemy import Boolean, ForeignKey, Integer, TIMESTAMP, Text, text
 from sqlalchemy.dialects.postgresql import ENUM as PgEnum, UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 
@@ -95,6 +95,22 @@ class Project(Base):
     scope_acknowledgement_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     active_auth_confirmed_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True), nullable=True,
+    )
+    # Phase 11 / EASM-04: gate-audit column — records Authentik sub who confirmed auth
+    active_auth_confirmed_by: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Phase 12 / BRP-04: GDPR per-project retention for person-type brand matches.
+    # Migration 011 adds the column with server_default '90'.
+    gdpr_person_match_retention_days: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("90"), default=90,
+    )
+
+    # Phase 11 EASM relationship
+    easm_scans = relationship(
+        "EASMScan",
+        cascade="all, delete-orphan",
+        backref="project",
+        lazy="dynamic",
     )
 
     created_at: Mapped[datetime] = mapped_column(

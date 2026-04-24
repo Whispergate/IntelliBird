@@ -109,12 +109,13 @@ function ChangePasswordPageInner() {
 
   return (
     <>
-      <h1
-        className="brand-heading text-center mb-4"
-        style={{ color: "var(--brand-primary)" }}
-      >
-        IntelliBird
-      </h1>
+      <div className="flex justify-center mb-6">
+        <img
+          src="/brand/logo.svg"
+          alt="IntelliBird"
+          style={{ height: "96px", width: "auto", display: "block" }}
+        />
+      </div>
       <Card className="p-6">
         <h2 className="brand-heading mb-4">
           {reason === "first_login"

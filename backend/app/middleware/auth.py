@@ -104,7 +104,23 @@ async def _is_jti_revoked(jti: str) -> bool:
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
-        if not settings.AUTH_ENABLED or request.url.path in EXEMPT_PATHS:
+        if request.url.path in EXEMPT_PATHS:
+            return await call_next(request)
+        if not settings.AUTH_ENABLED:
+            # AUTH_ENABLED=false dev mode: inject a stub Admin user so Phase 9+ routers
+            # (which depend on require_auth / require_analyst_or_above / require_admin)
+            # function without a real JWT. The NoAuthBanner surface already warns the
+            # operator that auth is disabled. Loopback-bind + docs/ops runbook are the
+            # compensating controls until PROD-07 (Phase 13) removes the loopback prefix.
+            request.state.user = AuthUser(
+                id="dev-admin",
+                role="Admin",
+                dashboard_roles=["red", "blue"],
+                jti="dev-stub",
+                token_version=0,
+                project_memberships={},
+                pm_truncated=False,
+            )
             return await call_next(request)
 
         # 1. Extract bearer token

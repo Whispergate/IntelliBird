@@ -129,13 +129,20 @@ export default function SetupPage() {
     password.length >= 12 ? "var(--brand-primary)" : "var(--muted-foreground)";
 
   return (
-    <Card className="p-6">
-      <h1 className="brand-heading mb-4">IntelliBird First-Admin Setup</h1>
-      <p className="mb-6 text-sm">
-        IntelliBird First-Admin Setup &mdash; this page is visible because{" "}
-        <code>SETUP_TOKEN</code> is set. Create the initial admin, then unset{" "}
-        <code>SETUP_TOKEN</code> and restart the api service.
-      </p>
+    <>
+      <div className="flex justify-center mb-6">
+        <img
+          src="/brand/logo.svg"
+          alt="IntelliBird"
+          style={{ height: "96px", width: "auto", display: "block" }}
+        />
+      </div>
+      <Card className="p-6">
+        <h1 className="brand-heading mb-4">First-Admin Setup</h1>
+        <p className="mb-6 text-sm">
+          This page is visible because <code>SETUP_TOKEN</code> is set. Create the
+          initial admin, then unset <code>SETUP_TOKEN</code> and restart the api service.
+        </p>
       {tokenError && (
         <div
           role="alert"
@@ -239,6 +246,7 @@ export default function SetupPage() {
           Create admin account
         </Button>
       </form>
-    </Card>
+      </Card>
+    </>
   );
 }

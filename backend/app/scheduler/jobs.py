@@ -191,6 +191,295 @@ def _start_reload_listener(scheduler: BlockingScheduler) -> threading.Thread:
     return t
 
 
+# ---------------------------------------------------------------------------
+# Phase 11: EASM scheduler jobs
+# ---------------------------------------------------------------------------
+
+
+def scan_history_cleanup_job() -> None:
+    """Daily 04:00 UTC — keep the BBOT_SCAN_HISTORY_LIMIT most recent scans per project.
+
+    Uses sync psycopg2 connection (APScheduler is sync; matches Phase 2 Plan 07 precedent).
+    CASCADE on easm_findings.scan_id removes orphaned findings automatically.
+    events.easm_scan_id SET NULL preserves promoted events (L-4 survival contract).
+    """
+    import psycopg2  # noqa: PLC0415
+
+    from app.config import settings  # noqa: PLC0415
+
+    limit = settings.BBOT_SCAN_HISTORY_LIMIT  # default 5
+    pg_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
+    pg_url = pg_url.replace("+asyncpg", "")
+    conn = psycopg2.connect(pg_url)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                DELETE FROM easm_scans s
+                WHERE s.id NOT IN (
+                    SELECT id FROM (
+                        SELECT id,
+                               ROW_NUMBER() OVER (PARTITION BY project_id ORDER BY started_at DESC) AS rn
+                        FROM easm_scans
+                    ) ranked
+                    WHERE rn <= %s
+                )
+                """,
+                (limit,),
+            )
+            conn.commit()
+        logger.info("easm_scan_history_cleanup_complete limit=%d", limit)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("easm_scan_history_cleanup_failed error=%s", e)
+    finally:
+        conn.close()
+
+
+def dismiss_expiry_sweep_job() -> None:
+    """Hourly — findings with dismiss_until < NOW() bounce back to lifecycle_status='new'.
+
+    Handles the case where a user dismissed a finding with a time limit; once the
+    dismiss window expires the finding reappears in the EASM findings view.
+    """
+    import psycopg2  # noqa: PLC0415
+
+    from app.config import settings  # noqa: PLC0415
+
+    pg_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
+    pg_url = pg_url.replace("+asyncpg", "")
+    conn = psycopg2.connect(pg_url)
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE easm_findings
+                SET lifecycle_status='new', dismiss_until=NULL
+                WHERE lifecycle_status='dismissed'
+                  AND dismiss_until IS NOT NULL
+                  AND dismiss_until < NOW()
+                """
+            )
+            conn.commit()
+        logger.info("easm_dismiss_expiry_sweep_complete")
+    except Exception as e:  # noqa: BLE001
+        logger.warning("easm_dismiss_expiry_sweep_failed error=%s", e)
+    finally:
+        conn.close()
+
+
+def orphan_reaper_job() -> None:
+    """Hourly — reap exited intellibird.easm labelled containers and mark stale scans orphaned.
+
+    Delegates to plan 11-04a's bbot_runner.reap_orphan_containers() (sync) and
+    reap_orphan_scans() (async — wrapped in asyncio.run).
+    """
+    import asyncio  # noqa: PLC0415
+
+    from app.services import bbot_runner  # noqa: PLC0415
+    from app.database import async_session_factory  # noqa: PLC0415
+
+    removed = bbot_runner.reap_orphan_containers()
+    if removed:
+        logger.info("easm_orphan_containers_reaped count=%d ids=%s", len(removed), removed)
+
+    async def _run() -> None:
+        async with async_session_factory() as db:
+            count = await bbot_runner.reap_orphan_scans(db)
+            logger.info("easm_orphan_scans_reaped count=%d", count)
+
+    try:
+        asyncio.run(_run())
+    except Exception as e:  # noqa: BLE001
+        logger.warning("easm_orphan_reap_scans_failed error=%s", e)
+
+
+# ---------------------------------------------------------------------------
+# Phase 12: Brand Protection scheduler jobs (BRP-02 / BRP-04 / H-5 / L-3)
+# ---------------------------------------------------------------------------
+
+
+def _brand_sync_pg_url() -> str:
+    """Return a sync psycopg2-style URL (strip asyncpg marker)."""
+    from app.config import settings  # noqa: PLC0415
+
+    url = settings.DATABASE_URL
+    url = url.replace("postgresql+asyncpg://", "postgresql://")
+    url = url.replace("+asyncpg", "")
+    return url
+
+
+def brand_monitor_tick_job() -> None:
+    """Every BRAND_MONITOR_INTERVAL_SECONDS — enqueue a scan_project actor for
+    every active (non-archived) project. Pattern mirrors _make_dispatch but
+    reads the projects list at tick-time (not at scheduler-start) so newly
+    created projects get picked up without a restart.
+    """
+    import psycopg2  # noqa: PLC0415
+
+    from app.workers.brand import brand_monitor_scan_project  # noqa: PLC0415
+
+    conn = psycopg2.connect(_brand_sync_pg_url())
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT id FROM projects WHERE archived IS NOT TRUE")
+            project_ids = [str(r[0]) for r in cur.fetchall()]
+    finally:
+        conn.close()
+
+    for pid in project_ids:
+        try:
+            brand_monitor_scan_project.send(pid)
+        except Exception as e:  # noqa: BLE001
+            logger.warning(
+                "brand_monitor_tick_enqueue_failed project_id=%s error=%s", pid, e
+            )
+    logger.info("brand_monitor_tick_enqueued count=%d", len(project_ids))
+
+
+def brand_gdpr_purge_job() -> None:
+    """Daily 03:00 UTC — delete person-type brand_matches older than
+    project.gdpr_person_match_retention_days (BRP-04 / L-3).
+
+    Per-project retention: a JOIN against brand_terms + projects drives the
+    age cut-off per match row (differing retention-days settings across
+    projects are honoured in a single DELETE).
+    """
+    import psycopg2  # noqa: PLC0415
+
+    conn = psycopg2.connect(_brand_sync_pg_url())
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                DELETE FROM brand_matches
+                USING brand_terms, projects
+                WHERE brand_matches.brand_term_id = brand_terms.id
+                  AND brand_terms.project_id = projects.id
+                  AND brand_terms.term_type = 'person'
+                  AND brand_matches.first_seen <
+                      NOW() - (projects.gdpr_person_match_retention_days::text
+                               || ' days')::interval
+                """
+            )
+            deleted = cur.rowcount
+            conn.commit()
+        logger.info("brand_gdpr_purge_complete deleted=%d", deleted)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("brand_gdpr_purge_failed error=%s", e)
+    finally:
+        conn.close()
+
+
+def brand_noise_downgrade_sweep_job() -> None:
+    """Daily 04:30 UTC — auto-downgrade high-noise active terms to watch_only
+    (H-5). A term is "noisy" when its brand_matches count in the last 24h
+    exceeds settings.BRAND_NOISE_THRESHOLD. Only affects mode='active' terms.
+    """
+    import psycopg2  # noqa: PLC0415
+
+    from app.config import settings  # noqa: PLC0415
+
+    threshold = settings.BRAND_NOISE_THRESHOLD
+    conn = psycopg2.connect(_brand_sync_pg_url())
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE brand_terms
+                SET mode = 'watch_only'
+                WHERE mode = 'active'
+                  AND archived = false
+                  AND id IN (
+                      SELECT brand_term_id
+                      FROM brand_matches
+                      WHERE last_seen > NOW() - INTERVAL '24 hours'
+                      GROUP BY brand_term_id
+                      HAVING COUNT(*) > %s
+                  )
+                """,
+                (threshold,),
+            )
+            downgraded = cur.rowcount
+            conn.commit()
+        logger.info(
+            "brand_noise_downgrade_sweep_complete threshold=%d downgraded=%d",
+            threshold, downgraded,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("brand_noise_downgrade_sweep_failed error=%s", e)
+    finally:
+        conn.close()
+
+
+def brand_dismiss_expiry_sweep_job() -> None:
+    """Hourly — flip lifecycle_status back to 'new' for dismissed brand_matches
+    whose dismiss_until has passed (BRP-04).
+
+    Mirrors Phase 11 easm_findings dismiss_expiry_sweep_job 1:1.
+    """
+    import psycopg2  # noqa: PLC0415
+
+    conn = psycopg2.connect(_brand_sync_pg_url())
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                UPDATE brand_matches
+                SET lifecycle_status = 'new', dismiss_until = NULL
+                WHERE lifecycle_status = 'dismissed'
+                  AND dismiss_until IS NOT NULL
+                  AND dismiss_until < NOW()
+                """
+            )
+            expired = cur.rowcount
+            conn.commit()
+        logger.info("brand_dismiss_expiry_sweep_complete expired=%d", expired)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("brand_dismiss_expiry_sweep_failed error=%s", e)
+    finally:
+        conn.close()
+
+
+def register_brand_jobs(scheduler: BlockingScheduler, settings_obj) -> None:  # type: ignore[no-untyped-def]
+    """Wire the 4 Phase 12 Brand Protection jobs onto the given scheduler.
+
+    Job IDs (stable — used by tests + ops):
+      - brand_monitor_tick               : IntervalTrigger(BRAND_MONITOR_INTERVAL_SECONDS, default 900s)
+      - brand_gdpr_purge                 : CronTrigger(hour=3, minute=0, UTC)
+      - brand_noise_downgrade_sweep      : CronTrigger(hour=4, minute=30, UTC)
+      - brand_dismiss_expiry_sweep       : IntervalTrigger(hours=1)
+    """
+    interval = int(getattr(settings_obj, "BRAND_MONITOR_INTERVAL_SECONDS", 900))
+    scheduler.add_job(
+        brand_monitor_tick_job,
+        IntervalTrigger(seconds=interval),
+        id="brand_monitor_tick",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        brand_gdpr_purge_job,
+        CronTrigger(hour=3, minute=0, timezone="UTC"),
+        id="brand_gdpr_purge",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        brand_noise_downgrade_sweep_job,
+        CronTrigger(hour=4, minute=30, timezone="UTC"),
+        id="brand_noise_downgrade_sweep",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        brand_dismiss_expiry_sweep_job,
+        IntervalTrigger(hours=1),
+        id="brand_dismiss_expiry_sweep",
+        replace_existing=True,
+    )
+    logger.info(
+        "scheduler_registered brand_monitor_tick interval=%d + 3 brand maintenance jobs",
+        interval,
+    )
+
+
 def build_scheduler() -> BlockingScheduler:
     scheduler = BlockingScheduler(timezone="UTC")
     # jobs (preserved)
@@ -248,6 +537,44 @@ def build_scheduler() -> BlockingScheduler:
         _start_reload_listener(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_reload_listener_start_failed error=%s", e)
+    # Phase 11: EASM retention + dismiss expiry + orphan reaper
+    try:
+        scheduler.add_job(
+            scan_history_cleanup_job,
+            CronTrigger(hour=4, minute=0, timezone="UTC"),
+            id="easm_scan_history_cleanup",
+            replace_existing=True,
+        )
+        logger.info("scheduler_registered easm_scan_history_cleanup")
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_easm_history_cleanup_register_failed error=%s", e)
+    try:
+        scheduler.add_job(
+            dismiss_expiry_sweep_job,
+            IntervalTrigger(hours=1),
+            id="easm_dismiss_expiry_sweep",
+            replace_existing=True,
+        )
+        logger.info("scheduler_registered easm_dismiss_expiry_sweep")
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_easm_dismiss_expiry_register_failed error=%s", e)
+    try:
+        scheduler.add_job(
+            orphan_reaper_job,
+            IntervalTrigger(hours=1),
+            id="easm_orphan_reaper",
+            replace_existing=True,
+        )
+        logger.info("scheduler_registered easm_orphan_reaper")
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_easm_orphan_reaper_register_failed error=%s", e)
+    # Phase 12: Brand Protection monitor tick + GDPR + noise downgrade + dismiss expiry
+    try:
+        from app.config import settings as _brand_settings  # noqa: PLC0415
+
+        register_brand_jobs(scheduler, _brand_settings)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_brand_jobs_register_failed error=%s", e)
     return scheduler
 
 

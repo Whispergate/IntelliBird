@@ -1,29 +1,24 @@
 "use client";
 
 /**
- * ScopeRowTable — Phase 10 Plan 10-10.
+ * ScopeRowTable — Phase 10 Plan 10-10 with inline-PATCH toggle edit (post-ship fix).
  *
  * Per-scope-type row listing. Columns:
  *   - Value (monospace for ip_range / certificate, default text otherwise)
  *   - Contact (optional contact string or em-dash)
- *   - Exclude   (Switch — disabled read-only in Phase 10; edit via delete+re-add)
- *   - Active test scope (Switch — disabled read-only)
- *   - Intel scope (Switch — disabled read-only)
+ *   - Exclude   (Switch — inline PATCH on change)
+ *   - Active test scope (Switch — inline PATCH on change)
+ *   - Intel scope (Switch — inline PATCH on change)
  *   - Actions (Delete icon button — native window.confirm per UI-SPEC §ScopeRowTable)
  *
- * Scope discipline (plan 10-10 §action note):
- *   "The toggle-disabled approach keeps this plan small; full inline PATCH on
- *    toggle change is a v2.1 follow-up or extended in a later plan. For
- *    Phase 10 the primary editable path is Add/Delete; toggle edits via row
- *    re-create through Delete+Add."
- *
- * The UI-SPEC specifies inline PATCH on toggle; plan 10-10 explicitly defers.
- * Tooltip / aria-label communicate the disabled state to SR users.
+ * Parent supplies onToggle(row, patch) which PATCHes /api/projects/{id}/scope/{row_id}
+ * and reloads. Parent enforces the "at least one of active_test/intel" invariant
+ * (backend CHECK project_scope_rows_at_least_one_flag rejects with 422).
  */
 
 import { Trash2 } from "lucide-react";
 
-import type { ScopeRowResponse } from "../../lib/api";
+import type { ScopeRowResponse, ScopeRowUpdateBody } from "../../lib/api";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
@@ -31,11 +26,17 @@ export function ScopeRowTable({
   rows,
   scopeType,
   onDelete,
+  onToggle,
 }: {
   rows: ScopeRowResponse[];
   scopeType: string;
-  /** Delete handler — parent runs native window.confirm + PATCH. */
+  /** Delete handler — parent runs native window.confirm + DELETE. */
   onDelete: (row: ScopeRowResponse) => Promise<void> | void;
+  /** Toggle handler — parent PATCHes and reloads. */
+  onToggle: (
+    row: ScopeRowResponse,
+    patch: ScopeRowUpdateBody,
+  ) => Promise<void> | void;
 }) {
   // IP ranges and cert hashes render monospace per UI-SPEC §Typography §Mono.
   const isMono = scopeType === "ip_range" || scopeType === "certificate";
@@ -83,22 +84,24 @@ export function ScopeRowTable({
             <td className="py-2 px-3">
               <Switch
                 checked={row.exclude}
-                disabled
-                aria-label="Exclude flag (read-only in Phase 10 — delete and re-add to change)"
+                onCheckedChange={(v) => onToggle(row, { exclude: v })}
+                aria-label="Exclude flag"
               />
             </td>
             <td className="py-2 px-3">
               <Switch
                 checked={row.active_test_scope}
-                disabled
-                aria-label="Active-test-scope flag (read-only)"
+                onCheckedChange={(v) =>
+                  onToggle(row, { active_test_scope: v })
+                }
+                aria-label="Active-test-scope flag"
               />
             </td>
             <td className="py-2 px-3">
               <Switch
                 checked={row.intel_scope}
-                disabled
-                aria-label="Intel-scope flag (read-only)"
+                onCheckedChange={(v) => onToggle(row, { intel_scope: v })}
+                aria-label="Intel-scope flag"
               />
             </td>
             <td className="py-2 px-3 text-right">

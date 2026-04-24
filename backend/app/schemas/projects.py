@@ -46,6 +46,7 @@ class ProjectResponse(BaseModel):
     active_scans_authorised: bool
     scope_acknowledgement_text: str | None
     active_auth_confirmed_at: datetime | None
+    active_auth_confirmed_by: str | None = None
     created_at: datetime
     updated_at: datetime
     # Hydrated by router (LEFT JOIN project_memberships; current-user compare):

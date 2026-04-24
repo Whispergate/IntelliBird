@@ -2,12 +2,18 @@ import "./globals.css";
 import type { ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { NoAuthBanner } from "./components/NoAuthBanner";
+import { AppHeader } from "./components/AppHeader";
 import { fetchSystemStatus } from "./api-client";
 import { Providers } from "./providers";
 
 export const metadata = {
-  title: "IntelliBird M1",
+  title: "IntelliBird",
   description: "Self-hosted threat intelligence platform",
+  icons: {
+    icon: "/brand/bird.svg",
+    shortcut: "/brand/bird.svg",
+    apple: "/brand/bird.svg",
+  },
 };
 
 export default async function RootLayout({
@@ -22,9 +28,9 @@ export default async function RootLayout({
       <body style={{ margin: 0, fontFamily: "system-ui, sans-serif" }}>
         <Providers>
           <NoAuthBanner status={status} />
-          {/* TopNav is rendered per-route: DashboardShell provides a role-aware TopNav
- for /red and /blue. Routes that need nav (e.g. /sources) render their own
- shell or are served by a dedicated layout in a future phase.*/}
+          {/* Global TopNav (suppresses on /login, /setup, /change-password).
+              DashboardShell no longer emits its own TopNav. */}
+          <AppHeader />
           <main style={{ padding: "1.5rem" }}>{children}</main>
           <Toaster richColors position="top-right" />
         </Providers>

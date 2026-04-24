@@ -5,6 +5,13 @@ export default auth((req) => {
   const session = req.auth;
   const { pathname, origin } = req.nextUrl;
 
+  // 0. AUTH_ENABLED=false -> pass-through (INFRA-04 contract mirrors the api proxy route).
+  //    Backend AuthMiddleware is already a pass-through in this mode; middleware must
+  //    not redirect to /login or no local-dev path is reachable without compose SSO.
+  if (process.env.AUTH_ENABLED !== "true") {
+    return NextResponse.next();
+  }
+
   // 1. Unauthenticated on a matched route -> /login?next=<path>
   if (!session) {
     const loginUrl = new URL("/login", origin);

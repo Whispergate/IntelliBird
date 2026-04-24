@@ -28,9 +28,15 @@ import type {
   ProjectResponse,
   ScopeRowCreateBody,
   ScopeRowResponse,
+  ScopeRowUpdateBody,
   ScopeType,
 } from "../lib/api";
-import { addScopeRow, deleteScopeRow, listScopeRows } from "../lib/api";
+import {
+  addScopeRow,
+  deleteScopeRow,
+  listScopeRows,
+  updateScopeRow,
+} from "../lib/api";
 import { Button } from "@/components/ui/button";
 import { ScopeRowDialog } from "./components/ScopeRowDialog";
 import { ScopeRowTable } from "./components/ScopeRowTable";
@@ -158,6 +164,32 @@ export function ScopeTabContent({
     }
   }
 
+  async function handleToggle(
+    row: ScopeRowResponse,
+    patch: ScopeRowUpdateBody,
+  ) {
+    // Pre-flight "at least one flag" invariant — matches backend CHECK
+    // constraint project_scope_rows_at_least_one_flag. Blocks the PATCH when
+    // the resulting row would have both active_test_scope and intel_scope
+    // false, avoiding a user-visible error round-trip.
+    const merged = { ...row, ...patch };
+    if (!merged.active_test_scope && !merged.intel_scope) {
+      toast.error("Row must target at least intel or active test.");
+      return;
+    }
+    // Optimistic update — revert on failure via reload.
+    setRows((prev) =>
+      prev.map((r) => (r.id === row.id ? { ...r, ...patch } : r)),
+    );
+    try {
+      await updateScopeRow(project.id, row.id, patch);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unknown error.";
+      toast.error(`Could not update row. ${msg}`);
+      await reload();
+    }
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -200,6 +232,7 @@ export function ScopeTabContent({
           rows={sortedRows}
           scopeType={cfg.type}
           onDelete={handleDelete}
+          onToggle={handleToggle}
         />
       )}
 
