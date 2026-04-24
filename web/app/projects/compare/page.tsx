@@ -12,7 +12,7 @@
  * useEffect + router.replace for the Swap / set-side actions.
  *
  * Middleware protection:
- *   web/middleware.ts matcher is extended to cover /projects/:path* so an
+ *   web/proxy.ts matcher is extended to cover /projects/:path* so an
  *   unauthenticated request to /projects/compare redirects to /login?next=…
  *   before this server component runs.
  */

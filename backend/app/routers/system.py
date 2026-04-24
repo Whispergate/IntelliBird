@@ -3,11 +3,15 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.state
 from app.config import settings
+from app.database import get_session
+from app.models.users import User
 
 VERSION = "0.1.0"
 
@@ -31,6 +35,8 @@ class SystemStatusResponse(BaseModel):
     version: str
     warning: str | None
     decrypt_check: Literal["ok", "failed", "unknown"] = "unknown"
+    setup_token_set: bool
+    user_count: int
 
 
 @router.get("/healthz", response_model=HealthzResponse, tags=["system"])
@@ -39,7 +45,9 @@ def healthz() -> HealthzResponse:
 
 
 @router.get("/api/system/status", response_model=SystemStatusResponse, tags=["system"])
-def get_status() -> SystemStatusResponse:
+async def get_status(
+    db: AsyncSession = Depends(get_session),
+) -> SystemStatusResponse:
     loopback = settings.HOST == "127.0.0.1"
     decrypt_state = app.state.decrypt_check
 
@@ -55,6 +63,8 @@ def get_status() -> SystemStatusResponse:
     else:
         warning = None
 
+    user_count = int((await db.execute(select(func.count(User.id)))).scalar_one())
+
     return SystemStatusResponse(
         auth_enabled=settings.AUTH_ENABLED,
         host=settings.HOST,
@@ -62,4 +72,6 @@ def get_status() -> SystemStatusResponse:
         version=VERSION,
         warning=warning,
         decrypt_check=decrypt_state,
+        setup_token_set=bool(settings.SETUP_TOKEN),
+        user_count=user_count,
     )

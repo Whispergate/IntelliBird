@@ -40,11 +40,15 @@ export default function SetupPage() {
       .catch(() => setStatus({ setup_token_set: false, user_count: 0 }));
   }, []);
 
+  useEffect(() => {
+    if (status && !status.setup_token_set) {
+      router.replace("/");
+    }
+  }, [status, router]);
+
   if (status === null) return null;
 
   if (!status.setup_token_set) {
-    // SETUP_TOKEN not set — redirect home.
-    router.replace("/");
     return null;
   }
 

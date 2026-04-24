@@ -14,13 +14,21 @@
 :443, :80 {
     encode zstd gzip
 
-    @api path /api/* /healthz
-    handle @api {
-        # PROD-03: strip client-supplied role hint at the edge before forwarding
-        # to the api upstream. Defense-in-depth — FastAPI also ignores this
-        # header (see backend/app/middleware/auth.py); role is derived from the
-        # signed JWT claim only. The edge strip is belt-and-braces.
-        request_header -X-Dashboard-Role
+    # All browser traffic — including /api/* — goes to the web container.
+    # Web container handles:
+    #   /api/auth/*   -> NextAuth v5 handler (app/api/auth/[...nextauth]/route.ts)
+    #   /api/*        -> app/api/[...path]/route.ts runtime proxy that reads the
+    #                    Auth.js session and injects Authorization: Bearer
+    #                    before forwarding to http://api:8000. It also strips the
+    #                    spoofable X-Dashboard-Role header (PROD-03 / INFRA-04).
+    # Routing /api/* directly to api:8000 at the edge would bypass the bearer
+    # injection and return 401 invalid_token for every authenticated request.
+    # PROD-03 edge header strip is preserved defensively for the web -> api hop.
+    request_header -X-Dashboard-Role
+
+    # /healthz is a pre-auth liveness probe; can go direct to api.
+    @healthz path /healthz
+    handle @healthz {
         reverse_proxy api:8000
     }
 
