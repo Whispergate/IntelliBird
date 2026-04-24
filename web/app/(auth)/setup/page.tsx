@@ -28,8 +28,8 @@ export default function SetupPage() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // /api/system/status is public; exposes setup_token_set + user_count.
-    fetch("/api/system/status")
+    // /api/system/setup-status is pre-auth; exposes setup_token_set + user_count.
+    fetch("/api/system/setup-status")
       .then((r) => r.json())
       .then((s: any) =>
         setStatus({

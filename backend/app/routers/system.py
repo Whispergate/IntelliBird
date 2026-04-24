@@ -35,6 +35,9 @@ class SystemStatusResponse(BaseModel):
     version: str
     warning: str | None
     decrypt_check: Literal["ok", "failed", "unknown"] = "unknown"
+
+
+class SetupStatusResponse(BaseModel):
     setup_token_set: bool
     user_count: int
 
@@ -45,9 +48,7 @@ def healthz() -> HealthzResponse:
 
 
 @router.get("/api/system/status", response_model=SystemStatusResponse, tags=["system"])
-async def get_status(
-    db: AsyncSession = Depends(get_session),
-) -> SystemStatusResponse:
+def get_status() -> SystemStatusResponse:
     loopback = settings.HOST == "127.0.0.1"
     decrypt_state = app.state.decrypt_check
 
@@ -63,8 +64,6 @@ async def get_status(
     else:
         warning = None
 
-    user_count = int((await db.execute(select(func.count(User.id)))).scalar_one())
-
     return SystemStatusResponse(
         auth_enabled=settings.AUTH_ENABLED,
         host=settings.HOST,
@@ -72,6 +71,22 @@ async def get_status(
         version=VERSION,
         warning=warning,
         decrypt_check=decrypt_state,
+    )
+
+
+@router.get(
+    "/api/system/setup-status",
+    response_model=SetupStatusResponse,
+    tags=["system"],
+)
+async def get_setup_status(
+    db: AsyncSession = Depends(get_session),
+) -> SetupStatusResponse:
+    """Pre-auth probe for the /setup UI — exposes SETUP_TOKEN presence and
+    user count so the first-admin form knows whether to render or redirect.
+    """
+    user_count = int((await db.execute(select(func.count(User.id)))).scalar_one())
+    return SetupStatusResponse(
         setup_token_set=bool(settings.SETUP_TOKEN),
         user_count=user_count,
     )

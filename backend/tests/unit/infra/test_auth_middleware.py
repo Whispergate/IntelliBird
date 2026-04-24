@@ -42,10 +42,12 @@ def _make_app() -> FastAPI:
 
 @pytest.mark.asyncio
 async def test_exempt_paths_contents() -> None:
-    # Phase 9 extended EXEMPT_PATHS from 3 to 8 entries (auth endpoints + setup)
+    # Phase 9 extended EXEMPT_PATHS from 3 to 8 entries (auth endpoints + setup).
+    # Added /api/system/setup-status for the pre-auth /setup UI probe.
     assert EXEMPT_PATHS == frozenset({
         "/healthz",
         "/api/system/status",
+        "/api/system/setup-status",
         "/api/admin/rekey-credentials",
         "/api/admin/setup",
         "/api/auth/login",

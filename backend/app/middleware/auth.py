@@ -45,6 +45,7 @@ log = structlog.get_logger(__name__)
 EXEMPT_PATHS: frozenset[str] = frozenset({
     "/healthz",
     "/api/system/status",
+    "/api/system/setup-status",
     "/api/admin/rekey-credentials",
     "/api/admin/setup",
     "/api/auth/login",

@@ -12,6 +12,7 @@ pytestmark = pytest.mark.integration
 def _app(host: str = "127.0.0.1"):
     """Build a fresh FastAPI app bound to a given HOST value."""
     os.environ["SECRET_KEY"] = "a" * 64
+    os.environ["JWT_SIGNING_KEY"] = "0" * 32 + "a" * 32
     os.environ["DATABASE_URL"] = "postgresql+asyncpg://u:p@db:5432/d"
     os.environ["REDIS_URL"] = "redis://redis:6379/0"
     os.environ["HOST"] = host
