@@ -25,9 +25,11 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from typing import Literal
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import and_, delete as sql_delete, func, select, update as sql_update
 from sqlalchemy.exc import IntegrityError
@@ -45,6 +47,7 @@ from app.models.projects import (
 )
 from app.models.sources import Source
 from app.schemas.projects import (
+    CompareResponse,
     MembershipCreate,
     MembershipResponse,
     MembershipUpdate,
@@ -55,10 +58,18 @@ from app.schemas.projects import (
     ScopeRowCreate,
     ScopeRowResponse,
     ScopeRowUpdate,
+    SharedIOCSchema,
 )
 from app.schemas.easm import EASMGateFlipRequest
 from app.security.jwt import AuthUser, PROJECT_ROLE_RANK
-from app.security.project_membership import require_project_membership
+from app.security.project_membership import check_project_membership, require_project_membership
+from app.services import project_export as _project_export
+from app.services.project_compare import (
+    shared_actors,
+    shared_techniques,
+    shared_iocs,
+)
+from app.services.project_scope import fetch_scope_rows_intel
 from app.services.scope_validators import validate_scope_row_value
 
 log = structlog.get_logger(__name__)
@@ -922,3 +933,96 @@ async def replace_project_sources(
         )
         for r in rows
     ]
+
+
+# ---------------------------------------------------------------------------
+# PRJ-07 Export endpoint — POST /{project_id}/export
+# ---------------------------------------------------------------------------
+
+
+@router.post("/{project_id}/export")
+async def export_project(
+    project_id: uuid.UUID,
+    format: Literal["stix", "csv"] = Query(...),
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Contributor)),
+    db: AsyncSession = Depends(get_session),
+) -> StreamingResponse:
+    """PRJ-07 per-project export — STIX 2.1 Bundle OR CSV.
+
+    Auth: Contributor+ on project (or global Admin bypass via require_project_membership).
+    Observer is rejected by the Contributor minimum. 50k event cap -> 413.
+    Caps read via module-ref (_project_export.STIX_BUNDLE_EVENT_CAP) so tests can monkeypatch.
+    """
+    _legacy_guard(project_id)
+
+    # Load project for filename + STIX metadata
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one_or_none()
+    if project is None:
+        raise HTTPException(status_code=404, detail="project_not_found")
+
+    # Cap check — module-ref so monkeypatch in tests is observable to the handler
+    count = await _project_export.count_exportable_events(db, project_id)
+    cap = (
+        _project_export.STIX_BUNDLE_EVENT_CAP
+        if format == "stix"
+        else _project_export.CSV_EVENT_CAP
+    )
+    if count > cap:
+        raise HTTPException(
+            status_code=413,
+            detail=f"export exceeds {cap}-event cap ({count} events) — narrow the project scope or filter",
+        )
+
+    events = await _project_export.fetch_scoped_events(db, project_id)
+    filename = _project_export.export_filename(project.name, format)
+
+    if format == "stix":
+        scope_rows = await fetch_scope_rows_intel(db, project_id)
+        body = _project_export.build_stix_bundle(project, events, scope_rows)
+        media_type = "application/json"
+        body_bytes = body.encode("utf-8")
+    else:  # csv
+        body_bytes = await _project_export.build_csv_bytes(db, events)
+        media_type = "text/csv"
+
+    return StreamingResponse(
+        iter([body_bytes]),
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+# ---------------------------------------------------------------------------
+# PRJ-06 compare_router — sibling APIRouter at /projects/compare
+# Registered BEFORE projects_router in main.py so /api/projects/compare
+# does not collide with /{project_id} route on the main router.
+# ---------------------------------------------------------------------------
+
+compare_router = APIRouter(prefix="/projects/compare", tags=["projects"])
+
+
+@compare_router.get("", response_model=CompareResponse)
+async def compare_projects(
+    a: uuid.UUID = Query(...),
+    b: uuid.UUID = Query(...),
+    user: AuthUser = Depends(require_auth),
+    db: AsyncSession = Depends(get_session),
+) -> CompareResponse:
+    """PRJ-06 cross-project compare — shared actors / techniques / IOCs.
+
+    Auth: Observer+ on BOTH projects (or global Admin bypass).
+    Empty arrays on no-overlap (not 404). 500-row cap per panel (service-side).
+    """
+    await check_project_membership(user, db, a, ProjectRole.Observer)
+    await check_project_membership(user, db, b, ProjectRole.Observer)
+
+    actors = await shared_actors(db, a, b)
+    techniques = await shared_techniques(db, a, b)
+    iocs_raw = await shared_iocs(db, a, b)
+    return CompareResponse(
+        shared_actors=actors,
+        shared_techniques=techniques,
+        shared_iocs=[SharedIOCSchema(kind=i["kind"], value=i["value"]) for i in iocs_raw],
+    )

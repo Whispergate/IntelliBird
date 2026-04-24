@@ -57,5 +57,6 @@ export const config = {
     "/sources/:path*",
     "/webhooks/:path*",
     "/admin/:path*",
+    "/projects/:path*",
   ],
 };

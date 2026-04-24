@@ -46,6 +46,7 @@ from app.routers.easm import router as easm_router
 from app.routers.easm import safelist_router as easm_safelist_router
 from app.routers.brand import router as brand_router
 from app.routers.projects import router as projects_router
+from app.routers.projects import compare_router as projects_compare_router
 from app.routers.system import router as system_router
 from app.routers.tags import router as tags_router
 from app.workers import broker as _broker  # noqa: F401 — registers actors
@@ -196,6 +197,9 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(tags_router, prefix="/api")
     fastapi_app.include_router(presets_router, prefix="/api")
     fastapi_app.include_router(graph_router, prefix="/api")
+    # compare_router MUST be registered before projects_router so /api/projects/compare
+    # resolves on compare_router first, not on projects_router's /{project_id} catchall.
+    fastapi_app.include_router(projects_compare_router, prefix="/api")
     fastapi_app.include_router(projects_router, prefix="/api")
     # EASM: safelist_router before easm_router — /api/easm/safelist must not collide
     # with /api/projects/.../easm/... path (no collision, but consistent with Phase 10

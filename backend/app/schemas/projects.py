@@ -138,3 +138,24 @@ class ProjectSourcesBinding(BaseModel):
     """
 
     source_ids: list[uuid.UUID]
+
+
+# ---------------------------------------------------------------------------
+# PRJ-06 Cross-project compare response models
+# ---------------------------------------------------------------------------
+
+class SharedIOCSchema(BaseModel):
+    """One shared IOC row across two projects (PRJ-06)."""
+    kind: Literal["ip", "domain", "hash"]
+    value: str
+
+
+class CompareResponse(BaseModel):
+    """GET /api/projects/compare response — three independent shared-entity panels.
+
+    Each list is capped at COMPARE_CAP=500 rows (service-side). Empty arrays
+    indicate no overlap (not a 404).
+    """
+    shared_actors: list[str]
+    shared_techniques: list[str]
+    shared_iocs: list[SharedIOCSchema]
