@@ -105,4 +105,53 @@ def require_project_membership(min_role: ProjectRole) -> Callable:
     return _dep
 
 
-__all__ = ["require_project_membership", "PROJECT_ROLE_RANK"]
+def enforce_project_query_scope(
+    user: AuthUser | None,
+    project_id: uuid.UUID | None,
+) -> list[uuid.UUID] | None:
+    """Row-filter authorisation for endpoints where project_id is a Query param.
+
+    Post-v2.0 gap closure for PROD-01 (see 13-01-SUMMARY.md GAP-1/GAP-2):
+    endpoints like GET /api/events and GET /api/events/{id}/graph previously
+    returned data without intersecting the caller's project_memberships claim
+    when project_id was omitted — a JWT scoped to Project A could see all
+    projects' rows by dropping the query param.
+
+    Semantics:
+      - user is None (AUTH_ENABLED=false or missing middleware): unrestricted.
+      - user.role == 'Admin': unrestricted (global admin bypass, matches
+        require_project_membership behaviour).
+      - project_id provided + caller is member (claim hit): unrestricted.
+      - project_id provided + caller NOT a member: 403.
+      - project_id omitted + caller has memberships: restrict to the union
+        (returned as a list of UUIDs for row filtering).
+      - project_id omitted + caller has no memberships: 403.
+
+    Returns None when no filter is needed (admin or anonymous);
+    returns a list[uuid.UUID] of allowed project_ids otherwise.
+    """
+    if user is None or user.role == "Admin":
+        return None
+
+    memberships = set(user.project_memberships.keys())
+    if project_id is not None:
+        if str(project_id) not in memberships:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="not a project member",
+            )
+        return None  # single-project filter already applied downstream
+
+    if not memberships:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="caller has no project memberships; project_id required",
+        )
+    return [uuid.UUID(pid) for pid in memberships]
+
+
+__all__ = [
+    "require_project_membership",
+    "enforce_project_query_scope",
+    "PROJECT_ROLE_RANK",
+]

@@ -28,7 +28,9 @@ def _make_user(dashboard_roles: list[str]):
     from app.security.jwt import AuthUser
     return AuthUser(
         id=str(uuid.uuid4()),
-        role="Analyst",
+        # Admin bypasses PROD-01 GAP-2 membership guard on graph router;
+        # this test targets dashboard_roles claim plumbing, not scoping.
+        role="Admin",
         dashboard_roles=dashboard_roles,
         jti=str(uuid.uuid4()),
         token_version=0,

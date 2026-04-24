@@ -70,7 +70,10 @@ def _make_user(dashboard_roles: list[str]) -> Any:
 
     return AuthUser(
         id=str(uuid.uuid4()),
-        role="Analyst",
+        # Admin bypasses enforce_project_query_scope so this test exercises
+        # the orthogonal axis (dashboard_role filtering) without tripping
+        # PROD-01 GAP-1 membership guard on the unscoped /api/events list.
+        role="Admin",
         dashboard_roles=dashboard_roles,
         jti=str(uuid.uuid4()),
         token_version=0,

@@ -35,6 +35,7 @@ from app.services.events_query import (
     encode_cursor,
     encode_fts_cursor,
 )
+from app.security.project_membership import enforce_project_query_scope
 from app.services.project_scope import (
     build_scope_predicate,
     fetch_bound_sources,
@@ -146,6 +147,20 @@ async def list_events(
     # PROD-03: filtering role comes from dependency injection of JWT claim; do not inspect X-Dashboard-Role header.
     user = getattr(request.state, "user", None)
     dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
+
+    # PROD-01 GAP-1: intersect JWT project_memberships with the row filter.
+    # Non-admin callers without project_id previously saw all projects' events
+    # because build_events_query skipped the scope predicate. Helper returns:
+    #   - None for admins / anonymous (AUTH_ENABLED=false) → unrestricted
+    #   - None when project_id is provided AND caller is a member → unchanged
+    #   - 403 when caller has no memberships or is not a member of project_id
+    #   - list[UUID] when multi-project caller omitted project_id → reject
+    allowed_project_ids = enforce_project_query_scope(user, project_id)
+    if allowed_project_ids is not None and project_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="project_id query parameter required for non-admin callers",
+        )
 
     # Phase 10 / PRJ-03: pre-compute scope predicate + bound sources when project-scoped.
     # build_events_query + build_fts_query stay sync — routers fetch the DB-dependent

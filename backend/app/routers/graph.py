@@ -10,6 +10,7 @@ from starlette.requests import Request
 
 from app.database import get_session
 from app.schemas.graph import GraphResponse
+from app.security.project_membership import enforce_project_query_scope
 from app.services.graph_traversal import (
     DEFAULT_DEPTH,
     MAX_DEPTH,
@@ -34,6 +35,18 @@ async def get_event_graph(
     # When AUTH_ENABLED=false, request.state.user is unset → dashboard_roles=None → no filter.
     user = getattr(request.state, "user", None)
     dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
+
+    # PROD-01 GAP-2: enforce project membership at the router layer rather
+    # than relying on graph_traversal's seed/project mismatch 404 (correct
+    # result, wrong layer). Non-admin callers MUST specify project_id; the
+    # helper 403s if the caller is not a member of the requested project,
+    # or has no memberships at all.
+    allowed_project_ids = enforce_project_query_scope(user, project_id)
+    if allowed_project_ids is not None and project_id is None:
+        raise HTTPException(
+            status_code=400,
+            detail="project_id query parameter required for non-admin callers",
+        )
 
     # Phase 10 / PRJ-04: project_id query param narrows BFS to events in the
     # given project. traverse_graph re-applies project_id at every cross-event
