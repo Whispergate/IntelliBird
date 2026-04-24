@@ -58,9 +58,10 @@ build-backend = "hatchling.build"
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
-addopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers -m 'not load'"
 markers = [
   "integration: marks tests that require docker/testcontainers (deselect with '-m \"not integration\"')",
+  "load: long-running load test; excluded by default (run with `-m load`)",
 ]
 
 [tool.ruff]

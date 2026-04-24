@@ -162,6 +162,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # 6. Populate request.state.user (Phase 10: includes project_memberships +
         #    pm_truncated — claim keys default to [] and False for tokens minted
         #    pre-Phase-10.)
+        # PROD-03: role MUST derive from JWT claim only; never read X-Dashboard-Role from the request.
         pm_raw = claims.get("pm", [])
         project_memberships: dict[str, int] = {}
         if isinstance(pm_raw, list):

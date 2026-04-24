@@ -1,0 +1,32 @@
+# IntelliBird v2.0 — Caddy reverse proxy (PROD-07)
+#
+# PROD-07: single public edge; api + web are compose-network-internal.
+# For production: replace `:443, :80` with a real hostname (e.g.
+# `https://intellibird.example.com`) and remove `tls internal`. Caddy will
+# auto-provision a Let's Encrypt certificate on first boot.
+# For lab / smoke: `tls internal` issues a Caddy-signed cert; no ACME reach-out.
+
+{
+    # email admin@example.com    # uncomment for Let's Encrypt production mode
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory  # staging
+}
+
+:443, :80 {
+    encode zstd gzip
+
+    @api path /api/* /healthz
+    handle @api {
+        # PROD-03: strip client-supplied role hint at the edge before forwarding
+        # to the api upstream. Defense-in-depth — FastAPI also ignores this
+        # header (see backend/app/middleware/auth.py); role is derived from the
+        # signed JWT claim only. The edge strip is belt-and-braces.
+        request_header -X-Dashboard-Role
+        reverse_proxy api:8000
+    }
+
+    handle {
+        reverse_proxy web:3000
+    }
+
+    tls internal
+}

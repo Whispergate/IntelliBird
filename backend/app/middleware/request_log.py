@@ -36,6 +36,9 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
         structlog.contextvars.clear_contextvars()
         structlog.contextvars.bind_contextvars(request_id=request_id)
 
+        # PROD-03: the X-Dashboard-Role reads below are LOGGING-ONLY (observability
+        # for forensic review of spoof attempts). They DO NOT influence role filtering
+        # — role is derived from the JWT claim in AuthMiddleware + events_query.
         start = time.perf_counter()
         status_code = 500
         try:

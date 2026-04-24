@@ -143,6 +143,7 @@ async def list_events(
     # AUTH-02 / C-2: dashboard_roles sourced from JWT claim (request.state.user),
     # populated by AuthMiddleware. Dashboard role header removed (plan 09-05).
     # When AUTH_ENABLED=false, request.state.user is unset → dashboard_roles=None → no filter.
+    # PROD-03: filtering role comes from dependency injection of JWT claim; do not inspect X-Dashboard-Role header.
     user = getattr(request.state, "user", None)
     dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
 

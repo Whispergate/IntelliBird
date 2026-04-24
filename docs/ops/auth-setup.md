@@ -1,5 +1,8 @@
 # Authentication Setup (Phase 9)
 
+> **Disaster recovery:** If you need to restore a lost Authentik IdP (DB + media volume,
+> re-issue OIDC client, verify SSO), see [authentik-recovery.md](authentik-recovery.md).
+
 Bring a Phase-8 IntelliBird deployment from unauthenticated-loopback-only to full JWT +
 optional Authentik SSO auth.
 

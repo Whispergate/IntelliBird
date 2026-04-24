@@ -1,8 +1,15 @@
-# IntelliBird M1 — Docker Compose stack
-# Phase 1 / Foundation. Six services. Loopback-only host port bindings.
+# IntelliBird v2.0 — Docker Compose stack
 #
-# IMPORTANT: M1 has NO AUTHENTICATION. All published ports bind to 127.0.0.1
-# ONLY on the host. Do NOT change host bindings to 0.0.0.0 or ::. Auth is M2.
+# Phase 13 / PROD-07: public exposure is now fronted by Caddy. The api and
+# web services are compose-network-internal (no host-port publish). Caddy
+# terminates TLS on 80/443 and reverse-proxies to api:8000 / web:3000. The
+# api container refuses to start unless AUTH_ENABLED=true (enforced by
+# ops/api-entrypoint.sh).
+#
+# Legacy note: v1.5 bound api/web/db/redis to 127.0.0.1 on the host as a
+# loopback-only guard while auth was absent. v2.0 removes that binding for
+# api/web (they no longer publish to the host at all); db/redis retain
+# 127.0.0.1 publish for operator-local tooling only.
 
 services:
 
@@ -44,9 +51,13 @@ services:
       context: ..
       dockerfile: ops/api.Dockerfile
     image: intellibird-api:m1
-    command: ["sh", "-c", "cd /app && alembic upgrade head && gunicorn app.main:app --worker-class uvicorn.workers.UvicornWorker --workers 2 --bind 0.0.0.0:8000"]
-    ports:
-      - "127.0.0.1:8000:8000"
+    # PROD-07: entrypoint guards AUTH_ENABLED=true + companion vars before
+    # running alembic + gunicorn. See ops/api-entrypoint.sh.
+    command: ["/app/api-entrypoint.sh"]
+    # PROD-07: api is compose-network-internal. Caddy is the only public edge.
+    # No host-port publish here (was "127.0.0.1:8000:8000" in v1.5).
+    volumes:
+      - ./api-entrypoint.sh:/app/api-entrypoint.sh:ro
     env_file: .env
     environment:
       AUTH_ENABLED: ${AUTH_ENABLED:-false}
@@ -113,8 +124,8 @@ services:
       context: ../web
       dockerfile: ../ops/web.Dockerfile
     image: intellibird-web:m1
-    ports:
-      - "127.0.0.1:3000:3000"
+    # PROD-07: web is compose-network-internal. Caddy reverse-proxies / → web:3000.
+    # No host-port publish here (was "127.0.0.1:3000:3000" in v1.5).
     env_file: .env
     environment:
       NEXT_PUBLIC_API_BASE: http://localhost:8000
@@ -127,6 +138,27 @@ services:
     depends_on:
       api:
         condition: service_healthy
+
+  # --- Caddy reverse proxy (PROD-07) ---
+  # Single public edge. Terminates TLS, reverse-proxies /api/* + /healthz to
+  # api:8000 and everything else to web:3000. Strips X-Dashboard-Role at the
+  # api upstream (PROD-03 edge defense-in-depth). See ops/Caddyfile.
+  caddy:
+    image: caddy:2.8-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_started
+    restart: unless-stopped
 
   # --- Authentik (optional SSO — opt-in via `docker compose --profile sso up -d`) ---
   # Runs its own Postgres (authentik-db) per Authentik best practice (isolation from
@@ -247,3 +279,5 @@ volumes:
   geoip:
   authentik_db_data:
   bbot_scans:
+  caddy_data:
+  caddy_config:

@@ -171,3 +171,15 @@ async def db_session(db_engine) -> AsyncIterator[Any]:
         await session.commit()
         yield session
         await session.rollback()
+
+
+# ---------------------------------------------------------------------------
+# Phase 13 PROD fixtures — two-project seed with shared AGE Actor + JWTs.
+# ---------------------------------------------------------------------------
+
+@pytest_asyncio.fixture
+async def two_project_fixture(db_session):
+    """PROD-01 two-project fixture — see tests/integration/fixtures/two_project.py."""
+    from tests.integration.fixtures.two_project import build_two_project_fixture
+
+    return await build_two_project_fixture(db_session)
