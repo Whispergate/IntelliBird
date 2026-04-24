@@ -26,13 +26,15 @@ def test_preset_name_regex_rejects_invalid() -> None:
 
 
 def test_preset_create_lowercase_enforced_via_regex() -> None:
+    from app.models.projects import LEGACY_PROJECT_ID
     with pytest.raises(ValidationError):
-        PresetCreate(name="UPPERCASE", query_params={})
+        PresetCreate(name="UPPERCASE", query_params={}, project_id=LEGACY_PROJECT_ID)
 
 
 def test_preset_create_over_64_chars_rejected() -> None:
+    from app.models.projects import LEGACY_PROJECT_ID
     with pytest.raises(ValidationError):
-        PresetCreate(name="x" * 65, query_params={})
+        PresetCreate(name="x" * 65, query_params={}, project_id=LEGACY_PROJECT_ID)
 
 
 def test_preset_create_accepts_valid_params() -> None:
@@ -53,9 +55,11 @@ def test_preset_upsert_has_no_name_field() -> None:
 
 
 def test_preset_response_requires_all_fields() -> None:
+    from app.models.projects import LEGACY_PROJECT_ID
     r = FilterPresetResponse(
         id=uuid.uuid4(),
         name="example",
+        project_id=LEGACY_PROJECT_ID,
         query_params={"x": 1},
         created_at=datetime.now(timezone.utc),
         updated_at=datetime.now(timezone.utc),
@@ -64,18 +68,21 @@ def test_preset_response_requires_all_fields() -> None:
 
 
 def test_preset_create_requires_non_empty_name() -> None:
+    from app.models.projects import LEGACY_PROJECT_ID
     with pytest.raises(ValidationError):
-        PresetCreate(name="", query_params={})
+        PresetCreate(name="", query_params={}, project_id=LEGACY_PROJECT_ID)
 
 
 def test_preset_create_rejects_special_chars() -> None:
+    from app.models.projects import LEGACY_PROJECT_ID
     with pytest.raises(ValidationError):
-        PresetCreate(name="bad!char", query_params={})
+        PresetCreate(name="bad!char", query_params={}, project_id=LEGACY_PROJECT_ID)
 
 
 def test_preset_create_rejects_spaces() -> None:
+    from app.models.projects import LEGACY_PROJECT_ID
     with pytest.raises(ValidationError):
-        PresetCreate(name="has space", query_params={})
+        PresetCreate(name="has space", query_params={}, project_id=LEGACY_PROJECT_ID)
 
 
 def test_preset_upsert_accepts_nested_query_params() -> None:

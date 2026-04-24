@@ -105,6 +105,72 @@ def require_project_membership(min_role: ProjectRole) -> Callable:
     return _dep
 
 
+async def check_project_membership(
+    user: AuthUser,
+    db: AsyncSession,
+    project_id: uuid.UUID,
+    min_role: ProjectRole,
+) -> ProjectRole:
+    """Body-param equivalent of require_project_membership.
+
+    For routers where project_id comes from the request body (presets, webhooks)
+    not the URL path. Admin bypass + claim-cache hit + DB-fallback are identical
+    to the path-bound dep factory.
+
+    Raises HTTPException(403) on insufficient role; returns resolved ProjectRole on success.
+    """
+    min_rank = _min_rank(min_role)
+
+    # 1. Global Admin bypass
+    if user.role == "Admin":
+        return ProjectRole.Lead
+
+    pid_str = str(project_id)
+
+    # 2. Claim-cache hit
+    cached_rank = user.project_memberships.get(pid_str)
+    if cached_rank is not None:
+        if cached_rank < min_rank:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"requires at least {min_role.value}",
+            )
+        return ProjectRole(RANK_TO_ROLE[cached_rank])
+
+    # 3. Claim miss: only consult DB when the token was truncated.
+    if not user.pm_truncated:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not a project member",
+        )
+
+    # DB fallback
+    sub_candidates: list[str] = [user.id]
+    oidc_row = (await db.execute(
+        select(User.oidc_sub).where(User.id == uuid.UUID(user.id))
+    )).scalar_one_or_none()
+    if oidc_row:
+        sub_candidates.append(oidc_row)
+
+    row = (await db.execute(
+        select(ProjectMembership.project_role)
+        .where(ProjectMembership.user_sub.in_(sub_candidates))
+        .where(ProjectMembership.project_id == project_id)
+    )).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="not a project member",
+        )
+    resolved_rank = PROJECT_ROLE_RANK[row]
+    if resolved_rank < min_rank:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"requires at least {min_role.value}",
+        )
+    return ProjectRole(row)
+
+
 def enforce_project_query_scope(
     user: AuthUser | None,
     project_id: uuid.UUID | None,
@@ -152,6 +218,7 @@ def enforce_project_query_scope(
 
 __all__ = [
     "require_project_membership",
+    "check_project_membership",
     "enforce_project_query_scope",
     "PROJECT_ROLE_RANK",
 ]

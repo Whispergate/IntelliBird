@@ -28,14 +28,14 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.config import settings
 from app.crypto import decrypt_credentials, encrypt_credentials
-from app.middleware.auth import require_admin
+from app.middleware.auth import require_admin, require_auth
 from app.models.projects import LEGACY_PROJECT_ID
 from app.schemas.webhooks import WebhookCreate, WebhookResponse, WebhookUpdate
 from app.security.jwt import AuthUser
 
 
 def _fake_admin() -> AuthUser:
-    """Admin override for require_admin dependency — bypasses JWT middleware chain."""
+    """Admin override for require_admin/require_auth dependency — bypasses JWT middleware chain."""
     return AuthUser(
         id="00000000-0000-0000-0000-000000000000",
         role="Admin",
@@ -146,6 +146,7 @@ async def client(db_session: AsyncSession):
 
     app.dependency_overrides[get_session] = override_get_session
     app.dependency_overrides[require_admin] = _fake_admin
+    app.dependency_overrides[require_auth] = _fake_admin
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
@@ -367,6 +368,7 @@ async def test_test_send_returns_200_on_ok(monkeypatch):
     app = FastAPI()
     app.include_router(router)
     app.dependency_overrides[require_admin] = _fake_admin
+    app.dependency_overrides[require_auth] = _fake_admin
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         resp = await c.post(
@@ -404,6 +406,7 @@ async def test_test_send_returns_200_on_failure(monkeypatch):
     app = FastAPI()
     app.include_router(router)
     app.dependency_overrides[require_admin] = _fake_admin
+    app.dependency_overrides[require_auth] = _fake_admin
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         resp = await c.post(

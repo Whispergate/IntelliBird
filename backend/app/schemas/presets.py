@@ -28,6 +28,7 @@ class PresetCreate(BaseModel):
 
 class PresetUpsert(BaseModel):
     query_params: dict[str, Any]
+    project_id: uuid.UUID | None = None  # Phase 10 — optional on PUT (upsert preserves existing)
 
 
 class FilterPresetResponse(BaseModel):
@@ -35,6 +36,7 @@ class FilterPresetResponse(BaseModel):
 
     id: uuid.UUID
     name: str
+    project_id: uuid.UUID  # Phase 10 — included in responses
     query_params: dict[str, Any]
     created_at: datetime
     updated_at: datetime

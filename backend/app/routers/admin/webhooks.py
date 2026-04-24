@@ -20,9 +20,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.crypto import encrypt_credentials
 from app.database import get_session
-from app.middleware.auth import require_admin
+from app.middleware.auth import require_admin, require_auth
+from app.models.projects import LEGACY_PROJECT_ID, ProjectMembership, ProjectRole
 from app.models.webhooks import Webhook, WebhookPresetBinding
 from app.security.jwt import AuthUser
+from app.security.project_membership import check_project_membership
 from app.schemas.webhooks import (
     TestSendRequest,
     TestSendResponse,
@@ -163,6 +165,7 @@ async def _hydrate(db: AsyncSession, wh: Webhook) -> WebhookResponse:
     return WebhookResponse(
         id=wh.id,
         name=wh.name,
+        project_id=wh.project_id,  # Phase 10 — included in responses
         destination_type=wh.destination_type,  # type: ignore[arg-type]
         url=wh.url,
         batching_window_sec=wh.batching_window_sec,
@@ -182,12 +185,40 @@ async def _hydrate(db: AsyncSession, wh: Webhook) -> WebhookResponse:
 # ---------------------------------------------------------------------------
 
 
+async def _visible_webhook_project_ids(user: AuthUser, db: AsyncSession) -> set[uuid.UUID] | None:
+    """Return the set of project UUIDs visible to `user`, or None if Admin (unrestricted).
+
+    Non-Admin sees: their project memberships (from JWT claim) + LEGACY_PROJECT_ID.
+    When pm_truncated=True, falls back to a DB query to obtain the full membership list.
+    """
+    if user.role == "Admin":
+        return None  # unrestricted
+
+    visible: set[uuid.UUID] = {LEGACY_PROJECT_ID}
+    visible.update(uuid.UUID(pid) for pid in user.project_memberships.keys())
+
+    if user.pm_truncated:
+        rows = (await db.execute(
+            select(ProjectMembership.project_id).where(
+                ProjectMembership.user_sub == user.id
+            )
+        )).scalars().all()
+        visible.update(rows)
+
+    return visible
+
+
 @router.get("", response_model=list[WebhookResponse])
 async def list_webhooks(
     db: AsyncSession = Depends(get_session),
-    _admin: AuthUser = Depends(require_admin),
+    current_user: AuthUser = Depends(require_auth),
 ) -> list[WebhookResponse]:
-    rows = await db.execute(select(Webhook).order_by(Webhook.created_at.desc()))
+    """Return webhooks visible to the caller (membership-filtered). Admin sees all."""
+    stmt = select(Webhook).order_by(Webhook.created_at.desc())
+    visible = await _visible_webhook_project_ids(current_user, db)
+    if visible is not None:
+        stmt = stmt.where(Webhook.project_id.in_(visible))
+    rows = await db.execute(stmt)
     return [await _hydrate(db, wh) for wh in rows.scalars().all()]
 
 
@@ -195,8 +226,11 @@ async def list_webhooks(
 async def create_webhook(
     payload: WebhookCreate,
     db: AsyncSession = Depends(get_session),
-    _admin: AuthUser = Depends(require_admin),
+    current_user: AuthUser = Depends(require_admin),
 ) -> WebhookResponse:
+    # Contributor+ membership check on the target project (Phase 10 PRJ-01)
+    await check_project_membership(current_user, db, payload.project_id, ProjectRole.Contributor)
+
     if payload.batching_window_sec not in _BATCHING_ALLOWED:
         raise HTTPException(
             status_code=422,
@@ -248,10 +282,14 @@ async def create_webhook(
 async def get_webhook(
     webhook_id: uuid.UUID,
     db: AsyncSession = Depends(get_session),
-    _admin: AuthUser = Depends(require_admin),
+    current_user: AuthUser = Depends(require_auth),
 ) -> WebhookResponse:
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
+        raise HTTPException(status_code=404, detail="webhook not found")
+    # Visibility check (non-Admin must be able to see the webhook's project)
+    visible = await _visible_webhook_project_ids(current_user, db)
+    if visible is not None and wh.project_id not in visible:
         raise HTTPException(status_code=404, detail="webhook not found")
     return await _hydrate(db, wh)
 
@@ -261,11 +299,17 @@ async def update_webhook(
     webhook_id: uuid.UUID,
     payload: WebhookUpdate,
     db: AsyncSession = Depends(get_session),
-    _admin: AuthUser = Depends(require_admin),
+    current_user: AuthUser = Depends(require_admin),
 ) -> WebhookResponse:
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
         raise HTTPException(status_code=404, detail="webhook not found")
+
+    # Contributor+ check on the current project (Phase 10 PRJ-01)
+    await check_project_membership(current_user, db, wh.project_id, ProjectRole.Contributor)
+    # If moving to a different project, also check membership on target
+    if payload.project_id is not None and payload.project_id != wh.project_id:
+        await check_project_membership(current_user, db, payload.project_id, ProjectRole.Contributor)
 
     data = payload.model_dump(exclude_unset=True)
 
@@ -316,11 +360,13 @@ async def update_webhook(
 async def delete_webhook(
     webhook_id: uuid.UUID,
     db: AsyncSession = Depends(get_session),
-    _admin: AuthUser = Depends(require_admin),
+    current_user: AuthUser = Depends(require_admin),
 ) -> Response:
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
         raise HTTPException(status_code=404, detail="webhook not found")
+    # Contributor+ check on the webhook's project (Phase 10 PRJ-01)
+    await check_project_membership(current_user, db, wh.project_id, ProjectRole.Contributor)
     await db.delete(wh)
     await db.commit()
     log.info("webhook_deleted", webhook_id=str(webhook_id))
@@ -331,12 +377,14 @@ async def delete_webhook(
 async def reset_cursor(
     webhook_id: uuid.UUID,
     db: AsyncSession = Depends(get_session),
-    _admin: AuthUser = Depends(require_admin),
+    current_user: AuthUser = Depends(require_admin),
 ) -> WebhookResponse:
     """: reset last_dispatch_at to NULL. Next tick uses 24h lookback."""
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
         raise HTTPException(status_code=404, detail="webhook not found")
+    # Contributor+ check on the webhook's project (Phase 10 PRJ-01)
+    await check_project_membership(current_user, db, wh.project_id, ProjectRole.Contributor)
     wh.last_dispatch_at = None
     await db.commit()
     await db.refresh(wh)
