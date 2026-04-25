@@ -11,7 +11,13 @@
     # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory  # staging
 }
 
-:443, :80 {
+# Explicit hostnames so `tls internal` can bind a Caddy-signed cert to the SNI
+# the browser sends. `:443, :80` (no host) led to TLS handshake failures
+# (SSL_ERROR_INTERNAL_ERROR_ALERT) because the local CA had no cert provisioned
+# for an empty server name. Caddy auto-binds both :80 and :443 for these
+# hostnames and auto-redirects HTTP → HTTPS. For production, replace with the
+# public hostname.
+localhost, 127.0.0.1 {
     encode zstd gzip
 
     # All browser traffic — including /api/* — goes to the web container.

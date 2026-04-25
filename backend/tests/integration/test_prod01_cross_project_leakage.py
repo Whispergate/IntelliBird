@@ -42,6 +42,7 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
+from app.security.jwt import mint_access_token_with_pm
 
 pytestmark = pytest.mark.integration
 
@@ -300,3 +301,122 @@ async def test_positive_control_same_project(two_project_fixture, db_session):
         {"pid": fx.project_a.id},
     )).scalar_one()
     assert sql_count == 20, f"SQL row count diverged from AGE seed: {sql_count}"
+
+
+@pytest.mark.asyncio
+async def test_list_no_project_id_rejects_non_admin(two_project_fixture, db_session, monkeypatch):
+    """GAP-1 regression lock: GET /api/events WITHOUT project_id must be rejected for non-admin callers.
+
+    This test closes the coverage gap identified as GAP-1 in 13-01-SUMMARY.md. The five
+    pre-existing tests in this file all pass `?project_id=<A>` explicitly, so the path
+    where `enforce_project_query_scope` fires at `backend/app/routers/events.py:158` had
+    ZERO regression coverage.
+
+    Without this test, a future PR that removes or comments out line 158
+    (the `enforce_project_query_scope` call) would leave the entire existing
+    PROD-01 suite green, silently re-opening the cross-project leak.
+
+    Expected flow:
+      - Contributor JWT scoped to Project A only → project_memberships = {project_a.id}
+      - GET /api/events with NO project_id query param
+      - enforce_project_query_scope returns list[UUID] (the one-element membership set)
+      - Router raises HTTPException(400): "project_id query parameter required for non-admin callers"
+      - Response MUST be 400 or 403 (accept either to survive a future tightening that
+        moves the raise into the helper itself at 403 rather than in the router wrapper)
+      - Response body MUST NOT contain any Project B event UUID (defensive: if 200 is ever
+        returned it must not be a leak)
+
+    Link: backend/app/routers/events.py:158 (enforce_project_query_scope wiring)
+    Requirement: PROD-01 / GAP-1
+    """
+    _patch_auth(monkeypatch)
+    fx = two_project_fixture
+
+    # Seed permissive scope so that, if the leak re-appeared and returned 200, the
+    # response would contain observable event IDs rather than an empty list (which
+    # would make the leak invisible).
+    await _seed_permissive_scope(db_session, fx.project_a.id, "evt")
+
+    async with await _client() as c:
+        r = await c.get("/api/events", headers=_bearer(fx.jwt_a))
+    # NO project_id, NO limit — raw request to hit the no-param path.
+
+    assert r.status_code in (400, 403), (
+        f"GAP-1 REGRESSION: GET /api/events without project_id from non-admin "
+        f"returned {r.status_code}, expected 400 or 403. "
+        f"Body: {r.text}"
+    )
+
+    # Defensive: even if status is wrong, no Project B event UUID must appear in body.
+    b_id_strs = {str(eid) for eid in fx.events_b}
+    for eid_str in b_id_strs:
+        assert eid_str not in r.text, (
+            f"GAP-1 REGRESSION: Project B event {eid_str} visible in response body "
+            f"(status {r.status_code}). Cross-project leak detected."
+        )
+
+
+@pytest.mark.asyncio
+async def test_list_no_project_id_admin_sees_all(two_project_fixture, db_session, monkeypatch):
+    """Admin bypass regression lock: GET /api/events WITHOUT project_id must succeed for Admin callers.
+
+    This test guards against an over-correction of GAP-1 that would tighten
+    enforce_project_query_scope so hard that it also rejects Admin-role callers
+    who legitimately need a global (cross-project) view.
+
+    Expected flow:
+      - Admin JWT (role='Admin', pm=[]) → enforce_project_query_scope returns None
+      - GET /api/events?limit=200 with NO project_id query param
+      - Response 200 with items from BOTH Project A and Project B
+      - returned_ids must intersect fx.events_a (at least one Project A event returned)
+      - returned_ids must intersect fx.events_b (at least one Project B event returned)
+
+    Link: backend/app/routers/events.py:158 (enforce_project_query_scope returning None for Admin)
+    Requirement: PROD-01 / GAP-1 admin-bypass
+    """
+    _patch_auth(monkeypatch)
+    fx = two_project_fixture
+
+    # Seed permissive keyword scope for BOTH projects so build_scope_predicate
+    # does not short-circuit to false (the scope predicate only fires when
+    # project_id is provided; admin without project_id skips it — but seed
+    # anyway in case the router path changes).
+    await _seed_permissive_scope(db_session, fx.project_a.id, "evt")
+    await _seed_permissive_scope(db_session, fx.project_b.id, "evt")
+
+    # Mint an Admin JWT: role='Admin', pm=[] (no project memberships required).
+    # enforce_project_query_scope returns None for role == 'Admin' regardless of pm.
+    import os as _os
+    signing_key = _os.environ.get("JWT_SIGNING_KEY") or (_os.environ.get("SECRET_KEY")) or ("j" * 64)
+    # Use TEST_SIGNING_KEY constant (pinned to 'j'*64) to match _patch_auth's monkeypatch.
+    admin_user_id = str(__import__("uuid").uuid4())
+    jwt_admin, _ = mint_access_token_with_pm(
+        admin_user_id,
+        "Admin",           # role — exact casing from app/middleware/auth.py:200 `user.role == "Admin"`
+        ["red", "blue"],   # dashboard_roles — admin sees all visibility tiers
+        0,                 # token_version — matches stub in _patch_auth
+        TEST_SIGNING_KEY,  # signing key pinned by _patch_auth monkeypatch
+        [],                # pm — Admin bypass; no project memberships needed
+        False,             # pm_truncated
+    )
+
+    async with await _client() as c:
+        r = await c.get("/api/events", headers=_bearer(jwt_admin), params={"limit": 200})
+
+    assert r.status_code == 200, (
+        f"Admin bypass broken: GET /api/events without project_id returned "
+        f"{r.status_code}. Body: {r.text}"
+    )
+
+    returned_ids = {item["id"] for item in r.json()["items"]}
+    expected_a = {str(eid) for eid in fx.events_a}
+    expected_b = {str(eid) for eid in fx.events_b}
+
+    assert returned_ids & expected_a, (
+        "Admin bypass broken: no Project A events returned in all-projects query. "
+        f"Returned IDs: {returned_ids!r}"
+    )
+    assert returned_ids & expected_b, (
+        "Admin bypass broken: no Project B events returned in all-projects query. "
+        f"Returned IDs: {returned_ids!r}"
+    )

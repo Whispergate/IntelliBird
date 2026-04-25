@@ -63,6 +63,22 @@ if [[ "${PROD05_SKIP_PGBENCH:-0}" == "1" ]]; then
     exit "${PYTEST_RC}"
 fi
 
+if ! command -v pgbench >/dev/null 2>&1; then
+    {
+        echo ""
+        echo "_pgbench step skipped — \`pgbench\` not installed on host._"
+        echo ""
+        echo "Install with one of:"
+        echo "  - Debian/Ubuntu: \`sudo apt-get install -y postgresql-client\`"
+        echo "  - Fedora:        \`sudo dnf install -y postgresql\`"
+        echo "  - macOS:         \`brew install libpq && brew link --force libpq\`"
+        echo ""
+        echo "Or re-run with \`PROD05_SKIP_PGBENCH=1\` to skip explicitly."
+    } >> "$RESULTS"
+    echo "scripts/run-load-test.sh: pgbench not found — skipped concurrent-read step." >&2
+    exit "${PYTEST_RC}"
+fi
+
 # --- pgbench concurrent-read step ---
 {
     echo ""

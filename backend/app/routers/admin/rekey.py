@@ -78,9 +78,20 @@ async def rekey_credentials(
     failed_ids: list[str] = []
     updates: list[tuple[Source, str]] = []
 
+    skipped_already_current: list[str] = []
+
     for row in rows:
         if row.credentials_enc is None:
             continue
+        # Idempotency: if a row is already encrypted under the CURRENT SECRET_KEY,
+        # skip it. Happens for rows freshly seeded by the startup canary path
+        # between rotations, or when rekey is re-run after a partial success.
+        try:
+            decrypt_credentials(settings.SECRET_KEY, row.credentials_enc)
+            skipped_already_current.append(str(row.id))
+            continue
+        except Exception:
+            pass
         try:
             creds = decrypt_credentials(settings.REKEY_FROM_SECRET, row.credentials_enc)
         except Exception:

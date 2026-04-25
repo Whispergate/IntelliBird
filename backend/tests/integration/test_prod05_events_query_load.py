@@ -102,11 +102,15 @@ def _walk(node: dict):
 def _find_index_scan(plan: dict, expected_index: str) -> dict | None:
     """Return the first Index Scan / Index Only Scan node on expected_index,
     or None. Tolerates the Index Scan being a child of Limit/Sort (common
-    shape for ORDER BY observed_at DESC LIMIT 100)."""
+    shape for ORDER BY observed_at DESC LIMIT 100). On TimescaleDB hypertables
+    the Custom Scan (ChunkAppend) wraps per-chunk Index Scans whose names
+    follow `_hyper_<N>_<M>_chunk_<base_index>` — match either the literal
+    base name or any chunk-suffixed variant ending in it."""
     for node in _walk(plan):
-        if node.get("Node Type") in ("Index Scan", "Index Only Scan") and (
-            node.get("Index Name") == expected_index
-        ):
+        if node.get("Node Type") not in ("Index Scan", "Index Only Scan"):
+            continue
+        idx_name = node.get("Index Name", "")
+        if idx_name == expected_index or idx_name.endswith("_" + expected_index):
             return node
     return None
 
