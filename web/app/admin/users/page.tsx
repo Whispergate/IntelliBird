@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Pencil, LockOpen, UserX, UserCheck } from "lucide-react";
+import { Pencil, LockOpen, UserX, UserCheck, KeyRound, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,6 +23,7 @@ import {
 import { AddUserDialog } from "./AddUserDialog";
 import { EditUserDialog } from "./EditUserDialog";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { ResetPasswordDialog } from "./ResetPasswordDialog";
 
 type AdminUser = {
   id: string;
@@ -107,6 +108,9 @@ export default function AdminUsersPage() {
   const [disableTarget, setDisableTarget] = useState<AdminUser | null>(null);
   const [enableTarget, setEnableTarget] = useState<AdminUser | null>(null);
   const [unlockTarget, setUnlockTarget] = useState<AdminUser | null>(null);
+  const [resetTarget, setResetTarget] = useState<AdminUser | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -121,6 +125,26 @@ export default function AdminUsersPage() {
   useEffect(() => {
     reload();
   }, [reload]);
+
+  // Fetch current user once so we can hide Delete on the operator's own row.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/auth/me");
+        if (!r.ok) return;
+        const me = await r.json();
+        const id = typeof me?.id === "string" ? me.id : null;
+        if (!cancelled) setCurrentUserId(id);
+      } catch {
+        // ignore — Delete button simply stays visible everywhere as a fallback;
+        // backend still enforces cannot_delete_self.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <TooltipProvider>
@@ -261,6 +285,35 @@ export default function AdminUsersPage() {
                           <TooltipContent>Re-enable user</TooltipContent>
                         </Tooltip>
                       )}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Reset password"
+                            onClick={() => setResetTarget(u)}
+                          >
+                            <KeyRound size={16} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Reset password</TooltipContent>
+                      </Tooltip>
+                      {u.id !== currentUserId && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="Delete user"
+                              onClick={() => setDeleteTarget(u)}
+                              style={{ color: "hsl(var(--destructive))" }}
+                            >
+                              <Trash2 size={16} />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Delete user</TooltipContent>
+                        </Tooltip>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -338,6 +391,50 @@ export default function AdminUsersPage() {
               reload();
             }}
             onOpenChange={(o) => !o && setUnlockTarget(null)}
+          />
+        )}
+        <ResetPasswordDialog
+          user={resetTarget}
+          open={resetTarget !== null}
+          onOpenChange={(o) => !o && setResetTarget(null)}
+          onSuccess={reload}
+        />
+        {deleteTarget && (
+          <ConfirmDialog
+            open={true}
+            title={`Delete ${deleteTarget.username}?`}
+            body={`This permanently removes ${deleteTarget.username}. The account cannot be recovered, all outstanding sessions are invalidated, and the user will be signed out everywhere.`}
+            confirmLabel="Delete user"
+            confirmVariant="destructive"
+            dismissLabel="Cancel"
+            onConfirm={async () => {
+              const target = deleteTarget;
+              setDeleteTarget(null);
+              const res = await fetch(`/api/admin/users/${target.id}`, {
+                method: "DELETE",
+              });
+              if (!res.ok) {
+                let detail = "";
+                try {
+                  const body = await res.json();
+                  detail = typeof body?.detail === "string" ? body.detail : "";
+                } catch {
+                  // ignore
+                }
+                // Surface failure inline; mirrors existing Disable/Enable
+                // handlers which currently rely on the list refresh to
+                // signal outcome. Browser alert is intentionally minimal.
+                if (typeof window !== "undefined") {
+                  window.alert(
+                    `Failed to delete user: ${res.statusText}${
+                      detail ? ` (${detail})` : ""
+                    }`,
+                  );
+                }
+              }
+              reload();
+            }}
+            onOpenChange={(o) => !o && setDeleteTarget(null)}
           />
         )}
       </div>

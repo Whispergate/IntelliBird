@@ -12,7 +12,26 @@ import type { components } from "./api-client.generated";
 export type FeedType =
   | components["schemas"]["SourceResponse"]["feed_type"]
   | "bbot"
-  | "brand-monitor";
+  | "brand-monitor"
+  // Quick task 260425-ovt: HTML-scrape source type. Backend FeedType already
+  // accepts "custom"; widening here keeps types in sync until openapi regen.
+  | "custom";
+
+/**
+ * Quick task 260425-ovt: canonical scrape_config shape for feed_type='custom'.
+ * item/title/link selectors are required; the rest are optional. The backend
+ * hard-caps max_items at 200.
+ */
+export type ScrapeConfig = {
+  item_selector: string;
+  title_selector: string;
+  link_selector: string;
+  date_selector?: string;
+  date_format?: string;
+  summary_selector?: string;
+  user_agent?: string;
+  max_items?: number;
+};
 export type ArchivePolicy = components["schemas"]["SourceResponse"]["archive_policy"];
 // TlpName: non-nullable enum (generated EventItem.tlp is optional nullable; we normalise here)
 export type TlpName = "clear" | "green" | "amber" | "amber+strict" | "red";
@@ -30,10 +49,28 @@ export type WebhookAuth =
 // ============================================================
 
 export type SystemStatus = components["schemas"]["SystemStatusResponse"];
-export type Source = components["schemas"]["SourceResponse"];
-export type CreateSourcePayload = components["schemas"]["SourceCreate"];
-export type UpdateSourcePayload = components["schemas"]["SourceUpdate"];
-export type TestConnectionPayload = components["schemas"]["TestConnectionRequest"];
+// Quick task 260425-ovt: widen Source/Create/Update/TestConnection types with
+// optional scrape_config + the local FeedType union. The generated schema does
+// not yet include 260425-ovt fields; once `pnpm gen:api` regenerates these
+// overrides become no-ops.
+export type Source = Omit<components["schemas"]["SourceResponse"], "feed_type"> & {
+  feed_type: FeedType;
+  scrape_config?: ScrapeConfig | null;
+};
+export type CreateSourcePayload = Omit<components["schemas"]["SourceCreate"], "feed_type"> & {
+  feed_type: FeedType;
+  scrape_config?: ScrapeConfig | null;
+};
+export type UpdateSourcePayload = components["schemas"]["SourceUpdate"] & {
+  scrape_config?: ScrapeConfig | null;
+};
+export type TestConnectionPayload = Omit<
+  components["schemas"]["TestConnectionRequest"],
+  "feed_type"
+> & {
+  feed_type: FeedType;
+  scrape_config?: ScrapeConfig | null;
+};
 export type TestConnectionResult = components["schemas"]["TestConnectionResponse"];
 export type CredentialField = components["schemas"]["CredentialField"];
 export type SourceTemplate = components["schemas"]["SourceTemplate"];
@@ -42,6 +79,8 @@ export type SourceTemplate = components["schemas"]["SourceTemplate"];
 // generated schema marks source_name, source_type, tlp, tags, attack_techniques as optional)
 // easm_scan_id: added by Phase 11 migration 010 (plan 11-01); not yet in generated schema
 // (pending pnpm gen:api regen when backend is reachable). Typed locally as string|null.
+// score / scored_at / score_version: added by Phase 15 migration 013 (plan 15-01).
+// Typed locally until generated schema is regenerated from the new backend.
 export type EventItem = Omit<
   components["schemas"]["EventItem"],
   "tlp" | "attack_techniques" | "tags" | "source_name" | "source_type"
@@ -52,9 +91,13 @@ export type EventItem = Omit<
   source_name: string | null;
   source_type: FeedType | null;
   easm_scan_id?: string | null;
+  score?: number | null;
+  scored_at?: string | null;
+  score_version?: number | null;
 };
 
 // EventDetail: same field overrides as EventItem plus raw_stix
+// score / scored_at / score_version: Phase 15 migration 013 local extensions.
 export type EventDetail = Omit<
   components["schemas"]["EventDetail"],
   "tlp" | "attack_techniques" | "tags" | "source_name" | "source_type"
@@ -65,6 +108,9 @@ export type EventDetail = Omit<
   source_name: string | null;
   source_type: FeedType | null;
   raw_stix: Record<string, unknown> | null;
+  score?: number | null;
+  scored_at?: string | null;
+  score_version?: number | null;
 };
 
 // EventListResponse: override items array to use our normalised EventItem type
@@ -127,14 +173,49 @@ export type DeliveryStatus = "ok" | "http_error" | "network_error" | "timeout" |
 // ============================================================
 
 // Browser: use relative URLs → Next.js Route Handler at /api/[...path] proxies
-// to BACKEND_URL at request time (same-origin, no CORS). Server: use
-// compose-internal API_BASE to talk directly to backend inside Docker.
-const API_BASE =
-  typeof window === "undefined"
-    ? process.env.API_BASE ??
-      process.env.NEXT_PUBLIC_API_BASE ??
-      "http://api:8000"
-    : "";
+// to BACKEND_URL at request time (same-origin, no CORS). The proxy reads the
+// Auth.js session cookie and injects `Authorization: Bearer <token>` before
+// forwarding upstream.
+//
+// Server (RSC, Server Action, Route Handler that calls these helpers): cannot
+// use relative URLs — Node.js fetch needs an origin. Talks directly to backend
+// over the compose internal network AND must inject the bearer token itself
+// because the request never traverses the /api/[...path] proxy on the SSR
+// path. See _apiFetch below.
+const SERVER_API_BASE =
+  process.env.API_BASE ??
+  process.env.NEXT_PUBLIC_API_BASE ??
+  "http://api:8000";
+
+/**
+ * Universal fetch helper used by every call site in this module.
+ *
+ * - Browser: relative URL, browser sends Auth.js cookie, /api/[...path]
+ *   route handler injects bearer before forwarding upstream.
+ * - Server: absolute URL to backend container; reads Auth.js session via
+ *   `auth()` and injects `Authorization: Bearer <token>` directly so the
+ *   backend AuthMiddleware accepts the request.
+ *
+ * Without the server-side bearer injection, every RSC fetch returns 401
+ * `invalid_token` because the backend never sees the cookie that would
+ * have authenticated the proxy hop.
+ */
+async function _apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  if (typeof window !== "undefined") {
+    return fetch(path, init);
+  }
+  const headers = new Headers(init?.headers);
+  if (process.env.AUTH_ENABLED === "true") {
+    headers.delete("authorization");
+    const { auth } = await import("@/auth");
+    const session = await auth();
+    const accessToken = (session as { accessToken?: string } | null)?.accessToken;
+    if (typeof accessToken === "string" && accessToken.length > 0) {
+      headers.set("Authorization", `Bearer ${accessToken}`);
+    }
+  }
+  return fetch(`${SERVER_API_BASE}${path}`, { ...init, headers });
+}
 
 async function _handle<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -165,7 +246,7 @@ function _roleHeaders(role?: DashboardRole): HeadersInit {
 
 export async function fetchSystemStatus(): Promise<SystemStatus | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/system/status`, {
+    const res = await _apiFetch(`/api/system/status`, {
       cache: "no-store",
     });
     if (!res.ok) return null;
@@ -180,17 +261,17 @@ export async function fetchSystemStatus(): Promise<SystemStatus | null> {
 // ============================================================
 
 export async function fetchSources(): Promise<Source[]> {
-  const res = await fetch(`${API_BASE}/api/admin/sources`, { cache: "no-store" });
+  const res = await _apiFetch(`/api/admin/sources`, { cache: "no-store" });
   return _handle<Source[]>(res);
 }
 
 export async function fetchSource(id: string): Promise<Source> {
-  const res = await fetch(`${API_BASE}/api/admin/sources/${id}`, { cache: "no-store" });
+  const res = await _apiFetch(`/api/admin/sources/${id}`, { cache: "no-store" });
   return _handle<Source>(res);
 }
 
 export async function createSource(payload: CreateSourcePayload): Promise<Source> {
-  const res = await fetch(`${API_BASE}/api/admin/sources`, {
+  const res = await _apiFetch(`/api/admin/sources`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -200,7 +281,7 @@ export async function createSource(payload: CreateSourcePayload): Promise<Source
 }
 
 export async function updateSource(id: string, payload: UpdateSourcePayload): Promise<Source> {
-  const res = await fetch(`${API_BASE}/api/admin/sources/${id}`, {
+  const res = await _apiFetch(`/api/admin/sources/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -210,7 +291,7 @@ export async function updateSource(id: string, payload: UpdateSourcePayload): Pr
 }
 
 export async function deleteSource(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/admin/sources/${id}`, {
+  const res = await _apiFetch(`/api/admin/sources/${id}`, {
     method: "DELETE",
     cache: "no-store",
   });
@@ -221,14 +302,14 @@ export async function deleteSource(id: string): Promise<void> {
 }
 
 export async function getSourceEventCount(id: string): Promise<EventCount> {
-  const res = await fetch(`${API_BASE}/api/admin/sources/${id}/event-count`, { cache: "no-store" });
+  const res = await _apiFetch(`/api/admin/sources/${id}/event-count`, { cache: "no-store" });
   return _handle<EventCount>(res);
 }
 
 export async function testConnection(
   payload: TestConnectionPayload,
 ): Promise<TestConnectionResult> {
-  const res = await fetch(`${API_BASE}/api/admin/sources/test-connection`, {
+  const res = await _apiFetch(`/api/admin/sources/test-connection`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -239,7 +320,7 @@ export async function testConnection(
 
 // Preconfigured source templates (operator quick-add)
 export async function fetchSourceTemplates(): Promise<SourceTemplate[]> {
-  const res = await fetch(`${API_BASE}/api/admin/source-templates`, { cache: "no-store" });
+  const res = await _apiFetch(`/api/admin/source-templates`, { cache: "no-store" });
   return _handle<SourceTemplate[]>(res);
 }
 
@@ -251,7 +332,7 @@ export async function listEvents(
   query: EventsQuery = {},
   role?: DashboardRole,
 ): Promise<EventListResponse> {
-  const res = await fetch(`${API_BASE}/api/events${_buildQuery(query)}`, {
+  const res = await _apiFetch(`/api/events${_buildQuery(query)}`, {
     cache: "no-store",
     headers: _roleHeaders(role),
   });
@@ -259,7 +340,7 @@ export async function listEvents(
 }
 
 export async function getEvent(id: string, role?: DashboardRole): Promise<EventDetail> {
-  const res = await fetch(`${API_BASE}/api/events/${id}`, {
+  const res = await _apiFetch(`/api/events/${id}`, {
     cache: "no-store",
     headers: _roleHeaders(role),
   });
@@ -270,7 +351,7 @@ export async function patchEventTags(
   id: string,
   payload: TagPatchPayload,
 ): Promise<TagPatchResponse> {
-  const res = await fetch(`${API_BASE}/api/events/${id}/tags`, {
+  const res = await _apiFetch(`/api/events/${id}/tags`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -284,7 +365,7 @@ export async function getEventGraph(
   depth: 1 | 2 | 3 = 2,
   role?: DashboardRole,
 ): Promise<GraphResponse> {
-  const res = await fetch(`${API_BASE}/api/events/${id}/graph?depth=${depth}`, {
+  const res = await _apiFetch(`/api/events/${id}/graph?depth=${depth}`, {
     cache: "no-store",
     headers: _roleHeaders(role),
   });
@@ -296,12 +377,12 @@ export async function getEventGraph(
 // ============================================================
 
 export async function listPresets(): Promise<FilterPreset[]> {
-  const res = await fetch(`${API_BASE}/api/presets`, { cache: "no-store" });
+  const res = await _apiFetch(`/api/presets`, { cache: "no-store" });
   return _handle<FilterPreset[]>(res);
 }
 
 export async function getPreset(name: string): Promise<FilterPreset> {
-  const res = await fetch(`${API_BASE}/api/presets/${encodeURIComponent(name)}`, {
+  const res = await _apiFetch(`/api/presets/${encodeURIComponent(name)}`, {
     cache: "no-store",
   });
   return _handle<FilterPreset>(res);
@@ -311,7 +392,7 @@ export async function createPreset(
   name: string,
   query_params: Record<string, unknown>,
 ): Promise<FilterPreset> {
-  const res = await fetch(`${API_BASE}/api/presets`, {
+  const res = await _apiFetch(`/api/presets`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, query_params }),
@@ -324,7 +405,7 @@ export async function upsertPreset(
   name: string,
   query_params: Record<string, unknown>,
 ): Promise<FilterPreset> {
-  const res = await fetch(`${API_BASE}/api/presets/${encodeURIComponent(name)}`, {
+  const res = await _apiFetch(`/api/presets/${encodeURIComponent(name)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query_params }),
@@ -334,7 +415,7 @@ export async function upsertPreset(
 }
 
 export async function deletePreset(name: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/presets/${encodeURIComponent(name)}`, {
+  const res = await _apiFetch(`/api/presets/${encodeURIComponent(name)}`, {
     method: "DELETE",
     cache: "no-store",
   });
@@ -349,12 +430,12 @@ export async function deletePreset(name: string): Promise<void> {
 // ============================================================
 
 export async function listWebhooks(): Promise<Webhook[]> {
-  const res = await fetch(`${API_BASE}/api/admin/webhooks`, { cache: "no-store" });
+  const res = await _apiFetch(`/api/admin/webhooks`, { cache: "no-store" });
   return _handle<Webhook[]>(res);
 }
 
 export async function createWebhook(payload: CreateWebhookPayload): Promise<Webhook> {
-  const res = await fetch(`${API_BASE}/api/admin/webhooks`, {
+  const res = await _apiFetch(`/api/admin/webhooks`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -367,7 +448,7 @@ export async function updateWebhook(
   id: string,
   payload: UpdateWebhookPayload,
 ): Promise<Webhook> {
-  const res = await fetch(`${API_BASE}/api/admin/webhooks/${id}`, {
+  const res = await _apiFetch(`/api/admin/webhooks/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -377,7 +458,7 @@ export async function updateWebhook(
 }
 
 export async function deleteWebhook(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/admin/webhooks/${id}`, {
+  const res = await _apiFetch(`/api/admin/webhooks/${id}`, {
     method: "DELETE",
     cache: "no-store",
   });
@@ -390,11 +471,114 @@ export async function deleteWebhook(id: string): Promise<void> {
 export async function testWebhook(
   payload: TestWebhookPayload,
 ): Promise<TestWebhookResult> {
-  const res = await fetch(`${API_BASE}/api/admin/webhooks/test-send`, {
+  const res = await _apiFetch(`/api/admin/webhooks/test-send`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
     cache: "no-store",
   });
   return _handle<TestWebhookResult>(res);
+}
+
+// ============================================================
+// Monitoring sources — MON-04, Phase 16 plan 16-07
+// (Types locally defined — api-client.generated.ts pending regen when
+//  backend openapi endpoint is accessible without auth.)
+// ============================================================
+
+export type MonitoringSourceItem = {
+  id: string;
+  name: string;
+  feed_type: string;
+  last_event_at: string | null;
+  silence_sla_seconds: number;
+  sla_breached: boolean;
+  silent_failure_count: number;
+  parse_error_rate_1h: number;
+  drift_z_score: number | null;
+  drift_severity: string | null;
+  sparkline: number[];
+};
+
+export type MonitoringConfigPatch = {
+  last_event_sla_seconds?: number | null;
+  drift_z_high?: number | null;
+  drift_z_medium?: number | null;
+};
+
+export async function listMonitoringSources(): Promise<MonitoringSourceItem[]> {
+  const res = await _apiFetch("/api/admin/monitoring/sources", {
+    cache: "no-store",
+  });
+  return _handle<MonitoringSourceItem[]>(res);
+}
+
+export async function patchMonitoringConfig(
+  sourceId: string,
+  payload: MonitoringConfigPatch,
+): Promise<Record<string, unknown>> {
+  const res = await _apiFetch(`/api/admin/monitoring/sources/${sourceId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+  return _handle<Record<string, unknown>>(res);
+}
+
+// ============================================================
+// Maintenance windows — H-7, Phase 16 plan 16-07
+// ============================================================
+
+export type MaintenanceWindowItem = {
+  id: string;
+  start_at: string;
+  end_at: string;
+  reason: string | null;
+  created_by_user_id: string | null;
+  created_at: string;
+};
+
+export type CreateMaintenanceWindowPayload = {
+  start_at: string;
+  end_at: string;
+  reason?: string | null;
+};
+
+export async function listMaintenanceWindows(): Promise<MaintenanceWindowItem[]> {
+  const res = await _apiFetch("/api/admin/maintenance-window", {
+    cache: "no-store",
+  });
+  return _handle<MaintenanceWindowItem[]>(res);
+}
+
+export async function getActiveMaintenanceWindow(): Promise<MaintenanceWindowItem | null> {
+  const res = await _apiFetch("/api/admin/maintenance-window/active", {
+    cache: "no-store",
+  });
+  if (res.status === 404) return null;
+  return _handle<MaintenanceWindowItem>(res);
+}
+
+export async function createMaintenanceWindow(
+  payload: CreateMaintenanceWindowPayload,
+): Promise<{ id: string }> {
+  const res = await _apiFetch("/api/admin/maintenance-window", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    cache: "no-store",
+  });
+  return _handle<{ id: string }>(res);
+}
+
+export async function deleteMaintenanceWindow(id: string): Promise<void> {
+  const res = await _apiFetch(`/api/admin/maintenance-window/${id}`, {
+    method: "DELETE",
+    cache: "no-store",
+  });
+  if (!res.ok && res.status !== 204) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
+  }
 }

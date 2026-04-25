@@ -50,6 +50,43 @@ def _probe_nvd(api_key: str | None) -> tuple[bool, int, int, str | None]:
         return False, _elapsed_ms(t0), 0, str(e)
 
 
+def _probe_html_scrape(
+    url: str, scrape_config: dict | None
+) -> tuple[bool, int, int, str | None]:
+    """Quick task 260425-ovt: synchronous probe for feed_type='custom'.
+
+    Validates the scrape_config, fetches the URL with a 10s timeout, runs the
+    selectors, and returns (ok, latency_ms, item_count_sampled, error_detail).
+    """
+    from app.ingest.html_scrape_parser import (  # noqa: PLC0415
+        fetch_html,
+        normalise_scrape_entries,
+        validate_scrape_config,
+    )
+    import uuid as _uuid  # noqa: PLC0415
+
+    t0 = time.monotonic()
+    try:
+        validate_scrape_config(scrape_config or {})
+    except ValueError as e:
+        return False, _elapsed_ms(t0), 0, str(e)
+
+    try:
+        html_text = fetch_html(url, timeout_sec=10)
+    except Exception as e:  # noqa: BLE001
+        return False, _elapsed_ms(t0), 0, str(e)
+
+    try:
+        # Probe with a placeholder source_id — we never persist these rows.
+        rows = normalise_scrape_entries(
+            html_text, url, _uuid.UUID("00000000-0000-0000-0000-000000000000"),
+            scrape_config or {},
+        )
+        return True, _elapsed_ms(t0), len(rows), None
+    except Exception as e:  # noqa: BLE001
+        return False, _elapsed_ms(t0), 0, str(e)
+
+
 def _probe_taxii(
     url: str, credentials: dict[str, Any] | None
 ) -> tuple[bool, int, int, str | None]:

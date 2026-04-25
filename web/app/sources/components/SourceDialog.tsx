@@ -26,11 +26,13 @@ import { testConnection, fetchSourceTemplates } from "@/app/api-client";
 import type { Source, SourceTemplate } from "@/app/api-client";
 
 import { CredentialsField } from "./CredentialsField";
+import { HtmlScrapeFields } from "./HtmlScrapeFields";
 import { RetentionPresetPicker } from "./RetentionPresetPicker";
 import {
   baseSourceFormSchema,
   buildCreatePayload,
   buildCredentialsDict,
+  buildScrapeConfig,
   buildUpdatePayload,
   RETENTION_PRESETS,
   type SourceFormValues,
@@ -93,9 +95,21 @@ function defaultValuesFor(
       PRESET_MAP[k].archivePolicy === src.archive_policy,
   );
 
+  // Quick task 260425-ovt: prefill flattened scrape_* fields from initialSource.
+  const sc = src.scrape_config ?? null;
+
+  // The form schema only accepts the user-creatable subset of feed types;
+  // legacy/internal types (bbot, brand-monitor) fall back to "rss" so the form
+  // still mounts cleanly when an admin views such a source.
+  const supportedFeedType: SourceFormValues["feed_type"] =
+    src.feed_type === "rss" || src.feed_type === "taxii"
+    || src.feed_type === "nvd" || src.feed_type === "custom"
+      ? src.feed_type
+      : "rss";
+
   return {
     name: src.name,
-    feed_type: src.feed_type,
+    feed_type: supportedFeedType,
     url: src.url,
     poll_interval_number: num,
     poll_interval_unit: unit,
@@ -104,6 +118,13 @@ function defaultValuesFor(
     archive_policy_custom: src.archive_policy,
     taxii_scheme: "none",
     enabled: src.enabled,
+    scrape_item_selector: sc?.item_selector ?? "",
+    scrape_title_selector: sc?.title_selector ?? "",
+    scrape_link_selector: sc?.link_selector ?? "",
+    scrape_date_selector: sc?.date_selector ?? "",
+    scrape_date_format: sc?.date_format ?? "",
+    scrape_summary_selector: sc?.summary_selector ?? "",
+    scrape_max_items: sc?.max_items,
   };
 }
 
@@ -203,6 +224,9 @@ export function SourceDialog({
         feed_type: values.feed_type,
         url: values.url,
         credentials: buildCredentialsDict(values) ?? null,
+        ...(values.feed_type === "custom"
+          ? { scrape_config: buildScrapeConfig(values) ?? null }
+          : {}),
       });
       if (res.ok) {
         setTestResult({
@@ -306,9 +330,11 @@ export function SourceDialog({
               <Select
                 value={feedType}
                 onValueChange={(v) =>
-                  setValue("feed_type", v as "rss" | "taxii" | "nvd", {
-                    shouldDirty: true,
-                  })
+                  setValue(
+                    "feed_type",
+                    v as "rss" | "taxii" | "nvd" | "custom",
+                    { shouldDirty: true },
+                  )
                 }
                 disabled={mode === "edit"}
               >
@@ -319,6 +345,7 @@ export function SourceDialog({
                   <SelectItem value="rss">RSS</SelectItem>
                   <SelectItem value="taxii">TAXII</SelectItem>
                   <SelectItem value="nvd">NVD</SelectItem>
+                  <SelectItem value="custom">Custom (HTML scrape)</SelectItem>
                 </SelectContent>
               </Select>
               {mode === "edit" && (
@@ -346,6 +373,9 @@ export function SourceDialog({
 
             {/* Field 4: Credentials (type-aware,)*/}
             <CredentialsField feed_type={feedType} mode={mode} />
+
+            {/* Quick task 260425-ovt: HTML scrape selectors when feed_type='custom'*/}
+            {feedType === "custom" && <HtmlScrapeFields mode={mode} />}
 
             {/* Field 5: Poll interval*/}
             <div className="flex flex-col gap-1">

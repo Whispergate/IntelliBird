@@ -28,6 +28,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 # Importing broker registers the actors on the Redis broker
 from app.workers import broker as _broker  # noqa: F401
 from app.workers.bootstrap import bootstrap_attack
+from app.workers.html_scrape import poll_html_scrape
 from app.workers.nvd import poll_nvd
 from app.workers.rss import poll_rss
 from app.workers.taxii import poll_taxii
@@ -37,11 +38,13 @@ from app.services.source_events import RELOAD_CHANNEL
 logger = logging.getLogger(__name__)
 
 # feed_type -> actor lookup. Must match sources.feed_type enum (migration 001).
-# 'custom' is intentionally absent — will handle operator-defined types.
+# 'custom' wired by quick task 260425-ovt — HTML-scrape sources reuse the existing
+# enum slot and store CSS selectors in sources.scrape_config (migration 017).
 _ACTOR_MAP: dict[str, object] = {
     "rss": poll_rss,
     "taxii": poll_taxii,
     "nvd": poll_nvd,
+    "custom": poll_html_scrape,
 }
 
 
@@ -575,6 +578,13 @@ def build_scheduler() -> BlockingScheduler:
         register_brand_jobs(scheduler, _brand_settings)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_brand_jobs_register_failed error=%s", e)
+    # Phase 16: Continuous monitoring — silence / drift / parse_error checks
+    try:
+        from app.scheduler.monitoring_jobs import register_monitoring_jobs  # noqa: PLC0415
+
+        register_monitoring_jobs(scheduler)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_monitoring_jobs_register_failed error=%s", e)
     return scheduler
 
 

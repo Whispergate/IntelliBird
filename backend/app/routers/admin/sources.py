@@ -23,14 +23,20 @@ from app.database import get_session
 from app.middleware.auth import require_admin
 from app.models.sources import Source
 from app.security.jwt import AuthUser
+from app.ingest.html_scrape_parser import validate_scrape_config
 from app.services.source_events import publish_sources_changed
-from app.services.source_probes import _probe_nvd, _probe_rss, _probe_taxii
+from app.services.source_probes import (
+    _probe_html_scrape,
+    _probe_nvd,
+    _probe_rss,
+    _probe_taxii,
+)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/sources", tags=["admin"])
 
-FeedType = Literal["rss", "taxii", "nvd"]
+FeedType = Literal["rss", "taxii", "nvd", "custom"]
 ArchivePolicy = Literal["keep", "drop", "move-to-cold"]
 _SILENT_THRESHOLD_DEFAULT = 5
 
@@ -58,6 +64,9 @@ class SourceResponse(BaseModel):
     silent_failure_count: int
     effective_status: str | None
     created_at: datetime
+    # Quick task 260425-ovt: HTML-scrape selector config. Populated only when
+    # feed_type='custom'. Safe to expose — not credentials.
+    scrape_config: dict | None = None
 
     @classmethod
     def from_orm_row(cls, src: Source) -> "SourceResponse":
@@ -76,6 +85,7 @@ class SourceResponse(BaseModel):
             silent_failure_count=src.silent_failure_count,
             effective_status=_effective_status(src.last_status, src.silent_failure_count),
             created_at=src.created_at,
+            scrape_config=getattr(src, "scrape_config", None),
         )
 
 
@@ -88,6 +98,8 @@ class SourceCreate(BaseModel):
     hot_retention_days: int = Field(ge=1, le=3650)
     archive_policy: ArchivePolicy = "drop"
     enabled: bool = True
+    # Quick task 260425-ovt: required when feed_type='custom'.
+    scrape_config: dict | None = None
 
 
 class SourceUpdate(BaseModel):
@@ -99,6 +111,9 @@ class SourceUpdate(BaseModel):
     hot_retention_days: int | None = Field(default=None, ge=1, le=3650)
     archive_policy: ArchivePolicy | None = None
     enabled: bool | None = None
+    # Quick task 260425-ovt: HTML-scrape selector config. None/absent → keep;
+    # non-None → validated when feed_type='custom'.
+    scrape_config: dict | None = None
 
 
 class EventCountResponse(BaseModel):
@@ -109,6 +124,8 @@ class TestConnectionRequest(BaseModel):
     feed_type: FeedType
     url: str = Field(min_length=1)
     credentials: dict | None = None
+    # Quick task 260425-ovt: required for feed_type='custom' probes.
+    scrape_config: dict | None = None
 
 
 class TestConnectionResponse(BaseModel):
@@ -136,6 +153,8 @@ def test_connection(
         ok, latency, count, err = _probe_nvd(api_key)
     elif payload.feed_type == "taxii":
         ok, latency, count, err = _probe_taxii(payload.url, payload.credentials)
+    elif payload.feed_type == "custom":
+        ok, latency, count, err = _probe_html_scrape(payload.url, payload.scrape_config)
     else:  # pragma: no cover — Literal type keeps this unreachable
         raise HTTPException(status_code=422, detail=f"unsupported feed_type {payload.feed_type}")
 
@@ -183,6 +202,11 @@ async def create_source(
     credentials_enc = None
     if payload.credentials:
         credentials_enc = encrypt_credentials(settings.SECRET_KEY, payload.credentials)
+    if payload.feed_type == "custom":
+        try:
+            validate_scrape_config(payload.scrape_config or {})
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
     src = Source(
         id=uuid.uuid4(),
         name=payload.name,
@@ -194,6 +218,7 @@ async def create_source(
         archive_policy=payload.archive_policy,
         enabled=payload.enabled,
         created_at=datetime.now(timezone.utc),
+        scrape_config=payload.scrape_config if payload.feed_type == "custom" else None,
     )
     db.add(src)
     await db.commit()
@@ -223,6 +248,13 @@ async def update_source(
         if creds:
             src.credentials_enc = encrypt_credentials(settings.SECRET_KEY, creds)
         # else: keep existing credentials_enc
+
+    # Quick task 260425-ovt: validate scrape_config when present and feed_type='custom'.
+    if "scrape_config" in data and data["scrape_config"] is not None and src.feed_type == "custom":
+        try:
+            validate_scrape_config(data["scrape_config"])
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=str(e)) from e
 
     for key, val in data.items():
         setattr(src, key, val)
