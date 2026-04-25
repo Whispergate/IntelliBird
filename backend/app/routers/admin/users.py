@@ -20,7 +20,7 @@ from __future__ import annotations
 import uuid
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,7 +29,12 @@ from app.config import settings
 from app.database import get_session
 from app.middleware.auth import require_admin
 from app.models.users import User
-from app.schemas.users import UserCreate, UserResponse, UserUpdate
+from app.schemas.users import (
+    AdminResetPasswordRequest,
+    UserCreate,
+    UserResponse,
+    UserUpdate,
+)
 from app.security.jwt import AuthUser
 from app.security.lockout import admin_unlock, is_locked
 from app.security.passwords import hash_password
@@ -180,3 +185,65 @@ async def unlock_user(
     finally:
         await redis.aclose()
     log.info("admin_user_unlocked", user_id=str(u.id), username=u.username)
+
+
+@router.delete("/{user_id}", status_code=204)
+async def delete_user(
+    user_id: uuid.UUID,
+    admin: AuthUser = Depends(require_admin),
+    db: AsyncSession = Depends(get_session),
+):
+    """Delete a user. Self-delete blocked (400 cannot_delete_self)."""
+    if str(user_id) == admin.id:
+        raise HTTPException(status_code=400, detail="cannot_delete_self")
+    u = (await db.execute(
+        select(User).where(User.id == user_id)
+    )).scalar_one_or_none()
+    if u is None:
+        raise HTTPException(status_code=404, detail="user_not_found")
+    username = u.username  # capture before delete; row becomes detached on commit
+    await db.delete(u)
+    await db.commit()
+    redis = await _redis_client()
+    try:
+        await admin_unlock(redis, username)
+    finally:
+        await redis.aclose()
+    log.info("admin_user_deleted", user_id=str(user_id), username=username)
+
+
+@router.post("/{user_id}/reset-password", response_model=UserResponse)
+async def reset_password(
+    user_id: uuid.UUID,
+    body: AdminResetPasswordRequest,
+    _admin: AuthUser = Depends(require_admin),
+    db: AsyncSession = Depends(get_session),
+) -> UserResponse:
+    """Reset a local user's password; force change on next login; bump token_version.
+
+    Rejects OIDC-only users (password_hash IS NULL) with 400 oidc_only_user.
+    """
+    u = (await db.execute(
+        select(User).where(User.id == user_id)
+    )).scalar_one_or_none()
+    if u is None:
+        raise HTTPException(status_code=404, detail="user_not_found")
+    if u.password_hash is None:
+        raise HTTPException(status_code=400, detail="oidc_only_user")
+    u.password_hash = hash_password(body.new_password)
+    u.must_change_password = True
+    u.token_version = (u.token_version or 0) + 1
+    await db.commit()
+    await db.refresh(u)
+    redis = await _redis_client()
+    try:
+        await admin_unlock(redis, u.username)
+        locked, _ = await is_locked(redis, u.username)
+    finally:
+        await redis.aclose()
+    log.info(
+        "admin_user_password_reset",
+        user_id=str(u.id),
+        username=u.username,
+    )
+    return await _hydrate(u, locked=locked)

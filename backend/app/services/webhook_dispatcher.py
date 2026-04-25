@@ -13,6 +13,14 @@ always check LLEN > 0 before drain; missing key is not an error.
 
 : dashboard_roles=None for all build_events_query calls — dispatcher is
 an admin operation, not dashboard-scoped. All visibility classes delivered.
+
+Burst suppression (Phase 15 / SCR-05 — Roadmap pitfall H-1):
+  HIGH-tier (S+A) events are subject to a per-project rolling-window cap of
+  BURST_HIGH_CAP fires per BURST_WINDOW_SEC. Excess HIGH-tier events are:
+    - tagged burst_cluster=true on the event row (still visible in /events list)
+    - skipped from webhook fan-out (not serialised into the Redis batch)
+  Non-HIGH-tier events (B/C/D or unscored) bypass suppression entirely.
+  See: 15-CONTEXT.md §"Burst suppression", app.services.scoring.burst
 """
 from __future__ import annotations
 
@@ -33,6 +41,8 @@ from sqlalchemy.orm import Session as SyncSession
 from app.config import settings
 from app.crypto import decrypt_credentials
 from app.models.events import Event
+from app.services.scoring.burst import is_burst_suppressed, record_high_tier_dispatch
+from app.services.scoring.tiers import classify_tier
 from app.models.filter_presets import FilterPreset
 from app.models.markings import TlpMarking
 from app.models.projects import ProjectScopeRow, ProjectSource
@@ -153,11 +163,61 @@ def _process_webhook(
     if not all_matched:
         return
 
-    # Serialise events for Redis
+    # --- Burst suppression (Phase 15 / SCR-05, Roadmap H-1) -----------------
+    # For HIGH-tier events (S or A), check the per-project rolling window cap.
+    # Suppressed events are tagged burst_cluster=true in the DB and excluded from
+    # the fan-out batch. Non-HIGH-tier and unscored events pass through unchanged.
+    #
+    # record_high_tier_dispatch is called INLINE as each HIGH-tier event is
+    # accepted into the surviving set — this ensures the 6th+ events see a
+    # count ≥ BURST_HIGH_CAP and are correctly suppressed, even though HTTP
+    # delivery hasn't happened yet. The window counter is thus "reserved" for
+    # events that will be dispatched. This is intentional: it prevents two
+    # concurrent ticks for the same project from both seeing count=0 and both
+    # dispatching 5 events (race condition mitigation per RESEARCH §Pattern 4).
+    project_id_str = str(webhook.project_id)
+    surviving: dict[str, tuple[dict, FilterPreset]] = {}
+    _high_tier_dispatch_count = 0
+    for eid, (ev, preset) in all_matched.items():
+        score = ev.get("score")
+        if score is not None and classify_tier(float(score)) in {"S", "A"}:
+            # HIGH-tier event: consult sliding window
+            if is_burst_suppressed(r, project_id_str):
+                # Cap reached — tag the event row and skip fan-out
+                _tag_burst_cluster(session, uuid.UUID(eid))
+                log.info(
+                    "webhook_burst_suppressed",
+                    webhook_id=str(webhook.id),
+                    event_id=eid,
+                    score=score,
+                    project_id=project_id_str,
+                )
+                continue  # advance iteration (cursor advances with the rest)
+            # Cap not yet reached — reserve a slot in the window and include
+            # this event in the fan-out batch.
+            record_high_tier_dispatch(r, project_id_str)
+            _high_tier_dispatch_count += 1
+            surviving[eid] = (ev, preset)
+        else:
+            # Non-HIGH tier or unscored: bypass suppression
+            surviving[eid] = (ev, preset)
+
+    if not surviving:
+        return
+
+    # Replace all_matched with the suppression-filtered view
+    all_matched = surviving
+    # -------------------------------------------------------------------------
+
+    # Serialise events for Redis.
+    # Strip internal dispatcher fields (score, _project_id) that are not part
+    # of the outbound webhook payload schema. They were added to ev for the
+    # burst-suppression check above and must not appear in the fanout payload.
+    _INTERNAL_KEYS = frozenset({"score", "_project_id"})
     serialised = [
         json.dumps(
             {
-                **ev,
+                **{k: v for k, v in ev.items() if k not in _INTERNAL_KEYS},
                 "observed_at": _iso(ev.get("observed_at")),
                 "fetched_at": _iso(ev.get("fetched_at")),
             }
@@ -298,10 +358,10 @@ def _hydrate_event_dict(event: Event, session: SyncSession) -> dict:
     ).all()
 
     return {
-        "id": event.id,
+        "id": str(event.id),
         "observed_at": event.observed_at,
         "fetched_at": event.fetched_at,
-        "source_id": event.source_id,
+        "source_id": str(event.source_id) if event.source_id is not None else None,
         "source_name": source_name,
         "source_type": source_type,
         "stix_id": event.stix_id,
@@ -315,12 +375,39 @@ def _hydrate_event_dict(event: Event, session: SyncSession) -> dict:
         "visibility": event.visibility,
         "geo_lat": event.geo_lat,
         "geo_lon": event.geo_lon,
+        # Phase 15 / SCR-05: score included so burst suppression can classify tier
+        # in _process_webhook before fan-out. None for pre-migration rows.
+        "score": float(event.score) if event.score is not None else None,
+        # _project_id used for burst_cluster tagging — private field, stripped before
+        # Redis serialisation (not forwarded in webhook payload).
+        "_project_id": str(event.project_id),
     }
 
 
 def _iso(v: Any) -> Any:
     """Convert datetime to ISO string for JSON serialisation."""
     return v.isoformat() if hasattr(v, "isoformat") else v
+
+
+def _tag_burst_cluster(session: SyncSession, event_id: uuid.UUID) -> None:
+    """Append 'burst_cluster' to an event's tags array (Phase 15 / SCR-05).
+
+    Uses PostgreSQL array_append so the update is idempotent-safe even if
+    burst_cluster is already present. The tags column is TEXT[] so duplicates
+    are not prevented at the DB level — callers should only invoke this once
+    per suppression decision. Mirrors the raw-SQL UPDATE approach from
+    tags.py: SQLAlchemy ARRAY assignment has dialect quirks with asyncpg/sync.
+
+    Does NOT commit — caller (webhook tick) is responsible for session.commit().
+    """
+    session.execute(
+        text(
+            "UPDATE events "
+            "SET tags = array_append(COALESCE(tags, ARRAY[]::text[]), 'burst_cluster') "
+            "WHERE id = :eid"
+        ),
+        {"eid": str(event_id)},
+    )
 
 
 # ---- drain + dispatch -------------------------------------------------------
@@ -330,7 +417,13 @@ def _drain_and_dispatch(
     session: SyncSession,
     primary_preset: FilterPreset,
 ) -> None:
-    """Drain Redis list, build payload, POST with retry, update cursor."""
+    """Drain Redis list, build payload, POST with retry, update cursor.
+
+    Phase 15 / SCR-05: Burst suppression is enforced upstream in _process_webhook
+    before events reach the Redis batch. By this point, the batch already contains
+    only non-suppressed events (≤ BURST_HIGH_CAP per high-tier project window).
+    Window recording (record_high_tier_dispatch) was also already done inline.
+    """
     batch_key = f"wh-batch:{webhook.id}"
     ts_key = f"wh-batch-ts:{webhook.id}"
 

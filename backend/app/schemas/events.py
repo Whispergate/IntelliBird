@@ -32,6 +32,10 @@ class EventItem(BaseModel):
     visibility: Visibility
     geo_lat: float | None = None
     geo_lon: float | None = None
+    # SCR-01 / SCR-05: composite score, decay timestamp, rule version (Phase 15 plan 15-10 gap closure).
+    score: float | None = None
+    scored_at: datetime | None = None
+    score_version: int | None = None
 
 
 class EventDetail(EventItem):

@@ -45,6 +45,7 @@ from app.models.projects import (
     ProjectScopeRow,
     ProjectSource,
 )
+from app.models.scoring import EventScoreOverride, ProjectScoringRules
 from app.models.sources import Source
 from app.schemas.projects import (
     CompareResponse,
@@ -61,6 +62,7 @@ from app.schemas.projects import (
     SharedIOCSchema,
 )
 from app.schemas.easm import EASMGateFlipRequest
+from app.schemas.scoring import RescoreStatusResponse, ScoringRulesPayload, ScoringRulesRead
 from app.security.jwt import AuthUser, PROJECT_ROLE_RANK
 from app.security.project_membership import check_project_membership, require_project_membership
 from app.services import project_export as _project_export
@@ -991,6 +993,183 @@ async def export_project(
         iter([body_bytes]),
         media_type=media_type,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Scoring routes — SCR-02 / SCR-03
+# GET  /{project_id}/scoring            → Observer+  (read effective rules)
+# PUT  /{project_id}/scoring            → Lead+      (save rules + trigger rescore)
+# POST /{project_id}/rescore            → Lead+      (manual rescore trigger)
+# GET  /{project_id}/rescore/status     → Observer+  (rescore status)
+# ---------------------------------------------------------------------------
+
+
+@router.get("/{project_id}/scoring", response_model=ScoringRulesRead)
+async def get_scoring_rules(
+    project_id: uuid.UUID,
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
+    db: AsyncSession = Depends(get_session),
+) -> ScoringRulesRead:
+    """Return the effective scoring rules for a project.
+
+    If no override row exists, returns DEFAULT_SCORING_CONFIG with
+    version=1 and is_default=True. If an override row exists, returns
+    the stored rules with is_default=False.
+    """
+    from app.services.scoring.defaults import DEFAULT_SCORING_CONFIG  # noqa: PLC0415
+
+    row = (
+        await db.execute(
+            select(ProjectScoringRules).where(
+                ProjectScoringRules.project_id == project_id
+            )
+        )
+    ).scalar_one_or_none()
+
+    if row is None:
+        return ScoringRulesRead(
+            project_id=project_id,
+            version=1,
+            rules=DEFAULT_SCORING_CONFIG,
+            is_default=True,
+        )
+
+    return ScoringRulesRead(
+        project_id=project_id,
+        version=row.version,
+        rules=row.rules,
+        is_default=False,
+    )
+
+
+@router.put("/{project_id}/scoring", response_model=ScoringRulesRead)
+async def put_scoring_rules(
+    project_id: uuid.UUID,
+    body: ScoringRulesPayload,
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Lead)),
+    db: AsyncSession = Depends(get_session),
+) -> ScoringRulesRead:
+    """Persist per-project scoring rules, bump version, and enqueue rescore actor.
+
+    Pydantic validates weights sum=100 and tier cutoffs descending before this
+    handler is invoked — malformed payloads return 422 automatically.
+
+    Upsert semantics: if a row exists, increment version + update rules + updated_at;
+    otherwise INSERT a new row at version=1.
+    After commit, enqueues rescore_project Dramatiq actor on the scoring queue.
+    """
+    from app.workers.scoring import rescore_project  # noqa: PLC0415
+
+    rules_dict = body.model_dump()
+
+    row = (
+        await db.execute(
+            select(ProjectScoringRules).where(
+                ProjectScoringRules.project_id == project_id
+            )
+        )
+    ).scalar_one_or_none()
+
+    now = datetime.now(timezone.utc)
+
+    if row is None:
+        row = ProjectScoringRules(
+            id=uuid.uuid4(),
+            project_id=project_id,
+            version=1,
+            rules=rules_dict,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(row)
+    else:
+        row.version = row.version + 1
+        row.rules = rules_dict
+        row.updated_at = now
+
+    await db.commit()
+    await db.refresh(row)
+
+    rescore_project.send(str(project_id))
+
+    log.info(
+        "scoring_rules_updated",
+        project_id=str(project_id),
+        version=row.version,
+    )
+
+    return ScoringRulesRead(
+        project_id=project_id,
+        version=row.version,
+        rules=row.rules,
+        is_default=False,
+    )
+
+
+@router.post("/{project_id}/rescore", status_code=202)
+async def trigger_rescore(
+    project_id: uuid.UUID,
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Lead)),
+) -> dict:
+    """Manually enqueue the rescore_project Dramatiq actor for this project.
+
+    Returns 202 with {"queued": true, "project_id": "<uuid>"} to indicate
+    the task has been accepted. The actor runs asynchronously on the scoring queue.
+    """
+    from app.workers.scoring import rescore_project  # noqa: PLC0415
+
+    rescore_project.send(str(project_id))
+    log.info("rescore_manually_triggered", project_id=str(project_id))
+    return {"queued": True, "project_id": str(project_id)}
+
+
+@router.get("/{project_id}/rescore/status", response_model=RescoreStatusResponse)
+async def get_rescore_status(
+    project_id: uuid.UUID,
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
+    db: AsyncSession = Depends(get_session),
+) -> RescoreStatusResponse:
+    """Return rescore status for a project.
+
+    last_rescore_at: most recent scored_at from event_score_overrides for this project.
+    total_count: number of event_score_override rows for this project.
+    in_progress_count: 1 when rescore_project actor is currently executing for this
+        project (Redis key rescore:project:{id}:active exists), else 0. Redis failure
+        degrades to 0 — polling never blocks on Redis.
+    """
+    result = (
+        await db.execute(
+            select(
+                func.max(EventScoreOverride.scored_at),
+                func.count(EventScoreOverride.event_id),
+            ).where(EventScoreOverride.project_id == project_id)
+        )
+    ).one()
+
+    last_rescore_at, total_count = result
+
+    # SCR-02 advisory gap closure (plan 15-11): query Redis for active rescore flag.
+    # Key written by app.workers.scoring._async_rescore on entry, deleted in finally.
+    # TTL safety net (1800s) protects against crashed actor leaving stale 1.
+    in_progress_count = 0
+    try:
+        from app.services.redis_client import get_redis  # noqa: PLC0415
+        redis = await get_redis()
+        exists = await redis.exists(f"rescore:project:{project_id}:active")
+        in_progress_count = 1 if exists else 0
+    except Exception as exc:  # noqa: BLE001 — never 5xx the status poll on Redis hiccup
+        log.warning(
+            "rescore_inprogress_flag_read_failed project_id=%s error=%r",
+            project_id,
+            exc,
+        )
+        in_progress_count = 0
+
+    return RescoreStatusResponse(
+        last_rescore_at=last_rescore_at,
+        in_progress_count=in_progress_count,
+        total_count=total_count or 0,
     )
 
 

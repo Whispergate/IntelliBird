@@ -19,5 +19,19 @@ from app.models.projects import (  # noqa: F401  — Phase 10 / PRJ-01, PRJ-02, 
 from app.models.brand import BrandMatch, BrandTerm  # noqa: F401  — Phase 12 / BRP-01..05
 from app.models.easm import EASMCredential, EASMFinding, EASMScan  # noqa: F401  — Phase 11 EASM
 from app.models.assets import AssetNote  # noqa: F401  — Phase 12.1 / ASSET-NOTE
+from app.models.scoring import EventScoreOverride, ProjectScoringRules  # noqa: F401  — Phase 15 / SCR-01, SCR-03
+from app.models.sources import (  # noqa: F401  — Phase 16 / MON-01, MON-03
+    MaintenanceWindow,
+    Source,
+    SourceIngestStats,
+)
 
-__all__ = ["Base", "AssetNote"]
+__all__ = [
+    "Base",
+    "AssetNote",
+    "EventScoreOverride",
+    "MaintenanceWindow",
+    "ProjectScoringRules",
+    "Source",
+    "SourceIngestStats",
+]

@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 
-from sqlalchemy import ARRAY, Boolean, Double, Enum, ForeignKey, Integer, String, TIMESTAMP, Text, text
+from sqlalchemy import ARRAY, Boolean, Double, Enum, ForeignKey, Integer, Numeric, String, TIMESTAMP, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -66,3 +67,10 @@ class Event(Base):
         ForeignKey("easm_scans.id", ondelete="SET NULL"),
         nullable=True,
     )
+    # Phase 15 / SCR-01: composite score columns added by migration 013.
+    # Nullable: pre-migration rows have NULL until the rescore_project actor runs.
+    # Read path: COALESCE(event_score_overrides.score, events.score) — NULL means
+    # "not yet scored" and is handled gracefully by the scoring service.
+    score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    scored_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
+    score_version: Mapped[int | None] = mapped_column(Integer, nullable=True)

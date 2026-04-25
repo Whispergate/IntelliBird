@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from app.ingest.normalise import _persist_event, update_source_health
 from app.ingest.rss_parser import normalise_rss_entry, parse_rss_feed
-from app.services.source_health import update_silent_failure_count
+from app.services.source_health import update_silent_failure_count, record_ingest_stats
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,10 @@ def poll_rss_impl(source_id_str: str) -> None:
     inserted = 0
     deduped = 0
     rejected = 0
+    parse_ok = 0
+    parse_error = 0
+    fetch_ok = 0
+    fetch_error = 0
     with _open_session() as session:
         src = _fetch_source_row(session, source_id)
         if src is None:
@@ -65,41 +69,73 @@ def poll_rss_impl(source_id_str: str) -> None:
             return
         try:
             parsed = parse_rss_feed(src["url"])
+            fetch_ok = 1
         except Exception as e:  # noqa: BLE001
+            fetch_error = 1
             logger.warning("rss_poll_network_error source_id=%s error=%s",
                            source_id, e)
             update_source_health(session, source_id, status="network_error",
                                  succeeded=False)
-            session.commit()
+            try:
+                record_ingest_stats(session, source_id, parse_ok, parse_error, fetch_ok, fetch_error)
+                session.commit()
+            except Exception as stats_err:  # noqa: BLE001
+                logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
             return
 
         if getattr(parsed, "bozo", 0) and not getattr(parsed, "entries", []):
+            fetch_error = 1
+            fetch_ok = 0
             logger.warning("rss_poll_parse_error source_id=%s error=%s",
                            source_id, getattr(parsed, "bozo_exception", "unknown"))
             update_source_health(session, source_id, status="parse_error",
                                  succeeded=False)
-            session.commit()
+            try:
+                record_ingest_stats(session, source_id, parse_ok, parse_error, fetch_ok, fetch_error)
+                session.commit()
+            except Exception as stats_err:  # noqa: BLE001
+                logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
             return
 
-        for entry in getattr(parsed, "entries", []):
-            row = normalise_rss_entry(entry, source_id)
-            if row is None:
-                rejected += 1
-                logger.warning(
-                    "feed_item_rejected reason=missing_dedup_key source_id=%s raw_excerpt=%r",
-                    source_id,
-                    (str(getattr(entry, "title", "") or "")[:100]),
-                )
-                continue
-            rc = _persist_event(session, row)
-            if rc == 1:
-                inserted += 1
-            else:
-                deduped += 1
+        try:
+            for entry in getattr(parsed, "entries", []):
+                try:
+                    row = normalise_rss_entry(entry, source_id)
+                    if row is None:
+                        rejected += 1
+                        parse_error += 1
+                        logger.warning(
+                            "feed_item_rejected reason=missing_dedup_key source_id=%s raw_excerpt=%r",
+                            source_id,
+                            (str(getattr(entry, "title", "") or "")[:100]),
+                        )
+                        continue
+                    rc = _persist_event(session, row)
+                    if rc == 1:
+                        inserted += 1
+                        parse_ok += 1
+                    else:
+                        deduped += 1
+                        parse_ok += 1
+                except Exception as entry_err:  # noqa: BLE001
+                    parse_error += 1
+                    logger.error(
+                        "rss_item_parse_failed source_id=%s entry=%r err=%s",
+                        source_id,
+                        (str(getattr(entry, "title", "") or "")[:100]),
+                        entry_err,
+                    )
 
-        update_source_health(session, source_id, status="ok", succeeded=True)
-        update_silent_failure_count(session, source_id, inserted)
-        session.commit()
+            update_source_health(session, source_id, status="ok", succeeded=True)
+            update_silent_failure_count(session, source_id, inserted)
+
+        finally:
+            try:
+                record_ingest_stats(session, source_id, parse_ok, parse_error, fetch_ok, fetch_error)
+                session.commit()
+            except Exception as stats_err:  # noqa: BLE001
+                logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
+
         logger.info(
             "rss_poll_ok source_id=%s inserted=%d deduped=%d rejected=%d",
             source_id, inserted, deduped, rejected,

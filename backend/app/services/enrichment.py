@@ -55,17 +55,94 @@ _HIGH_SEVERITY_PATTERN = re.compile(r"\b(high[- ]severity|severely)\b", re.IGNOR
 _ZERO_DAY_PATTERN = re.compile(r"\b(zero[- ]day|0-?day)\b", re.IGNORECASE)
 _RANSOMWARE_PATTERN = re.compile(r"\bransomware\b", re.IGNORECASE)
 _PHISHING_PATTERN = re.compile(r"\bphishing\b", re.IGNORECASE)
-_APT_PATTERN = re.compile(r"\b(APT\d{1,3}|Lazarus|FIN\d{1,2}|Turla|Conti|LockBit|BlackCat|Scattered Spider)\b")
+_APT_PATTERN = re.compile(r"\b((?:APT|UNC|DEV|FIN|TA|G)\d{1,4}|Equation|Turla|Lazarus|Conti|LockBit|BlackCat(?:\sSpider)?|Scattered\sSpider|Cobalt\s(?:Group|Gang|Spider)|Charming\sKitten|Phosphorus|Ajax\sSecurity\sTeam|Cutting\sKitten|Ghambar|NewsBeef|Newscaster|Parastoo|Group\s42|Cobalt\sKitty|SilverTerrier|MoustachedBouncer|Cleaver|TG-?2889|Threat\sGroup[-\s]?2889)\b", re.IGNORECASE)
 # Offensive-tooling chatter (bare `tooling` + `offensive-tooling` tags drive Red dashboard widget)
 _TOOLING_PATTERN = re.compile(
-    r"\b(Cobalt Strike|Metasploit|Mimikatz|BloodHound|Sliver|Havoc|Brute Ratel|AsyncRAT|Empire|PoshC2|Covenant|Nighthawk|Mythic|Pupy|AdaptixC2)\b",
+    r"\b("
+    # C2 Frameworks (explicit names)
+    r"Cobalt\sStrike|Sliver|Havoc|Brute\sRatel|Covenant|Nighthawk|Mythic|Empire|PoshC2|Metasploit|Armitage|Silent\sTrinity|DeimosC2|TrevorC2|Pupy|AdaptixC2|"
+    # Post-Exploitation & Credential Tools
+    r"Mimikatz|BloodHound|SharpHound|Rubeus|Seatbelt|SharpUp|SharpView|Certify|ForgeCert|Whisker|KrbRelay(?:Up)?|PetitPotam|LaZagne|Responder|Impacket|CrackMapExec|"
+    # RATs & Malware Frameworks
+    r"AsyncRAT|QuasarRAT|DarkComet|njRAT|Remcos|AgentTesla|Formbook|LokiBot|NanoCore|NetWire|Orcus|RevengeRAT|XtremeRAT|PlugX|PoisonIvy|Gh0st|"
+    # Initial Access & Phishing
+    r"Gophish|King\sPhisher|Evilginx2|Modlishka|CredSniper|ReelPhish|PwnAuth|o365-attack-toolkit|"
+    # Reconnaissance & Scanning
+    r"Nmap|Masscan|Nessus|Burp\sSuite|OWASP\sZAP|Nikto|Gobuster|Feroxbuster|Wfuzz|ffuf|dirsearch|theHarvester|Maltego|Shodan|Censys|Recon-ng|"
+    # Password Cracking & Brute Force
+    r"Hashcat|John\sThe\sRipper|Hydra|Medusa|Ncrack|Patator|Crowbar|Spray|DomainPasswordSpray|"
+    # Tunneling & Pivoting
+    r"Chisel|ligolo|sshuttle|ssf|frp|ngrok|pagekite|localtunnel|tunnelmole|zrok|expose|inlets|"
+    # Evasion & Injection
+    r"ScareCrow|Egejar|SigThief|Veil|Shellter|PEzor|Donut|sRDI|Invoke-Obfuscation|Invoke-CradleCrafter|"
+    # Memory Dumping & Analysis
+    r"ProcDump|Procdump|comsvc|Minidump|SharpDump|SafetyKatz|PPLDump|PPLKiller|"
+    # Living Off The Land (LOTL) binaries commonly abused
+    r"PsExec|WMIexec|SMBexec|Atexec|DCOMexec|WMIC|CertUtil|BitsAdmin|MSHTA|Regsvr32|Rundll32|CScript|WScript|PowerShell|Cmd\.exe|"
+    # Data Exfiltration
+    r"Rclone|Rsync|Steghide|Stegsolve|zsteg|stegseek|exiftool|"
+    # Potatoes (privilege escalation)
+    r"(?:Juicy|Rogue|Sweet|Lonely|Rotten|Hot|Generic|Fax|God|Bad|Multi|RasMan|EFS|Coerced|Pwn|NoFilter|MockingJay|Sigma)?Potato|"
+    # UAC Bypass tools
+    r"UACME|Akagi|Fodhelper|Slui|ComputerDefaults|ShellFolder|DiskCleanup|Dccw|WSReset|TikTok|"
+    # Token manipulation
+    r"Tokenvator|SharpToken|MakeToken|RunAsPPL|"
+    # .NET/Assembly tools
+    r"donut|sharpsploit|sharpsploit|sharphound|sharprdp|sharpwmi|sharpexec|sharpchrome|sharpdpapi|sharpcloud|sharpchromium|sharpapplocker|sharpbypassuac|sharpblock|sharphide|sharplocker|sharpnopsExec|sharpweb|sharpzerologon|"
+    # Network sniffing & MITM
+    r"BetterCAP|Ettercap|Bettercap|MITMf|Responder|Inveigh|InveighZero|"
+    # AV/EDR Evasion
+    r"UnDefender|Backstab|FireWalker|SharpEDRChecker|EDRSandBlast|EDRSandblast|"
+    # Payload generators
+    r"msfvenom|Veil-Evasion|Venom|TheFatRat|ezuri|avet|AVET|"
+    # Exploit frameworks
+    r"BeEF|Browser\sExploitation\sFramework|RouterSploit|AutoSploit|"
+    # Wireless tools
+    r"Aircrack-ng|Wifite|Fern|Reaver|Bully|WPS|Pixie\sDust|"
+    # Social engineering
+    r"SET|Social\sEngineer\sToolkit|BeEF|"
+    # OSINT tools
+    r"OSINT\sFramework|Spiderfoot|FOCA|theHarvester|Maltego|Shodan|Censys|"
+    # Reverse shells & bind shells
+    r"nc|netcat|ncat|socat|pwncat|pwncat-cs|rs|reverse\s?shell|bind\s?shell|"
+    # Stagers & loaders
+    r"Meterpreter|Stager|Stageless|Reflective\s?DLL|Shellcode|"
+    # Additional common tools
+    r"proxychains|proxychains-ng|tsocks|redsocks|dnscat2|iodine|dnscrypt|dns2tcp|ozymandns|"
+    r")\b",
     re.IGNORECASE,
 )
 # Vendor advisories — drives Blue dashboard widget
 _VENDOR_ADVISORY_PATTERN = re.compile(
-    r"\b(Patch Tuesday|CISA (?:alert|advisory)|MSRC advisory|Microsoft Security Bulletin|Cisco PSIRT|Adobe Security Bulletin|Google Chrome (?:update|advisory)|VMware Security Advisory|Oracle CPU|security advisory)\b",
+    r"\b("
+    # Microsoft
+    r"Patch\sTuesday|MSRC\s(?:advisory|security\s(?:update|bulletin))|Microsoft\sSecurity\s(?:Response\sCenter|Bulletin|Update)|"
+    # CISA & US Government
+    r"CISA\s(?:alert|advisory|notice|BOD|ED|KEV)|(?:binding\soperational\sdirective|emergency\sdirective|known\sexploited\svulnerability)|"
+    # Standards & identifiers
+    r"CVE-\d{4}-\d{4,}|NVD|NIST|CVSS|CPE|CSAF|CVRF|"
+    # GitHub & Open Source
+    r"GitHub\sSecurity\sAdvisory|GHSA|(?:npm|PyPA|Python|RubyGems|RustSec|Go)\sSecurity|"
+    # Major vendors with systematic IDs (regex patterns)
+    r"(?:RHSA|FSAS|USN|DSA|MFSA|INTEL-SA|AMD-SB|NVSA|LSA|HPSB|BSA|VMSA|CTX|PAN-SA|FG-IR|PSIRT|SK|JSA|SNWLID|SB|ICSA)-\d{4}(?:-\d+)?|"
+    # Explicit vendor advisory names
+    r"Cisco\sPSIRT|Adobe\sSecurity\s(?:Bulletin|Update)|Google\sChrome\s(?:update|advisory|security)|VMware\sSecurity\sAdvisory|Oracle\s(?:CPU|Critical\sPatch\sUpdate)|"
+    r"Red\sHat\sSecurity\sAdvisory|Fedora\sSecurity\sAdvisory|SUSE\sSecurity|Canonical\sSecurity\sNotice|Debian\sSecurity\sAdvisory|"
+    r"Apple\sSecurity\s(?:Update|Content)|macOS\sSecurity|iOS\sSecurity|Apache\sSecurity|OpenSSL\sSecurity\sAdvisory|Mozilla\sFoundation\sSecurity\sAdvisory|"
+    r"Kubernetes\sSecurity\sAdvisory|KSA|CNCF\sSecurity|Docker\sSecurity|AWS\sSecurity\sBulletin|Azure\sSecurity\sCenter|Google\sCloud\sSecurity\sBulletin|"
+    r"IBM\sSecurity\sBulletin|X-Force\sAdvisory|Intel\sSecurity\sAdvisory|AMD\sSecurity\sBulletin|NVIDIA\sSecurity\sBulletin|SAP\sSecurity\sNote|"
+    r"Siemens\sProductCERT|Schneider\sElectric\sSecurity\sAdvisory|Rockwell\sAutomation\sSecurity|GE\sCybersecurity|Johnson\sControls\sSecurity|"
+    r"Honeywell\sSecurity\sNotice|ABB\sCyber\sSecurity|Mitsubishi\sElectric\sSecurity|Juniper\sSecurity\sAdvisory|"
+    r"Palo\sAlto\sNetworks\sSecurity\sAdvisory|Fortinet\sSecurity\sAdvisory|Check\sPoint\sSecurity|F5\sSecurity\sAdvisory|"
+    r"SonicWall\sSecurity|Trend\sMicro\sSecurity|McAfee\sSecurity\sBulletin|Symantec\sSecurity|Kaspersky\sSecurity|"
+    r"Rapid7\sSecurity|Tenable\sSecurity|Qualys\sSecurity|Bugcrowd\sVulnerability|HackerOne\sDisclosure|"
+    r"CERT\sCC|CERT\/CC|US-CERT|CERT-EU|JPCERT\/CC|ICS-CERT|ICSCERT|"
+    # Generic fallback
+    r"security\s(?:advisory|bulletin|update|notice|alert)"
+    r")\b",
     re.IGNORECASE,
 )
+
 # C2 / command-and-control mentions — bare `c2` tag for ActorInfra widget
 _C2_PATTERN = re.compile(r"\b(C2|C&C|command[- ]and[- ]control)\b", re.IGNORECASE)
 

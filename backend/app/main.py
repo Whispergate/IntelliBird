@@ -31,6 +31,8 @@ from app.middleware.auth import AuthMiddleware
 from app.middleware.request_log import RequestLogMiddleware
 from app.models.sources import Source
 from app.routers.admin.attack import router as admin_attack_router
+from app.routers.admin.maintenance import router as admin_maintenance_router
+from app.routers.admin.monitoring import router as admin_monitoring_router
 from app.routers.admin.rekey import router as admin_rekey_router
 from app.routers.admin.setup import router as admin_setup_router
 from app.routers.admin.users import router as admin_users_router
@@ -192,6 +194,8 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(admin_rekey_router, prefix="/api")
     fastapi_app.include_router(admin_setup_router, prefix="/api")
     fastapi_app.include_router(admin_users_router, prefix="/api")
+    fastapi_app.include_router(admin_monitoring_router, prefix="/api")
+    fastapi_app.include_router(admin_maintenance_router, prefix="/api")
     fastapi_app.include_router(auth_router, prefix="/api")
     fastapi_app.include_router(events_router, prefix="/api")
     fastapi_app.include_router(tags_router, prefix="/api")

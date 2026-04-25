@@ -99,7 +99,13 @@ async def _hydrate_item(event: Event, db: AsyncSession) -> EventItem:
         visibility=event.visibility,  # type: ignore[arg-type]
         geo_lat=event.geo_lat,
         geo_lon=event.geo_lon,
+        score=event.score,
+        scored_at=event.scored_at,
+        score_version=event.score_version,
     )
+
+
+_VALID_TIERS = frozenset({"S", "A", "B", "C", "D"})
 
 
 @router.get("", response_model=EventListResponse)
@@ -139,6 +145,19 @@ async def list_events(
             "events feed is not polluted by brand alerts. Set true to show them."
         ),
     ),
+    # SCR-05: score sort + tier filter.
+    sort: Literal["observed_desc", "score_desc", "score_asc"] | None = Query(
+        default=None,
+        description="Sort order: observed_desc (default), score_desc, or score_asc.",
+    ),
+    tier: str | None = Query(
+        default=None,
+        description=(
+            "Comma-separated tier filter: S,A,B,C,D. "
+            "Filters events whose current score (with decay) falls in the given tier(s). "
+            "NULL/unscored events are treated as tier D."
+        ),
+    ),
     db: AsyncSession = Depends(get_session),
 ) -> EventListResponse:
     # AUTH-02 / C-2: dashboard_roles sourced from JWT claim (request.state.user),
@@ -147,6 +166,17 @@ async def list_events(
     # PROD-03: filtering role comes from dependency injection of JWT claim; do not inspect X-Dashboard-Role header.
     user = getattr(request.state, "user", None)
     dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
+
+    # SCR-05: parse + validate tier query param (comma-separated string → list[str]).
+    parsed_tier: list[str] | None = None
+    if tier is not None:
+        parsed_tier = [t.strip().upper() for t in tier.split(",") if t.strip()]
+        invalid = [t for t in parsed_tier if t not in _VALID_TIERS]
+        if invalid:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid tier value(s): {invalid}. Must be one or more of S,A,B,C,D.",
+            )
 
     # PROD-01 GAP-1: intersect JWT project_memberships with the row filter.
     # Non-admin callers without project_id previously saw all projects' events
@@ -191,6 +221,8 @@ async def list_events(
             include_archived=include_archived,
             has_geo=has_geo,
             tag_mode=tag_mode,
+            sort=sort,
+            tier=parsed_tier,
         )
         fts_stmt = build_fts_query(
             params, dashboard_roles, q,
@@ -273,6 +305,8 @@ async def list_events(
         include_archived=include_archived,
         has_geo=has_geo,
         tag_mode=tag_mode,
+        sort=sort,
+        tier=parsed_tier,
     )
 
     stmt = build_events_query(

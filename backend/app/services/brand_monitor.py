@@ -37,6 +37,7 @@ from app.services.brand_stoplist import is_short, is_stoplisted
 from app.services.brand_synth import build_event_dict
 from app.services.crtsh_client import fetch_certs
 from app.services.dnstwist_parser import parse_dnstwist_output
+from app.services.source_health import async_bump_last_event_at
 
 log = logging.getLogger(__name__)
 
@@ -241,11 +242,13 @@ _EVENT_INSERT_SQL = text(
     """
     INSERT INTO events (
         source_id, stix_type, stix_id, title, description,
-        observed_at, tags, content_hash, raw_stix, project_id
+        observed_at, tags, content_hash, raw_stix, project_id,
+        score, scored_at, score_version
     ) VALUES (
         NULL, :stix_type, :stix_id, :title, :description,
         :observed_at, :tags, :content_hash, CAST(:raw_stix AS jsonb),
-        CAST(:project_id AS uuid)
+        CAST(:project_id AS uuid),
+        :score, :scored_at, :score_version
     )
     ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING
     RETURNING id
@@ -298,6 +301,20 @@ async def _maybe_synth(
         term={"id": term["id"], "value": term["value"], "term_type": term["term_type"]},
     )
 
+    # Phase 15 / SCR-01: compute score at INSERT time.
+    # brand_synth path uses brand_severity (low/medium/high) as the CVSS proxy.
+    from app.services.scoring import score_event, ScoringWeights  # noqa: PLC0415
+    from app.services.scoring.defaults import DEFAULT_SOURCE_CONFIDENCE  # noqa: PLC0415
+    _brand_score_val, _brand_scored_at, _brand_score_ver = score_event(
+        feed_type="rss",  # brand events have no source feed_type; treat as rss
+        cvss_score=None,
+        brand_severity=severity,
+        observed_at=event_dict["observed_at"],
+        source_confidence=DEFAULT_SOURCE_CONFIDENCE.get("rss", 0.7),
+        tag_relevance=0.0,
+        weights=ScoringWeights(),
+    )
+
     event_id: Any = None
     try:
         result = await session.execute(
@@ -312,11 +329,20 @@ async def _maybe_synth(
                 "content_hash": event_dict["content_hash"],
                 "raw_stix": json.dumps(event_dict["raw_stix"]),
                 "project_id": str(event_dict["project_id"]),
+                "score": _brand_score_val,
+                "scored_at": _brand_scored_at,
+                "score_version": _brand_score_ver,
             },
         )
         row = result.first()
         if row is not None:
             event_id = row[0]
+            # Phase 16 MON-01: bump last_event_at after successful insert
+            # Brand synthetic events have source_id=NULL so no sources row to update;
+            # call is a deliberate no-op guard for when a synth source is wired (Phase 17).
+            synth_source_id = event_dict.get("source_id")
+            if synth_source_id is not None:
+                await async_bump_last_event_at(session, synth_source_id)
     except Exception as exc:
         log.warning("brand_synth_event_insert_failed exc=%s", exc)
 

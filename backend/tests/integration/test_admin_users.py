@@ -609,3 +609,252 @@ async def test_unlock_clears_redis_keys(db_session, monkeypatch, argon2_fast):
         await redis.aclose()
     except Exception:
         pytest.skip("Redis not available for post-unlock verification")
+
+
+# ---------------------------------------------------------------------------
+# DELETE /api/admin/users/{id} — delete user
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_admin_delete_user_204_and_row_gone(db_session, monkeypatch, argon2_fast):
+    """DELETE removes the row and returns 204."""
+    from app.config import settings
+    from app.models.users import User
+    from sqlalchemy import select, text
+
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    await db_session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
+    await db_session.commit()
+
+    async with await _client() as c:
+        r_create = await c.post(
+            "/api/admin/users",
+            json={**VALID_CREATE_BODY, "username": "delete_target"},
+            headers=_admin_headers(),
+        )
+        assert r_create.status_code == 201
+        user_id = r_create.json()["id"]
+
+        r_del = await c.delete(
+            f"/api/admin/users/{user_id}",
+            headers=_admin_headers(),
+        )
+        assert r_del.status_code == 204, r_del.text
+
+    row = (await db_session.execute(
+        select(User).where(User.username == "delete_target")
+    )).scalar_one_or_none()
+    assert row is None
+
+
+@pytest.mark.asyncio
+async def test_admin_delete_self_400_cannot_delete_self(db_session, monkeypatch, argon2_fast):
+    """Admin cannot delete their own account — 400 cannot_delete_self."""
+    from app.config import settings
+    from sqlalchemy import text
+
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    await db_session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
+    await db_session.commit()
+
+    async with await _client() as c:
+        # Create an admin user; we will mint a token whose sub == that user's id
+        r_create = await c.post(
+            "/api/admin/users",
+            json={
+                "username": "self_delete_admin",
+                "role": "Admin",
+                "dashboard_roles": [],
+                "initial_password": "temporarypassword123",
+            },
+            headers=_admin_headers(),
+        )
+        assert r_create.status_code == 201
+        admin_id = r_create.json()["id"]
+
+        token = _mint_admin_token(user_id=admin_id)
+        headers = {"Authorization": f"Bearer {token}"}
+
+        r_del = await c.delete(
+            f"/api/admin/users/{admin_id}",
+            headers=headers,
+        )
+        assert r_del.status_code == 400, r_del.text
+        assert r_del.json()["detail"] == "cannot_delete_self"
+
+
+@pytest.mark.asyncio
+async def test_admin_delete_missing_404(db_session, monkeypatch):
+    from app.config import settings
+    from sqlalchemy import text
+
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    await db_session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
+    await db_session.commit()
+
+    fake_id = str(_uuid.uuid4())
+    async with await _client() as c:
+        r = await c.delete(
+            f"/api/admin/users/{fake_id}",
+            headers=_admin_headers(),
+        )
+        assert r.status_code == 404
+        assert r.json()["detail"] == "user_not_found"
+
+
+@pytest.mark.asyncio
+async def test_analyst_delete_403(monkeypatch):
+    from app.config import settings
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    fake_id = str(_uuid.uuid4())
+    async with await _client() as c:
+        r = await c.delete(
+            f"/api/admin/users/{fake_id}",
+            headers=_analyst_headers(),
+        )
+        assert r.status_code == 403
+        assert r.json()["detail"] == "insufficient_role"
+
+
+# ---------------------------------------------------------------------------
+# POST /api/admin/users/{id}/reset-password — admin password reset
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_admin_reset_password_200_local_user(db_session, monkeypatch, argon2_fast):
+    """Admin reset hashes new pw, sets must_change_password, bumps token_version,
+    invalidates old password and accepts new password against verify_password."""
+    from app.config import settings
+    from app.models.users import User
+    from app.security.passwords import verify_and_maybe_rehash
+    from sqlalchemy import select, text
+
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    await db_session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
+    await db_session.commit()
+
+    async with await _client() as c:
+        r_create = await c.post(
+            "/api/admin/users",
+            json={**VALID_CREATE_BODY, "username": "reset_target"},
+            headers=_admin_headers(),
+        )
+        assert r_create.status_code == 201
+        user_id = r_create.json()["id"]
+
+        r_reset = await c.post(
+            f"/api/admin/users/{user_id}/reset-password",
+            json={"new_password": "brand_new_password_xyz"},
+            headers=_admin_headers(),
+        )
+        assert r_reset.status_code == 200, r_reset.text
+        body = r_reset.json()
+        assert body["must_change_password"] is True
+        assert body["username"] == "reset_target"
+
+    # Re-fetch row from DB to verify side effects
+    await db_session.commit()  # ensure visibility of changes from API session
+    row = (await db_session.execute(
+        select(User).where(User.username == "reset_target")
+    )).scalar_one_or_none()
+    assert row is not None
+    assert row.must_change_password is True
+    assert row.token_version == 1  # bumped from 0
+    # Old password rejected, new password accepted
+    ok_old, _ = verify_and_maybe_rehash("temporarypassword123", row.password_hash)
+    ok_new, _ = verify_and_maybe_rehash("brand_new_password_xyz", row.password_hash)
+    assert ok_old is False
+    assert ok_new is True
+
+
+@pytest.mark.asyncio
+async def test_admin_reset_password_oidc_user_400(db_session, monkeypatch):
+    """OIDC-only user (password_hash NULL) cannot have password reset."""
+    from app.config import settings
+    from app.models.users import User
+    from sqlalchemy import text
+
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    await db_session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
+    await db_session.commit()
+
+    oidc_user = User(
+        username="oidc_user",
+        password_hash=None,
+        oidc_sub="oidc-sub-abc",
+        role="Analyst",
+        dashboard_roles=["red"],
+        enabled=True,
+        must_change_password=False,
+        token_version=0,
+    )
+    db_session.add(oidc_user)
+    await db_session.commit()
+    await db_session.refresh(oidc_user)
+
+    async with await _client() as c:
+        r = await c.post(
+            f"/api/admin/users/{oidc_user.id}/reset-password",
+            json={"new_password": "validpassword1234"},
+            headers=_admin_headers(),
+        )
+        assert r.status_code == 400, r.text
+        assert r.json()["detail"] == "oidc_only_user"
+
+
+@pytest.mark.asyncio
+async def test_admin_reset_password_missing_404(db_session, monkeypatch):
+    from app.config import settings
+    from sqlalchemy import text
+
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    await db_session.execute(text("TRUNCATE TABLE users RESTART IDENTITY CASCADE"))
+    await db_session.commit()
+
+    fake_id = str(_uuid.uuid4())
+    async with await _client() as c:
+        r = await c.post(
+            f"/api/admin/users/{fake_id}/reset-password",
+            json={"new_password": "validpassword1234"},
+            headers=_admin_headers(),
+        )
+        assert r.status_code == 404
+        assert r.json()["detail"] == "user_not_found"
+
+
+@pytest.mark.asyncio
+async def test_admin_reset_password_short_422(monkeypatch):
+    from app.config import settings
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    fake_id = str(_uuid.uuid4())
+    async with await _client() as c:
+        r = await c.post(
+            f"/api/admin/users/{fake_id}/reset-password",
+            json={"new_password": "short"},
+            headers=_admin_headers(),
+        )
+        assert r.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_analyst_reset_password_403(monkeypatch):
+    from app.config import settings
+    monkeypatch.setattr(settings, "AUTH_ENABLED", True)
+    _patch_auth(monkeypatch)
+    fake_id = str(_uuid.uuid4())
+    async with await _client() as c:
+        r = await c.post(
+            f"/api/admin/users/{fake_id}/reset-password",
+            json={"new_password": "validpassword1234"},
+            headers=_analyst_headers(),
+        )
+        assert r.status_code == 403
+        assert r.json()["detail"] == "insufficient_role"

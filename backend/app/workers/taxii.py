@@ -24,7 +24,7 @@ from taxii2client.v21 import Server as _taxii_v21_Server_real
 
 from app.crypto import decrypt_credentials
 from app.ingest.normalise import _persist_event, update_source_health
-from app.services.source_health import update_silent_failure_count
+from app.services.source_health import update_silent_failure_count, record_ingest_stats
 from app.ingest.taxii_parser import normalise_stix_object, parse_stix_bundle
 from app.models.markings import TlpMarking
 from app.models.sources import Source
@@ -153,15 +153,25 @@ def poll_taxii_impl(source_id_str: str) -> None:
             poll_otx_taxii1(session, src, creds, tlp_cache)
             return
 
+        parse_ok = 0
+        parse_error = 0
+        fetch_ok = 0
+        fetch_error = 0
+
         # TAXII 2.1 / 2.0 path
         try:
             server = _build_server(src["url"], creds)
         except Exception as e:  # noqa: BLE001
+            fetch_error = 1
             logger.warning("taxii_poll_server_init_failed source_id=%s error=%s",
                            source_id, e)
             update_source_health(session, source_id, status="http_error",
                                  succeeded=False)
-            session.commit()
+            try:
+                record_ingest_stats(session, source_id, parse_ok, parse_error, fetch_ok, fetch_error)
+                session.commit()
+            except Exception as stats_err:  # noqa: BLE001
+                logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
             return
 
         collected_objects: list[Any] = []
@@ -172,42 +182,66 @@ def poll_taxii_impl(source_id_str: str) -> None:
                         objs = envelope.get("objects") if isinstance(envelope, dict) else list(envelope)
                         if objs:
                             collected_objects.extend(objs)
+            fetch_ok = 1
         except Exception as e:  # noqa: BLE001
+            fetch_error = 1
             logger.warning("taxii_poll_network_error source_id=%s error=%s",
                            source_id, e)
             update_source_health(session, source_id, status="network_error",
                                  succeeded=False)
-            session.commit()
+            try:
+                record_ingest_stats(session, source_id, parse_ok, parse_error, fetch_ok, fetch_error)
+                session.commit()
+            except Exception as stats_err:  # noqa: BLE001
+                logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
             return
 
         # Parse + persist — on parse failure, drop the single object but keep going.
         inserted = 0
         latest_modified_str: str | None = None
-        for obj in collected_objects:
-            try:
-                parsed_list = parse_stix_bundle([obj])
-            except Exception as e:  # noqa: BLE001
-                logger.warning("taxii_stix_parse_failed source_id=%s error=%s "
-                               "raw=%s", source_id, e, str(obj)[:200])
-                continue
-            for p in parsed_list:
-                row = normalise_stix_object(p, source_id, tlp_cache)
-                if row is None:
+
+        try:
+            for obj in collected_objects:
+                try:
+                    parsed_list = parse_stix_bundle([obj])
+                except Exception as e:  # noqa: BLE001
+                    parse_error += 1
+                    logger.warning("taxii_stix_parse_failed source_id=%s error=%s "
+                                   "raw=%s", source_id, e, str(obj)[:200])
                     continue
-                rc = _persist_event(session, row)
-                if rc == 1:
-                    inserted += 1
-                mod_field = row["raw_stix"].get("modified") or row["raw_stix"].get("created")
-                if mod_field and (latest_modified_str is None or str(mod_field) > latest_modified_str):
-                    latest_modified_str = str(mod_field)
+                for p in parsed_list:
+                    try:
+                        row = normalise_stix_object(p, source_id, tlp_cache)
+                        if row is None:
+                            continue
+                        rc = _persist_event(session, row)
+                        if rc == 1:
+                            inserted += 1
+                        parse_ok += 1
+                        mod_field = row["raw_stix"].get("modified") or row["raw_stix"].get("created")
+                        if mod_field and (latest_modified_str is None or str(mod_field) > latest_modified_str):
+                            latest_modified_str = str(mod_field)
+                    except Exception as obj_err:  # noqa: BLE001
+                        parse_error += 1
+                        logger.error(
+                            "taxii_object_persist_failed source_id=%s err=%s raw=%s",
+                            source_id, obj_err, str(p)[:200],
+                        )
 
-        # Cursor advance — ONLY after all pages written.
-        if latest_modified_str:
-            _advance_cursor(session, source_id, latest_modified_str)
+            # Cursor advance — ONLY after all pages written.
+            if latest_modified_str:
+                _advance_cursor(session, source_id, latest_modified_str)
 
-        update_source_health(session, source_id, status="ok", succeeded=True)
-        update_silent_failure_count(session, source_id, inserted)
-        session.commit()
+            update_source_health(session, source_id, status="ok", succeeded=True)
+            update_silent_failure_count(session, source_id, inserted)
+
+        finally:
+            try:
+                record_ingest_stats(session, source_id, parse_ok, parse_error, fetch_ok, fetch_error)
+                session.commit()
+            except Exception as stats_err:  # noqa: BLE001
+                logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
+
         logger.info("taxii_poll_ok source_id=%s inserted=%d", source_id, inserted)
 
 

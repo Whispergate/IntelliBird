@@ -206,6 +206,16 @@ export function TopNav() {
           <DropdownMenuItem onClick={() => router.push("/webhooks")}>
             Webhooks
           </DropdownMenuItem>
+          {user?.role === "Admin" && (
+            <DropdownMenuItem onClick={() => router.push("/admin/monitoring")}>
+              Source Monitoring
+            </DropdownMenuItem>
+          )}
+          {user?.role === "Admin" && (
+            <DropdownMenuItem onClick={() => router.push("/admin/maintenance")}>
+              Maintenance Windows
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -228,6 +238,11 @@ export function TopNav() {
               <RoleBadge role={user.role} />
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {user.role === "Admin" && (
+              <DropdownMenuItem onClick={() => router.push("/admin/users")}>
+                User Management
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onSelect={onSignOut}>Sign out</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -56,6 +56,17 @@ class UserResponse(BaseModel):
     created_at: datetime
 
 
+class AdminResetPasswordRequest(BaseModel):
+    """POST /api/admin/users/{id}/reset-password body."""
+
+    new_password: str = Field(
+        ...,
+        min_length=12,
+        max_length=512,
+        description="Replacement password; user forced to change on next login",
+    )
+
+
 class SetupResponse(BaseModel):
     """POST /api/admin/setup response — subset of UserResponse (no enabled/locked)."""
 

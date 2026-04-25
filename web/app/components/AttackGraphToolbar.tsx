@@ -77,10 +77,10 @@ export function AttackGraphToolbar({ cy }: Props) {
   }
 
   return (
-    <div className="h-10 flex items-center gap-2 px-4 bg-card border-b border-border">
-      <span className="brand-caption text-muted-foreground mr-1">Layout</span>
+    <div className="h-10 flex items-center gap-2 px-4 bg-card border-b border-border overflow-x-auto whitespace-nowrap">
+      <span className="brand-caption text-muted-foreground mr-1 flex-shrink-0">Layout</span>
       <Select value={layout} onValueChange={handleLayoutChange}>
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-[160px] flex-shrink-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -90,20 +90,20 @@ export function AttackGraphToolbar({ cy }: Props) {
         </SelectContent>
       </Select>
 
-      <span className="mx-2 text-border">|</span>
+      <span className="mx-2 text-border flex-shrink-0">|</span>
 
-      <label className="flex items-center gap-1 cursor-pointer">
+      <label className="flex items-center gap-1 cursor-pointer flex-shrink-0">
         <Switch
           checked={analystOnly}
           onCheckedChange={handleProvenanceToggle}
           aria-label="Show analyst-confirmed nodes only"
         />
-        <span style={{ fontSize: 14 }} className="text-foreground">
+        <span style={{ fontSize: 14 }} className="text-foreground whitespace-nowrap">
           Analyst-confirmed only
         </span>
       </label>
 
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex items-center gap-1 flex-shrink-0">
         <Button
           variant="outline"
           size="icon"

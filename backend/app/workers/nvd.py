@@ -35,7 +35,7 @@ from sqlalchemy.orm import Session
 
 from app.crypto import decrypt_credentials
 from app.ingest.normalise import _persist_event, update_source_health  # noqa: F401 — exposed for monkeypatching
-from app.services.source_health import update_silent_failure_count
+from app.services.source_health import update_silent_failure_count, bump_last_event_at, record_ingest_stats
 from app.ingest.nvd_parser import normalise_cve
 from app.models.cve_details import CveDetails
 from app.models.events import Event
@@ -61,7 +61,7 @@ def _open_session() -> Iterator[Session]:
 
 def _fetch_source_row(session: Session, source_id: uuid.UUID) -> dict | None:
     row = session.execute(
-        text("SELECT id, credentials_enc, last_cursor FROM sources WHERE id = :id"),
+        text("SELECT id, credentials_enc, last_cursor, confidence FROM sources WHERE id = :id"),
         {"id": str(source_id)},
     ).one_or_none()
     if row is None:
@@ -70,6 +70,7 @@ def _fetch_source_row(session: Session, source_id: uuid.UUID) -> dict | None:
         "id": row.id,
         "credentials_enc": row.credentials_enc,
         "last_cursor": row.last_cursor,
+        "confidence": row.confidence,
     }
 
 
@@ -171,9 +172,16 @@ def poll_nvd_impl(source_id_str: str) -> None:
             "key": api_key,
         }
 
+        parse_ok = 0
+        parse_error = 0
+        fetch_ok = 0
+        fetch_error = 0
+
         try:
             cves = _fetch_with_backoff(**kwargs)
+            fetch_ok = 1
         except BaseException as e:  # noqa: BLE001
+            fetch_error = 1
             code = _error_status_code(e)
             if code == 429:
                 status = "rate_limited"
@@ -186,63 +194,115 @@ def poll_nvd_impl(source_id_str: str) -> None:
                 source_id, status, e,
             )
             update_source_health(session, source_id, status=status, succeeded=False)
-            session.commit()
+            try:
+                record_ingest_stats(session, source_id, parse_ok, parse_error, fetch_ok, fetch_error)
+                session.commit()
+            except Exception as stats_err:  # noqa: BLE001
+                logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
             return
 
         inserted = 0
         latest_mod: datetime | None = None
         attack_written = 0
 
-        for cve in cves:
-            result = normalise_cve(cve, source_id)
-            if result is None:
-                logger.warning(
-                    "feed_item_rejected reason=missing_dedup_key source_id=%s",
-                    source_id,
-                )
-                continue
-            event_row, cve_details_row, attack_links = result
+        try:
+            for cve in cves:
+                try:
+                    result = normalise_cve(cve, source_id)
+                    if result is None:
+                        logger.warning(
+                            "feed_item_rejected reason=missing_dedup_key source_id=%s",
+                            source_id,
+                        )
+                        parse_error += 1
+                        continue
+                    event_row, cve_details_row, attack_links = result
 
-            # Phase 10: events.project_id is NOT NULL. Default to the LEGACY
-            # sentinel until NVD is wired to per-source project bindings.
-            if event_row.get("project_id") is None:
-                from app.models.projects import LEGACY_PROJECT_ID  # lazy import
-                event_row["project_id"] = LEGACY_PROJECT_ID
+                    # Phase 10: events.project_id is NOT NULL. Default to the LEGACY
+                    # sentinel until NVD is wired to per-source project bindings.
+                    if event_row.get("project_id") is None:
+                        from app.models.projects import LEGACY_PROJECT_ID  # lazy import
+                        event_row["project_id"] = LEGACY_PROJECT_ID
 
-            # Insert the event row with RETURNING id so we can link child rows.
-            # ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING matches
-            # the 3-column unique index from migration 002 (TimescaleDB hypertable).
-            stmt = (
-                pg_insert(Event.__table__)
-                .values(**event_row)
-                .on_conflict_do_nothing(
-                    index_elements=["source_id", "content_hash", "observed_at"]
-                )
-                .returning(Event.__table__.c.id)
-            )
-            result_row = session.execute(stmt).fetchone()
-            if result_row is None:
-                # Conflict — row already exists; child rows already exist too.
-                continue
-            event_id = result_row[0]
-            inserted += 1
+                    # Phase 15 / SCR-01: inject score at ingest using CVSS3 base score.
+                    # cvss_v3_score lives in cve_details_row (separate table); use it here
+                    # to produce an accurate initial score before the event is written.
+                    if event_row.get("score") is None:
+                        from app.services.scoring import score_event, ScoringWeights  # noqa: PLC0415
+                        from app.services.scoring.defaults import DEFAULT_SOURCE_CONFIDENCE  # noqa: PLC0415
+                        _nvd_src_conf = float(src.get("confidence") or DEFAULT_SOURCE_CONFIDENCE.get("nvd", 1.0))
+                        _cvss = cve_details_row.get("cvss_v3_score")
+                        _obs_at = event_row.get("observed_at")
+                        if _obs_at is None:
+                            from datetime import datetime, timezone  # noqa: PLC0415
+                            _obs_at = datetime.now(timezone.utc)
+                        _score_val, _scored_at_ts, _score_ver = score_event(
+                            feed_type="nvd",
+                            cvss_score=float(_cvss) if _cvss is not None else None,
+                            brand_severity=None,
+                            observed_at=_obs_at,
+                            source_confidence=_nvd_src_conf,
+                            tag_relevance=0.0,
+                            weights=ScoringWeights(),
+                        )
+                        event_row["score"] = _score_val
+                        event_row["scored_at"] = _scored_at_ts
+                        event_row["score_version"] = _score_ver
 
-            _write_cve_details(session, event_id, cve_details_row)
-            for technique_id, url in attack_links:
-                _write_attack_tag(session, event_id, technique_id, url)
-                attack_written += 1
+                    # Insert the event row with RETURNING id so we can link child rows.
+                    # ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING matches
+                    # the 3-column unique index from migration 002 (TimescaleDB hypertable).
+                    stmt = (
+                        pg_insert(Event.__table__)
+                        .values(**event_row)
+                        .on_conflict_do_nothing(
+                            index_elements=["source_id", "content_hash", "observed_at"]
+                        )
+                        .returning(Event.__table__.c.id)
+                    )
+                    result_row = session.execute(stmt).fetchone()
+                    if result_row is None:
+                        # Conflict — row already exists; child rows already exist too.
+                        continue
+                    event_id = result_row[0]
+                    inserted += 1
+                    # Phase 16 MON-01: bump last_event_at after successful insert
+                    bump_last_event_at(session, source_id)
 
-            last_mod_dt = cve_details_row.get("last_modified")
-            if last_mod_dt is not None and (latest_mod is None or last_mod_dt > latest_mod):
-                latest_mod = last_mod_dt
+                    _write_cve_details(session, event_id, cve_details_row)
+                    for technique_id, url in attack_links:
+                        _write_attack_tag(session, event_id, technique_id, url)
+                        attack_written += 1
 
-        if latest_mod is not None:
-            cursor_iso = (latest_mod + timedelta(seconds=1)).isoformat()
-            _advance_cursor(session, source_id, cursor_iso)
+                    last_mod_dt = cve_details_row.get("last_modified")
+                    if last_mod_dt is not None and (latest_mod is None or last_mod_dt > latest_mod):
+                        latest_mod = last_mod_dt
 
-        update_source_health(session, source_id, status="ok", succeeded=True)
-        update_silent_failure_count(session, source_id, inserted)
-        session.commit()
+                    parse_ok += 1
+
+                except Exception as cve_err:  # noqa: BLE001
+                    parse_error += 1
+                    logger.error(
+                        "nvd_item_parse_failed source_id=%s cve_id=%s err=%s",
+                        source_id,
+                        getattr(cve, "id", "?"),
+                        cve_err,
+                    )
+
+            if latest_mod is not None:
+                cursor_iso = (latest_mod + timedelta(seconds=1)).isoformat()
+                _advance_cursor(session, source_id, cursor_iso)
+
+            update_source_health(session, source_id, status="ok", succeeded=True)
+            update_silent_failure_count(session, source_id, inserted)
+
+        finally:
+            try:
+                record_ingest_stats(session, source_id, parse_ok, parse_error, fetch_ok, fetch_error)
+                session.commit()
+            except Exception as stats_err:  # noqa: BLE001
+                logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
+
         logger.info(
             "nvd_poll_ok source_id=%s inserted=%d attack_tags=%d",
             source_id, inserted, attack_written,

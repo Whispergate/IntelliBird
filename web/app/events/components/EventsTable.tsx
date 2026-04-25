@@ -2,8 +2,10 @@
 
 import type { EventItem, TlpName } from "@/app/api-client";
 import { BrandProvenanceBadge } from "@/app/events/EventsClient";
+import { TierBadge } from "@/app/components/TierBadge";
 import { TypeBadge } from "@/app/sources/components/TypeBadge";
 import { formatRelativeTime } from "@/app/sources/lib/relativeTime";
+import { classifyTier } from "@/lib/scoring";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -145,6 +147,12 @@ export function EventsTable({ items, loading, onRowClick }: Props) {
                 {evt.source_type ? <TypeBadge feed_type={evt.source_type} /> : null}
                 {evt.source_type === "bbot" && <BbotProvenanceBadge event={evt} />}
                 {evt.source_type === "brand-monitor" && <BrandProvenanceBadge event={evt} />}
+                {evt.score != null && (
+                  <TierBadge
+                    tier={classifyTier(evt.score)}
+                    tooltip={`Tier ${classifyTier(evt.score)} — score ${evt.score.toFixed(1)}`}
+                  />
+                )}
               </div>
             </TableCell>
             <TableCell>

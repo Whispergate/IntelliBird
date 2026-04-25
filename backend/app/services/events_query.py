@@ -18,8 +18,10 @@ from sqlalchemy.sql.elements import ColumnElement
 
 from app.models.events import Event
 from app.models.markings import TlpMarking
+from app.models.scoring import EventScoreOverride
 from app.models.sources import Source
 from app.models.tags import AttackTechniqueTag
+from app.services.scoring.tiers import TIER_RANGES
 
 FeedType = Literal["rss", "taxii", "nvd"]
 TlpName = Literal["clear", "green", "amber", "amber+strict", "red"]
@@ -37,10 +39,91 @@ class EventsQueryParams:
     include_archived: bool = False
     has_geo: bool = False
     tag_mode: Literal["any", "all"] = "all"
+    sort: Literal["observed_desc", "score_desc", "score_asc"] | None = None
+    tier: list[str] | None = None
 
 
 class CursorError(ValueError):
     """Raised on malformed cursor input. Routers convert to HTTP 400."""
+
+
+def _build_score_expressions(
+    stmt: Select,
+    params: "EventsQueryParams",
+) -> tuple[Select, object | None]:
+    """Inject score sort and/or tier filter into stmt.
+
+    Returns (modified_stmt, current_score_expr_or_None).
+
+    The lateral scalar subquery for the latest override score is built once and
+    reused across both the ORDER BY and the WHERE tier clause so Postgres only
+    evaluates it once per row in the plan.
+
+    Decay formula: COALESCE(override, events.score, 0) * power(2, -age_days/14)
+    Age uses COALESCE(scored_at, observed_at) so pre-scored and unscored rows
+    both participate correctly. Unscored rows (score IS NULL) coalesce to 0
+    and sort to the bottom of score_desc (consistent with tier D treatment).
+
+    SCR-05 / plan 15-05.
+    """
+    needs_score = bool(params.sort in ("score_desc", "score_asc") or params.tier)
+    if not needs_score:
+        return stmt, None
+
+    # Lateral scalar subquery — latest override score for this event.
+    override_subq = (
+        select(EventScoreOverride.score)
+        .where(EventScoreOverride.event_id == Event.id)
+        .order_by(EventScoreOverride.score_version.desc())
+        .limit(1)
+        .correlate(Event)
+        .scalar_subquery()
+    )
+
+    # COALESCE: prefer override, then base score, then 0 (unscored = tier D).
+    current_score_expr = sa.func.coalesce(
+        override_subq,
+        Event.score,
+        sa.literal(0.0),
+    )
+
+    # Age in days from scored_at (or observed_at for unscored rows).
+    age_days_expr = (
+        sa.func.extract(
+            "epoch",
+            sa.func.now() - sa.func.coalesce(Event.scored_at, Event.observed_at),
+        )
+        / sa.literal(86400.0)
+    )
+    decay_expr = sa.func.power(sa.literal(2.0), -age_days_expr / sa.literal(14.0))
+    decayed_score = current_score_expr * decay_expr
+
+    # Tier filter — applied BEFORE order_by so the WHERE composes correctly
+    # with the scope predicate already in stmt.
+    if params.tier:
+        tier_clauses = []
+        for t in params.tier:
+            lo, hi = TIER_RANGES[t]  # KeyError if invalid tier label — expected
+            tier_clauses.append(
+                sa.and_(current_score_expr >= lo, current_score_expr <= hi)
+            )
+        stmt = stmt.where(sa.or_(*tier_clauses))
+
+    # Sort — replaces the default observed_at DESC order.
+    if params.sort == "score_desc":
+        stmt = stmt.order_by(
+            decayed_score.desc(),
+            Event.observed_at.desc(),
+            Event.id.desc(),
+        )
+    elif params.sort == "score_asc":
+        stmt = stmt.order_by(
+            decayed_score.asc(),
+            Event.observed_at.desc(),
+            Event.id.desc(),
+        )
+
+    return stmt, current_score_expr
 
 
 def encode_cursor(observed_at: datetime, event_id: uuid.UUID) -> str:
@@ -149,7 +232,13 @@ def build_events_query(
         if scope_predicate is not None:
             stmt = stmt.where(scope_predicate)
 
-    stmt = stmt.order_by(Event.observed_at.desc(), Event.id.desc())
+    # SCR-05: score sort + tier filter — injected via shared helper so the
+    # lateral subquery is defined exactly once per Select.  The helper also
+    # adds the ORDER BY when sort is score_desc/score_asc; the default
+    # observed_at DESC is added only when no score sort was requested.
+    stmt, _score_expr = _build_score_expressions(stmt, params)
+    if params.sort not in ("score_desc", "score_asc"):
+        stmt = stmt.order_by(Event.observed_at.desc(), Event.id.desc())
     return stmt
 
 
@@ -257,7 +346,12 @@ def build_fts_query(
         if scope_predicate is not None:
             stmt = stmt.where(scope_predicate)
 
-    stmt = stmt.order_by(rank_col.desc(), Event.observed_at.desc(), Event.id.desc())
+    # SCR-05: score sort + tier filter — same helper as build_events_query.
+    # FTS path: when score sort requested, score ordering replaces rank ordering.
+    # Tier filter is always applied when tier is set regardless of sort choice.
+    stmt, _score_expr = _build_score_expressions(stmt, params)
+    if params.sort not in ("score_desc", "score_asc"):
+        stmt = stmt.order_by(rank_col.desc(), Event.observed_at.desc(), Event.id.desc())
     return stmt
 
 

@@ -357,6 +357,106 @@ async def test_list_no_project_id_rejects_non_admin(two_project_fixture, db_sess
 
 
 @pytest.mark.asyncio
+async def test_score_filter_no_leakage(two_project_fixture, db_session, monkeypatch):
+    """SCR-03 PROD-01 extension: a score override in Project A does NOT bleed
+    into Project B's tier-filtered query.
+
+    Setup:
+      - Insert one event_score_overrides row for the FIRST event in Project A
+        with score=95.0 (S tier), score_version=2. This makes that event S-tier
+        when Project A scores are consulted.
+      - Project B events have no overrides (score IS NULL → coalesces to 0 → tier D).
+
+    Assertions:
+      a. GET /api/events?project_id=A&tier=S with jwt_a  → 200, that event id present.
+      b. GET /api/events?project_id=B&tier=S with jwt_b  → 200, zero events (no B-scope
+         event qualifies S-tier; Project A's override does NOT bleed across).
+      c. GET /api/events?project_id=A with jwt_b         → 403 (existing PROD-01 path).
+
+    This test proves the tier filter flows through the build_scope_predicate chokepoint
+    (events.project_id scopes which events are returned; the override lateral subquery
+    only adds a score column — it cannot pull in Project B events).
+    """
+    _patch_auth(monkeypatch)
+    fx = two_project_fixture
+
+    # Seed permissive keyword scope so build_scope_predicate does not short-circuit
+    # to `false` for projects without scope rows (plan 13-01 SUMMARY §GAP note).
+    await _seed_permissive_scope(db_session, fx.project_a.id, "evt")
+    await _seed_permissive_scope(db_session, fx.project_b.id, "evt")
+
+    # Pick the first Project A event and insert an S-tier override for it.
+    scored_event_id = fx.events_a[0]
+    await db_session.execute(
+        text(
+            "INSERT INTO event_score_overrides "
+            "(event_id, project_id, score_version, score, scored_at) "
+            "VALUES (:eid, :pid, 2, 95.0, now())"
+        ),
+        {"eid": scored_event_id, "pid": fx.project_a.id},
+    )
+    await db_session.commit()
+
+    async with await _client() as c:
+        # (a) Project A scoped, tier=S — the S-tier event must appear.
+        r_a = await c.get(
+            "/api/events",
+            headers=_bearer(fx.jwt_a),
+            params={
+                "project_id": str(fx.project_a.id),
+                "tier": "S",
+                "limit": 200,
+            },
+        )
+        assert r_a.status_code == 200, (
+            f"Expected 200 for project_a tier=S query, got {r_a.status_code}: {r_a.text}"
+        )
+        returned_a_ids = {item["id"] for item in r_a.json()["items"]}
+        assert str(scored_event_id) in returned_a_ids, (
+            f"SCR-03: S-tier event {scored_event_id} not returned in Project A tier=S query. "
+            f"Returned IDs: {returned_a_ids}"
+        )
+
+        # (b) Project B scoped, tier=S — must be empty (no Project B events are S-tier;
+        #     Project A's override cannot bleed across the project boundary).
+        r_b = await c.get(
+            "/api/events",
+            headers=_bearer(fx.jwt_b),
+            params={
+                "project_id": str(fx.project_b.id),
+                "tier": "S",
+                "limit": 200,
+            },
+        )
+        assert r_b.status_code == 200, (
+            f"Expected 200 for project_b tier=S query, got {r_b.status_code}: {r_b.text}"
+        )
+        returned_b_items = r_b.json()["items"]
+        assert len(returned_b_items) == 0, (
+            f"LEAK (SCR-03): Project B tier=S query returned {len(returned_b_items)} event(s) "
+            f"— Project A's override should NOT bleed into Project B scope. "
+            f"Returned IDs: {[i['id'] for i in returned_b_items]}"
+        )
+        # Defensive: Project A's scored event must not appear in Project B results.
+        b_ids = {item["id"] for item in returned_b_items}
+        assert str(scored_event_id) not in b_ids, (
+            f"LEAK (SCR-03): Project A's S-tier event {scored_event_id} appeared in "
+            f"Project B's tier=S response."
+        )
+
+        # (c) Cross-project access: Project B's JWT must NOT be able to query Project A.
+        r_cross = await c.get(
+            "/api/events",
+            headers=_bearer(fx.jwt_b),
+            params={"project_id": str(fx.project_a.id), "limit": 200},
+        )
+        assert r_cross.status_code == 403, (
+            f"LEAK (PROD-01): jwt_b querying project_a returned {r_cross.status_code}, "
+            f"expected 403. Body: {r_cross.text}"
+        )
+
+
+@pytest.mark.asyncio
 async def test_list_no_project_id_admin_sees_all(two_project_fixture, db_session, monkeypatch):
     """Admin bypass regression lock: GET /api/events WITHOUT project_id must succeed for Admin callers.
 

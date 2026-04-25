@@ -14,7 +14,9 @@ import {
   type FeedType,
 } from "@/app/api-client";
 import { EventDetailDrawer } from "@/app/components/EventDetailDrawer";
+import { TierBadge } from "@/app/components/TierBadge";
 import { RoleProvider } from "@/app/lib/role-context";
+import { type Tier, TIER_COLORS, classifyTier } from "@/lib/scoring";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -95,6 +97,26 @@ export function BrandProvenanceBadge({ event }: { event: EventItem }) {
 }
 
 // ---------------------------------------------------------------------------
+// Sort value helpers — maps between Select value (hyphens) and URL param (underscores)
+// ---------------------------------------------------------------------------
+
+type SortValue = "observed_desc" | "score_desc" | "score_asc";
+
+/** Map from URL param string to Select internal value */
+const URL_TO_SORT: Record<string, SortValue> = {
+  observed_desc: "observed_desc",
+  score_desc: "score_desc",
+  score_asc: "score_asc",
+};
+
+/** Map from Select internal value to URL param string */
+const SORT_TO_URL: Record<SortValue, string> = {
+  observed_desc: "observed_desc",
+  score_desc: "score_desc",
+  score_asc: "score_asc",
+};
+
+// ---------------------------------------------------------------------------
 // URL ↔ filter helpers
 // ---------------------------------------------------------------------------
 
@@ -132,7 +154,11 @@ function parseFiltersFromSearchParams(sp: URLSearchParams): EventsQuery {
   return out;
 }
 
-function buildSearchParams(filter: EventsQuery): URLSearchParams {
+function buildSearchParams(
+  filter: EventsQuery,
+  sort?: SortValue,
+  tiers?: Set<Tier>,
+): URLSearchParams {
   const params = new URLSearchParams();
   for (const tlp of filter.tlp ?? []) params.append("tlp", tlp);
   for (const src of filter.source ?? []) params.append("source", src);
@@ -140,6 +166,8 @@ function buildSearchParams(filter: EventsQuery): URLSearchParams {
   for (const st of filter.source_type ?? []) params.append("source_type", st);
   if (filter.observed_from) params.set("observed_from", filter.observed_from);
   if (filter.observed_to) params.set("observed_to", filter.observed_to);
+  if (sort && sort !== "observed_desc") params.set("sort", SORT_TO_URL[sort]);
+  if (tiers && tiers.size > 0) params.set("tier", Array.from(tiers).join(","));
   return params;
 }
 
@@ -166,6 +194,8 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
 
   const [role, setRole] = useState<"red" | "blue" | undefined>(undefined);
   const [filter, setFilter] = useState<EventsQuery>({});
+  const [sortValue, setSortValue] = useState<SortValue>("observed_desc");
+  const [selectedTiers, setSelectedTiers] = useState<Set<Tier>>(new Set());
   const [includeBbot, setIncludeBbot] = useState(false);
   // Phase 12 / BRP-05: off-by-default toggle that unhides source_type='brand-monitor'
   // events in the main feed. Mirrors includeBbot placement / query-append pattern.
@@ -205,9 +235,32 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
     const parsed = parseFiltersFromSearchParams(searchParams);
     setFilter(parsed);
 
+    // Parse sort from URL — default to observed_desc
+    const urlSort = searchParams.get("sort") ?? "observed_desc";
+    const resolvedSort: SortValue =
+      (URL_TO_SORT[urlSort] as SortValue | undefined) ?? "observed_desc";
+    setSortValue(resolvedSort);
+
+    // Parse tier filter from URL — comma-separated e.g. "S,A"
+    const urlTier = searchParams.get("tier");
+    if (urlTier) {
+      const tierSet = new Set<Tier>(
+        urlTier.split(",").filter((t): t is Tier =>
+          (["S", "A", "B", "C", "D"] as string[]).includes(t),
+        ),
+      );
+      setSelectedTiers(tierSet);
+    } else {
+      setSelectedTiers(new Set());
+    }
+
     let cancelled = false;
     setLoading(true);
     setError(null);
+
+    // Build API query — include sort + tier params when set
+    const tierParam = urlTier ?? "";
+    const apiSort = urlSort !== "observed_desc" ? urlSort : undefined;
 
     listEvents(
       {
@@ -215,6 +268,8 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         limit: parsed.limit ?? 50,
         ...(includeBbot ? { include_bbot: true } : {}),
         ...(includeBrandMatch ? ({ include_brand_match: true } as Partial<EventsQuery>) : {}),
+        ...(apiSort ? ({ sort: apiSort } as Partial<EventsQuery>) : {}),
+        ...(tierParam ? ({ tier: tierParam } as Partial<EventsQuery>) : {}),
       },
       role,
     )
@@ -249,7 +304,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
 
   function applyPreset(preset: FilterPreset) {
     const merged: EventsQuery = { ...(preset.query_params as EventsQuery) };
-    const params = buildSearchParams(merged);
+    const params = buildSearchParams(merged, sortValue, selectedTiers);
     const qs = params.toString();
     router.replace(qs ? `/events?${qs}` : "/events");
   }
@@ -260,7 +315,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
     if (existing.includes(tag)) return;
     current.tag = [...existing, tag];
     const eventId = searchParams.get("event");
-    const params = buildSearchParams(current);
+    const params = buildSearchParams(current, sortValue, selectedTiers);
     if (eventId) params.set("event", eventId);
     const qs = params.toString();
     router.replace(qs ? `/events?${qs}` : "/events");
@@ -282,14 +337,14 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
 
     // Preserve ?event= param if present
     const eventId = searchParams.get("event");
-    const params = buildSearchParams(current);
+    const params = buildSearchParams(current, sortValue, selectedTiers);
     if (eventId) params.set("event", eventId);
     const qs = params.toString();
     router.replace(qs ? `/events?${qs}` : "/events");
   }
 
   function handleRowClick(id: string) {
-    const params = buildSearchParams(filter);
+    const params = buildSearchParams(filter, sortValue, selectedTiers);
     params.set("event", encodeURIComponent(id));
     router.replace(`/events?${params.toString()}`);
   }
@@ -302,7 +357,34 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
       delete current[key];
     }
     const eventId = searchParams.get("event");
-    const params = buildSearchParams(current);
+    const params = buildSearchParams(current, sortValue, selectedTiers);
+    if (eventId) params.set("event", eventId);
+    const qs = params.toString();
+    router.replace(qs ? `/events?${qs}` : "/events");
+  }
+
+  function handleSortChange(newSort: string) {
+    const resolved = (URL_TO_SORT[newSort] ?? "observed_desc") as SortValue;
+    setSortValue(resolved);
+    const current = parseFiltersFromSearchParams(searchParams);
+    const eventId = searchParams.get("event");
+    const params = buildSearchParams(current, resolved, selectedTiers);
+    if (eventId) params.set("event", eventId);
+    const qs = params.toString();
+    router.replace(qs ? `/events?${qs}` : "/events");
+  }
+
+  function toggleTier(tier: Tier) {
+    const next = new Set(selectedTiers);
+    if (next.has(tier)) {
+      next.delete(tier);
+    } else {
+      next.add(tier);
+    }
+    setSelectedTiers(next);
+    const current = parseFiltersFromSearchParams(searchParams);
+    const eventId = searchParams.get("event");
+    const params = buildSearchParams(current, sortValue, next);
     if (eventId) params.set("event", eventId);
     const qs = params.toString();
     router.replace(qs ? `/events?${qs}` : "/events");
@@ -318,8 +400,10 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
     (filter.tag?.length ?? 0) > 0 ||
     (filter.source_type?.length ?? 0) > 0 ||
     !!filter.observed_from ||
-    !!filter.observed_to;
+    !!filter.observed_to ||
+    selectedTiers.size > 0;
 
+  const hasTierFilter = selectedTiers.size > 0;
   const showEmpty = !loading && !error && events.length === 0;
   const showError = !loading && !!error;
 
@@ -334,7 +418,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
       </div>
 
       {/* Quick tag filters — click to add to filter set*/}
-      <div style={{ marginBottom: "1.5rem" }} className="flex flex-col gap-1">
+      <div style={{ marginBottom: "0.75rem" }} className="flex flex-col gap-1">
         <span className="brand-caption text-[10px] text-muted-foreground" style={{ letterSpacing: "0.12em" }}>
           Quick filters
         </span>
@@ -362,6 +446,54 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
                 }}
               >
                 {active ? "✓ " : "+"}{t}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Tier filter chip row — multi-select, OR semantics, URL-synced via ?tier=S,A */}
+      <div style={{ marginBottom: "1.5rem" }} className="flex flex-col gap-1" data-testid="tier-filter-row">
+        <span className="brand-caption text-muted-foreground" style={{ letterSpacing: "0.12em" }}>
+          Tier
+        </span>
+        <div className="flex flex-wrap gap-1" data-testid="tier-chips">
+          {(["S", "A", "B", "C", "D"] as const).map((tier) => {
+            const active = selectedTiers.has(tier);
+            const colors = TIER_COLORS[tier];
+            return (
+              <button
+                key={tier}
+                type="button"
+                onClick={() => toggleTier(tier)}
+                data-testid={`tier-chip-${tier}`}
+                aria-pressed={active}
+                className="brand-caption inline-flex items-center rounded-md border px-2 py-1 cursor-pointer text-xs"
+                style={
+                  active
+                    ? {
+                        borderStyle: "solid",
+                        // inline hex equivalents matching TIER_COLORS Tailwind class tokens
+                        borderColor:
+                          tier === "S" ? "#ef4444"
+                          : tier === "A" ? "#f97316"
+                          : tier === "B" ? "#eab308"
+                          : tier === "C" ? "#60a5fa"
+                          : "#888780",
+                      }
+                    : {
+                        borderColor: "#0F6E56",
+                        backgroundColor: "transparent",
+                        color: "#888780",
+                        borderStyle: "dashed",
+                      }
+                }
+              >
+                {active ? (
+                  <TierBadge tier={tier} />
+                ) : (
+                  tier
+                )}
               </button>
             );
           })}
@@ -400,6 +532,23 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
             onChange={(e) => handleDateChange("observed_to", e.target.value)}
             className="h-8 rounded border border-input bg-transparent px-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           />
+        </div>
+
+        {/* Sort selector — includes score sort options per UI-SPEC §Surface 2 */}
+        <div style={{ width: 180 }}>
+          <Select
+            value={sortValue}
+            onValueChange={handleSortChange}
+          >
+            <SelectTrigger aria-label="Sort events" className="h-8 text-sm">
+              <SelectValue placeholder="Sort by..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="observed_desc">Newest first</SelectItem>
+              <SelectItem value="score_desc">Score: High → Low</SelectItem>
+              <SelectItem value="score_asc">Score: Low → High</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Preset selector*/}
@@ -488,6 +637,8 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
             onClick={() => {
               setError(null);
               setLoading(true);
+              const apiSort = sortValue !== "observed_desc" ? sortValue : undefined;
+              const tierParam = selectedTiers.size > 0 ? Array.from(selectedTiers).join(",") : undefined;
               listEvents(
                 {
                   ...filter,
@@ -496,6 +647,8 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
                   ...(includeBrandMatch
                     ? ({ include_brand_match: true } as Partial<EventsQuery>)
                     : {}),
+                  ...(apiSort ? ({ sort: apiSort } as Partial<EventsQuery>) : {}),
+                  ...(tierParam ? ({ tier: tierParam } as Partial<EventsQuery>) : {}),
                 },
                 role,
               )
@@ -521,10 +674,12 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
             className="brand-heading text-foreground"
             style={{ fontSize: 22, fontWeight: 500 }}
           >
-            No events match your filters.
+            {hasTierFilter ? "No events match this tier" : "No events match your filters."}
           </h2>
           <p className="text-muted-foreground" style={{ fontSize: 16 }}>
-            Try removing a filter or registering additional sources.
+            {hasTierFilter
+              ? "Try removing the tier filter or adjusting score thresholds in the project scoring config."
+              : "Try removing a filter or registering additional sources."}
           </p>
           <Button variant="ghost" size="sm" onClick={resetFilters}>
             Clear filters

@@ -24,6 +24,8 @@ import {
 import { TagEditor } from "./TagEditor";
 import { DrawerNav } from "./DrawerNav";
 import { AttackGraph } from "./AttackGraph";
+import { TierBadge } from "./TierBadge";
+import { classifyTier, currentScore } from "@/lib/scoring";
 
 // ---------------------------------------------------------------------------
 // TLP badge (inline — no separate file required for a single-use primitive)
@@ -239,6 +241,59 @@ export function EventDetailDrawer({
             >
               <p className="brand-caption text-muted-foreground mb-2">TAGS</p>
               <TagEditor eventId={event.id} initialTags={event.tags} />
+            </section>
+
+            {/* Section 3b — Score (visible only when score is non-null; hidden for pre-migration events) */}
+            <section
+              data-testid="drawer-section-score"
+              className="p-4 border-b"
+            >
+              <p className="brand-caption text-muted-foreground mb-2">SCORE</p>
+              {event.score != null && event.scored_at != null ? (
+                <dl className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <dt className="brand-caption text-muted-foreground w-28 shrink-0">Tier</dt>
+                    <dd>
+                      <TierBadge tier={classifyTier(event.score)} />
+                    </dd>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <dt className="brand-caption text-muted-foreground w-28 shrink-0">Base score</dt>
+                    <dd className="text-xs font-mono text-foreground">{event.score.toFixed(1)}</dd>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <dt className="brand-caption text-muted-foreground w-28 shrink-0">Current score</dt>
+                    <dd className="flex items-center gap-1">
+                      <span className="text-xs font-mono text-muted-foreground">
+                        {currentScore(event.score, event.scored_at).toFixed(1)}
+                      </span>
+                      <span className="brand-caption text-muted-foreground">(decay-adjusted)</span>
+                    </dd>
+                  </div>
+                  {event.score_version != null && (
+                    <div className="flex items-center gap-2">
+                      <dt className="brand-caption text-muted-foreground w-28 shrink-0">Score version</dt>
+                      <dd className="text-xs font-mono text-muted-foreground">v{event.score_version}</dd>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <dt className="brand-caption text-muted-foreground w-28 shrink-0">Scored at</dt>
+                    <dd className="text-xs text-muted-foreground">{formatRelativeTime(event.scored_at)}</dd>
+                  </div>
+                  {event.tags?.includes("burst_cluster") && (
+                    <div className="flex items-center gap-2">
+                      <dt className="brand-caption text-muted-foreground w-28 shrink-0">Suppressed</dt>
+                      <dd>
+                        <span className="brand-caption text-orange-300">
+                          Suppressed — burst cluster in 1h window
+                        </span>
+                      </dd>
+                    </div>
+                  )}
+                </dl>
+              ) : (
+                <p className="text-xs text-muted-foreground">Score not yet computed.</p>
+              )}
             </section>
 
             {/* Section 4 — ATT&CK techniques*/}

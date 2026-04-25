@@ -52,3 +52,5 @@ from app.workers import webhook_dispatcher_actor  # noqa: E402,F401 — HOOK-02
 from app.workers import easm  # noqa: E402,F401
 # Register Brand Protection actor (Phase 12 / BRP-02)
 from app.workers import brand  # noqa: E402,F401
+# Register Scoring rescore actor (Phase 15 / SCR-02)
+from app.workers import scoring  # noqa: E402,F401
