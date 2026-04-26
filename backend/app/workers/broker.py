@@ -54,3 +54,7 @@ from app.workers import easm  # noqa: E402,F401
 from app.workers import brand  # noqa: E402,F401
 # Register Scoring rescore actor (Phase 15 / SCR-02)
 from app.workers import scoring  # noqa: E402,F401
+# Register AI actors (Phase 17 / AI-02,AI-06,AI-07 + Phase 18 / AI-08) — ai queue
+from app.workers import ai  # noqa: E402,F401
+# Register TIBER report export actor (Phase 18 / TIBER-03) — reports queue
+from app.workers import reports  # noqa: E402,F401

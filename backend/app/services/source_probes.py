@@ -57,6 +57,10 @@ def _probe_html_scrape(
 
     Validates the scrape_config, fetches the URL with a 10s timeout, runs the
     selectors, and returns (ok, latency_ms, item_count_sampled, error_detail).
+
+    Supports {mode: 'auto'} (quick task 260426-aas) for selectorless probing —
+    the underlying ``normalise_scrape_entries`` dispatches to trafilatura-based
+    auto-discovery when the mode flag is set.
     """
     from app.ingest.html_scrape_parser import (  # noqa: PLC0415
         fetch_html,

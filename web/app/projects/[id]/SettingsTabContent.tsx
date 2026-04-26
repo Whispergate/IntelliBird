@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/select";
 import { EASMGateForm } from "./components/EASMGateForm";
 import type { EASMGateProject } from "./components/EASMGateForm";
+import { AIProviderCard } from "./settings/AIProviderCard";
 
 const ENGAGEMENT_OPTIONS: ReadonlyArray<{
   value: EngagementType;
@@ -60,10 +61,14 @@ const ENGAGEMENT_OPTIONS: ReadonlyArray<{
   { value: "intel_only", label: "Intel-only" },
 ] as const;
 
+type OllamaHealth = "healthy" | "slow" | "down" | "unknown";
+
 export function SettingsTabContent({
   project: initialProject,
+  ollamaHealth = "unknown",
 }: {
   project: ProjectResponse;
+  ollamaHealth?: OllamaHealth;
 }) {
   const { data: session } = useSession();
   // Track live project state so gate changes (PATCH/DELETE) refresh the card
@@ -282,6 +287,14 @@ export function SettingsTabContent({
           /projects.
         </p>
       </section>
+
+      {/* AI Provider card — Admin only */}
+      {userIsLeadOrAdmin && (
+        <AIProviderCard
+          projectId={liveProject.id}
+          ollamaHealth={ollamaHealth}
+        />
+      )}
     </div>
   );
 }

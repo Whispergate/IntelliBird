@@ -25,6 +25,13 @@ from app.models.sources import (  # noqa: F401  — Phase 16 / MON-01, MON-03
     Source,
     SourceIngestStats,
 )
+from app.models.tiber import (  # noqa: F401  — Phase 18 / TIBER-01..03, AI-08
+    TiberReport,
+    TiberActorProfile,
+    TiberScenario,
+    ProjectTiberState,
+    ReportExport,
+)
 
 __all__ = [
     "Base",

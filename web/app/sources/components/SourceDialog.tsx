@@ -67,6 +67,8 @@ function defaultValuesFor(
       retention_preset: "standard",
       taxii_scheme: "none",
       enabled: true,
+      // Quick task 260426-aas: new custom sources default to auto-discovery.
+      scrape_mode: "auto",
     };
   }
 
@@ -125,6 +127,15 @@ function defaultValuesFor(
     scrape_date_format: sc?.date_format ?? "",
     scrape_summary_selector: sc?.summary_selector ?? "",
     scrape_max_items: sc?.max_items,
+    // Quick task 260426-aas: derive mode from saved row. Pre-260426 rows have
+    // selectors but no `mode` key — show those as Manual to preserve operator
+    // mental model.
+    scrape_mode:
+      sc?.mode === "auto"
+        ? "auto"
+        : sc?.mode === "manual"
+        ? "manual"
+        : "manual",
   };
 }
 
@@ -269,15 +280,17 @@ export function SourceDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] flex flex-col p-0 gap-0">
         <FormProvider {...form}>
           <form
             onSubmit={handleSubmit(onSubmitForm)}
-            className="flex flex-col gap-4"
+            className="flex flex-col min-h-0 flex-1"
           >
-            <DialogHeader>
+            <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
               <DialogTitle>{title}</DialogTitle>
             </DialogHeader>
+
+            <div className="flex flex-col gap-4 overflow-y-auto px-6 py-4 min-h-0 flex-1">
 
             {/* Quick-add template picker — only visible in Add mode, hidden if no templates*/}
             {mode === "add" && templates.length > 0 && (
@@ -433,7 +446,9 @@ export function SourceDialog({
               </Alert>
             )}
 
-            <DialogFooter className="flex gap-2">
+            </div>
+
+            <DialogFooter className="flex gap-2 px-6 py-4 border-t shrink-0">
               <Button type="button" variant="ghost" onClick={onClose}>
                 Cancel
               </Button>

@@ -23,9 +23,13 @@ export type FeedType =
  * hard-caps max_items at 200.
  */
 export type ScrapeConfig = {
-  item_selector: string;
-  title_selector: string;
-  link_selector: string;
+  // Quick task 260426-aas: "auto" mode omits selectors (trafilatura discovery);
+  // "manual" mode requires item/title/link selectors. Absent mode = legacy
+  // manual rows shipped 2026-04-25.
+  mode?: "auto" | "manual";
+  item_selector?: string;
+  title_selector?: string;
+  link_selector?: string;
   date_selector?: string;
   date_format?: string;
   summary_selector?: string;
@@ -141,6 +145,22 @@ export type TestWebhookResult = components["schemas"]["TestSendResponse"];
 export type RekeyResponse = components["schemas"]["RekeyResponse"];
 export type EventCount = components["schemas"]["EventCountResponse"];
 
+// AI suggestion row (Phase 17 / AI-08). Mirrors backend
+// app/schemas/ai.py::AISuggestionRead. Inlined here pending
+// api-client.generated.ts regen.
+export type AISuggestionRead = {
+  id: string;
+  ai_summary_id: string;
+  project_id: string;
+  event_id: string | null;
+  suggestion_type: "cve" | "attack" | "actor";
+  value: string;
+  status: "pending" | "confirmed" | "discarded";
+  created_at: string;
+  decided_at: string | null;
+  decided_by_user_id: string | null;
+};
+
 // ============================================================
 // UI-only types (not in OpenAPI schema — frontend shapes only)
 // ============================================================
@@ -200,7 +220,7 @@ const SERVER_API_BASE =
  * `invalid_token` because the backend never sees the cookie that would
  * have authenticated the proxy hop.
  */
-async function _apiFetch(path: string, init?: RequestInit): Promise<Response> {
+export async function _apiFetch(path: string, init?: RequestInit): Promise<Response> {
   if (typeof window !== "undefined") {
     return fetch(path, init);
   }

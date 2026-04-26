@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScoreHistogram, type HistogramBucket } from "./components/ScoreHistogram";
+import { AIRerankCard } from "./AIRerankCard";
 
 // ---------------------------------------------------------------------------
 // Types matching backend schemas/scoring.py
@@ -129,7 +130,13 @@ function buildBuckets(scores: (number | null)[]): HistogramBucket[] {
 // Component
 // ---------------------------------------------------------------------------
 
-export function ScoringTabContent({ projectId }: { projectId: string }) {
+export function ScoringTabContent({
+  projectId,
+  aiRerankEnabled = false,
+}: {
+  projectId: string;
+  aiRerankEnabled?: boolean;
+}) {
   // ---- Form state ----
   const [weights, setWeights] = useState<ScoringWeights>(DEFAULT_WEIGHTS);
   const [decayDays, setDecayDays] = useState<number>(DEFAULT_DECAY);
@@ -577,6 +584,11 @@ export function ScoringTabContent({ projectId }: { projectId: string }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Card 5 — AI Re-ranking (only when ai_rerank_enabled)                */}
+      {/* ------------------------------------------------------------------ */}
+      <AIRerankCard projectId={projectId} aiRerankEnabled={aiRerankEnabled} />
 
     </div>
   );

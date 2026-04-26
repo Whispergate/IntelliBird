@@ -36,6 +36,9 @@ from app.routers.admin.monitoring import router as admin_monitoring_router
 from app.routers.admin.rekey import router as admin_rekey_router
 from app.routers.admin.setup import router as admin_setup_router
 from app.routers.admin.users import router as admin_users_router
+from app.routers.ai import router as ai_router
+from app.routers.attack import router as attack_router
+from app.routers.admin.ai_health import router as admin_ai_health_router
 from app.routers.assets import router as assets_router
 from app.routers.auth import router as auth_router
 from app.routers.admin.sources import router as admin_sources_router
@@ -51,6 +54,7 @@ from app.routers.projects import router as projects_router
 from app.routers.projects import compare_router as projects_compare_router
 from app.routers.system import router as system_router
 from app.routers.tags import router as tags_router
+from app.routers.tiber import router as tiber_router
 from app.workers import broker as _broker  # noqa: F401 — registers actors
 
 configure_logging()
@@ -211,8 +215,13 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(easm_safelist_router, prefix="/api")
     fastapi_app.include_router(easm_router, prefix="/api")
     fastapi_app.include_router(brand_router, prefix="/api")
+    fastapi_app.include_router(attack_router, prefix="/api")
+    fastapi_app.include_router(ai_router, prefix="/api")
+    fastapi_app.include_router(admin_ai_health_router, prefix="/api")
     # Assets router has absolute prefix baked in (/api/projects/{id}/assets)
     fastapi_app.include_router(assets_router)
+    # TIBER report generation router — absolute prefix /api/projects/{id}/tiber
+    fastapi_app.include_router(tiber_router)
 
     return fastapi_app
 

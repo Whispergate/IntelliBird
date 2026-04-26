@@ -1,5 +1,11 @@
-# Owned by: 13-01-PLAN (PROD-01)
+# Owned by: 13-01-PLAN (PROD-01) + 18-01-PLAN (TIBER-04 leakage extension)
 """Integration regression tests for PROD-01 cross-project leakage.
+
+Tests below currently fail (red) until 18-03-PLAN service layer ships — H-4 leakage
+gate per ROADMAP. The three test_tiber_* functions at the bottom of this file are the
+Wave 0 red baseline: they import from app.services.tiber.auto_populate which does not
+yet exist. They MUST fail today with ImportError/ModuleNotFoundError and MUST pass
+after Wave 3 (18-03-PLAN) ships the TIBER service layer.
 
 Proves Project A-scoped callers cannot observe Project B data through the four
 surfaces mandated by 13-01-PLAN:
@@ -520,3 +526,135 @@ async def test_list_no_project_id_admin_sees_all(two_project_fixture, db_session
         "Admin bypass broken: no Project B events returned in all-projects query. "
         f"Returned IDs: {returned_ids!r}"
     )
+
+
+# ---------------------------------------------------------------------------
+# TIBER-04 / H-4: TIBER auto-populate leakage gates (Wave 0 RED baseline)
+#
+# These three tests MUST FAIL today with ImportError — app.services.tiber.auto_populate
+# does not yet exist. They will turn green after Wave 3 (18-03-PLAN) ships.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_tiber_threat_landscape_no_leakage(two_project_fixture, db_session, monkeypatch):
+    """TIBER-04 / H-4: populate_threat_landscape scoped to Project A returns zero Project B events.
+
+    Exercises the build_scope_predicate chokepoint through the TIBER auto-populate
+    layer. Every row in tl_top_events must carry project_id == project_a.
+
+    RED until 18-03-PLAN: will fail with ImportError on auto_populate import today.
+
+    Seed: existing two_project_fixture seeds 20 events per project with shared T1566.
+    A permissive keyword='evt' scope row is added so build_scope_predicate does not
+    short-circuit to `false` (empty scope → empty result → vacuous pass; per project_scope.py L182).
+    """
+    # RED SIGNAL: This import will fail until Wave 3 ships the service layer.
+    from app.services.tiber.auto_populate import populate_threat_landscape  # noqa: F401 — intentional ImportError
+
+    _patch_auth(monkeypatch)
+    fx = two_project_fixture
+    project_a = fx.project_a.id
+    project_b = fx.project_b.id
+
+    # Seed permissive keyword scope for project_a
+    await _seed_permissive_scope(db_session, project_a, "evt")
+
+    rows = await populate_threat_landscape(db_session, project_id=project_a, top_n=20)
+
+    # Every returned row must belong to project_a
+    leaked_projects = {str(r.project_id) for r in rows if str(r.project_id) != str(project_a)}
+    assert len(leaked_projects) == 0, (
+        f"LEAK (TIBER-04): populate_threat_landscape returned events from wrong projects: "
+        f"{leaked_projects}. All events must be scoped to project_a={project_a}."
+    )
+    # Defensive: no project_b id must appear
+    b_ids_in_rows = {str(r.project_id) for r in rows} - {str(project_a)}
+    assert str(project_b) not in b_ids_in_rows, (
+        f"LEAK (TIBER-04): Project B events appeared in Project A threat landscape: "
+        f"found project_ids={b_ids_in_rows}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_tiber_actor_profiles_no_leakage(two_project_fixture, db_session, monkeypatch):
+    """TIBER-04 / H-4: populate_actor_profiles scoped to Project A returns zero Project B actors.
+
+    Exercises the graph_traversal.py AGE Cypher path: actor traversal must be
+    bounded by project_id so actors whose source events belong to Project B are
+    excluded from Project A's TIBER report.
+
+    RED until 18-03-PLAN: will fail with ImportError on auto_populate import today.
+
+    Cross-check: actor.source_event_ids must not intersect fx.events_b (Project B
+    event IDs seeded by two_project_fixture).
+    """
+    # RED SIGNAL: This import will fail until Wave 3 ships the service layer.
+    from app.services.tiber.auto_populate import populate_actor_profiles  # noqa: F401 — intentional ImportError
+
+    _patch_auth(monkeypatch)
+    fx = two_project_fixture
+    project_a = fx.project_a.id
+    project_b_event_ids = {str(eid) for eid in fx.events_b}
+
+    actors = await populate_actor_profiles(db_session, project_id=project_a, top_n=6)
+
+    for actor in actors:
+        source_ids = {str(eid) for eid in getattr(actor, "source_event_ids", [])}
+        leaked = source_ids & project_b_event_ids
+        assert len(leaked) == 0, (
+            f"LEAK (TIBER-04): Actor '{getattr(actor, 'name', actor)}' in Project A profile "
+            f"has source_event_ids from Project B: {leaked}. "
+            "graph_traversal must scope :SEEN_IN edges to project_id."
+        )
+
+
+@pytest.mark.asyncio
+async def test_tiber_scenarios_longlist_no_leakage(two_project_fixture, db_session, monkeypatch):
+    """TIBER-04 / H-4: populate_scenarios_longlist scoped to Project A contains <=6 rows.
+
+    Each scenario in the longlist must reference attack_technique_ids that were
+    observed in at least one Project A event. TTPs seen only in Project B events
+    must not appear in the Project A scenario longlist.
+
+    RED until 18-03-PLAN: will fail with ImportError on auto_populate import today.
+
+    Validation:
+      - count <= 6 (max longlist per CONTEXT.md §Scenario count gate)
+      - every scenario.attack_technique_id appears in
+        SELECT DISTINCT technique_id FROM event_attack_techniques WHERE event_id IN
+        (SELECT id FROM events WHERE project_id = project_a)
+    """
+    # RED SIGNAL: This import will fail until Wave 3 ships the service layer.
+    from app.services.tiber.auto_populate import populate_scenarios_longlist  # noqa: F401 — intentional ImportError
+
+    from sqlalchemy import text
+
+    _patch_auth(monkeypatch)
+    fx = two_project_fixture
+    project_a = fx.project_a.id
+
+    scenarios = await populate_scenarios_longlist(db_session, project_id=project_a, max_count=6)
+
+    assert len(scenarios) <= 6, (
+        f"TIBER-04: scenarios longlist returned {len(scenarios)} rows, max is 6."
+    )
+
+    # Fetch the set of technique_ids actually seen in Project A events
+    result = await db_session.execute(
+        text(
+            "SELECT DISTINCT technique_id FROM event_attack_techniques "
+            "WHERE event_id IN (SELECT id FROM events WHERE project_id = :pid)"
+        ),
+        {"pid": project_a},
+    )
+    project_a_techniques = {row[0] for row in result.fetchall()}
+
+    for scenario in scenarios:
+        technique_id = getattr(scenario, "attack_technique_id", None)
+        if technique_id is not None and project_a_techniques:
+            assert technique_id in project_a_techniques, (
+                f"LEAK (TIBER-04): scenario technique {technique_id!r} was not observed "
+                f"in any Project A event. Only Project B has this TTP — cross-project leak. "
+                f"Project A techniques: {project_a_techniques}"
+            )

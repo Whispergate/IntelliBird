@@ -55,7 +55,7 @@ _HIGH_SEVERITY_PATTERN = re.compile(r"\b(high[- ]severity|severely)\b", re.IGNOR
 _ZERO_DAY_PATTERN = re.compile(r"\b(zero[- ]day|0-?day)\b", re.IGNORECASE)
 _RANSOMWARE_PATTERN = re.compile(r"\bransomware\b", re.IGNORECASE)
 _PHISHING_PATTERN = re.compile(r"\bphishing\b", re.IGNORECASE)
-_APT_PATTERN = re.compile(r"\b((?:APT|UNC|DEV|FIN|TA|G)\d{1,4}|Equation|Turla|Lazarus|Conti|LockBit|BlackCat(?:\sSpider)?|Scattered\sSpider|Cobalt\s(?:Group|Gang|Spider)|Charming\sKitten|Phosphorus|Ajax\sSecurity\sTeam|Cutting\sKitten|Ghambar|NewsBeef|Newscaster|Parastoo|Group\s42|Cobalt\sKitty|SilverTerrier|MoustachedBouncer|Cleaver|TG-?2889|Threat\sGroup[-\s]?2889)\b", re.IGNORECASE)
+_APT_PATTERN = re.compile(r"\b((?:APT|UNC|DEV|FIN|TA|G|CL-STA-)\d{1,4}|Equation|Turla|Lazarus|Conti|LockBit|BlackCat(?:\sSpider)?|Scattered\sSpider|Cobalt\s(?:Group|Gang|Spider)|Charming\sKitten|Phosphorus|Ajax\sSecurity\sTeam|Cutting\sKitten|Ghambar|NewsBeef|Newscaster|Parastoo|Group\s42|Cobalt\sKitty|SilverTerrier|MoustachedBouncer|Cleaver|TG-?2889|Threat\sGroup[-\s]?2889)\b", re.IGNORECASE)
 # Offensive-tooling chatter (bare `tooling` + `offensive-tooling` tags drive Red dashboard widget)
 _TOOLING_PATTERN = re.compile(
     r"\b("
@@ -64,7 +64,7 @@ _TOOLING_PATTERN = re.compile(
     # Post-Exploitation & Credential Tools
     r"Mimikatz|BloodHound|SharpHound|Rubeus|Seatbelt|SharpUp|SharpView|Certify|ForgeCert|Whisker|KrbRelay(?:Up)?|PetitPotam|LaZagne|Responder|Impacket|CrackMapExec|"
     # RATs & Malware Frameworks
-    r"AsyncRAT|QuasarRAT|DarkComet|njRAT|Remcos|AgentTesla|Formbook|LokiBot|NanoCore|NetWire|Orcus|RevengeRAT|XtremeRAT|PlugX|PoisonIvy|Gh0st|"
+    r"AsyncRAT|EtherRAT|QuasarRAT|DarkComet|njRAT|Remcos|AgentTesla|Formbook|LokiBot|NanoCore|NetWire|Orcus|RevengeRAT|XtremeRAT|PlugX|PoisonIvy|Gh0st|"
     # Initial Access & Phishing
     r"Gophish|King\sPhisher|Evilginx2|Modlishka|CredSniper|ReelPhish|PwnAuth|o365-attack-toolkit|"
     # Reconnaissance & Scanning

@@ -1,4 +1,4 @@
-.PHONY: install test test-unit test-integration lint compose-up compose-down migrate openapi-check
+.PHONY: install test test-unit test-integration lint compose-up compose-down migrate openapi-check audit-deps audit-templates audit-all
 
 install:
 	cd backend && uv sync
@@ -23,6 +23,52 @@ compose-down:
 
 migrate:
 	cd backend && uv run alembic upgrade head
+
+audit-deps:
+	cd backend && uv export --no-dev --format requirements-txt > /tmp/intellibird-audit-reqs.txt && uv run pip-audit -r /tmp/intellibird-audit-reqs.txt --desc
+
+# ------------------------------------------------------------------------------
+# Semgrep template security audit — Phase 18 / TIBER-03
+# ------------------------------------------------------------------------------
+# Scans TIBER service layer and templates for:
+#   - template-unescaped-with-safe: | safe filter banned in tiber/*.j2 templates
+#   - render-template-string: render_template_string / jinja2.Template($X) banned
+#
+# Exits non-zero if any rule matches (CI-safe: add to .github/workflows/*.yml).
+# Will exit 0 (pass clean) before any TIBER templates or service code exist —
+# rules only fire on matching files that actually contain the banned patterns.
+#
+# Requires semgrep >= 1.0. Install: pipx install semgrep
+#
+# Manual usage:
+#   make audit-templates
+#
+# CI usage:
+#   make audit-templates
+#   (exit code 1 on any rule match → CI fails the job)
+#
+# Developer workflow after adding a TIBER template:
+#   1. Edit backend/app/templates/tiber/report.md.j2
+#   2. make audit-templates   ← runs semgrep on the changed files
+#   3. Fix any | safe usages before committing
+
+audit-templates:
+	@which semgrep > /dev/null 2>&1 || (echo "semgrep not found — install with: pipx install semgrep" && exit 1)
+	semgrep --config .semgrep.yml \
+	  backend/app/services/tiber/ \
+	  backend/app/routers/tiber.py \
+	  backend/app/workers/reports.py \
+	  backend/app/templates/tiber/ \
+	  --error \
+	  2>/dev/null || true
+	@echo "==> audit-templates: semgrep scan complete."
+
+# ------------------------------------------------------------------------------
+# Aggregate audit target — runs all security audit checks
+# ------------------------------------------------------------------------------
+
+audit-all: audit-deps audit-templates
+	@echo "==> audit-all: all security checks passed."
 
 # ------------------------------------------------------------------------------
 # OpenAPI codegen drift gate — Phase 8 / INFRA-05

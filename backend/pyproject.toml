@@ -24,13 +24,17 @@ dependencies = [
   "feedparser==6.0.12",
   "nvdlib>=0.8,<0.9",
   "cryptography>=42,<43",
+  "litellm>=1.83.0,<2",
   "lxml>=5,<6",
   "cssselect>=1.2,<2",
+  "trafilatura>=1.12,<2",
   "geoip2>=4.8,<5",
   "PyJWT>=2.12,<3",
   "pwdlib[argon2]>=0.2,<0.3",
   "authlib>=1.6,<2",
   "dnstwist>=20240219",
+  "weasyprint>=62,<70",
+  "mistune>=3.0,<4",
 ]
 
 [dependency-groups]

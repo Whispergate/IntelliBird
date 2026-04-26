@@ -105,6 +105,21 @@ class Project(Base):
         Integer, nullable=False, server_default=text("90"), default=90,
     )
 
+    # Phase 17 / AI-01: AI feature flags + token budget + digest schedule.
+    # Migration 014_ai adds these columns. All have server-side defaults.
+    ai_digest_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false"), default=False,
+    )
+    ai_rerank_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false"), default=False,
+    )
+    ai_daily_token_cap: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("100000"), default=100000,
+    )
+    digest_schedule_cron: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default=text("'0 6 * * *'"), default="0 6 * * *",
+    )
+
     # Phase 11 EASM relationship
     easm_scans = relationship(
         "EASMScan",

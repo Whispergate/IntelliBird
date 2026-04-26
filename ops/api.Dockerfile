@@ -32,7 +32,13 @@ RUN uv sync --no-dev --locked
 FROM python:3.12-slim-bookworm
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl docker.io \
+    && apt-get install -y --no-install-recommends \
+        curl \
+        docker.io \
+        libpango-1.0-0 \
+        libharfbuzz0b \
+        libfontconfig1 \
+        fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 1001 appgroup \
     && useradd --uid 1001 --gid appgroup --no-create-home appuser \

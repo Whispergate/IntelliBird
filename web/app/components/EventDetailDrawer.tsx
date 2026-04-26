@@ -25,6 +25,7 @@ import { TagEditor } from "./TagEditor";
 import { DrawerNav } from "./DrawerNav";
 import { AttackGraph } from "./AttackGraph";
 import { TierBadge } from "./TierBadge";
+import { AISummarySection } from "./AISummarySection";
 import { classifyTier, currentScore } from "@/lib/scoring";
 
 // ---------------------------------------------------------------------------
@@ -295,6 +296,9 @@ export function EventDetailDrawer({
                 <p className="text-xs text-muted-foreground">Score not yet computed.</p>
               )}
             </section>
+
+            {/* Section 3c — AI Summary */}
+            <AISummarySection eventId={event.id} />
 
             {/* Section 4 — ATT&CK techniques*/}
             <section

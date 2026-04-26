@@ -36,7 +36,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
-from app.middleware.auth import require_analyst_or_above, require_auth
+from app.middleware.auth import require_admin, require_analyst_or_above, require_auth
 from app.models.projects import (
     LEGACY_PROJECT_ID,
     Project,
@@ -47,6 +47,12 @@ from app.models.projects import (
 )
 from app.models.scoring import EventScoreOverride, ProjectScoringRules
 from app.models.sources import Source
+from app.schemas.ai import (
+    AIProviderRead,
+    AIProviderTestResponse,
+    AIProviderUpdate,
+    AIRerankStatus,
+)
 from app.schemas.projects import (
     CompareResponse,
     MembershipCreate,
@@ -1170,6 +1176,264 @@ async def get_rescore_status(
         last_rescore_at=last_rescore_at,
         in_progress_count=in_progress_count,
         total_count=total_count or 0,
+    )
+
+
+# ---------------------------------------------------------------------------
+# AI provider routes — Phase 17 / AI-04, AI-05, SCR-04
+# GET  /{project_id}/ai-provider          → Observer+ (read config, no key)
+# PUT  /{project_id}/ai-provider          → Admin only (upsert config + encrypt key)
+# POST /{project_id}/ai-provider/test     → Admin only (ping LLM provider)
+# POST /{project_id}/ai-rescore           → Admin only (enqueue AI rescore)
+# GET  /{project_id}/ai/rerank/status     → Observer+ (rerank progress)
+# ---------------------------------------------------------------------------
+
+
+@router.get("/{project_id}/ai-provider", response_model=AIProviderRead)
+async def get_ai_provider(
+    project_id: uuid.UUID,
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
+    db: AsyncSession = Depends(get_session),
+) -> AIProviderRead:
+    """Return AI provider config for a project. Credentials are never returned in plaintext."""
+    from app.models.ai import AIProvider  # noqa: PLC0415
+
+    row = (
+        await db.execute(select(AIProvider).where(AIProvider.project_id == project_id))
+    ).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(status_code=404, detail="ai_provider_not_configured")
+
+    # Load project for ai_* flags
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one_or_none()
+    if project is None:
+        raise HTTPException(status_code=404, detail="project_not_found")
+
+    return AIProviderRead(
+        id=row.id,
+        project_id=row.project_id,
+        provider_type=row.provider_type,  # type: ignore[arg-type]
+        model_name=row.model_name,
+        api_base=row.api_base,
+        api_key_masked="••••••••" if row.credentials_enc else None,
+        credentials_key_version=row.credentials_key_version,
+        ai_rerank_enabled=project.ai_rerank_enabled,
+        ai_digest_enabled=project.ai_digest_enabled,
+        ai_daily_token_cap=project.ai_daily_token_cap,
+        digest_schedule_cron=project.digest_schedule_cron,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
+
+
+@router.put("/{project_id}/ai-provider", response_model=AIProviderRead)
+async def upsert_ai_provider(
+    project_id: uuid.UUID,
+    body: AIProviderUpdate,
+    _admin: AuthUser = Depends(require_admin),
+    db: AsyncSession = Depends(get_session),
+) -> AIProviderRead:
+    """Upsert AI provider config. Admin only. api_key is encrypted at write time."""
+    from app.config import settings as _cfg  # noqa: PLC0415
+    from app.crypto import encrypt_credentials  # noqa: PLC0415
+    from app.models.ai import AIProvider  # noqa: PLC0415
+    from app.workers.ai import ai_rescore_project  # noqa: PLC0415
+
+    _legacy_guard(project_id)
+
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one_or_none()
+    if project is None:
+        raise HTTPException(status_code=404, detail="project_not_found")
+
+    row = (
+        await db.execute(select(AIProvider).where(AIProvider.project_id == project_id))
+    ).scalar_one_or_none()
+
+    now = datetime.now(timezone.utc)
+
+    if row is None:
+        row = AIProvider(
+            id=uuid.uuid4(),
+            project_id=project_id,
+            provider_type=body.provider_type or "ollama",
+            model_name=body.model_name or "llama3",
+            api_base=body.api_base,
+            credentials_enc=(
+                encrypt_credentials(_cfg.SECRET_KEY, {"api_key": body.api_key})
+                if body.api_key
+                else None
+            ),
+        )
+        db.add(row)
+    else:
+        if body.provider_type is not None:
+            row.provider_type = body.provider_type
+        if body.model_name is not None:
+            row.model_name = body.model_name
+        if body.api_base is not None:
+            row.api_base = body.api_base
+        if body.api_key is not None:
+            row.credentials_enc = encrypt_credentials(
+                _cfg.SECRET_KEY, {"api_key": body.api_key}
+            )
+        row.updated_at = now
+
+    # Track whether ai_rerank_enabled is transitioning false→true
+    prev_rerank = project.ai_rerank_enabled
+
+    # Update project-level AI flags
+    if body.ai_rerank_enabled is not None:
+        project.ai_rerank_enabled = body.ai_rerank_enabled
+    if body.ai_digest_enabled is not None:
+        project.ai_digest_enabled = body.ai_digest_enabled
+    if body.ai_daily_token_cap is not None:
+        project.ai_daily_token_cap = body.ai_daily_token_cap
+    if body.digest_schedule_cron is not None:
+        project.digest_schedule_cron = body.digest_schedule_cron
+
+    await db.commit()
+    await db.refresh(row)
+    await db.refresh(project)
+
+    # Enqueue one-shot rerank on false→true transition
+    if not prev_rerank and project.ai_rerank_enabled:
+        try:
+            ai_rescore_project.send(str(project_id))
+            log.info("ai_rescore_enqueued_on_rerank_enable", project_id=str(project_id))
+        except Exception as exc:  # noqa: BLE001
+            log.warning("ai_rescore_enqueue_failed project_id=%s error=%s", project_id, exc)
+
+    return AIProviderRead(
+        id=row.id,
+        project_id=row.project_id,
+        provider_type=row.provider_type,  # type: ignore[arg-type]
+        model_name=row.model_name,
+        api_base=row.api_base,
+        api_key_masked="••••••••" if row.credentials_enc else None,
+        credentials_key_version=row.credentials_key_version,
+        ai_rerank_enabled=project.ai_rerank_enabled,
+        ai_digest_enabled=project.ai_digest_enabled,
+        ai_daily_token_cap=project.ai_daily_token_cap,
+        digest_schedule_cron=project.digest_schedule_cron,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
+
+
+@router.post("/{project_id}/ai-provider/test", response_model=AIProviderTestResponse)
+async def test_ai_provider(
+    project_id: uuid.UUID,
+    _admin: AuthUser = Depends(require_admin),
+    db: AsyncSession = Depends(get_session),
+) -> AIProviderTestResponse:
+    """Ping the configured LLM provider with a minimal completion to verify connectivity."""
+    import time  # noqa: PLC0415
+
+    import litellm  # noqa: PLC0415
+
+    from app.services.llm.client import resolve_provider  # noqa: PLC0415
+
+    try:
+        model_str, api_base, api_key = await resolve_provider(db, project_id)
+    except ValueError as exc:
+        return AIProviderTestResponse(ok=False, latency_ms=0, error=str(exc))
+
+    kwargs: dict = {
+        "model": model_str,
+        "messages": [{"role": "user", "content": "ping"}],
+        "max_tokens": 5,
+        "timeout": 10,
+    }
+    if api_base is not None:
+        kwargs["api_base"] = api_base
+    if api_key is not None:
+        kwargs["api_key"] = api_key
+
+    t0 = time.monotonic()
+    try:
+        await litellm.acompletion(**kwargs)
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        return AIProviderTestResponse(ok=True, latency_ms=latency_ms)
+    except Exception as exc:  # noqa: BLE001
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        return AIProviderTestResponse(ok=False, latency_ms=latency_ms, error=str(exc))
+
+
+@router.post("/{project_id}/ai-rescore", status_code=202)
+async def trigger_ai_rescore(
+    project_id: uuid.UUID,
+    _admin: AuthUser = Depends(require_admin),
+    db: AsyncSession = Depends(get_session),
+) -> dict:
+    """Manually enqueue the ai_rescore_project actor. Admin only.
+
+    Checks ai_rerank_enabled on the project — returns 409 if disabled.
+    """
+    from app.workers.ai import ai_rescore_project  # noqa: PLC0415
+
+    project = (
+        await db.execute(select(Project).where(Project.id == project_id))
+    ).scalar_one_or_none()
+    if project is None:
+        raise HTTPException(status_code=404, detail="project_not_found")
+    if not project.ai_rerank_enabled:
+        raise HTTPException(status_code=409, detail="ai_rerank_not_enabled")
+
+    ai_rescore_project.send(str(project_id))
+    log.info("ai_rescore_manually_triggered", project_id=str(project_id))
+    return {"queued": True}
+
+
+@router.get("/{project_id}/ai/rerank/status", response_model=AIRerankStatus)
+async def get_ai_rerank_status(
+    project_id: uuid.UUID,
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
+    db: AsyncSession = Depends(get_session),
+) -> AIRerankStatus:
+    """Return AI rerank status for a project.
+
+    last_rerank_at: most recent ai_score non-null event in last 24h.
+    in_progress: true when ai:rerank:project:{id}:active Redis key exists.
+    total_count: count of events with non-null ai_score in last 24h.
+    """
+    from datetime import timedelta  # noqa: PLC0415
+
+    from sqlalchemy import text as sa_text  # noqa: PLC0415
+
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=24)
+
+    result = (
+        await db.execute(
+            sa_text(
+                "SELECT MAX(observed_at), COUNT(*) FROM events "
+                "WHERE project_id = :pid AND ai_score IS NOT NULL AND observed_at >= :cutoff"
+            ).bindparams(pid=project_id, cutoff=cutoff)
+        )
+    ).one()
+    last_rerank_at, total_count = result
+
+    in_progress = False
+    try:
+        from app.services.redis_client import get_redis  # noqa: PLC0415
+
+        redis = await get_redis()
+        exists = await redis.exists(f"ai:rerank:project:{project_id}:active")
+        in_progress = bool(exists)
+    except Exception as exc:  # noqa: BLE001 — degrade gracefully
+        log.warning(
+            "ai_rerank_inprogress_flag_read_failed project_id=%s error=%r",
+            project_id,
+            exc,
+        )
+
+    return AIRerankStatus(
+        last_rerank_at=last_rerank_at,
+        in_progress_count=1 if in_progress else 0,
+        total_count=int(total_count or 0),
     )
 
 

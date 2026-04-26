@@ -585,6 +585,13 @@ def build_scheduler() -> BlockingScheduler:
         register_monitoring_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_monitoring_jobs_register_failed error=%s", e)
+    # Phase 17: AI digest / suggestion expiry / nightly rerank
+    try:
+        from app.scheduler.ai_jobs import register_ai_jobs  # noqa: PLC0415
+    except Exception:  # pragma: no cover
+        register_ai_jobs = None
+    if register_ai_jobs is not None:
+        register_ai_jobs(scheduler)
     return scheduler
 
 

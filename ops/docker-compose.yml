@@ -72,6 +72,7 @@ services:
       SSO_ADMIN_GROUPS: ${SSO_ADMIN_GROUPS:-}
       SSO_ANALYST_GROUPS: ${SSO_ANALYST_GROUPS:-}
       SSO_VIEWER_GROUPS: ${SSO_VIEWER_GROUPS:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
     depends_on:
       db:
         condition: service_healthy
@@ -248,6 +249,70 @@ services:
       - db
     # profiles: [easm]   # uncomment to make easm-worker opt-in (not started by default)
 
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ai"]
+    # Loopback-only publish — ai-worker reaches ollama on the compose network.
+    # Host publish exists for operator-local `ollama pull` / curl debugging.
+    # Do NOT expose externally: Ollama has no auth.
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+    # NVIDIA GPU passthrough (uncomment to enable):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  ai-worker:
+    image: intellibird-api:m1
+    # Dedicated AI queue worker. Ollama CPU inference can take
+    # 60-120s per summary; isolating from `worker` prevents starvation of
+    # ingest/maintenance/webhooks queues.
+    profiles: ["ai"]
+    command: dramatiq app.workers.broker --queues ai --processes 1 --threads 2
+    env_file: .env
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+  # --- Reports worker (opt-in — docker compose --profile reports up -d) ---
+  # Dedicated worker for PDF/MD/STIX export generation on the "reports" queue.
+  # WeasyPrint subprocess isolation: the worker process never imports weasyprint
+  # directly — it shells out via subprocess.run(["weasyprint", ...]) so the C
+  # library (pango/cairo/fontconfig) RSS is reclaimed on subprocess exit.
+  # mem_limit 2g: WeasyPrint child subprocess can spike to ~1GB for large PDFs;
+  # 2g gives the parent worker + child subprocess sufficient headroom.
+  # profiles: ["reports"] — opt-in, mirrors --profile ai and --profile sso pattern.
+  reports-worker:
+    image: intellibird-api:m1
+    command: dramatiq app.workers.broker --queues reports --processes 1 --threads 1
+    mem_limit: 2g
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    profiles: ["reports"]
+    restart: unless-stopped
+
   # On-demand GeoLite2 downloader. Pulls City/ASN/Country mmdb via jsDelivr
   # from wp-statistics/geolite2-* packages (no MaxMind account needed).
   # Run explicitly:  docker compose --profile geoip run --rm geoip-update
@@ -281,3 +346,4 @@ volumes:
   bbot_scans:
   caddy_data:
   caddy_config:
+  ollama_models:
