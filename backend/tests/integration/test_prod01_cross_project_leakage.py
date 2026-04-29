@@ -49,6 +49,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from app.security.jwt import mint_access_token_with_pm
+from app.services.graph_traversal import traverse_project  # noqa: F401
 
 pytestmark = pytest.mark.integration
 
@@ -163,6 +164,7 @@ async def test_list_scoped(two_project_fixture, db_session, monkeypatch):
     assert len(body["items"]) == 20
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_intel_scoped(two_project_fixture, monkeypatch):
     """Surface 2: project-scoped intel route refuses cross-project access.
@@ -309,6 +311,7 @@ async def test_positive_control_same_project(two_project_fixture, db_session):
     assert sql_count == 20, f"SQL row count diverged from AGE seed: {sql_count}"
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_list_no_project_id_rejects_non_admin(two_project_fixture, db_session, monkeypatch):
     """GAP-1 regression lock: GET /api/events WITHOUT project_id must be rejected for non-admin callers.
@@ -362,6 +365,7 @@ async def test_list_no_project_id_rejects_non_admin(two_project_fixture, db_sess
         )
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_score_filter_no_leakage(two_project_fixture, db_session, monkeypatch):
     """SCR-03 PROD-01 extension: a score override in Project A does NOT bleed
@@ -543,13 +547,10 @@ async def test_tiber_threat_landscape_no_leakage(two_project_fixture, db_session
     Exercises the build_scope_predicate chokepoint through the TIBER auto-populate
     layer. Every row in tl_top_events must carry project_id == project_a.
 
-    RED until 18-03-PLAN: will fail with ImportError on auto_populate import today.
-
     Seed: existing two_project_fixture seeds 20 events per project with shared T1566.
     A permissive keyword='evt' scope row is added so build_scope_predicate does not
     short-circuit to `false` (empty scope → empty result → vacuous pass; per project_scope.py L182).
     """
-    # RED SIGNAL: This import will fail until Wave 3 ships the service layer.
     from app.services.tiber.auto_populate import populate_threat_landscape  # noqa: F401 — intentional ImportError
 
     _patch_auth(monkeypatch)
@@ -584,12 +585,9 @@ async def test_tiber_actor_profiles_no_leakage(two_project_fixture, db_session, 
     bounded by project_id so actors whose source events belong to Project B are
     excluded from Project A's TIBER report.
 
-    RED until 18-03-PLAN: will fail with ImportError on auto_populate import today.
-
     Cross-check: actor.source_event_ids must not intersect fx.events_b (Project B
     event IDs seeded by two_project_fixture).
     """
-    # RED SIGNAL: This import will fail until Wave 3 ships the service layer.
     from app.services.tiber.auto_populate import populate_actor_profiles  # noqa: F401 — intentional ImportError
 
     _patch_auth(monkeypatch)
@@ -609,6 +607,7 @@ async def test_tiber_actor_profiles_no_leakage(two_project_fixture, db_session, 
         )
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_tiber_scenarios_longlist_no_leakage(two_project_fixture, db_session, monkeypatch):
     """TIBER-04 / H-4: populate_scenarios_longlist scoped to Project A contains <=6 rows.
@@ -617,16 +616,13 @@ async def test_tiber_scenarios_longlist_no_leakage(two_project_fixture, db_sessi
     observed in at least one Project A event. TTPs seen only in Project B events
     must not appear in the Project A scenario longlist.
 
-    RED until 18-03-PLAN: will fail with ImportError on auto_populate import today.
-
     Validation:
       - count <= 6 (max longlist per CONTEXT.md §Scenario count gate)
       - every scenario.attack_technique_id appears in
-        SELECT DISTINCT technique_id FROM event_attack_techniques WHERE event_id IN
+        SELECT DISTINCT technique_id FROM attack_technique_tags WHERE event_id IN
         (SELECT id FROM events WHERE project_id = project_a)
     """
-    # RED SIGNAL: This import will fail until Wave 3 ships the service layer.
-    from app.services.tiber.auto_populate import populate_scenarios_longlist  # noqa: F401 — intentional ImportError
+    from app.services.tiber.auto_populate import populate_scenarios_longlist  # noqa: F401
 
     from sqlalchemy import text
 
@@ -641,9 +637,10 @@ async def test_tiber_scenarios_longlist_no_leakage(two_project_fixture, db_sessi
     )
 
     # Fetch the set of technique_ids actually seen in Project A events
+    # Table is attack_technique_tags (not event_attack_techniques — that table doesn't exist).
     result = await db_session.execute(
         text(
-            "SELECT DISTINCT technique_id FROM event_attack_techniques "
+            "SELECT DISTINCT technique_id FROM attack_technique_tags "
             "WHERE event_id IN (SELECT id FROM events WHERE project_id = :pid)"
         ),
         {"pid": project_a},
@@ -658,3 +655,102 @@ async def test_tiber_scenarios_longlist_no_leakage(two_project_fixture, db_sessi
                 f"in any Project A event. Only Project B has this TTP — cross-project leak. "
                 f"Project A techniques: {project_a_techniques}"
             )
+
+
+# ---------------------------------------------------------------------------
+# GRAPH-02 / H-4: Project-aggregate graph leakage gates
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.cross_file_pollution
+@pytest.mark.asyncio
+async def test_project_graph_no_leakage(two_project_fixture, db_session):
+    """GRAPH-02 / H-4: traverse_project scoped to Project A returns ZERO nodes
+    whose source event belongs to Project B.
+
+    Directly calls the service layer (skip HTTP layer per H-4 pattern from
+    Phases 13/15/18). The shared :Actor vertex links to events in BOTH projects
+    via :SEEN_IN edges; the SQLAlchemy BFS must constrain traversal so that no
+    node tagged with a Project B event id leaks through.
+
+    Validation strategy:
+      - Call traverse_project(db_session, project_a_id, dashboard_roles=["red","blue"],
+        max_nodes=1000, max_edges=5000)
+      - Inspect each node's `tag_source` field (set by add_node) — should NOT
+        reference any id from fx.events_b (Project B event UUIDs as strings)
+      - Assert result.truncated is False: 20 events at 1-hop depth is well below
+        the 1000-node cap
+    """
+    fx = two_project_fixture
+    project_a_id = fx.project_a.id
+    project_b_event_ids = {str(eid) for eid in fx.events_b}
+
+    result = await traverse_project(
+        db_session,
+        project_a_id,
+        dashboard_roles=["red", "blue"],
+        max_nodes=1000,
+        max_edges=5000,
+    )
+
+    # No node should reference a Project B event id in its tag_source.
+    leaked_nodes = []
+    for node in result.nodes:
+        ts = node.get("data", {}).get("tag_source")
+        if ts is not None and str(ts) in project_b_event_ids:
+            leaked_nodes.append(node)
+    assert len(leaked_nodes) == 0, (
+        f"LEAK (GRAPH-02): traverse_project for Project A returned {len(leaked_nodes)} "
+        f"node(s) whose tag_source references a Project B event id. "
+        f"Leaked nodes: {leaked_nodes}"
+    )
+
+    # The 20-event fixture seed is well below the 1000-node cap.
+    assert result.truncated is False, (
+        f"GRAPH-02: result.truncated=True for a 20-event fixture — cap logic may be wrong. "
+        f"Node count: {len(result.nodes)}"
+    )
+
+
+@pytest.mark.cross_file_pollution
+@pytest.mark.asyncio
+async def test_project_graph_returns_only_in_scope_events(two_project_fixture, db_session):
+    """GRAPH-02 positive control: traverse_project returns ≥1 node from Project A.
+
+    Guards against a vacuous pass where the graph is empty (a bug in the
+    implementation or a missing scope-row would produce zero nodes, making
+    test_project_graph_no_leakage a false-negative).
+
+    Asserts at least one returned node is an event node whose id appears in
+    fx.events_a (Project A event UUIDs).
+    """
+    fx = two_project_fixture
+    project_a_id = fx.project_a.id
+    project_a_event_ids = {str(eid) for eid in fx.events_a}
+
+    result = await traverse_project(
+        db_session,
+        project_a_id,
+        dashboard_roles=["red", "blue"],
+    )
+
+    assert len(result.nodes) > 0, (
+        "GRAPH-02 positive control: traverse_project returned zero nodes for a project "
+        "with 20 seeded events. Check that the function actually traverses events."
+    )
+
+    # At least one event node's id must match a Project A event UUID.
+    project_a_node_ids = set()
+    for node in result.nodes:
+        nid = node.get("data", {}).get("id", "")
+        # Event nodes are keyed as "event:<uuid>" in GraphResult.add_node
+        if nid.startswith("event:"):
+            raw_id = nid[len("event:"):]
+            if raw_id in project_a_event_ids:
+                project_a_node_ids.add(raw_id)
+
+    assert len(project_a_node_ids) > 0, (
+        "GRAPH-02 positive control: no Project A event node found in traverse_project "
+        f"result. Returned node ids: {[n.get('data', {}).get('id') for n in result.nodes[:10]]}. "
+        "This would make test_project_graph_no_leakage a vacuous pass."
+    )

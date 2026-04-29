@@ -300,6 +300,7 @@ async def test_get_rescore_status_shape(db_session, monkeypatch):
     assert body["in_progress_count"] == 0
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_observer_cannot_put_scoring(db_session, monkeypatch):
     """PUT /scoring with observer token returns 403."""
@@ -317,6 +318,7 @@ async def test_observer_cannot_put_scoring(db_session, monkeypatch):
     assert r.status_code == 403, r.text
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_unmembered_user_gets_403(db_session, monkeypatch):
     """GET /scoring with a JWT that has no membership for this project returns 403."""

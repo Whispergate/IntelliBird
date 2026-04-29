@@ -115,3 +115,31 @@ class BrandMatch(Base):
     webhook_fired_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True), nullable=True
     )
+
+
+class BrandStoplistTerm(Base):
+    """Per-project stoplist term — Phase 21 / BRAND-01.
+
+    Operator-managed additive union with global DEFAULT_STOPLIST + env extras.
+    Uniqueness enforced case-insensitively via DB index on lower(term).
+    """
+
+    __tablename__ = "brand_stoplist_terms"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    term: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
+    )
+    created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )

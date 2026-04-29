@@ -54,6 +54,7 @@ async def test_canary_seeds_when_null(db_session, monkeypatch):
     assert row.credentials_enc is not None
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_canary_ok_on_round_trip(db_session, monkeypatch):
     from app.config import settings
@@ -75,6 +76,7 @@ async def test_canary_ok_on_round_trip(db_session, monkeypatch):
     assert result == "ok"
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_canary_failed_on_wrong_key(db_session, monkeypatch, caplog):
     import logging

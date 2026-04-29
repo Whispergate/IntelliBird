@@ -53,6 +53,7 @@ async def test_setup_token_unset_returns_403(monkeypatch):
         assert r.status_code == 403
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_missing_rekey_from_secret_returns_400(monkeypatch):
     from app.config import settings
@@ -67,6 +68,7 @@ async def test_missing_rekey_from_secret_returns_400(monkeypatch):
         assert "REKEY_FROM_SECRET" in r.text
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_rekey_round_trip_reencrypts(db_session, monkeypatch):
     """Seed 2 rows encrypted under OLD_KEY, call rekey, assert all decrypt under NEW_KEY."""
@@ -111,6 +113,7 @@ async def test_rekey_round_trip_reencrypts(db_session, monkeypatch):
     assert src_a.credentials_key_version == 2  # bumped from 1
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_rekey_rollback_on_decrypt_failure(db_session, monkeypatch):
     """Seed one row encrypted under a DIFFERENT key; rekey must rollback + return failing id."""

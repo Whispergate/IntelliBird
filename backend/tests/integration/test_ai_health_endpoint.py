@@ -181,6 +181,7 @@ async def test_health_down_state(monkeypatch) -> None:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_non_admin_forbidden(monkeypatch) -> None:
     """GET /api/admin/ai-health returns 403 for non-admin users."""

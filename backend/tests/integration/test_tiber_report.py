@@ -136,7 +136,26 @@ async def test_report_crud(two_project_fixture, db_session, monkeypatch) -> None
         )
         assert r_patch.status_code == 200
 
-        # Publish (requires min 3 selected scenarios — pre-populated for test)
+        # Pre-populate 3 selected scenarios (required by scenario_gate_check: min 3).
+        _SCENARIO_TECHNIQUES = ["T1566", "T1190", "T1059"]
+        for i, tech in enumerate(_SCENARIO_TECHNIQUES):
+            r_sc = await c.post(
+                f"/api/projects/{project_id}/tiber/reports/{report_id}/scenarios",
+                headers=_bearer(fx.jwt_a),
+                json={
+                    "actor_id": None,
+                    "cif_or_cbs_label": f"CBS-{i}",
+                    "objective_type": "availability",
+                    "attack_technique_id": tech,
+                    "procedure_text": f"Procedure {i}",
+                    "selected_for_inclusion": True,
+                },
+            )
+            assert r_sc.status_code == 201, (
+                f"Failed to create scenario {i}: {r_sc.status_code} {r_sc.text}"
+            )
+
+        # Publish (requires min 3 selected scenarios — now satisfied)
         r_publish = await c.post(
             f"/api/projects/{project_id}/tiber/reports/{report_id}/publish",
             headers=_bearer(fx.jwt_a),

@@ -1,4 +1,6 @@
-"""GET /api/events/{id}/graph — Cytoscape-ready graph response."""
+"""GET /api/events/{id}/graph — Cytoscape-ready graph response.
+GET /api/projects/{id}/graph — project-aggregate multi-seed graph.
+"""
 from __future__ import annotations
 
 import uuid
@@ -9,17 +11,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
 from app.database import get_session
+from app.middleware.auth import require_auth
+from app.models.projects import ProjectRole
 from app.schemas.graph import GraphResponse
-from app.security.project_membership import enforce_project_query_scope
+from app.security.jwt import AuthUser
+from app.security.project_membership import enforce_project_query_scope, require_project_membership
 from app.services.graph_traversal import (
     DEFAULT_DEPTH,
     MAX_DEPTH,
     MIN_DEPTH,
     traverse_graph,
+    traverse_project,
 )
 
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/events", tags=["graph"])
+
+# Project-aggregate graph router — registered in main.py with prefix="/api"
+# so the final path is /api/projects/{project_id}/graph.
+projects_graph_router = APIRouter(prefix="/projects", tags=["graph"])
 
 
 @router.get("/{event_id}/graph", response_model=GraphResponse)
@@ -65,6 +75,47 @@ async def get_event_graph(
         "graph_queried",
         event_id=str(event_id),
         depth=depth,
+        node_count=len(result.nodes),
+        edge_count=len(result.edges),
+        truncated=result.truncated,
+    )
+    return GraphResponse(
+        nodes=result.nodes,  # type: ignore[arg-type]
+        edges=result.edges,  # type: ignore[arg-type]
+        truncated=result.truncated,
+    )
+
+
+@projects_graph_router.get("/{project_id}/graph", response_model=GraphResponse)
+async def project_graph(
+    project_id: uuid.UUID,
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
+    user: AuthUser = Depends(require_auth),
+    db: AsyncSession = Depends(get_session),
+) -> GraphResponse:
+    """Project-aggregate attack graph — Observer+ can view.
+
+    Collects all project events via the build_scope_predicate chokepoint
+    (build_events_query with project_id kwarg), then runs multi-seed BFS
+    over Layer 1 (techniques) + Layer 2 (raw_stix SROs). Returns Cytoscape-
+    ready nodes/edges with a truncated flag when the 1000-node / 5000-edge
+    caps are hit.
+
+    Security: require_project_membership enforces membership BEFORE any data
+    is touched. Admin bypass returns ProjectRole.Lead transparently.
+    """
+    dashboard_roles: list[str] | None = list(user.dashboard_roles) if user.dashboard_roles else None
+
+    result = await traverse_project(
+        db,
+        project_id,
+        dashboard_roles=dashboard_roles,
+        max_nodes=1000,
+        max_edges=5000,
+    )
+    log.info(
+        "project_graph_queried",
+        project_id=str(project_id),
         node_count=len(result.nodes),
         edge_count=len(result.edges),
         truncated=result.truncated,

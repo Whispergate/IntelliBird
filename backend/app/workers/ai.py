@@ -517,7 +517,10 @@ async def _async_digest(project_id: str) -> None:
             ).scalars().all()
 
             if not top_rows:
-                log.info("ai_digest_no_events project_id=%s", project_id)
+                log.info(
+                    "ai_digest_no_events project_id=%s window_count=%d",
+                    project_id, window_count,
+                )
                 return
 
             # Build digest payload.

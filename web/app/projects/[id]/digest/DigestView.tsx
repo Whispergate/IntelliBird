@@ -157,22 +157,54 @@ export function DigestView({ projectId }: { projectId: string }) {
 
   async function handleGenerateNow() {
     setGenerateDisabled(true);
+    const baselineCreatedAt =
+      digest && digest !== "empty" ? digest.created_at : null;
     try {
-      const res = await fetch(`/api/projects/${projectId}/digest/generate`, {
+      const res = await fetch(`/api/projects/${projectId}/ai/digest/trigger`, {
         method: "POST",
         credentials: "include",
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "");
         toast.error(`Could not trigger digest. ${text || "Unknown error."}`);
-      } else {
-        toast.success("Digest generation queued.");
+        setGenerateDisabled(false);
+        return;
       }
+      toast.success("Digest generation queued. Waiting for completion…");
     } catch {
       toast.error("Could not trigger digest. Check your connection.");
+      setGenerateDisabled(false);
+      return;
     }
-    // Re-enable after 10s
-    setTimeout(() => setGenerateDisabled(false), 10_000);
+
+    // Poll for new digest row. Worker typically completes in <60s; cap at 3 min.
+    const deadline = Date.now() + 180_000;
+    const poll = async (): Promise<void> => {
+      if (Date.now() > deadline) {
+        toast.error("Digest still processing. Refresh in a minute.");
+        setGenerateDisabled(false);
+        return;
+      }
+      try {
+        const r = await fetch(`/api/projects/${projectId}/ai/digest`, {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (r.ok) {
+          const data: DigestData = await r.json();
+          if (data.created_at !== baselineCreatedAt) {
+            setDigest(data);
+            toast.success("Digest ready.");
+            setGenerateDisabled(false);
+            return;
+          }
+        }
+      } catch {
+        // transient — keep polling
+      }
+      setTimeout(poll, 3_000);
+    };
+    setTimeout(poll, 3_000);
   }
 
   const lastGeneratedAt =

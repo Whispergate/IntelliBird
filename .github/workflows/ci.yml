@@ -37,6 +37,9 @@ jobs:
       - name: Unit tests
         run: cd backend && uv run pytest -m "not integration" -x -q
 
+      - name: "Cross-file pollution regression gate"
+        run: make test-pollution-check
+
   docker-build:
     name: Docker Compose build
     runs-on: ubuntu-latest

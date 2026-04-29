@@ -78,10 +78,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.mustChangePassword = (user as any).must_change_password;
         token.userId = (user as any).id;
         token.username = (user as any).name;
+        const expiresIn = Number((user as any).access_expires_in) || 0;
+        token.accessTokenExpires = expiresIn > 0
+          ? Date.now() + expiresIn * 1000
+          : 0;
+      }
+      // Mark expired so session callback can null the user out.
+      if (
+        typeof token.accessTokenExpires === "number" &&
+        token.accessTokenExpires > 0 &&
+        Date.now() >= token.accessTokenExpires
+      ) {
+        (token as any).error = "AccessTokenExpired";
       }
       return token;
     },
     async session({ session, token }) {
+      if ((token as any).error === "AccessTokenExpired") {
+        (session as any).error = "AccessTokenExpired";
+        (session as any).accessToken = undefined;
+        return session;
+      }
       (session.user as any) = {
         id: token.userId as string,
         name: token.username as string,

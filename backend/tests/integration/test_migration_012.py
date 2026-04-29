@@ -109,11 +109,15 @@ def _insert_project(conn) -> uuid.UUID:
     # Build an insert that supplies a string placeholder for any text-ish
     # required column. This is deliberately forgiving — real schema validation
     # is covered by the projects-dedicated migrations.
+    # Known enum columns need valid values (generic "x" violates DB enum constraint).
+    _ENUM_DEFAULTS: dict[str, str] = {
+        "engagement_type": "intel_only",
+    }
     cols = ["id"] + required
     placeholders = [":id"] + [f":{c}" for c in required]
     params = {"id": pid}
     for c in required:
-        params[c] = "x"
+        params[c] = _ENUM_DEFAULTS.get(c, "x")
     conn.execute(
         sa.text(f"INSERT INTO projects ({', '.join(cols)}) VALUES ({', '.join(placeholders)})"),
         params,
@@ -200,10 +204,14 @@ def test_012_project_updated_index_exists(live_db_011):
         assert "updated_at" in idx
 
 
+@pytest.mark.cross_file_pollution
 def test_012_duplicate_tuple_raises_integrity_error(live_db_011):
     """Inserting a second row with the same (project_id, bbot_event_type,
     canonical_target) raises IntegrityError."""
     engine, env = live_db_011
+    # Ensure migration 012 is applied (this test may run without test_012_upgrade_creates_asset_notes_table
+    # when selected via -m cross_file_pollution).
+    _upgrade_012(env)
 
     with engine.begin() as conn:
         pid = _insert_project(conn)
@@ -224,9 +232,13 @@ def test_012_duplicate_tuple_raises_integrity_error(live_db_011):
         conn.execute(sa.text("DELETE FROM projects WHERE id=:p"), {"p": pid})
 
 
+@pytest.mark.cross_file_pollution
 def test_012_fk_cascade_delete_removes_notes(live_db_011):
     """Deleting a project row cascades — asset_notes rows disappear."""
     engine, env = live_db_011
+    # Ensure migration 012 is applied (this test may run without test_012_upgrade_creates_asset_notes_table
+    # when selected via -m cross_file_pollution).
+    _upgrade_012(env)
 
     with engine.begin() as conn:
         pid = _insert_project(conn)

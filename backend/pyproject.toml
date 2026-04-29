@@ -67,6 +67,7 @@ addopts = "-ra --strict-markers -m 'not load'"
 markers = [
   "integration: marks tests that require docker/testcontainers (deselect with '-m \"not integration\"')",
   "load: long-running load test; excluded by default (run with `-m load`)",
+  "cross_file_pollution: regression gate for tests previously failing only in combined runs due to fixture pollution (Phase 19)",
 ]
 
 [tool.ruff]

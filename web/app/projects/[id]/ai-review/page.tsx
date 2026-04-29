@@ -9,11 +9,12 @@
 import { Suspense } from "react";
 import { AIReviewTable } from "./AIReviewTable";
 
-export default function AIReviewPage({
+export default async function AIReviewPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   return (
     <Suspense
       fallback={
@@ -27,7 +28,7 @@ export default function AIReviewPage({
         </div>
       }
     >
-      <AIReviewTable projectId={params.id} />
+      <AIReviewTable projectId={id} />
     </Suspense>
   );
 }

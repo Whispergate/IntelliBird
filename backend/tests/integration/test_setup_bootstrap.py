@@ -65,6 +65,7 @@ async def test_setup_when_token_unset_returns_403(monkeypatch):
         assert "Invalid or missing setup token" in r.text
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_setup_password_too_short_returns_422(monkeypatch):
     from app.config import settings
@@ -78,6 +79,7 @@ async def test_setup_password_too_short_returns_422(monkeypatch):
         assert r.status_code == 422
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_setup_happy_path_creates_admin(db_session, monkeypatch):
     """POST /api/admin/setup creates Admin with Argon2 hash + both dashboards."""
@@ -117,6 +119,7 @@ async def test_setup_happy_path_creates_admin(db_session, monkeypatch):
     assert set(row.dashboard_roles) == {"red", "blue"}
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_setup_second_call_returns_409_setup_already_complete(db_session, monkeypatch):
     """Second POST /api/admin/setup returns 409 setup_already_complete."""
@@ -149,6 +152,7 @@ async def test_setup_second_call_returns_409_setup_already_complete(db_session, 
         assert r2.json()["detail"] == "setup_already_complete"
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_setup_duplicate_username_returns_409(db_session, monkeypatch):
     """Race condition: if username already exists from concurrent setup, return 409."""

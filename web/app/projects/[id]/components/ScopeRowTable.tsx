@@ -5,6 +5,8 @@
  *
  * Per-scope-type row listing. Columns:
  *   - Value (monospace for ip_range / certificate, default text otherwise)
+ *     Punycode domain/cert values (xn-- prefix) are wrapped in a shadcn Tooltip
+ *     showing the decoded unicode form (Phase 20-03 UX-03).
  *   - Contact (optional contact string or em-dash)
  *   - Exclude   (Switch — inline PATCH on change)
  *   - Active test scope (Switch — inline PATCH on change)
@@ -17,10 +19,36 @@
  */
 
 import { Trash2 } from "lucide-react";
+import punycode from "punycode";
 
 import type { ScopeRowResponse, ScopeRowUpdateBody } from "../../lib/api";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// ── IDN decode helper ───────────────────────────────────────────────────────
+
+/** FQDN-bearing scope types that may store punycode-encoded values. */
+const FQDN_SCOPE_TYPES = new Set<string>(["domain", "certificate", "cert"]);
+
+/**
+ * Attempt to decode a punycode IDN label or FQDN to its unicode form.
+ * Returns null on failure (caller falls back to plain punycode display).
+ */
+function decodeIdn(value: string): string | null {
+  try {
+    const decoded = punycode.toUnicode(value);
+    // If decode returned the same string (no-op for ASCII), treat as no tooltip.
+    return decoded !== value ? decoded : null;
+  } catch {
+    return null;
+  }
+}
 
 export function ScopeRowTable({
   rows,
@@ -42,6 +70,7 @@ export function ScopeRowTable({
   const isMono = scopeType === "ip_range" || scopeType === "certificate";
 
   return (
+  <TooltipProvider>
     <table className="w-full border-collapse">
       <thead>
         <tr className="text-left border-b border-border">
@@ -76,7 +105,25 @@ export function ScopeRowTable({
                 isMono ? "brand-mono break-all" : "text-foreground"
               }`}
             >
-              {row.value}
+              {(() => {
+                const isFqdn = FQDN_SCOPE_TYPES.has(row.scope_type);
+                const firstLabel = row.value.split(".")[0] ?? "";
+                const isPunycode = isFqdn && /^xn--/i.test(firstLabel);
+                if (isPunycode) {
+                  const decoded = decodeIdn(row.value);
+                  if (decoded) {
+                    return (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span data-testid="punycode-trigger">{row.value}</span>
+                        </TooltipTrigger>
+                        <TooltipContent>Unicode: {decoded}</TooltipContent>
+                      </Tooltip>
+                    );
+                  }
+                }
+                return <span>{row.value}</span>;
+              })()}
             </td>
             <td className="py-2 px-3 text-muted-foreground">
               {row.contact || "—"}
@@ -118,5 +165,6 @@ export function ScopeRowTable({
         ))}
       </tbody>
     </table>
+  </TooltipProvider>
   );
 }

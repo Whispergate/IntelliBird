@@ -135,6 +135,7 @@ services:
       HOSTNAME: "0.0.0.0"
       AUTH_ENABLED: ${AUTH_ENABLED:-false}
       AUTH_TRUST_HOST: "true"
+      AUTH_URL: ${AUTH_URL:-https://localhost}
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET required — generate with `openssl rand -hex 32`}
     depends_on:
       api:
@@ -254,6 +255,7 @@ services:
     profiles: ["ai"]
     # Loopback-only publish — ai-worker reaches ollama on the compose network.
     # Host publish exists for operator-local `ollama pull` / curl debugging.
+    # docker exec ops-ollama-1 ollama pull <model name>
     # Do NOT expose externally: Ollama has no auth.
     ports:
       - "127.0.0.1:11434:11434"
@@ -297,7 +299,7 @@ services:
   # library (pango/cairo/fontconfig) RSS is reclaimed on subprocess exit.
   # mem_limit 2g: WeasyPrint child subprocess can spike to ~1GB for large PDFs;
   # 2g gives the parent worker + child subprocess sufficient headroom.
-  # profiles: ["reports"] — opt-in, mirrors --profile ai and --profile sso pattern.
+  # profiles: ["reports"] — opt-in.
   reports-worker:
     image: intellibird-api:m1
     command: dramatiq app.workers.broker --queues reports --processes 1 --threads 1

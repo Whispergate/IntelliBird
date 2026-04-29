@@ -216,6 +216,11 @@ export function TopNav() {
               Maintenance Windows
             </DropdownMenuItem>
           )}
+          {user?.role === "Admin" && (
+            <DropdownMenuItem onClick={() => router.push("/admin/ai-jobs")}>
+              AI Jobs
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

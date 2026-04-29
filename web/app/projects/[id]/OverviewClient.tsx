@@ -39,8 +39,10 @@ import { EngagementTypeBadge } from "../components/EngagementTypeBadge";
 import { ArchivedBadge } from "../components/ArchivedBadge";
 import { Button } from "@/components/ui/button";
 import { ExportDialog } from "./components/ExportDialog";
+import { useProjectRole } from "./ProjectRoleProvider";
 
 export function OverviewClient({ project }: { project: ProjectResponse }) {
+  const { isObserver } = useProjectRole();
   const [exportOpen, setExportOpen] = useState(false);
   const [membershipCount, setMembershipCount] = useState<number | null>(
     project.member_count ?? null,
@@ -82,15 +84,17 @@ export function OverviewClient({ project }: { project: ProjectResponse }) {
             {project.archived && <ArchivedBadge />}
           </div>
         </div>
-        <Button
-          onClick={() => setExportOpen(true)}
-          style={{
-            backgroundColor: "var(--brand-signal)",
-            color: "var(--brand-ink)",
-          }}
-        >
-          <Download className="w-4 h-4 mr-2" /> Export
-        </Button>
+        {!isObserver && (
+          <Button
+            onClick={() => setExportOpen(true)}
+            style={{
+              backgroundColor: "var(--brand-signal)",
+              color: "var(--brand-ink)",
+            }}
+          >
+            <Download className="w-4 h-4 mr-2" /> Export
+          </Button>
+        )}
       </header>
 
       <section className="rounded-md border border-border bg-card p-4">

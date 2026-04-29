@@ -9,8 +9,100 @@ from typing import Any
 
 import pytest
 import pytest_asyncio
+from sqlalchemy import text
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
+
+# --- Phase 19 audit (2026-04-27) -----------------------------------------------
+# db_engine + db_session are already function-scoped with engine.dispose()
+# in the finally block. No changes required to those fixtures (RESEARCH §
+# "SQLAlchemy Async Engine Teardown Pattern" verbatim confirms this matches
+# the per-loop pattern used in app/workers/brand.py + scoring.py).
+# The only Phase 19 addition here is the _truncate_and_flush autouse
+# fixture (Task 2) — Redis FLUSHDB + DB TRUNCATE per test.
+# -------------------------------------------------------------------------------
+
+# Sentinel UUIDs — seeded by migrations, must survive per-test cleanup.
+# projects: migration 009 legacy sentinel (_legacy); migration 016 monitoring sentinel (System Monitoring)
+# sources:  migration 007 rekey canary (_rekey_canary)
+_PROJECTS_LEGACY_SENTINEL_UUID = "00000000-0000-0000-0000-000000000001"
+_PROJECTS_MONITORING_SENTINEL_UUID = "00000000-0000-0000-0000-000000000000"
+_SOURCES_CANARY_UUID = "00000000-0000-0000-0000-000000000000"
+
+# Tables fully truncated per test (RESEARCH §TRUNCATE-Safe Table Catalog).
+# CASCADE handles FK chain. RESTART IDENTITY resets sequences. TimescaleDB
+# hypertables (events, source_ingest_stats, ai_summaries) work cleanly.
+# maintenance_windows is included: created_by_user_id FK is nullable (ON DELETE
+# SET NULL), so truncating users does NOT clear maintenance_windows rows —
+# explicit TRUNCATE required for hermetic state per test.
+_TRUNCATE_TABLES: tuple[str, ...] = (
+    "users",
+    "attack_technique_tags",
+    "events",
+    "webhooks",
+    "filter_presets",
+    "source_ingest_stats",
+    "ai_summaries",
+    "ai_providers",
+    "maintenance_windows",
+)
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def _truncate_and_flush(redis_url: str, db_engine):
+    """Per-test data isolation. Phase 19 / TEST-02 + TEST-03.
+
+    - FLUSHDB on test Redis container (wipes JTI blocklist, lockout,
+      burst counters, AI buffers, monitoring sentinels — single call).
+    - TRUNCATE non-bootstrap tables CASCADE on Postgres.
+    - Preserve attack_techniques (~700 ATT&CK rows seeded by migration 002).
+    - Preserve sentinel rows in projects (two: mig 009 + mig 016) / sources (mig 007).
+
+    FLUSHDB safety: redis_url points to the testcontainer (DB 12 per
+    _patch_settings_for_integration) — never hits operator dev Redis.
+    """
+    import redis.asyncio as aioredis
+
+    # --- Setup: clean state BEFORE the test runs ---
+    # Redis flush
+    r = aioredis.from_url(redis_url)
+    try:
+        await r.flushdb()
+    finally:
+        await r.aclose()
+
+    # DB reset
+    async with db_engine.begin() as conn:
+        for tbl in _TRUNCATE_TABLES:
+            await conn.execute(
+                text(f"TRUNCATE TABLE {tbl} RESTART IDENTITY CASCADE")
+            )
+        # Sentinel-preserving deletes for projects (preserve both legacy + monitoring sentinels)
+        # Note: use CAST(:param AS uuid) instead of :param::uuid — asyncpg named parameter
+        # binding does not support the Postgres :: cast operator adjacent to a bind param.
+        await conn.execute(
+            text(
+                "DELETE FROM projects "
+                "WHERE id NOT IN (CAST(:legacy AS uuid), CAST(:monitoring AS uuid))"
+            ),
+            {
+                "legacy": _PROJECTS_LEGACY_SENTINEL_UUID,
+                "monitoring": _PROJECTS_MONITORING_SENTINEL_UUID,
+            },
+        )
+        # Sentinel-preserving delete for sources (preserve rekey canary)
+        await conn.execute(
+            text(
+                "DELETE FROM sources WHERE id <> CAST(:canary AS uuid)"
+            ),
+            {"canary": _SOURCES_CANARY_UUID},
+        )
+
+    yield
+
+    # No teardown reset — next test's setup phase handles it. This avoids
+    # double-truncation cost. If a test pollutes the *final* test of a run,
+    # the next session's first test cleans it.
 
 
 @pytest.fixture(scope="session")
@@ -75,17 +167,33 @@ def _patch_settings_for_integration(pg_url: str, redis_url: str) -> Iterator[Non
     every later request that uses get_session() hits the old bound URL."""
     os.environ["DATABASE_URL"] = pg_url
     os.environ["REDIS_URL"] = redis_url
+    # Pin JWT_SIGNING_KEY + SECRET_KEY to known values for the whole integration
+    # session. Unit tests collected before integration tests may have set these
+    # to different values via os.environ.setdefault(); fixtures like two_project.py
+    # read os.environ directly, so we must override (not setdefault) here to
+    # ensure two_project.py JWTs and _patch_auth monkeypatches use the same key.
+    _INTEGRATION_JWT_KEY = "j" * 64
+    _INTEGRATION_SECRET = "s" * 64
+    os.environ["JWT_SIGNING_KEY"] = _INTEGRATION_JWT_KEY
+    os.environ["SECRET_KEY"] = _INTEGRATION_SECRET
     try:
         from app.config import settings
         settings.DATABASE_URL = pg_url  # type: ignore[assignment]
         settings.REDIS_URL = redis_url  # type: ignore[assignment]
+        settings.JWT_SIGNING_KEY = _INTEGRATION_JWT_KEY  # type: ignore[assignment]
+        settings.SECRET_KEY = _INTEGRATION_SECRET  # type: ignore[assignment]
     except Exception:
         pass
     # Rebuild the module-level engine / session factory against the live URL.
+    # NullPool avoids asyncpg connections becoming loop-bound across tests:
+    # pytest-asyncio creates a new event loop per function-scoped test, so any
+    # pooled connection from test N's loop is invalid for test N+1's loop.
+    # NullPool = no connection pooling, each checkout gets a fresh connection.
     try:
         import app.database as db_mod
         from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-        new_engine = create_async_engine(pg_url, pool_pre_ping=True, future=True)
+        from sqlalchemy.pool import NullPool
+        new_engine = create_async_engine(pg_url, poolclass=NullPool, future=True)
         db_mod.engine = new_engine
         db_mod.async_session_factory = async_sessionmaker(
             new_engine, expire_on_commit=False, class_=AsyncSession

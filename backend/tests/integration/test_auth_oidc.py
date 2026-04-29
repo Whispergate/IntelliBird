@@ -117,6 +117,7 @@ async def test_oidc_login_404_when_unconfigured(oidc_app):
         settings.SSO_ISSUER_URL = original  # type: ignore[assignment]
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_oidc_login_302_with_correct_query_params_when_configured(oidc_app):
     """GET /oidc/login when configured returns 302 with correct authorization URL params."""
@@ -145,6 +146,7 @@ async def test_oidc_login_302_with_correct_query_params_when_configured(oidc_app
     assert "client_id=intellibird-client" in location
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_oidc_login_sets_state_verifier_nonce_cookies(oidc_app):
     """Ensure state, verifier, and nonce cookies are set on /oidc/login response."""
@@ -173,6 +175,7 @@ async def test_oidc_login_sets_state_verifier_nonce_cookies(oidc_app):
     assert "oidc_nonce" in cookie_names
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_callback_invalid_state_returns_400(oidc_app):
     """State mismatch returns 400 invalid_state."""
@@ -192,6 +195,7 @@ async def test_callback_invalid_state_returns_400(oidc_app):
     assert r.json()["detail"] == "invalid_state"
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_callback_missing_code_returns_400(oidc_app):
     """Missing code parameter returns 400."""
@@ -209,6 +213,7 @@ async def test_callback_missing_code_returns_400(oidc_app):
     assert r.status_code == 400
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_callback_happy_path_creates_viewer_user_by_default(oidc_app):
     """First-time Authentik login with no group match creates a Viewer user."""
@@ -262,6 +267,7 @@ async def test_callback_happy_path_creates_viewer_user_by_default(oidc_app):
         await s.commit()
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_callback_admin_group_creates_admin_with_both_dashboards(oidc_app):
     """Admin group match creates an Admin with dashboard_roles=['red', 'blue']."""
@@ -317,6 +323,7 @@ async def test_callback_admin_group_creates_admin_with_both_dashboards(oidc_app)
         await s.commit()
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_callback_returning_user_updates_last_login_no_duplicate_row(oidc_app):
     """Second Authentik login updates last_login_at without creating a duplicate user row."""
@@ -365,6 +372,7 @@ async def test_callback_returning_user_updates_last_login_no_duplicate_row(oidc_
         await s.commit()
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_callback_landing_redirect_by_dashboard_role(oidc_app):
     """Admin users (red+blue) land at /red; Viewer users (no roles) land at /."""

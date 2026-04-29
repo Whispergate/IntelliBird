@@ -19,6 +19,22 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
+  // 1b. Token expired (auth.ts jwt callback flagged it) -> /login?reason=expired
+  //     Clear Auth.js session cookies so SessionProvider drops the stale session.
+  if ((session as any).error === "AccessTokenExpired") {
+    const u = new URL("/login", origin);
+    u.searchParams.set("reason", "expired");
+    if (pathname !== "/") u.searchParams.set("next", pathname);
+    const res = NextResponse.redirect(u);
+    for (const name of [
+      "authjs.session-token",
+      "__Secure-authjs.session-token",
+    ]) {
+      res.cookies.set(name, "", { path: "/", maxAge: 0 });
+    }
+    return res;
+  }
+
   // 2. must_change_password: block every route except /change-password and /api/auth/*
   const user = (session.user as any) ?? {};
   if (user.must_change_password && pathname !== "/change-password") {

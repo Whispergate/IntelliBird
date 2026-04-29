@@ -18,11 +18,13 @@ Layout seeded per invocation:
     - 40 `:SEEN_IN` edges Event→Actor (20 per project)
 
 JWTs:
-  - jwt_a: role='Analyst', pm=[[project_a.id, PROJECT_ROLE_RANK['Contributor']]]
+  - jwt_a: role='Analyst', pm=[[project_a.id, PROJECT_ROLE_RANK['Lead']]]
+    Lead rank satisfies both intel (Contributor+) and TIBER (Lead+) endpoint gates.
   - jwt_b: role='Analyst', pm=[[project_b.id, PROJECT_ROLE_RANK['Contributor']]]
+  - jwt_admin: role='Admin', pm=[] (Admin bypass; needed for TIBER archive/restore)
 
 Returned SimpleNamespace fields:
-  project_a, project_b, jwt_a, jwt_b, shared_actor, shared_technique
+  project_a, project_b, jwt_a, jwt_b, jwt_admin, shared_actor, shared_technique
 """
 from __future__ import annotations
 
@@ -169,18 +171,46 @@ async def build_two_project_fixture(session: AsyncSession) -> SimpleNamespace:
 
     await session.commit()
 
-    # JWT mint — role='Analyst', dashboard_roles=['red','blue'] so the Analyst can
-    # hit intel routes; project_memberships scoped singularly.
+    # JWT mint. Signing key read from os.environ so that _patch_settings_for_integration
+    # (which sets os.environ["JWT_SIGNING_KEY"] = "j"*64) aligns with _patch_auth
+    # monkeypatches that pin settings.JWT_SIGNING_KEY to the same value.
     signing_key = os.environ.get("JWT_SIGNING_KEY") or os.environ.get("SECRET_KEY") or ("j" * 64)
     user_a_id = str(uuid.uuid4())
     user_b_id = str(uuid.uuid4())
-    pm_a: list[list[Any]] = [[str(project_a_id), PROJECT_ROLE_RANK["Contributor"]]]
+    admin_user_id = str(uuid.uuid4())
+
+    # Insert User rows so FK constraints from TIBER endpoints (tiber_reports.created_by_user_id)
+    # and other endpoints that record user IDs are satisfied. Only user_a and admin_user
+    # need rows — user_b is only used for cross-project leak checks (no write operations).
+    await session.execute(
+        text(
+            "INSERT INTO users (id, username, role) VALUES (:id, :username, :role) "
+            "ON CONFLICT (id) DO NOTHING"
+        ),
+        {"id": user_a_id, "username": "user-a-fixture", "role": "Analyst"},
+    )
+    await session.execute(
+        text(
+            "INSERT INTO users (id, username, role) VALUES (:id, :username, :role) "
+            "ON CONFLICT (id) DO NOTHING"
+        ),
+        {"id": admin_user_id, "username": "admin-fixture", "role": "Admin"},
+    )
+    await session.commit()
+    # jwt_a: Lead on project_a — Lead rank satisfies both intel (Contributor+) and
+    # TIBER (Lead+) endpoint gates. Analyst global role; project membership is what gates.
+    pm_a: list[list[Any]] = [[str(project_a_id), PROJECT_ROLE_RANK["Lead"]]]
     pm_b: list[list[Any]] = [[str(project_b_id), PROJECT_ROLE_RANK["Contributor"]]]
     jwt_a, _ = mint_access_token_with_pm(
         user_a_id, "Analyst", ["red", "blue"], 0, signing_key, pm_a, False,
     )
     jwt_b, _ = mint_access_token_with_pm(
         user_b_id, "Analyst", ["red", "blue"], 0, signing_key, pm_b, False,
+    )
+    # jwt_admin: Admin global role — no project_membership needed (Admin bypass).
+    # Required by TIBER archive and restore endpoints (Admin-only transitions).
+    jwt_admin, _ = mint_access_token_with_pm(
+        admin_user_id, "Admin", ["red", "blue"], 0, signing_key, [], False,
     )
 
     project_a = SimpleNamespace(id=project_a_id, name="Alpha")
@@ -192,6 +222,7 @@ async def build_two_project_fixture(session: AsyncSession) -> SimpleNamespace:
         project_b=project_b,
         jwt_a=jwt_a,
         jwt_b=jwt_b,
+        jwt_admin=jwt_admin,
         shared_actor=shared_actor,
         shared_technique=SHARED_TECHNIQUE,
         events_a=events_a,

@@ -1,4 +1,4 @@
-.PHONY: install test test-unit test-integration lint compose-up compose-down migrate openapi-check audit-deps audit-templates audit-all
+.PHONY: install test test-unit test-integration lint compose-up compose-down migrate openapi-check audit-deps audit-templates audit-all test-pollution-check
 
 install:
 	cd backend && uv sync
@@ -67,8 +67,24 @@ audit-templates:
 # Aggregate audit target — runs all security audit checks
 # ------------------------------------------------------------------------------
 
-audit-all: audit-deps audit-templates
+audit-all: audit-deps audit-templates test-pollution-check
 	@echo "==> audit-all: all security checks passed."
+
+# ------------------------------------------------------------------------------
+# Phase 19 — cross-file pollution regression gate
+# ------------------------------------------------------------------------------
+# Runs the @pytest.mark.cross_file_pollution marker bucket — tests that previously
+# failed only in combined runs due to fixture pollution.
+#
+# Manual usage:
+#   make test-pollution-check
+#
+# CI usage:
+#   make test-pollution-check
+#   (exit code non-zero on any failure → CI fails the job)
+
+test-pollution-check:  ## Phase 19: run cross-file pollution regression bucket
+	cd backend && uv run pytest -m cross_file_pollution -v --tb=short
 
 # ------------------------------------------------------------------------------
 # OpenAPI codegen drift gate — Phase 8 / INFRA-05

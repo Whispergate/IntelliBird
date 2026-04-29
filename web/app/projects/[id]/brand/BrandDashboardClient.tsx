@@ -13,18 +13,83 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import type {
   BrandDashboardResponse,
   BrandMatchFilters,
   BrandMatchRead,
+  MatchDetailsResponse,
 } from "./lib/api";
-import { listBrandMatches } from "./lib/api";
+import { listBrandMatches, fetchBrandMatchDetails } from "./lib/api";
 import { MatchFilterBar } from "./MatchFilterBar";
 import { MatchTable } from "./MatchTable";
 import { SuppressionReviewBanner } from "./SuppressionReviewBanner";
+import { MatchDetailDrawer } from "./MatchDetailDrawer";
+
+// ---------------------------------------------------------------------------
+// Brand sub-tab strip (Matches | Terms | Stoplist)
+// Tab order: Matches (default) | Terms | Stoplist — UI-SPEC §Surface 1
+// ---------------------------------------------------------------------------
+
+interface BrandTab {
+  key: string;
+  label: string;
+  route: (projectId: string) => string;
+  active: (pathname: string) => boolean;
+}
+
+const BRAND_TABS: BrandTab[] = [
+  {
+    key: "matches",
+    label: "Matches",
+    route: (id) => `/projects/${id}/brand`,
+    active: (p) =>
+      p.endsWith("/brand") || (p.includes("/brand") && !p.includes("/brand/terms") && !p.includes("/brand/stoplist")),
+  },
+  {
+    key: "terms",
+    label: "Terms",
+    route: (id) => `/projects/${id}/brand/terms`,
+    active: (p) => p.includes("/brand/terms"),
+  },
+  {
+    key: "stoplist",
+    label: "Stoplist",
+    route: (id) => `/projects/${id}/brand/stoplist`,
+    active: (p) => p.includes("/brand/stoplist"),
+  },
+];
+
+function BrandTabStrip({ projectId }: { projectId: string }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  return (
+    <div className="flex items-center gap-1 border-b border-border pb-0 mb-4">
+      {BRAND_TABS.map((tab) => {
+        const isActive = tab.active(pathname ?? "");
+        return (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => router.push(tab.route(projectId))}
+            className={[
+              "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
+              isActive
+                ? "border-foreground text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground",
+            ].join(" ")}
+          >
+            {tab.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Skeleton rows (loading state — mirrors Phase 11 FindingsSkeleton)
@@ -56,6 +121,13 @@ export function BrandDashboardClient({
   isObserver = false,
 }: BrandDashboardClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Drawer URL state — ?match=<uuid>
+  const activeMatchId = searchParams.get("match");
+  const [drawerDetails, setDrawerDetails] = useState<MatchDetailsResponse | null>(null);
+  const [drawerMatch, setDrawerMatch] = useState<BrandMatchRead | null>(null);
 
   const [data, setData] = useState<BrandDashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,6 +158,49 @@ export function BrandDashboardClient({
     fetchMatches(filters, controller.signal);
     return () => controller.abort();
   }, [fetchMatches, filters]);
+
+  // Open drawer when ?match= URL param is present
+  useEffect(() => {
+    if (!activeMatchId) {
+      setDrawerDetails(null);
+      setDrawerMatch(null);
+      return;
+    }
+    // Find the match object in local state
+    const found = data?.matches.find((m) => m.id === activeMatchId) ?? null;
+    setDrawerMatch(found);
+    // Fetch details for the drawer
+    fetchBrandMatchDetails(projectId, activeMatchId)
+      .then(setDrawerDetails)
+      .catch((err: unknown) => {
+        const status = (err as { status?: number }).status;
+        if (status === 404) {
+          toast.error("Match not found.");
+          router.push(pathname, { scroll: false });
+        } else {
+          // Details failed but drawer can still open with match data
+          setDrawerDetails(null);
+        }
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMatchId, projectId]);
+
+  // Sync drawerMatch when matches data refreshes
+  useEffect(() => {
+    if (!activeMatchId || !data) return;
+    const found = data.matches.find((m) => m.id === activeMatchId) ?? null;
+    if (found) setDrawerMatch(found);
+  }, [data, activeMatchId]);
+
+  // Called when matched_value cell is clicked — push URL param (shallow)
+  function handleMatchClick(matchId: string) {
+    router.push(`${pathname}?match=${matchId}`, { scroll: false });
+  }
+
+  // Close drawer — clear URL param
+  function handleDrawerClose() {
+    router.push(pathname, { scroll: false });
+  }
 
   // Optimistic update after in-row lifecycle PATCH
   function handleMatchUpdate(updated: BrandMatchRead) {
@@ -146,6 +261,9 @@ export function BrandDashboardClient({
 
   return (
     <div className="space-y-4">
+      {/* Brand sub-tab strip: Matches | Terms | Stoplist */}
+      <BrandTabStrip projectId={projectId} />
+
       {/* Suppression-review banner (clickable — opens modal) */}
       {data?.has_expiring_dismissals && (
         <SuppressionReviewBanner
@@ -158,16 +276,9 @@ export function BrandDashboardClient({
       {/* Noise-downgrade banner(s) */}
       {renderNoiseDowngradeBanner()}
 
-      {/* Filter bar + Manage-terms link */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      {/* Filter bar */}
+      <div className="flex items-center gap-4 flex-wrap">
         <MatchFilterBar filters={filters} onChange={setFilters} />
-        <button
-          type="button"
-          className="text-[12px] text-muted-foreground hover:text-foreground transition-colors"
-          onClick={() => router.push(`/projects/${projectId}/brand/terms`)}
-        >
-          Manage brand terms →
-        </button>
       </div>
 
       {/* Content: loading / error / empty / table */}
@@ -208,6 +319,26 @@ export function BrandDashboardClient({
           matches={matches}
           isObserver={isObserver}
           onMatchUpdate={handleMatchUpdate}
+          onMatchClick={handleMatchClick}
+          activeMatchId={activeMatchId}
+        />
+      )}
+
+      {/* Match detail drawer — mounts when ?match= param is set and details loaded */}
+      {activeMatchId && drawerMatch && drawerDetails && (
+        <MatchDetailDrawer
+          projectId={projectId}
+          match={drawerMatch}
+          details={drawerDetails}
+          open={true}
+          onClose={handleDrawerClose}
+          onUpdate={(updated) => {
+            handleMatchUpdate(updated);
+            // Refetch details to refresh history/counts in drawer
+            fetchBrandMatchDetails(projectId, updated.id)
+              .then(setDrawerDetails)
+              .catch(() => {/* non-fatal */});
+          }}
         />
       )}
     </div>

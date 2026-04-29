@@ -25,7 +25,7 @@ import json
 import logging
 import subprocess
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import text
@@ -33,7 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.services.brand_severity import score
-from app.services.brand_stoplist import is_short, is_stoplisted
+from app.services.brand_stoplist import is_short, is_stoplisted, load_runtime_stoplist_for_project
 from app.services.brand_synth import build_event_dict
 from app.services.crtsh_client import fetch_certs
 from app.services.dnstwist_parser import parse_dnstwist_output
@@ -81,13 +81,20 @@ _FTS_SQL_FULL = text(
 )
 
 
-def _fts_sql_for_term(term_value: str):
+def _fts_sql_for_term(
+    term_value: str,
+    runtime_stoplist: "frozenset[str] | None" = None,
+):
     """Return the FTS SQL clause for a given term value.
 
     Short (len<6) OR stoplisted terms use the restricted title+stix_id scope;
     everything else uses the full search_tsv.
+
+    Pass a pre-loaded `runtime_stoplist` frozenset (from
+    load_runtime_stoplist_for_project) to include per-project terms in the
+    stoplist check without re-querying the DB each call.
     """
-    if is_short(term_value) or is_stoplisted(term_value):
+    if is_short(term_value) or is_stoplisted(term_value, runtime_stoplist=runtime_stoplist):
         return _FTS_SQL_RESTRICTED
     return _FTS_SQL_FULL
 
@@ -96,8 +103,13 @@ def _fts_sql_for_term(term_value: str):
 # Branch runners
 # ---------------------------------------------------------------------------
 
-async def _fts_scan(session: AsyncSession, project_id: UUID, term: dict) -> list[dict]:
-    sql = _fts_sql_for_term(term["value"])
+async def _fts_scan(
+    session: AsyncSession,
+    project_id: UUID,
+    term: dict,
+    runtime_stoplist: "frozenset[str] | None" = None,
+) -> list[dict]:
+    sql = _fts_sql_for_term(term["value"], runtime_stoplist=runtime_stoplist)
     result = await session.execute(sql, {"project_id": str(project_id), "term": term["value"]})
     rows = result.mappings().all()
     out: list[dict] = []
@@ -376,7 +388,14 @@ async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int
     """Run the full FTS + CT log + dnstwist scan for all active terms in a project.
 
     Returns a stats dict: {"fts": n, "ct_log": n, "dnstwist": n, "synthesised": n}.
+
+    Phase 21 / BRAND-01: loads per-project stoplist ONCE at scan entry and threads
+    the frozenset through to _fts_sql_for_term so FTS branch reflects project-level
+    suppression terms alongside the global DEFAULT_STOPLIST + env extras.
     """
+    # Load per-project stoplist once — includes DEFAULT ∪ env ∪ project terms
+    runtime_stoplist = await load_runtime_stoplist_for_project(session, project_id)
+
     terms_result = await session.execute(_TERMS_SQL, {"project_id": str(project_id)})
     terms = [dict(r) for r in terms_result.mappings().all()]
 
@@ -384,7 +403,7 @@ async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int
 
     # ---- FTS branch ----
     for term in terms:
-        for match in await _fts_scan(session, project_id, term):
+        for match in await _fts_scan(session, project_id, term, runtime_stoplist=runtime_stoplist):
             severity = score("fts", False)
             stored = await _upsert_match(
                 session, project_id=project_id, term=term, match=match, severity=severity

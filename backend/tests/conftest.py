@@ -1,12 +1,52 @@
 """Shared pytest fixtures for IntelliBird backend tests."""
 from __future__ import annotations
 
-import asyncio
 import os
 from collections.abc import Generator
 from typing import Any
 
 import pytest
+
+
+# --- Phase 19 hermetic per-test isolation (TEST-01 / TEST-02) --------------
+
+@pytest.fixture(autouse=True)
+def _isolate_global_state() -> Generator[None, None, None]:
+    """Hermetic per-test reset of Settings singleton + app.state module + FastAPI app.state.
+
+    Phase 19 / TEST-01 / TEST-02. Single autouse fixture covers the three
+    non-Redis pollution surfaces. Redis FLUSHDB + DB TRUNCATE live in
+    tests/integration/conftest.py because they require session-scoped containers.
+
+    Snapshot strategy: settings.model_dump() returns shallow dict, safe because
+    all Settings fields are scalars (str|int|bool|Literal|None) — verified in RESEARCH.
+    """
+    # --- 1. Lazy imports (avoid breaking unit tests with no app.* deps) ---
+    from app.config import settings as _settings
+    import app.state as _app_state
+    from app.main import app as _fastapi_app
+
+    # --- 2. Snapshot ---
+    original_settings_values: dict[str, object] = _settings.model_dump()
+    original_decrypt_check = _app_state.decrypt_check
+    original_ollama_health = getattr(_fastapi_app.state, "ollama_health", "unknown")
+
+    # --- 3. Reset to known-clean state on entry ---
+    _app_state.decrypt_check = "unknown"
+    _fastapi_app.state.ollama_health = "unknown"
+
+    yield
+
+    # --- 4. Restore on teardown ---
+    for field, value in original_settings_values.items():
+        try:
+            setattr(_settings, field, value)
+        except Exception:
+            # Pydantic may reject some setattrs (e.g. computed fields);
+            # swallow to keep teardown idempotent.
+            pass
+    _app_state.decrypt_check = original_decrypt_check
+    _fastapi_app.state.ollama_health = original_ollama_health
 
 
 # --- Phase 9 shared fixtures (AUTH-01..04) ---------------------------------
@@ -82,9 +122,3 @@ def mock_oidc_jwks() -> dict[str, Any]:
     from backend.tests.fixtures.authentik_mock import AUTHENTIK_DISCOVERY, AUTHENTIK_JWKS
     return {"discovery": AUTHENTIK_DISCOVERY, "jwks": AUTHENTIK_JWKS}
 
-
-@pytest.fixture(scope="session")
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()

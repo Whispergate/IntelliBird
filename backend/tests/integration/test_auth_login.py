@@ -225,6 +225,7 @@ async def test_login_success_clears_fails_counter(auth_client, admin_user, redis
     assert count is None
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_me_returns_user_shape(auth_client, admin_user):
     from app.security.jwt import mint_access_token
@@ -293,6 +294,7 @@ async def test_me_returns_user_shape(auth_client, admin_user):
     await test_engine.dispose()
 
 
+@pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_logout_revokes_access_jti(auth_client, admin_user, redis_client):
     """Logout must blocklist the access token JTI."""

@@ -1,27 +1,19 @@
 /**
- * /projects/[id]/graph — per-project attack graph landing (Phase 10 Plan 12).
+ * /projects/[id]/graph — Project-aggregate attack graph (Phase 20 Plan 20-03).
  *
- * Server component. Phase 10 ships an empty-state landing with a CTA back to
- * /projects/[id]/intel. Rationale per CONTEXT.md §Per-project intel + graph
- * views and 10-12-PLAN.md:
+ * Server Component. Fetches the project graph from
+ * GET /api/projects/{id}/graph via _apiFetch (CLAUDE.md convention — server-side
+ * fetches MUST inject Bearer token; never use raw fetch(${API_BASE}/...)).
  *
- *   - AttackGraph is seeded from a specific event; it has no meaningful
- *     standalone render without an event-id input. Exposing a seed picker on
- *     the page would duplicate the events list that already lives on
- *     /projects/[id]/intel.
- *   - The operator flow is: drill into an event from the Intel view → open
- *     EventDetailDrawer → the nested AttackGraph renders for that event, with
- *     `projectId` threaded in automatically so every BFS hop filters to
- *     project-scoped events (H-3 closure).
- *   - The full project-level attack graph view (forced-layout unification of
- *     all project events' traversals) is a v2.1 enhancement.
- *
- * The Graph tab in ProjectTabs (plan 10-09) routes here; the route exists so
- * the tab does not 404. The page guides the operator back to Intel.
+ * Passes data to the <ProjectGraph> client component which renders:
+ *   - Cytoscape with built-in `cose` layout for populated projects
+ *   - Empty-state cards for projects with no events or no graph relationships
+ *   - Truncate banner when the API indicates result truncation
  */
 
 import Link from "next/link";
-import { fetchProjectDetail } from "../../lib/api";
+import { fetchProjectGraph } from "@/app/projects/lib/api";
+import { ProjectGraph } from "./ProjectGraph";
 import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
@@ -32,42 +24,31 @@ export default async function ProjectGraphPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  // layout.tsx already validated access — fetch again so the page can show
-  // the project name in its CTA. A mid-session access revocation surfaces via
-  // the Next.js error boundary, consistent with page.tsx for Overview.
-  const project = await fetchProjectDetail(id);
+  try {
+    const data = await fetchProjectGraph(id);
+    return <ProjectGraph data={data} projectId={id} />;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const is403or404 =
+      message.startsWith("403") ||
+      message.startsWith("404") ||
+      message.includes("Forbidden") ||
+      message.includes("Not Found");
 
-  return (
-    <div
-      className="flex flex-col items-center justify-center py-16 gap-3 text-center"
-      data-testid="project-graph-landing"
-    >
-      <h2
-        className="brand-heading text-foreground"
-        style={{ fontSize: 22, fontWeight: 500 }}
+    return (
+      <div
+        role="alert"
+        className="flex flex-col items-center justify-center py-16 gap-4 text-center"
       >
-        No graph for this project yet
-      </h2>
-      <p
-        className="text-muted-foreground max-w-md"
-        style={{ fontSize: 16, lineHeight: 1.7 }}
-      >
-        Ingest events matching the scope, then open an event from the Intel
-        view to see its attack-graph traversal scoped to this project.
-      </p>
-      <Link
-        href={`/projects/${project.id}/intel`}
-        aria-label={`Open Intel view for ${project.name}`}
-      >
-        <Button
-          style={{
-            backgroundColor: "var(--brand-signal)",
-            color: "var(--brand-ink)",
-          }}
-        >
-          Open Intel view
-        </Button>
-      </Link>
-    </div>
-  );
+        <p className="text-muted-foreground">
+          {is403or404
+            ? "You do not have access to this project."
+            : `Failed to load graph: ${message}`}
+        </p>
+        <Link href={`/projects/${id}`}>
+          <Button variant="outline">Back to project</Button>
+        </Link>
+      </div>
+    );
+  }
 }

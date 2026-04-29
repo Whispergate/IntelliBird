@@ -10,11 +10,17 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
+import idna
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 EngagementTypeLit = Literal["red_team", "tiber", "bbest", "internal", "intel_only"]
 ScopeTypeLit = Literal["keyword", "service", "domain", "certificate", "whois", "as_number", "ip_range"]
 ProjectRoleLit = Literal["Lead", "Contributor", "Observer"]
+
+# Scope types that carry FQDNs and therefore require IDN encoding.
+# "domain" — explicit domain name entry.
+# "certificate" — CN / SAN value (also FQDN-bearing per CONTEXT.md §UX-03).
+_FQDN_SCOPE_TYPES = frozenset({"domain", "certificate"})
 
 
 # ---------------------------------------------------------------------------
@@ -66,6 +72,29 @@ class ScopeRowCreate(BaseModel):
     active_test_scope: bool = False
     intel_scope: bool = True
 
+    @model_validator(mode="before")
+    @classmethod
+    def _encode_idn(cls, data: object) -> object:
+        """Encode unicode FQDN values to punycode for FQDN-bearing scope types.
+
+        Uses idna.encode(value, uts46=True, transitional=False) per RFC 5891 + UTS-46.
+        Already-ASCII and already-punycode inputs are idempotent (idna handles them
+        correctly). Non-FQDN scope types (ip_range, keyword, service, etc.) pass through
+        unchanged. idna.IDNAError → ValueError → 422 with a clear error message.
+        """
+        if not isinstance(data, dict):
+            return data
+        scope_type = data.get("scope_type")
+        value = data.get("value")
+        if scope_type in _FQDN_SCOPE_TYPES and isinstance(value, str) and value:
+            try:
+                data["value"] = idna.encode(value, uts46=True, transitional=False).decode("ascii")
+            except idna.IDNAError as exc:
+                raise ValueError(
+                    f"Invalid IDN: {value}. Use ASCII or valid Unicode domain"
+                ) from exc
+        return data
+
     @model_validator(mode="after")
     def _at_least_one_flag(self) -> "ScopeRowCreate":
         if not (self.active_test_scope or self.intel_scope):
@@ -74,10 +103,35 @@ class ScopeRowCreate(BaseModel):
 
 
 class ScopeRowUpdate(BaseModel):
+    # scope_type and value are optional for partial updates that include an FQDN value.
+    # The IDN validator fires only when both scope_type and value are present.
+    scope_type: ScopeTypeLit | None = None
+    value: str | None = Field(default=None, min_length=1, max_length=1024)
     contact: str | None = Field(default=None, max_length=400)
     exclude: bool | None = None
     active_test_scope: bool | None = None
     intel_scope: bool | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _encode_idn(cls, data: object) -> object:
+        """Encode unicode FQDN values to punycode for FQDN-bearing scope types.
+
+        Identical logic to ScopeRowCreate._encode_idn. Guards the None-value case
+        (partial update with no value field) by checking `if isinstance(value, str) and value`.
+        """
+        if not isinstance(data, dict):
+            return data
+        scope_type = data.get("scope_type")
+        value = data.get("value")
+        if scope_type in _FQDN_SCOPE_TYPES and isinstance(value, str) and value:
+            try:
+                data["value"] = idna.encode(value, uts46=True, transitional=False).decode("ascii")
+            except idna.IDNAError as exc:
+                raise ValueError(
+                    f"Invalid IDN: {value}. Use ASCII or valid Unicode domain"
+                ) from exc
+        return data
 
     @model_validator(mode="after")
     def _at_least_one_flag_if_both_set(self) -> "ScopeRowUpdate":

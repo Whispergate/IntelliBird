@@ -171,7 +171,7 @@ export function ProjectTabs({
   }
 
   return (
-    <div className="relative border-b border-border">
+    <div className="relative border-b border-border w-full min-w-0 max-w-full">
       {/* Left fade — signals more tabs scrollable to the left */}
       {showLeftFade && (
         <div
@@ -196,7 +196,7 @@ export function ProjectTabs({
       )}
       <div
         ref={scrollRef}
-        className="overflow-x-auto"
+        className="overflow-x-auto max-w-full min-w-0"
         style={{
           // Hide native scrollbar on Firefox; WebKit relies on the fade to
           // communicate overflow (scrollbar may still show — acceptable for M2).

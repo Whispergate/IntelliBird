@@ -51,7 +51,7 @@ from app.security.project_membership import require_project_membership
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api", tags=["ai"])
+router = APIRouter(tags=["ai"])
 
 # ---------------------------------------------------------------------------
 # Helpers

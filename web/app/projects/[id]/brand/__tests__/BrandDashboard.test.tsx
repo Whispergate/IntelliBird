@@ -26,6 +26,7 @@ if (
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
+  usePathname: () => "/projects/proj-1/brand",
   useSearchParams: () => ({ get: vi.fn().mockReturnValue(null) }),
 }));
 

@@ -39,6 +39,7 @@ from app.routers.admin.users import router as admin_users_router
 from app.routers.ai import router as ai_router
 from app.routers.attack import router as attack_router
 from app.routers.admin.ai_health import router as admin_ai_health_router
+from app.routers.admin.ai_jobs import router as admin_ai_jobs_router
 from app.routers.assets import router as assets_router
 from app.routers.auth import router as auth_router
 from app.routers.admin.sources import router as admin_sources_router
@@ -46,6 +47,7 @@ from app.routers.admin.source_templates import router as admin_source_templates_
 from app.routers.admin.webhooks import router as admin_webhooks_router
 from app.routers.events import router as events_router
 from app.routers.graph import router as graph_router
+from app.routers.graph import projects_graph_router
 from app.routers.presets import router as presets_router
 from app.routers.easm import router as easm_router
 from app.routers.easm import safelist_router as easm_safelist_router
@@ -205,6 +207,9 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(tags_router, prefix="/api")
     fastapi_app.include_router(presets_router, prefix="/api")
     fastapi_app.include_router(graph_router, prefix="/api")
+    # projects_graph_router MUST be registered before projects_router so /api/projects/{id}/graph
+    # resolves on the graph router, not on the projects_router's /{project_id} catchall.
+    fastapi_app.include_router(projects_graph_router, prefix="/api")
     # compare_router MUST be registered before projects_router so /api/projects/compare
     # resolves on compare_router first, not on projects_router's /{project_id} catchall.
     fastapi_app.include_router(projects_compare_router, prefix="/api")
@@ -218,6 +223,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(attack_router, prefix="/api")
     fastapi_app.include_router(ai_router, prefix="/api")
     fastapi_app.include_router(admin_ai_health_router, prefix="/api")
+    fastapi_app.include_router(admin_ai_jobs_router, prefix="/api")
     # Assets router has absolute prefix baked in (/api/projects/{id}/assets)
     fastapi_app.include_router(assets_router)
     # TIBER report generation router — absolute prefix /api/projects/{id}/tiber

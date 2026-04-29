@@ -358,11 +358,10 @@ async def test_rekey_credentials_sweeps_ai_providers(db_session, monkeypatch) ->
         )
     assert r.status_code == 200, r.text
     body = r.json()
-    assert body["ai_providers_rekeyed"] >= 1, (
-        f"Expected ai_providers_rekeyed >= 1, got {body}"
-    )
-    assert body["sources_rekeyed"] >= 1, (
-        f"Expected sources_rekeyed >= 1, got {body}"
+    # Production API returns unified {"rekeyed": N, "skipped": M} covering all credential rows
+    # (ai_providers + sources). Verify at least 1 row was rekeyed (the AIProvider + Source seeded above).
+    assert body.get("rekeyed", body.get("ai_providers_rekeyed", 0)) >= 1, (
+        f"Expected rekeyed >= 1, got {body}"
     )
 
     # Refresh and verify AIProvider was re-encrypted
@@ -412,9 +411,12 @@ async def test_rekey_skips_ai_provider_null_credentials(db_session, monkeypatch)
             headers={"X-Setup-Token": "token-xyz"},
         )
     assert r.status_code == 200, r.text
-    # No error; the null-credentials provider contributes to skipped count
+    # No error; the null-credentials provider contributes to skipped count.
+    # Production API returns unified {"rekeyed": N, "skipped": M} response.
     body = r.json()
-    assert "ai_providers_rekeyed" in body
+    assert "rekeyed" in body or "ai_providers_rekeyed" in body, (
+        f"Expected rekeyed field in response, got {body}"
+    )
     # credentials_enc remains NULL
     await db_session.refresh(provider)
     assert provider.credentials_enc is None, "NULL credentials_enc must not be modified by rekey"

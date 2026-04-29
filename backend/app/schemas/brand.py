@@ -16,7 +16,8 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 
 
 # ---------------------------------------------------------------------------
@@ -105,12 +106,14 @@ class BrandMatchPatch(BaseModel):
 
     `dismiss_days` is required when `lifecycle_status == 'dismissed'`; validated
     server-side. 1..3650 days (≈10y max).
+    `note` is an optional free-text comment (max 500 chars) embedded in the history entry.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     lifecycle_status: LifecycleStatus
     dismiss_days: int | None = Field(default=None, ge=1, le=3650)
+    note: str | None = Field(default=None, max_length=500)
 
 
 class BrandSuppressionExtend(BaseModel):
@@ -125,6 +128,52 @@ class BrandSuppressionExtend(BaseModel):
 
     extend_days: int | None = Field(default=None, ge=1, le=3650)
     let_resurface: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Match history / details DTOs — Phase 21 / BRAND-02
+# ---------------------------------------------------------------------------
+
+class HistoryEntry(BaseModel):
+    """A single entry in match_metadata.history[] — written at PATCH time."""
+
+    model_config = ConfigDict(extra="allow")
+
+    acted_at: str
+    actor_id: str
+    action: str
+    prev_status: str | None = None
+    new_status: str | None = None
+    note: str | None = None
+    match_id: str | None = None
+    matched_value: str | None = None
+
+
+class AggregateCounts(BaseModel):
+    """Per-status counts across all matches for the same brand_term_id in a project."""
+
+    new: int = 0
+    confirmed: int = 0
+    dismissed: int = 0
+    watchlist: int = 0
+
+
+class MatchProvenance(BaseModel):
+    """Provenance metadata surfaced in the match detail drawer."""
+
+    detector: str           # match_source
+    raw_input: str | None   # best available per-detector provenance string
+    matched_value: str
+    similarity: float | None = None  # always None for current detectors
+
+
+class MatchDetailsResponse(BaseModel):
+    """GET /api/projects/{id}/brand/matches/{match_id}/details response."""
+
+    match_id: UUID
+    provenance: MatchProvenance
+    aggregate_counts: AggregateCounts
+    timeline: list[HistoryEntry]
 
 
 # ---------------------------------------------------------------------------
@@ -149,6 +198,35 @@ class BrandSuppressionRow(BaseModel):
     matched_value: str
     match_source: MatchSource
     dismiss_until: datetime
+
+
+# ---------------------------------------------------------------------------
+# Stoplist DTOs — Phase 21 / BRAND-01
+# ---------------------------------------------------------------------------
+
+class BrandStoplistTermCreate(BaseModel):
+    """POST /api/projects/{id}/brand/stoplist — add a per-project stoplist term."""
+
+    term: str = Field(..., min_length=1, max_length=200)
+
+    @field_validator("term")
+    @classmethod
+    def _strip(cls, v: str) -> str:
+        s = v.strip()
+        if not s:
+            raise ValueError("term must not be empty after trim")
+        return s
+
+
+class BrandStoplistTermRead(BaseModel):
+    """Response shape for a single brand_stoplist_terms row."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    term: str
+    created_at: datetime
+    created_by_user_id: UUID | None
 
 
 class BrandDashboardResponse(BaseModel):

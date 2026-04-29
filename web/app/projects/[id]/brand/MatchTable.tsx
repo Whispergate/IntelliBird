@@ -249,12 +249,18 @@ interface MatchTableProps {
   matches: BrandMatchRead[];
   isObserver: boolean;
   onMatchUpdate: (updated: BrandMatchRead) => void;
+  /** Called with match.id when the matched_value cell is clicked. */
+  onMatchClick?: (matchId: string) => void;
+  /** Highlights the row whose id matches this value (from ?match= URL param). */
+  activeMatchId?: string | null;
 }
 
 export function MatchTable({
   matches,
   isObserver,
   onMatchUpdate,
+  onMatchClick,
+  activeMatchId,
 }: MatchTableProps) {
   return (
     <div className="overflow-x-auto rounded-md border border-border">
@@ -312,9 +318,11 @@ export function MatchTable({
           {matches.map((match) => {
             const isDismissed = match.lifecycle_status === "dismissed";
             const isWatchlist = match.lifecycle_status === "watchlist";
+            const isActive = match.id === activeMatchId;
             const rowCls = [
               "border-b border-border/40 last:border-b-0",
               isDismissed ? "opacity-60 text-muted-foreground" : "",
+              isActive ? "bg-card/60" : "",
             ]
               .filter(Boolean)
               .join(" ");
@@ -359,14 +367,21 @@ export function MatchTable({
                   </div>
                 </td>
 
-                {/* Matched value — font-mono 12px */}
+                {/* Matched value — font-mono 12px + click affordance (UI-SPEC §Surface 3) */}
                 <td className="py-2 px-3">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span
-                          className="font-mono text-[12px] text-foreground truncate block max-w-[360px]"
+                          className="font-mono text-[12px] text-foreground truncate block max-w-[360px] cursor-pointer hover:underline decoration-[var(--brand-signal)] underline-offset-2"
                           aria-label={raw}
+                          onClick={() => onMatchClick?.(match.id)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) =>
+                            (e.key === "Enter" || e.key === " ") &&
+                            onMatchClick?.(match.id)
+                          }
                         >
                           {truncated}
                         </span>
