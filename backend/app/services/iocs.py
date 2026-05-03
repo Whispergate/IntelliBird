@@ -266,6 +266,18 @@ def upsert_ioc_for_event_sync(
             continue
         iocs_upserted += 1
 
+        # Enqueue enrichment immediately after successful IOC upsert.
+        # The whitelisted/type check happens inside _async_enrich — always enqueue.
+        # Cache absorbs re-sights at worker level (no quota burn per RESEARCH.md §Pitfall 3).
+        try:
+            from app.workers.iocs import enrich_ioc as _enrich_ioc  # noqa: PLC0415 — lazy, avoids circular
+            _enrich_ioc.send(str(ioc_id))
+        except Exception as _enq_exc:  # noqa: BLE001
+            import logging as _logging  # noqa: PLC0415
+            _logging.getLogger(__name__).warning(
+                "enrich_ioc_enqueue_failed ioc_id=%s error=%r", ioc_id, _enq_exc
+            )
+
         link_stmt = (
             _pg_insert(_IOCLink)
             .values(
