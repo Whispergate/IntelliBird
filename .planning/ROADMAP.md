@@ -435,7 +435,7 @@ Plans:
 | 23. IOC Enrichment APIs | 6/6 | Complete    | 2026-05-03 | - |
 | 24. Dark-Web Collection | 4/7 | In Progress|  | - |
 | 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
-| 26. TAXII Outbound Server | 1/5 | In Progress|  | - |
+| 26. TAXII Outbound Server | 2/5 | In Progress|  | - |
 | 27. Sandbox + YARA | v4.0 | 0/0 | Not started | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | v4.0 | 0/0 | Not started | - |
 | 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |
