@@ -411,7 +411,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 |-------|-----------|----------------|--------|-----------|
 | 1-21 | v1.5–v3.1 | — | Complete | 2026-04-29 |
 | 22. IOC Foundation | 5/6 | Complete    | 2026-05-03 | - |
-| 23. IOC Enrichment APIs | 2/6 | In Progress|  | - |
+| 23. IOC Enrichment APIs | 3/6 | In Progress|  | - |
 | 24. Dark-Web Collection | v4.0 | 0/0 | Not started | - |
 | 25. Threat Actors, Campaigns & Audit Log | v4.0 | 0/0 | Not started | - |
 | 26. TAXII Outbound Server | v4.0 | 0/0 | Not started | - |
