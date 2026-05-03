@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: completed
-stopped_at: Completed 23-03-PLAN.md (enrichment provider service layer)
-last_updated: "2026-05-03T13:33:25.486Z"
+stopped_at: Completed 23-04-PLAN.md (enrichment actor wire-up)
+last_updated: "2026-05-03T13:36:53.513Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 1
   total_plans: 12
-  completed_plans: 9
+  completed_plans: 10
 ---
 
 # Project State
@@ -541,6 +541,8 @@ Recent decisions affecting current work:
 - [Phase 23]: api_key_masked field in EnrichmentProviderRead ensures raw credentials_enc never returned from ORM layer; masking deferred to route handler
 - [Phase 23-ioc-enrichment-apis]: PROVIDER_IOC_ROUTING locked to CONTEXT.md values — no additions without plan revision
 - [Phase 23-ioc-enrichment-apis]: Shodan 401 returns None without record_quota_failure — free-tier key limit is not a quota event
+- [Phase 23-04]: broker.py unchanged — enrich_ioc auto-registers via existing iocs module import
+- [Phase 23-04]: force_refresh checked at _async_enrich entry and deleted after commit (not per-provider)
 
 ### Roadmap Evolution
 
@@ -595,7 +597,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-03T13:33:25.482Z
-Stopped at: Completed 23-03-PLAN.md (enrichment provider service layer)
+Last session: 2026-05-03T13:36:49.625Z
+Stopped at: Completed 23-04-PLAN.md (enrichment actor wire-up)
 Resume file: None
 Next: 19-03-PLAN.md (Wave 3: Redis FLUSHDB + per-test TRUNCATE in integration conftest; @pytest.mark.cross_file_pollution decoration on 21 known-failing tests)
