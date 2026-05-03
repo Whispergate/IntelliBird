@@ -19,24 +19,24 @@
 
 ### Tier 1 — IOC enrichment integrations
 
-- [ ] **ENRICH-01**: Admin can configure per-project (or global) API keys for VirusTotal, AbuseIPDB, GreyNoise, OTX direct, Shodan, URLhaus through encrypted settings (reuses `crypto.encrypt_credentials`).
-- [ ] **ENRICH-02**: System auto-enriches every newly-created IOC against enabled providers via async worker actor `enrich_ioc`; results stored in `ioc_enrichments` table (one row per provider).
-- [ ] **ENRICH-03**: System honours per-provider quota limits via Redis rolling-window counter (e.g. VT free tier 4 req/min) with circuit-breaker abort on repeated quota exhaust.
-- [ ] **ENRICH-04**: User can view IOC enrichment results in event detail drawer (reputation badges: clean/suspicious/malicious/unknown + provider attribution + pivot links).
-- [ ] **ENRICH-05**: System caches enrichment results in Redis (`enrich:{provider}:{indicator}` TTL 24h) to respect free-tier quotas.
+- [x] **ENRICH-01**: Admin can configure per-project (or global) API keys for VirusTotal, AbuseIPDB, GreyNoise, OTX direct, Shodan, URLhaus through encrypted settings (reuses `crypto.encrypt_credentials`).
+- [x] **ENRICH-02**: System auto-enriches every newly-created IOC against enabled providers via async worker actor `enrich_ioc`; results stored in `ioc_enrichments` table (one row per provider).
+- [x] **ENRICH-03**: System honours per-provider quota limits via Redis rolling-window counter (e.g. VT free tier 4 req/min) with circuit-breaker abort on repeated quota exhaust.
+- [x] **ENRICH-04**: User can view IOC enrichment results in event detail drawer (reputation badges: clean/suspicious/malicious/unknown + provider attribution + pivot links).
+- [x] **ENRICH-05**: System caches enrichment results in Redis (`enrich:{provider}:{indicator}` TTL 24h) to respect free-tier quotas.
 - [ ] **ENRICH-06**: Admin can configure passive DNS providers (SecurityTrails, Mnemonic PassiveTotal, RiskIQ Community) with same provider-abstraction pattern as §ENRICH-01.
 - [ ] **ENRICH-07**: System enriches each new domain IOC with WHOIS registration data cached for 7 days.
 - [ ] **ENRICH-08**: Cytoscape graph adds `:DomainPivot` node type connecting domains by shared registrar / registration email / historical IP for infrastructure clustering.
 
 ### Tier 1 — Dark-web / paste / Telegram collection
 
-- [ ] **DARK-01**: System runs a dedicated Tor SOCKS5 proxy compose service (profile `darkweb`) isolated from EASM and operator egress.
-- [ ] **DARK-02**: User can add `tor_html` source type that scrapes `.onion` HTML through the Tor proxy with per-source crawl depth.
-- [ ] **DARK-03**: User can add `paste` source type ingesting from ghostbin, paste.ee, paste.rs, dpaste, controld, rentry through their RSS or scrapable index.
-- [ ] **DARK-04**: User can add `telegram` source type ingesting public Telegram channel posts via Telethon (read-only API key + burner number).
-- [ ] **DARK-05**: System auto-extracts `.onion` URLs, victim-name candidates, BTC wallets, and credential pair patterns (`email:hash`, `email:plaintext`) from dark-web event content.
-- [ ] **DARK-06**: Dark-web sources default to `confidence=0.4` (lower than RSS=0.7) so noise does not auto-promote to high-tier alerts; analyst tagging promotes confidence.
-- [ ] **DARK-07**: UI surfaces a "data exfiltration risk" warning on dark-web source forms; operator must explicitly authorise each `.onion` URL or Telegram channel.
+- [x] **DARK-01**: System runs a dedicated Tor SOCKS5 proxy compose service (profile `darkweb`) isolated from EASM and operator egress.
+- [x] **DARK-02**: User can add `tor_html` source type that scrapes `.onion` HTML through the Tor proxy with per-source crawl depth.
+- [x] **DARK-03**: User can add `paste` source type ingesting from ghostbin, paste.ee, paste.rs, dpaste, controld, rentry through their RSS or scrapable index.
+- [x] **DARK-04**: User can add `telegram` source type ingesting public Telegram channel posts via Telethon (read-only API key + burner number).
+- [x] **DARK-05**: System auto-extracts `.onion` URLs, victim-name candidates, BTC wallets, and credential pair patterns (`email:hash`, `email:plaintext`) from dark-web event content.
+- [x] **DARK-06**: Dark-web sources default to `confidence=0.4` (lower than RSS=0.7) so noise does not auto-promote to high-tier alerts; analyst tagging promotes confidence.
+- [x] **DARK-07**: UI surfaces a "data exfiltration risk" warning on dark-web source forms; operator must explicitly authorise each `.onion` URL or Telegram channel.
 
 ### Tier 1 — Sandbox / file-detonation
 
@@ -48,20 +48,20 @@
 
 ### Tier 2 — TAXII outbound server
 
-- [ ] **TAXII-01**: System exposes a TAXII 2.1 discovery endpoint at `GET /taxii2/` per spec.
-- [ ] **TAXII-02**: System exposes paginated `GET /taxii2/api/collections/` and `GET /taxii2/api/collections/{id}/objects/` returning STIX 2.1 bundles of project events as indicator/observed-data SDOs.
-- [ ] **TAXII-03**: Admin can issue per-partner API keys via `taxii_clients` table; rate-limited per key; revocable.
-- [ ] **TAXII-04**: Each project exposes one read-only TAXII collection auto-mapped to its events; per-collection ACL gates AMBER/RED TLP markings.
-- [ ] **TAXII-05**: Response Content-Type strictly `application/taxii+json;version=2.1`; per-request page cap 100 objects.
+- [x] **TAXII-01**: System exposes a TAXII 2.1 discovery endpoint at `GET /taxii2/` per spec.
+- [x] **TAXII-02**: System exposes paginated `GET /taxii2/api/collections/` and `GET /taxii2/api/collections/{id}/objects/` returning STIX 2.1 bundles of project events as indicator/observed-data SDOs.
+- [x] **TAXII-03**: Admin can issue per-partner API keys via `taxii_clients` table; rate-limited per key; revocable.
+- [x] **TAXII-04**: Each project exposes one read-only TAXII collection auto-mapped to its events; per-collection ACL gates AMBER/RED TLP markings.
+- [x] **TAXII-05**: Response Content-Type strictly `application/taxii+json;version=2.1`; per-request page cap 100 objects.
 
 ### Tier 2 — Global threat-actors + campaigns
 
-- [ ] **ACTOR-01**: System stores global `threat_actors` table (id, primary_name, aliases TEXT[], country, motivation, sophistication, first_seen, profile_md, mitre_group_id) surviving across engagements.
-- [ ] **ACTOR-02**: System bootstraps actor catalog from MITRE ATT&CK `intrusion-set` STIX objects (extends existing `bootstrap_attack` pull).
-- [ ] **ACTOR-03**: System stores `campaigns` table (id, name, actor_id FK nullable, start_date, end_date, summary_md, project_id NULL=global) with M2M `campaign_events` link.
-- [ ] **ACTOR-04**: AI suggestion-extraction path auto-links extracted `actor_names[]` to existing `threat_actors` rows via fuzzy alias match; unknown actors stage as pending suggestions.
-- [ ] **ACTOR-05**: User can browse `/actors` route — actor list, profile pages with timeline of associated events, Cytoscape sub-graph centred on actor.
-- [ ] **ACTOR-06**: User can manually create + edit actor profiles (Lead+ role); link/unlink campaigns + events from profile UI.
+- [x] **ACTOR-01**: System stores global `threat_actors` table (id, primary_name, aliases TEXT[], country, motivation, sophistication, first_seen, profile_md, mitre_group_id) surviving across engagements.
+- [x] **ACTOR-02**: System bootstraps actor catalog from MITRE ATT&CK `intrusion-set` STIX objects (extends existing `bootstrap_attack` pull).
+- [x] **ACTOR-03**: System stores `campaigns` table (id, name, actor_id FK nullable, start_date, end_date, summary_md, project_id NULL=global) with M2M `campaign_events` link.
+- [x] **ACTOR-04**: AI suggestion-extraction path auto-links extracted `actor_names[]` to existing `threat_actors` rows via fuzzy alias match; unknown actors stage as pending suggestions.
+- [x] **ACTOR-05**: User can browse `/actors` route — actor list, profile pages with timeline of associated events, Cytoscape sub-graph centred on actor.
+- [x] **ACTOR-06**: User can manually create + edit actor profiles (Lead+ role); link/unlink campaigns + events from profile UI.
 
 ### Tier 2 — Multi-hop graph traversal
 
@@ -95,9 +95,9 @@
 
 ### Tier 3 — Audit log
 
-- [ ] **AUDIT-01**: System stores `audit_log` TimescaleDB hypertable (time, user_sub, action, resource_type, resource_id, project_id, before_jsonb, after_jsonb, request_id) with same retention pattern as `events`.
-- [ ] **AUDIT-02**: FastAPI middleware logs all non-GET requests after dependency resolution; includes user, resource, before/after diff for mutations.
-- [ ] **AUDIT-03**: Admin can browse `/admin/audit` UI filtered by user / resource type / date range; read-only.
+- [x] **AUDIT-01**: System stores `audit_log` TimescaleDB hypertable (time, user_sub, action, resource_type, resource_id, project_id, before_jsonb, after_jsonb, request_id) with same retention pattern as `events`.
+- [x] **AUDIT-02**: FastAPI middleware logs all non-GET requests after dependency resolution; includes user, resource, before/after diff for mutations.
+- [x] **AUDIT-03**: Admin can browse `/admin/audit` UI filtered by user / resource type / date range; read-only.
 
 ### Tier 3 — CertStream realtime cert transparency
 
@@ -171,37 +171,37 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | IOC-06 | Phase 22 | Complete |
 | IOC-07 | Phase 22 | Complete |
 | IOC-08 | Phase 22 | Complete |
-| ENRICH-01 | Phase 23 | Pending |
-| ENRICH-02 | Phase 23 | Pending |
-| ENRICH-03 | Phase 23 | Pending |
-| ENRICH-04 | Phase 23 | Pending |
-| ENRICH-05 | Phase 23 | Pending |
+| ENRICH-01 | Phase 23 | Complete |
+| ENRICH-02 | Phase 23 | Complete |
+| ENRICH-03 | Phase 23 | Complete |
+| ENRICH-04 | Phase 23 | Complete |
+| ENRICH-05 | Phase 23 | Complete |
 | ENRICH-06 | Phase 28 | Pending |
 | ENRICH-07 | Phase 28 | Pending |
 | ENRICH-08 | Phase 28 | Pending |
-| DARK-01 | Phase 24 | Pending |
-| DARK-02 | Phase 24 | Pending |
-| DARK-03 | Phase 24 | Pending |
-| DARK-04 | Phase 24 | Pending |
-| DARK-05 | Phase 24 | Pending |
-| DARK-06 | Phase 24 | Pending |
-| DARK-07 | Phase 24 | Pending |
+| DARK-01 | Phase 24 | Complete |
+| DARK-02 | Phase 24 | Complete |
+| DARK-03 | Phase 24 | Complete |
+| DARK-04 | Phase 24 | Complete |
+| DARK-05 | Phase 24 | Complete |
+| DARK-06 | Phase 24 | Complete |
+| DARK-07 | Phase 24 | Complete |
 | SANDBOX-01 | Phase 27 | Pending |
 | SANDBOX-02 | Phase 27 | Pending |
 | SANDBOX-03 | Phase 27 | Pending |
 | SANDBOX-04 | Phase 27 | Pending |
 | SANDBOX-05 | Phase 27 | Pending |
-| TAXII-01 | Phase 26 | Pending |
-| TAXII-02 | Phase 26 | Pending |
-| TAXII-03 | Phase 26 | Pending |
-| TAXII-04 | Phase 26 | Pending |
-| TAXII-05 | Phase 26 | Pending |
-| ACTOR-01 | Phase 25 | Pending |
-| ACTOR-02 | Phase 25 | Pending |
-| ACTOR-03 | Phase 25 | Pending |
-| ACTOR-04 | Phase 25 | Pending |
-| ACTOR-05 | Phase 25 | Pending |
-| ACTOR-06 | Phase 25 | Pending |
+| TAXII-01 | Phase 26 | Complete |
+| TAXII-02 | Phase 26 | Complete |
+| TAXII-03 | Phase 26 | Complete |
+| TAXII-04 | Phase 26 | Complete |
+| TAXII-05 | Phase 26 | Complete |
+| ACTOR-01 | Phase 25 | Complete (25-02) |
+| ACTOR-02 | Phase 25 | Complete |
+| ACTOR-03 | Phase 25 | Complete (25-02) |
+| ACTOR-04 | Phase 25 | Complete |
+| ACTOR-05 | Phase 25 | Complete |
+| ACTOR-06 | Phase 25 | Complete |
 | GRAPH-01 | Phase 28 | Pending |
 | GRAPH-02 | Phase 28 | Pending |
 | GRAPH-03 | Phase 28 | Pending |
@@ -220,9 +220,9 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | CASE-03 | Phase 31 | Pending |
 | CASE-04 | Phase 31 | Pending |
 | CASE-05 | Phase 31 | Pending |
-| AUDIT-01 | Phase 25 | Pending |
-| AUDIT-02 | Phase 25 | Pending |
-| AUDIT-03 | Phase 25 | Pending |
+| AUDIT-01 | Phase 25 | Complete (25-02) |
+| AUDIT-02 | Phase 25 | Complete (25-02) |
+| AUDIT-03 | Phase 25 | Complete |
 | CERT-01 | Phase 32 | Pending |
 | CERT-02 | Phase 32 | Pending |
 | CERT-03 | Phase 32 | Pending |

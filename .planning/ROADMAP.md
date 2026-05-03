@@ -72,8 +72,8 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 
 - [x] **Phase 22: IOC Foundation** — First-class atomic indicator table, bulk import, TTL decay, cross-event pivots — SHIPPED 2026-05-03 (6/6 plans)
 - [x] **Phase 23: IOC Enrichment APIs** — VirusTotal / AbuseIPDB / GreyNoise / OTX / Shodan / URLhaus reputation + quota guard (completed 2026-05-03)
-- [ ] **Phase 24: Dark-Web Collection** — Tor + paste + Telegram with isolated egress and OPSEC compartmentation
-- [ ] **Phase 25: Threat Actors, Campaigns & Audit Log** — Cross-engagement actor catalog, campaign grouping, hypertable audit trail
+- [x] **Phase 24: Dark-Web Collection** — Tor + paste + Telegram with isolated egress and OPSEC compartmentation (completed 2026-05-03)
+- [x] **Phase 25: Threat Actors, Campaigns & Audit Log** — Cross-engagement actor catalog, campaign grouping, hypertable audit trail (completed 2026-05-03)
 - [ ] **Phase 26: TAXII Outbound Server** — Spec-correct federation publishing with per-partner ACLs
 - [ ] **Phase 27: Sandbox + YARA** — File-detonation pipeline paired with YARA scanning of samples and STIX patterns
 - [ ] **Phase 28: Passive DNS, WHOIS & Multi-hop Graph** — Infrastructure pivoting via shared registrar/IP plus 2-3 hop traversal
@@ -163,7 +163,15 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
   4. Dark-web event content containing `email:hash` patterns auto-creates IOC rows of type `email`; BTC wallets auto-create `btc` IOCs; both linked via `ioc_event_links`
   5. Adding any `tor_html` / `paste` / `telegram` source surfaces an OPSEC warning banner in the UI; operator must explicitly tick "I authorise this source" before save succeeds
 **OPSEC**: Dedicated Tor egress; no cross-contamination with EASM or operator browser; burner Telegram persona.
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 24-01-PLAN.md — Wave 0 test scaffolding (8 stub files)
+- [ ] 24-02-PLAN.md — Migration 025, ORM model, pyproject.toml deps
+- [ ] 24-03-PLAN.md — tor_html + paste + telegram workers, broker + scheduler
+- [x] 24-04-PLAN.md — OPSEC gate, rekey sweep for session_enc
+- [ ] 24-05-PLAN.md — Credential pair IOC extraction (_text_extraction.py)
+- [x] 24-06-PLAN.md — Docker Compose tor service + tor-worker + darkweb_net
+- [x] 24-07-PLAN.md — Frontend OPSEC warning banner + checkbox (checkpoint)
 
 ### Phase 25: Threat Actors, Campaigns & Audit Log
 **Goal**: Global threat-actor catalog and campaign entities persist across engagements; every mutation is recorded in a TimescaleDB audit log browsable by Admins.
@@ -186,7 +194,14 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
   4. Every non-GET API call appends a row to `audit_log` with `user_sub`, `action`, `resource_type`, `resource_id`, `before_jsonb`, `after_jsonb`, `request_id`; Admin browses `/admin/audit` and filters by user/resource/date
   5. Audit log hypertable retention policy mirrors `events` (90d hot, configurable archival); cross-project leakage tests confirm Observer cannot read other projects' audit rows
 **OPSEC**: Audit log is read-only via UI; direct DB access is operator responsibility.
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [x] 25-01-PLAN.md — Wave 0 test scaffolding (8 stub files)
+- [x] 25-02-PLAN.md — Migration 026, ORM models (ThreatActor, Campaign, CampaignEvent, ActorEventLink, AuditLog), audit service helper, rapidfuzz
+- [ ] 25-03-PLAN.md — actor_writer.py STIX upsert + bootstrap_attack extension + fuzzy alias matcher + suggestion_validator replacement
+- [ ] 25-04-PLAN.md — REST routes: actors CRUD, campaigns CRUD, admin/audit read + main.py registration
+- [ ] 25-05-PLAN.md — Frontend /actors list + /actors/[id] profile (ActorSubGraph, CampaignCard, badges, cose-bilkent)
+- [ ] 25-06-PLAN.md — Frontend /admin/audit page (AuditDiffViewer, ActionBadge, filters, checkpoint)
 
 ### Phase 26: TAXII Outbound Server
 **Goal**: External partners can pull project events as STIX 2.1 bundles via spec-correct TAXII 2.1 collections gated by per-partner API keys and TLP markings.
@@ -208,7 +223,13 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
   4. Per-request page cap enforced at 100 objects; `more=true` + `next` cursor returned when collection exceeds page
   5. Admin revokes partner key; subsequent partner requests return 401 within the same second (no cache lag)
 **OPSEC**: TLP markings enforced server-side; per-partner key revocable; all pulls audited.
-**Plans**: TBD
+**Plans**: 5 plans
+Plans:
+- [ ] 26-01-PLAN.md — Wave 0 test scaffolding (3 test stubs + migration stub)
+- [ ] 26-02-PLAN.md — Migration 027, TaxiiClient ORM model, Pydantic schemas
+- [ ] 26-03-PLAN.md — taxii_bundle.py (event->SDO, TLP predicate) + taxii_auth.py (partner key dependency)
+- [ ] 26-04-PLAN.md — TAXII router (5 endpoints) + AuthMiddleware exemption + unit/integration tests green
+- [ ] 26-05-PLAN.md — Admin CRUD API + /admin/taxii-clients React page (checkpoint)
 
 ### Phase 27: Sandbox + YARA
 **Goal**: When a SHA256 IOC is created on a sandbox-enabled project, the platform fetches the sample, submits to the configured sandbox, persists the report, scans the sample with active YARA rules, and auto-tags the event with returned MITRE techniques and rule families.
@@ -411,10 +432,10 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 |-------|-----------|----------------|--------|-----------|
 | 1-21 | v1.5–v3.1 | — | Complete | 2026-04-29 |
 | 22. IOC Foundation | 5/6 | Complete    | 2026-05-03 | - |
-| 23. IOC Enrichment APIs | 6/6 | Complete   | 2026-05-03 | - |
-| 24. Dark-Web Collection | v4.0 | 0/0 | Not started | - |
-| 25. Threat Actors, Campaigns & Audit Log | v4.0 | 0/0 | Not started | - |
-| 26. TAXII Outbound Server | v4.0 | 0/0 | Not started | - |
+| 23. IOC Enrichment APIs | 6/6 | Complete    | 2026-05-03 | - |
+| 24. Dark-Web Collection | 4/7 | In Progress|  | - |
+| 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
+| 26. TAXII Outbound Server | 1/5 | In Progress|  | - |
 | 27. Sandbox + YARA | v4.0 | 0/0 | Not started | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | v4.0 | 0/0 | Not started | - |
 | 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |
@@ -425,4 +446,4 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 | 34. Browser Extension | v4.0 | 0/0 | Not started | - |
 
 ---
-*Last updated: 2026-05-03 — v4.0 roadmap defined (Phases 22-34)*
+*Last updated: 2026-05-03 — Phase 24 planned (7 plans, 6 waves)*

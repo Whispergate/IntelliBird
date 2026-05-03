@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: completed
-stopped_at: Completed 23-06-PLAN.md (enrichment frontend UI)
-last_updated: "2026-05-03T13:49:19.038Z"
+stopped_at: Completed 26-01-PLAN.md — Wave 0 test scaffolding for TAXII outbound server
+last_updated: "2026-05-03T20:03:36.870Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
-  completed_phases: 2
-  total_plans: 12
-  completed_plans: 12
+  completed_phases: 4
+  total_plans: 30
+  completed_plans: 26
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-04-25 after v2.0)
 ## Current Position
 
 Milestone: v4.0 Threat Intelligence Platform Maturity
-Phase: 23 — IOC Enrichment APIs (in progress 5/6)
-Plan: 23-05 enrichment-api (complete) — next: 23-06 frontend enrichment UI
-Status: Plan 23-05 complete (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
+Phase: 25 — Threat Actors, Campaigns & Audit Log (Complete — 6/6 plans shipped)
+Plan: 25-06 frontend-audit (complete)
+Status: Plan 25-01 complete (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
 Last activity: 2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven.
 
 ---
@@ -46,8 +46,8 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 |-------|------|--------------|-------|---------------|
 | 22 | IOC Foundation | IOC-01..08 | 6/6 ✅ | No |
 | 23 | IOC Enrichment APIs | ENRICH-01..05 | TBD | No |
-| 24 | Dark-Web Collection | DARK-01..07 | TBD | Yes (Tor egress isolation; Telethon session persistence) |
-| 25 | Threat Actors, Campaigns & Audit Log | ACTOR-01..06, AUDIT-01..03 | TBD | Yes (FastAPI middleware diff capture) |
+| 24 | Dark-Web Collection | DARK-01..07 | 7/7 ✅ | Yes (Tor egress isolation; Telethon session persistence) |
+| 25 | Threat Actors, Campaigns & Audit Log | ACTOR-01..06, AUDIT-01..03 | 6/6 ✅ | Yes (FastAPI middleware diff capture) |
 | 26 | TAXII Outbound Server | TAXII-01..05 | TBD | No |
 | 27 | Sandbox + YARA | SANDBOX-01..05, YARA-01..03 | TBD | Yes (yara-python native binary; sandbox polling pattern) |
 | 28 | Passive DNS, WHOIS & Multi-hop Graph | ENRICH-06..08, GRAPH-01..04 | TBD | Yes (AGE Cypher adoption; centrality at scale) |
@@ -217,6 +217,12 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 23 P02 | 2 | 2 tasks | 4 files |
 | Phase 23-ioc-enrichment-apis P23-03 | 309 | 2 tasks | 13 files |
 | Phase 23 P06 | 25 | 3 tasks | 5 files |
+| Phase 24-dark-web-collection P01 | 5m | 2 tasks | 8 files |
+| Phase 24-dark-web-collection P03 | 900 | 2 tasks | 8 files |
+| Phase 25 P03 | 20 | 2 tasks | 4 files |
+| Phase 25 P04 | 35 | 2 tasks | 5 files |
+| Phase 25 P06 | 7 | 3 tasks | 5 files |
+| Phase 25 P05 | 42 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -546,6 +552,20 @@ Recent decisions affecting current work:
 - [Phase 23-04]: force_refresh checked at _async_enrich entry and deleted after commit (not per-provider)
 - [Phase 23]: Settings page is SettingsTabContent.tsx; EnrichmentProvidersCard integrated there below AIProviderCard
 - [Phase 23]: VerdictPill defined inline in each component; acceptable duplication given different subtrees
+- [Phase 24-dark-web-collection]: All Phase 24 test stubs use pytest.mark.skip Wave 0 pattern; TSX stubs use test.skip() (Jest); 36 tests collected, all SKIPPED, exit 0
+- [Phase 24-dark-web-collection]: PostgreSQL enum extension via op.execute() — ALTER TYPE ADD VALUE cannot run inside transaction in some PG configs; IF NOT EXISTS makes it idempotent
+- [Phase 24-dark-web-collection]: session_enc is write-only in API responses — never serialised in GET to avoid leaking ciphertext
+- [Phase 24-dark-web-collection]: PostgreSQL does not support DROP VALUE from ENUM — downgrade only removes columns; enum values left as unused dead code
+- [Phase 24-dark-web-collection]: socks5h:// used for Tor proxy — routes DNS via proxy, required for .onion
+- [Phase 24-dark-web-collection]: asyncio.run() bridges sync Dramatiq actors to async httpx/Telethon
+- [Phase 24-dark-web-collection]: Telethon StringSession re-encrypted to sources.session_enc before message processing for durability
+- [Phase 25]: profile_md excluded from ON CONFLICT SET clause — analyst edits preserved across re-bootstraps
+- [Phase 25]: Actor branch in suggestion_validator bypasses bool-validator VALIDATORS table — separate fuzzy path for auto_link/stage/discard
+- [Phase 25]: Lead+ check is project-level (any project_memberships rank >= 3) not global-role for actor/campaign write gates
+- [Phase 25]: Actor Cytoscape graph capped at 100 nodes; audit pagination uses ISO timestamp cursor on time DESC for hypertable efficiency
+- [Phase 25]: RSC admin guard uses (session.user as { role?: string }) cast consistent with layout.tsx and EventsClient.tsx patterns
+- [Phase 25]: AuditClient User filter derives unique user_sub from loaded items (no extra API call needed)
+- [Phase 25]: Used require() for cytoscape-cose-bilkent (no @types/ package) with eslint-disable
 
 ### Roadmap Evolution
 
@@ -600,7 +620,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-03T13:49:19.035Z
-Stopped at: Completed 23-06-PLAN.md (enrichment frontend UI)
+Last session: 2026-05-03T20:03:36.866Z
+Stopped at: Completed 26-01-PLAN.md — Wave 0 test scaffolding for TAXII outbound server
 Resume file: None
 Next: 19-03-PLAN.md (Wave 3: Redis FLUSHDB + per-test TRUNCATE in integration conftest; @pytest.mark.cross_file_pollution decoration on 21 known-failing tests)
