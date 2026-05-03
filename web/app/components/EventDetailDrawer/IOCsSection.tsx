@@ -6,12 +6,20 @@
  * Renders inside EventDetailDrawer. Sources data from the concrete
  * `GET /api/events/{id}/iocs` endpoint added in Plan 22-03. Compact chip-row
  * list — clicking a chip deep-links to /projects/{project_id}/iocs?ioc=<uuid>.
+ *
+ * Phase 23 ENRICH-04: fetch enrichments for first 5 IOCs; render unified
+ * verdict badge beside ConfidenceBadge when verdict is non-unknown.
  */
 
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 
-import { listEventIOCs, type IOCRead } from "@/app/api-client";
+import {
+  listEventIOCs,
+  getIOCEnrichments,
+  type IOCRead,
+  type IOCEnrichmentRead,
+} from "@/app/api-client";
 import { TypeBadge, ConfidenceBadge } from "@/app/projects/[id]/iocs/badges";
 
 interface Props {
@@ -24,14 +32,66 @@ interface Props {
   projectId?: string;
 }
 
+// Severity rank for worst-case aggregation
+const VERDICT_RANK: Record<string, number> = {
+  malicious: 3,
+  suspicious: 2,
+  unknown: 1,
+  clean: 0,
+};
+
+function unifiedVerdict(rows: IOCEnrichmentRead[]): string {
+  if (rows.length === 0) return "unknown";
+  let worst = "clean";
+  for (const r of rows) {
+    if ((VERDICT_RANK[r.verdict] ?? 0) > (VERDICT_RANK[worst] ?? 0)) {
+      worst = r.verdict;
+    }
+  }
+  return worst;
+}
+
+function VerdictPill({ verdict }: { verdict: string }) {
+  const colour =
+    ({
+      malicious: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+      suspicious:
+        "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+      clean:
+        "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+      unknown: "bg-muted text-muted-foreground",
+    } as Record<string, string>)[verdict] ?? "bg-muted text-muted-foreground";
+  return (
+    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${colour}`}>
+      {verdict}
+    </span>
+  );
+}
+
 export function IOCsSection({ eventId, projectId }: Props) {
   const [iocs, setIocs] = useState<IOCRead[] | null>(null);
+  const [enrichmentMap, setEnrichmentMap] = useState<
+    Record<string, IOCEnrichmentRead[]>
+  >({});
 
   useEffect(() => {
     let cancelled = false;
     listEventIOCs(eventId)
-      .then((data) => {
-        if (!cancelled) setIocs(data);
+      .then(async (data) => {
+        if (cancelled) return;
+        setIocs(data);
+        // Fetch enrichments for first 5 IOCs (quota-burn guard)
+        const map: Record<string, IOCEnrichmentRead[]> = {};
+        await Promise.allSettled(
+          data.slice(0, 5).map(async (ioc) => {
+            try {
+              map[ioc.id] = await getIOCEnrichments(ioc.id);
+            } catch {
+              // Silently skip — enrichment section is additive
+            }
+          }),
+        );
+        if (!cancelled) setEnrichmentMap(map);
       })
       .catch(() => {
         if (!cancelled) setIocs([]);
@@ -70,6 +130,7 @@ export function IOCsSection({ eventId, projectId }: Props) {
               targetProject !== null && targetProject !== undefined
                 ? `/projects/${targetProject}/iocs?ioc=${ioc.id}`
                 : null;
+            const iocVerdict = unifiedVerdict(enrichmentMap[ioc.id] ?? []);
             const inner = (
               <>
                 <TypeBadge type={ioc.type} />
@@ -77,6 +138,9 @@ export function IOCsSection({ eventId, projectId }: Props) {
                   {ioc.value}
                 </span>
                 <ConfidenceBadge confidence={ioc.confidence} compact />
+                {iocVerdict !== "unknown" && (
+                  <VerdictPill verdict={iocVerdict} />
+                )}
                 <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </>
             );

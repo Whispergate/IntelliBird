@@ -43,8 +43,11 @@ import {
   unwhitelistIOC,
   patchIOC,
   deleteIOC,
+  getIOCEnrichments,
+  triggerIOCEnrichment,
   type IOCRead,
   type IOCEventSummary,
+  type IOCEnrichmentRead,
 } from "@/app/api-client";
 import { useProjectRole } from "@/app/projects/[id]/ProjectRoleProvider";
 import { TypeBadge, StatusPill, ConfidenceBadge, SourceBadge } from "./badges";
@@ -65,10 +68,32 @@ function fmtAbs(iso: string): string {
   }
 }
 
+function VerdictPill({ verdict }: { verdict: string }) {
+  const colour =
+    ({
+      malicious: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+      suspicious:
+        "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+      clean:
+        "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+      unknown: "bg-muted text-muted-foreground",
+    } as Record<string, string>)[verdict] ?? "bg-muted text-muted-foreground";
+  return (
+    <span
+      className={`text-xs px-2 py-0.5 rounded-full font-medium ${colour}`}
+    >
+      {verdict}
+    </span>
+  );
+}
+
 export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) {
   const { isAdmin, isLead } = useProjectRole();
   const [ioc, setIoc] = useState<IOCRead | null>(null);
   const [events, setEvents] = useState<IOCEventSummary[]>([]);
+  const [enrichments, setEnrichments] = useState<IOCEnrichmentRead[] | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [editConfidence, setEditConfidence] = useState<string>("");
@@ -79,6 +104,7 @@ export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setEnrichments(null);
     Promise.all([getIOC(iocId), getIOCEvents(iocId, 10)])
       .then(([row, evts]) => {
         if (cancelled) return;
@@ -94,10 +120,34 @@ export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) 
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
+    // Fetch enrichments separately — non-blocking, additive
+    getIOCEnrichments(iocId)
+      .then((data) => {
+        if (!cancelled) setEnrichments(data);
+      })
+      .catch(() => {
+        if (!cancelled) setEnrichments([]);
+      });
     return () => {
       cancelled = true;
     };
   }, [iocId, onClose]);
+
+  async function handleRefresh(enrichedIocId: string) {
+    try {
+      await triggerIOCEnrichment(enrichedIocId, { refresh: true });
+      toast.success("Enrichment queued. Results will update shortly.");
+      // Re-fetch after a short delay to pick up any immediate cached results
+      setTimeout(() => {
+        getIOCEnrichments(enrichedIocId)
+          .then((data) => setEnrichments(data))
+          .catch(() => {/* silently skip */});
+      }, 2000);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(`Could not trigger enrichment. ${msg}`);
+    }
+  }
 
   const canEdit =
     !!ioc &&
@@ -281,6 +331,53 @@ export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) 
                     ))}
                   </ul>
                 )}
+              </div>
+
+              {/* Enrichment section — Phase 23 ENRICH-01 */}
+              <div
+                className="px-6 py-4 border-b border-border"
+                data-testid="drawer-section-enrichment"
+              >
+                <p className="brand-caption text-muted-foreground uppercase mb-2">
+                  Enrichment
+                </p>
+                {enrichments === null && (
+                  <div className="h-6 bg-muted rounded animate-pulse" />
+                )}
+                {enrichments !== null && enrichments.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No provider configured or no results yet.
+                  </p>
+                )}
+                {enrichments !== null &&
+                  enrichments.map((e) => (
+                    <div
+                      key={e.provider}
+                      className="flex items-center gap-3 py-1"
+                    >
+                      <span className="text-sm font-medium w-24 shrink-0 capitalize">
+                        {e.provider}
+                      </span>
+                      <VerdictPill verdict={e.verdict} />
+                      {e.score !== null && (
+                        <span className="text-xs text-muted-foreground">
+                          {e.score.toFixed(0)}
+                        </span>
+                      )}
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        {new Date(e.fetched_at).toLocaleString()}
+                      </span>
+                      {isLead && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => void handleRefresh(e.ioc_id)}
+                        >
+                          Refresh
+                        </Button>
+                      )}
+                    </div>
+                  ))}
               </div>
 
               {/* 4e Edit panel */}
