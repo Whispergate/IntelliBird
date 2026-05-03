@@ -53,6 +53,7 @@ from app.routers.graph import projects_graph_router
 from app.routers.presets import router as presets_router
 from app.routers.easm import router as easm_router
 from app.routers.easm import safelist_router as easm_safelist_router
+from app.routers.enrichment import router as enrichment_router
 from app.routers.brand import router as brand_router
 from app.routers.projects import router as projects_router
 from app.routers.projects import compare_router as projects_compare_router
@@ -226,6 +227,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(brand_router, prefix="/api")
     fastapi_app.include_router(attack_router, prefix="/api")
     fastapi_app.include_router(ai_router, prefix="/api")
+    fastapi_app.include_router(enrichment_router, prefix="/api")
     fastapi_app.include_router(admin_ai_health_router, prefix="/api")
     fastapi_app.include_router(admin_ai_jobs_router, prefix="/api")
     # Assets router has absolute prefix baked in (/api/projects/{id}/assets)

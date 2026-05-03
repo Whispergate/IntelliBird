@@ -25,6 +25,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.crypto import decrypt_credentials, encrypt_credentials
 from app.database import get_session
+from app.models.enrichment import EnrichmentProvider
 from app.models.sources import Source
 
 log = structlog.get_logger(__name__)
@@ -100,6 +101,30 @@ async def rekey_credentials(
         new_blob = encrypt_credentials(settings.SECRET_KEY, creds)
         updates.append((row, new_blob))
 
+    # --- EnrichmentProvider sweep (Phase 23) ---
+    ep_rows = (
+        await session.execute(
+            select(EnrichmentProvider).where(EnrichmentProvider.credentials_enc.isnot(None))
+        )
+    ).scalars().all()
+
+    ep_updates: list[tuple[EnrichmentProvider, str]] = []
+    for ep_row in ep_rows:
+        # Idempotency: skip rows already encrypted under the current key
+        try:
+            decrypt_credentials(settings.SECRET_KEY, ep_row.credentials_enc)
+            skipped_already_current.append(f"ep:{ep_row.id}")
+            continue
+        except Exception:
+            pass
+        try:
+            creds = decrypt_credentials(settings.REKEY_FROM_SECRET, ep_row.credentials_enc)
+        except Exception:
+            failed_ids.append(f"ep:{ep_row.id}")
+            continue
+        new_blob = encrypt_credentials(settings.SECRET_KEY, creds)
+        ep_updates.append((ep_row, new_blob))
+
     if failed_ids:
         await session.rollback()
         log.critical(
@@ -116,10 +141,16 @@ async def rekey_credentials(
         row.credentials_enc = new_blob
         row.credentials_key_version = (row.credentials_key_version or 1) + 1
 
+    for ep_row, new_blob in ep_updates:
+        ep_row.credentials_enc = new_blob
+        ep_row.credentials_key_version = (ep_row.credentials_key_version or 1) + 1
+
     await session.commit()
+    total_rekeyed = len(updates) + len(ep_updates)
+    total_skipped = (len(rows) - len(updates)) + (len(ep_rows) - len(ep_updates))
     log.info(
         "rekey_credentials_ok",
-        rekeyed=len(updates),
-        skipped=len(rows) - len(updates),
+        rekeyed=total_rekeyed,
+        skipped=total_skipped,
     )
-    return RekeyResponse(rekeyed=len(updates), skipped=len(rows) - len(updates))
+    return RekeyResponse(rekeyed=total_rekeyed, skipped=total_skipped)
