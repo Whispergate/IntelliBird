@@ -58,3 +58,5 @@ from app.workers import scoring  # noqa: E402,F401
 from app.workers import ai  # noqa: E402,F401
 # Register TIBER report export actor (Phase 18 / TIBER-03) — reports queue
 from app.workers import reports  # noqa: E402,F401
+# Register IOC actors (Phase 22 / IOC-07) — ingest queue
+from app.workers import iocs as _iocs_actor  # noqa: E402,F401

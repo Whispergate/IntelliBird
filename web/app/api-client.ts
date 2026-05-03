@@ -179,6 +179,8 @@ export type EventsQuery = {
   include_archived?: boolean;
   include_total?: boolean;
   include_bbot?: boolean;
+  include_brand_match?: boolean;
+  include_monitoring?: boolean;
   cursor?: string;
   limit?: number;
   has_geo?: boolean;
@@ -601,4 +603,242 @@ export async function deleteMaintenanceWindow(id: string): Promise<void> {
     const text = await res.text().catch(() => "");
     throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
   }
+}
+
+// ============================================================
+// IOCs — Phase 22 (IOC-02..08). Shapes mirror backend
+// app/schemas/iocs.py::IOCRead + IOCPatch. Inlined pending
+// api-client.generated.ts regen.
+// ============================================================
+
+export type IOCType =
+  | "ip"
+  | "ipv6"
+  | "domain"
+  | "url"
+  | "sha256"
+  | "sha1"
+  | "md5"
+  | "email"
+  | "btc"
+  | "eth"
+  | "mutex"
+  | "registry_key"
+  | "filename";
+
+export type IOCStatus = "active" | "expired" | "whitelisted";
+export type IOCSource = "manual" | "csv" | "json" | "stix" | "event" | "backfill";
+
+export type IOCRead = {
+  id: string;
+  project_id: string | null;
+  type: IOCType;
+  value: string;
+  normalized_value: string;
+  status: IOCStatus;
+  confidence: string; // Numeric(3,2) serialised as string
+  ttl_days: number;
+  source: IOCSource;
+  first_seen: string;
+  last_seen: string;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+};
+
+export type IOCPatch = {
+  confidence?: string | number;
+  ttl_days?: number;
+};
+
+export type IOCEventSummary = {
+  id: string;
+  title: string;
+  observed_at: string;
+  stix_type: string | null;
+  visibility: string | null;
+  source_id: string | null;
+};
+
+export type IOCBulkImportFormat = "csv" | "json" | "stix";
+
+export type IOCBulkImportError = {
+  line: number;
+  value: string;
+  error: string;
+};
+
+export type IOCBulkImportDryRun = {
+  would_insert: number;
+  would_update: number;
+  would_skip: number;
+  unmapped_sdo_count: number;
+  errors: IOCBulkImportError[];
+};
+
+export type IOCBulkImportEnqueued = {
+  job_id: string;
+  rows_accepted: number;
+};
+
+export type IOCJobStatus = {
+  status: "queued" | "running" | "complete" | "failed";
+  processed?: number;
+  total?: number;
+  inserted?: number;
+  updated?: number;
+  skipped?: number;
+  events_processed?: number;
+  iocs_inserted?: number;
+  error?: string;
+};
+
+export type IOCBackfillEnqueued = {
+  job_id: string;
+  project_id: string | null;
+};
+
+export type IOCListParams = {
+  projectId?: string;
+  type?: string[];
+  status?: string;
+  min_confidence?: number;
+  age_days?: number;
+  q?: string;
+  include_expired?: boolean;
+  limit?: number;
+  cursor?: string;
+};
+
+function _iocListQuery(params: IOCListParams): string {
+  const sp = new URLSearchParams();
+  if (params.projectId) sp.append("project_id", params.projectId);
+  if (params.type) for (const t of params.type) sp.append("type", t);
+  if (params.status) sp.append("status", params.status);
+  if (params.min_confidence !== undefined) sp.append("min_confidence", String(params.min_confidence));
+  if (params.age_days !== undefined) sp.append("age_days", String(params.age_days));
+  if (params.q) sp.append("q", params.q);
+  if (params.include_expired) sp.append("include_expired", "true");
+  if (params.limit !== undefined) sp.append("limit", String(params.limit));
+  if (params.cursor) sp.append("cursor", params.cursor);
+  const s = sp.toString();
+  return s ? `?${s}` : "";
+}
+
+export async function listIOCs(params: IOCListParams = {}): Promise<IOCRead[]> {
+  const res = await _apiFetch(`/api/iocs${_iocListQuery(params)}`, { cache: "no-store" });
+  return _handle<IOCRead[]>(res);
+}
+
+export async function getIOC(id: string): Promise<IOCRead> {
+  const res = await _apiFetch(`/api/iocs/${id}`, { cache: "no-store" });
+  return _handle<IOCRead>(res);
+}
+
+export async function getIOCEvents(id: string, limit = 25): Promise<IOCEventSummary[]> {
+  const res = await _apiFetch(`/api/iocs/${id}/events?limit=${limit}`, { cache: "no-store" });
+  return _handle<IOCEventSummary[]>(res);
+}
+
+export async function listEventIOCs(eventId: string, limit = 200): Promise<IOCRead[]> {
+  const res = await _apiFetch(`/api/events/${eventId}/iocs?limit=${limit}`, {
+    cache: "no-store",
+  });
+  return _handle<IOCRead[]>(res);
+}
+
+export async function whitelistIOC(
+  id: string,
+  opts: { projectId?: string } = {},
+): Promise<IOCRead> {
+  const qs = opts.projectId ? `?project_id=${encodeURIComponent(opts.projectId)}` : "";
+  const res = await _apiFetch(`/api/iocs/${id}/whitelist${qs}`, {
+    method: "POST",
+    cache: "no-store",
+  });
+  return _handle<IOCRead>(res);
+}
+
+export async function unwhitelistIOC(id: string): Promise<IOCRead> {
+  const res = await _apiFetch(`/api/iocs/${id}/whitelist`, {
+    method: "DELETE",
+    cache: "no-store",
+  });
+  return _handle<IOCRead>(res);
+}
+
+export async function patchIOC(id: string, body: IOCPatch): Promise<IOCRead> {
+  const res = await _apiFetch(`/api/iocs/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  return _handle<IOCRead>(res);
+}
+
+export async function deleteIOC(id: string): Promise<void> {
+  const res = await _apiFetch(`/api/iocs/${id}`, {
+    method: "DELETE",
+    cache: "no-store",
+  });
+  if (!res.ok && res.status !== 204) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} ${res.statusText}: ${text}`);
+  }
+}
+
+function _bulkImportContentType(format: IOCBulkImportFormat): string {
+  if (format === "csv") return "text/csv";
+  if (format === "json") return "application/json";
+  return "application/stix+json";
+}
+
+export async function dryRunBulkImport(opts: {
+  projectId?: string;
+  format: IOCBulkImportFormat;
+  body: string | Blob;
+}): Promise<IOCBulkImportDryRun> {
+  const sp = new URLSearchParams();
+  sp.append("dry_run", "true");
+  sp.append("format", opts.format);
+  if (opts.projectId) sp.append("project_id", opts.projectId);
+  const res = await _apiFetch(`/api/iocs/bulk-import?${sp.toString()}`, {
+    method: "POST",
+    headers: { "Content-Type": _bulkImportContentType(opts.format) },
+    body: opts.body,
+    cache: "no-store",
+  });
+  return _handle<IOCBulkImportDryRun>(res);
+}
+
+export async function submitBulkImport(opts: {
+  projectId?: string;
+  format: IOCBulkImportFormat;
+  body: string | Blob;
+}): Promise<IOCBulkImportEnqueued> {
+  const sp = new URLSearchParams();
+  sp.append("format", opts.format);
+  if (opts.projectId) sp.append("project_id", opts.projectId);
+  const res = await _apiFetch(`/api/iocs/bulk-import?${sp.toString()}`, {
+    method: "POST",
+    headers: { "Content-Type": _bulkImportContentType(opts.format) },
+    body: opts.body,
+    cache: "no-store",
+  });
+  return _handle<IOCBulkImportEnqueued>(res);
+}
+
+export async function pollJobStatus(jobId: string): Promise<IOCJobStatus> {
+  const res = await _apiFetch(`/api/jobs/${jobId}`, { cache: "no-store" });
+  return _handle<IOCJobStatus>(res);
+}
+
+export async function triggerBackfill(projectId?: string): Promise<IOCBackfillEnqueued> {
+  const qs = projectId ? `?project_id=${encodeURIComponent(projectId)}` : "";
+  const res = await _apiFetch(`/api/admin/iocs/backfill${qs}`, {
+    method: "POST",
+    cache: "no-store",
+  });
+  return _handle<IOCBackfillEnqueued>(res);
 }

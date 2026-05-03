@@ -30,6 +30,16 @@ fi
 # --- Normal boot ----------------------------------------------------------
 cd /app
 alembic upgrade head
+
+# --- Phase 22 IOC seed: idempotent backfill at migration apply ------------
+# Runs once after `alembic upgrade head`. Idempotent via ON CONFLICT — safe
+# on every container start (~29k events, ~30s p95 cold; sub-second warm).
+# Best-effort: failure does not abort container start. Operator can re-run
+# via POST /api/admin/iocs/backfill (admin-only) if needed.
+python -m app.scripts.seed_iocs || {
+    echo "WARN: seed_iocs failed — IOC backfill may be incomplete; admin can re-run via POST /api/admin/iocs/backfill" >&2
+}
+
 exec gunicorn app.main:app \
     --worker-class uvicorn.workers.UvicornWorker \
     --workers 2 \

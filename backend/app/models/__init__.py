@@ -32,11 +32,14 @@ from app.models.tiber import (  # noqa: F401  — Phase 18 / TIBER-01..03, AI-08
     ProjectTiberState,
     ReportExport,
 )
+from app.models.iocs import IOC, IOCEventLink  # noqa: F401  — Phase 22 / IOC-01, IOC-08
 
 __all__ = [
     "Base",
     "AssetNote",
     "EventScoreOverride",
+    "IOC",
+    "IOCEventLink",
     "MaintenanceWindow",
     "ProjectScoringRules",
     "Source",

@@ -36,6 +36,7 @@ from app.routers.admin.monitoring import router as admin_monitoring_router
 from app.routers.admin.rekey import router as admin_rekey_router
 from app.routers.admin.setup import router as admin_setup_router
 from app.routers.admin.users import router as admin_users_router
+from app.routers.admin.iocs import router as admin_iocs_router
 from app.routers.ai import router as ai_router
 from app.routers.attack import router as attack_router
 from app.routers.admin.ai_health import router as admin_ai_health_router
@@ -46,6 +47,7 @@ from app.routers.admin.sources import router as admin_sources_router
 from app.routers.admin.source_templates import router as admin_source_templates_router
 from app.routers.admin.webhooks import router as admin_webhooks_router
 from app.routers.events import router as events_router
+from app.routers.iocs import router as iocs_router
 from app.routers.graph import router as graph_router
 from app.routers.graph import projects_graph_router
 from app.routers.presets import router as presets_router
@@ -200,10 +202,12 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(admin_rekey_router, prefix="/api")
     fastapi_app.include_router(admin_setup_router, prefix="/api")
     fastapi_app.include_router(admin_users_router, prefix="/api")
+    fastapi_app.include_router(admin_iocs_router, prefix="/api")
     fastapi_app.include_router(admin_monitoring_router, prefix="/api")
     fastapi_app.include_router(admin_maintenance_router, prefix="/api")
     fastapi_app.include_router(auth_router, prefix="/api")
     fastapi_app.include_router(events_router, prefix="/api")
+    fastapi_app.include_router(iocs_router, prefix="/api")
     fastapi_app.include_router(tags_router, prefix="/api")
     fastapi_app.include_router(presets_router, prefix="/api")
     fastapi_app.include_router(graph_router, prefix="/api")

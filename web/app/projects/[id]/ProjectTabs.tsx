@@ -81,6 +81,7 @@ const TABS: TabDef[] = [
   { key: "scope-as_number", label: "AS number" },
   { key: "scope-ip_range", label: "IP range" },
   { key: "sources", label: "Sources" },
+  { key: "iocs", label: "IOCs", route: "iocs" },
   { key: "memberships", label: "Memberships" },
   { key: "settings", label: "Settings" },
   { key: "intel", label: "Intel", route: "intel" },
@@ -112,6 +113,7 @@ export function ProjectTabs({
     if (pathname.endsWith("/intel")) return "intel";
     if (pathname.endsWith("/graph")) return "graph";
     if (pathname.includes("/easm")) return "easm";
+    if (pathname.includes("/iocs")) return "iocs";
     if (pathname.includes("/assets")) return "assets";
     if (pathname.includes("/brand")) return "brand";
     if (pathname.includes("/scoring")) return "scoring";

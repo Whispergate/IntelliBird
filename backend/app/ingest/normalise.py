@@ -83,23 +83,62 @@ VALID_STATUSES: frozenset[str] = frozenset({
 })
 
 
+def _persist_event_for_bindings(
+    session: Session,
+    row: dict,
+    source_id: uuid.UUID,
+) -> tuple[int, int]:
+    """Fan-out a normalised event row across all projects bound to source_id.
+
+    Returns ``(inserted_count, fanout_count)`` where:
+      - ``fanout_count`` = number of project rows attempted (>=1 always)
+      - ``inserted_count`` = number that actually persisted (others were
+        dedup conflicts via the 4-column unique index)
+
+    Behaviour:
+      - 0 bindings → write one row with project_id = LEGACY_PROJECT_ID
+      - 1+ bindings → write one row per binding, each with row["project_id"] = pid
+      - Per-project dedup: relies on 4-col unique index
+        (project_id, source_id, content_hash, observed_at) created in migration 021.
+
+    Sync session — workers use sync sessions. Do NOT import from
+    ``app.services.project_scope`` (that module is async-only).
+
+    Quick task 260429-tyq.
+    """
+    from app.models.projects import LEGACY_PROJECT_ID  # lazy import (avoids cycles)
+
+    binding_rows = session.execute(
+        text("SELECT project_id FROM project_sources WHERE source_id = :sid"),
+        {"sid": str(source_id)},
+    ).all()
+    project_ids = [r[0] for r in binding_rows] or [LEGACY_PROJECT_ID]
+
+    inserted = 0
+    for pid in project_ids:
+        # Shallow copy — _persist_event mutates (geo, enrichment, score). The
+        # nested raw_stix dict is read-only inside _persist_event so a shallow
+        # copy is sufficient.
+        per_row = {**row, "project_id": pid}
+        inserted += _persist_event(session, per_row)
+    return inserted, len(project_ids)
+
+
 def _persist_event(session: Session, row: dict) -> int:
-    """Insert one event row with ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING.
+    """Insert one event row with ON CONFLICT (project_id, source_id, content_hash, observed_at) DO NOTHING.
 
  Returns: 1 if inserted, 0 if conflict skipped. Caller is responsible
  for `session.commit` at the end of the batch.
 
- The three-column conflict target matches the unique index
- uq_events_source_content_hash created by migration 002 — TimescaleDB
+ The four-column conflict target matches the unique index
+ uq_events_source_content_hash recreated by migration 021 — TimescaleDB
  requires the partition column (observed_at) in any unique index on a
  hypertable. The row dict MUST include observed_at (set to the feed
  item's published/modified timestamp so re-fetches produce identical
- triples and are silently dropped).
+ quadruples and are silently dropped).
 
- Phase 10: events.project_id is NOT NULL (migration 009 dropped the default).
- Workers that don't know a project binding yet (RSS/NVD/TAXII ingest) default
- to LEGACY_PROJECT_ID so pre-project-scoping feeds continue to land. A future
- plan will thread project_id through the worker → source-binding resolution.
+ Project routing is handled by ``_persist_event_for_bindings``; this
+ helper keeps the LEGACY fallback as a safety net for any direct caller.
 """
     # Phase 10: ensure every row carries a project_id. Default to the LEGACY
     # sentinel when unset so feed workers (rss/nvd/taxii) that haven't been
@@ -138,7 +177,7 @@ def _persist_event(session: Session, row: dict) -> int:
         pg_insert(Event.__table__)
         .values(**row)
         .on_conflict_do_nothing(
-            index_elements=["source_id", "content_hash", "observed_at"]
+            index_elements=["project_id", "source_id", "content_hash", "observed_at"]
         )
         .returning(Event.__table__.c.id, Event.__table__.c.observed_at)
     )
@@ -168,7 +207,88 @@ def _persist_event(session: Session, row: dict) -> int:
             # Unknown technique ID → skip. Caller transaction continues.
             pass
 
+    # Phase 22 / IOC-08: write IOC rows + ioc_event_links for indicators
+    # discovered in title+description. Best-effort — must NEVER raise into the
+    # ingest hot path (a single malformed indicator should not break the event
+    # INSERT). The enrichment object was built above; reuse it directly so
+    # we don't pay for a second regex pass.
+    try:
+        from app.services.iocs import upsert_ioc_for_event_sync  # noqa: PLC0415
+        # `inserted[0]` is event.id from the RETURNING clause; pass the row
+        # dict so the helper picks up project_id + observed_at without an
+        # extra SELECT round-trip.
+        ioc_event_view = {
+            "id": inserted[0],
+            "project_id": row.get("project_id"),
+            "observed_at": row.get("observed_at") or inserted[1],
+        }
+        upsert_ioc_for_event_sync(session, ioc_event_view, enrichment, source="event")
+    except Exception:  # noqa: BLE001
+        import logging  # noqa: PLC0415
+        logging.getLogger(__name__).warning(
+            "ioc_upsert_failed event_id=%s project_id=%s",
+            inserted[0], row.get("project_id"),
+            exc_info=True,
+        )
+
+    # Auto-summarise newly-ingested event when an Ollama provider is configured
+    # for this project (or globally via LEGACY fallback). Ollama is local + free,
+    # so per-event summarisation is cost-free; cloud providers are gated to
+    # avoid unexpected token spend on bulk ingest.
+    _maybe_enqueue_auto_summary(session, inserted[0], row.get("project_id"))
+
     return 1
+
+
+def _maybe_enqueue_auto_summary(
+    session: Session,
+    event_id: uuid.UUID,
+    project_id: uuid.UUID | None,
+) -> None:
+    """Enqueue ai_summarise_event if the project's provider is Ollama.
+
+    Best-effort: any failure (no provider, broker down, dramatiq import error)
+    is swallowed — ingest must NOT fail because the AI worker is offline.
+    """
+    if project_id is None:
+        return
+    try:
+        # Per-project opt-in: ai_auto_summary_enabled must be true. Off by
+        # default so bulk ingest does not auto-queue thousands of jobs.
+        flag = session.execute(
+            text("SELECT ai_auto_summary_enabled FROM projects WHERE id = :pid"),
+            {"pid": str(project_id)},
+        ).scalar_one_or_none()
+        if not flag:
+            return
+        # Provider gate: only Ollama (local + free). Cloud providers must be
+        # triggered manually to avoid surprise token spend.
+        row = session.execute(
+            text(
+                "SELECT provider_type FROM ai_providers WHERE project_id = :pid "
+                "UNION ALL "
+                "SELECT provider_type FROM ai_providers "
+                "  WHERE project_id = '00000000-0000-0000-0000-000000000001'::uuid "
+                "  AND NOT EXISTS (SELECT 1 FROM ai_providers WHERE project_id = :pid) "
+                "LIMIT 1"
+            ),
+            {"pid": str(project_id)},
+        ).scalar_one_or_none()
+        if row != "ollama":
+            return
+        import uuid as _uuid  # noqa: PLC0415
+        import app.workers.broker as _broker  # noqa: PLC0415  — side-effect: init dramatiq broker
+        _ = _broker
+        from app.workers.ai import ai_summarise_event  # noqa: PLC0415
+        job_id = str(_uuid.uuid4())
+        ai_summarise_event.send(job_id, str(event_id), str(project_id))  # type: ignore[attr-defined]
+    except Exception:  # noqa: BLE001
+        # Log via root logger — keeping ingest hot path silent on AI failure.
+        import logging  # noqa: PLC0415
+        logging.getLogger(__name__).debug(
+            "auto_summary_enqueue_skipped event_id=%s project_id=%s",
+            event_id, project_id,
+        )
 
 
 def update_source_health(

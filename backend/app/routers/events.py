@@ -15,6 +15,7 @@ from starlette.requests import Request
 
 from app.database import get_session
 from app.models.events import Event
+from app.models.iocs import IOC, IOCEventLink
 from app.models.markings import TlpMarking
 from app.models.sources import Source
 from app.models.tags import AttackTechniqueTag
@@ -23,6 +24,8 @@ from app.schemas.events import (
     EventItem,
     EventListResponse,
 )
+from app.schemas.iocs import IOCRead
+from app.services.ioc_query import build_ioc_scope_predicate
 from app.services.events_query import (
     CursorError,
     EventsQueryParams,
@@ -145,6 +148,15 @@ async def list_events(
             "events feed is not polluted by brand alerts. Set true to show them."
         ),
     ),
+    include_monitoring: bool = Query(
+        default=False,
+        description=(
+            "Include source-monitoring synthesised alerts (source_silence, "
+            "volume_drift, parse_error_rate) in results. Default (false) "
+            "excludes events with stix_type='x-monitoring-alert' so the main "
+            "feed shows real intel only. Admins/leads view via /admin/monitoring."
+        ),
+    ),
     # SCR-05: score sort + tier filter.
     sort: Literal["observed_desc", "score_desc", "score_asc"] | None = Query(
         default=None,
@@ -245,6 +257,9 @@ async def list_events(
                 .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
             )
 
+        if not include_monitoring:
+            fts_stmt = fts_stmt.where(Event.stix_type != "x-monitoring-alert")
+
         if cursor:
             try:
                 c_rank, c_ts, c_id = decode_fts_cursor(cursor)
@@ -277,6 +292,10 @@ async def list_events(
                 _fts_count_base = _fts_count_base.where(
                     ~func.coalesce(Event.tags, sa.cast(sa.literal("{}"), ARRAY(sa.Text)))
                     .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
+                )
+            if not include_monitoring:
+                _fts_count_base = _fts_count_base.where(
+                    Event.stix_type != "x-monitoring-alert"
                 )
             count_stmt = select(func.count()).select_from(
                 _fts_count_base.subquery()
@@ -328,6 +347,11 @@ async def list_events(
             .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
         )
 
+    # Phase 16: exclude synthesised source-monitoring alerts from main feed
+    # unless explicitly requested. Admin/lead view uses include_monitoring=true.
+    if not include_monitoring:
+        stmt = stmt.where(Event.stix_type != "x-monitoring-alert")
+
     if cursor:
         try:
             cursor_ts, cursor_id = decode_cursor(cursor)
@@ -360,6 +384,10 @@ async def list_events(
             _count_base = _count_base.where(
                 ~func.coalesce(Event.tags, sa.cast(sa.literal("{}"), ARRAY(sa.Text)))
                 .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
+            )
+        if not include_monitoring:
+            _count_base = _count_base.where(
+                Event.stix_type != "x-monitoring-alert"
             )
         count_stmt = select(func.count()).select_from(_count_base.subquery())
         total_std = int((await db.execute(count_stmt)).scalar_one())
@@ -408,3 +436,44 @@ async def get_event(
 
     item = await _hydrate_item(row, db)
     return EventDetail(**item.model_dump(), raw_stix=row.raw_stix)
+
+
+# ---------------------------------------------------------------------------
+# Phase 22 / IOC-08 — event-side IOC pivot.
+# Concrete API for EventDetailDrawer §Surface 5 (Plan 22-06). Replaces the
+# earlier hedge of "embed iocs[] in event payload OR fetch via query param".
+# ---------------------------------------------------------------------------
+
+
+@router.get("/{event_id}/iocs", response_model=list[IOCRead])
+async def list_event_iocs(
+    event_id: uuid.UUID,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+    limit: int = Query(default=200, ge=1, le=500),
+) -> list[IOCRead]:
+    """List IOCs linked to a single event via `ioc_event_links`.
+
+    Each returned IOC is filtered through `build_ioc_scope_predicate` so
+    cross-project leakage is impossible even when an `event_id` is guessed:
+    a Project A user pivoting against a Project B event_id receives `[]`
+    (NOT 403, NOT the data) — no information disclosure about whether the
+    event itself exists. This mirrors how `GET /api/iocs/{id}/events` handles
+    the inverse direction.
+
+    Sort is stable on (type, normalized_value) so the drawer renders a
+    deterministic list. Cap is high (500) because a single event in a
+    paste-dump or a TAXII bundle can legitimately produce dozens of atomic
+    indicators.
+    """
+    user = getattr(request.state, "user", None)
+    stmt = (
+        select(IOC)
+        .join(IOCEventLink, IOCEventLink.ioc_id == IOC.id)
+        .where(IOCEventLink.event_id == event_id)
+        .where(build_ioc_scope_predicate(user))
+        .order_by(IOC.type, IOC.normalized_value)
+        .limit(limit)
+    )
+    rows = list((await db.execute(stmt)).scalars().all())
+    return rows

@@ -754,3 +754,135 @@ async def test_project_graph_returns_only_in_scope_events(two_project_fixture, d
         f"result. Returned node ids: {[n.get('data', {}).get('id') for n in result.nodes[:10]]}. "
         "This would make test_project_graph_no_leakage a vacuous pass."
     )
+
+
+# ---------------------------------------------------------------------------
+# Phase 22 (IOC foundation) — Plan 22-03 wires the cross-project ACL chokepoint
+# for the iocs table. This test covers BOTH directions of the IOC leakage
+# surface:
+#   1. GET /api/iocs scoped via build_ioc_scope_predicate
+#   2. GET /api/events/{event_id}/iocs scoped via the SAME predicate (so a
+#      Project A user pivoting against a Project B event_id receives [], not
+#      403, not the data — no information disclosure).
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.cross_file_pollution
+@pytest.mark.asyncio
+async def test_iocs_leakage(two_project_fixture, db_session, monkeypatch):
+    """IOC-03 / IOC-08: Admin sees A + B + global; Observer-A sees A + global.
+
+    Setup:
+      - Project A IOC (ip 1.1.1.1)
+      - Project B IOC (ip 2.2.2.2)
+      - Global IOC, project_id IS NULL (ip 3.3.3.3)
+
+    Assertions:
+      a. jwt_a (Lead on Project A) hitting GET /api/iocs sees A + global, NOT B.
+      b. jwt_admin sees all three.
+      c. jwt_a hitting GET /api/events/{B_event_id}/iocs (after linking the
+         Project B IOC to a Project B event) returns [] — no leakage via the
+         event-side pivot, even when the event_id itself is guessed.
+      d. The same event-side endpoint returns the linked IOC for jwt_admin.
+
+    Truncates iocs + ioc_event_links up-front because the shared
+    _truncate_and_flush conftest fixture does not yet include them (carried as
+    a follow-up from Plan 22-02 SUMMARY).
+    """
+    _patch_auth(monkeypatch)
+    fx = two_project_fixture
+
+    await db_session.execute(text("TRUNCATE TABLE ioc_event_links, iocs RESTART IDENTITY CASCADE"))
+    await db_session.commit()
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+
+    # Three IOCs: A-scoped, B-scoped, global.
+    ioc_a = uuid.uuid4()
+    ioc_b = uuid.uuid4()
+    ioc_global = uuid.uuid4()
+    await db_session.execute(
+        text(
+            "INSERT INTO iocs "
+            "(id, project_id, type, value, normalized_value, status, confidence, "
+            " ttl_days, source, first_seen, last_seen, created_at, updated_at) "
+            "VALUES "
+            " (:a, :pa, 'ip', '1.1.1.1', '1.1.1.1', 'active', 0.8, 30, 'manual', :now, :now, :now, :now), "
+            " (:b, :pb, 'ip', '2.2.2.2', '2.2.2.2', 'active', 0.8, 30, 'manual', :now, :now, :now, :now), "
+            " (:g, NULL, 'ip', '3.3.3.3', '3.3.3.3', 'active', 1.0, 30, 'manual', :now, :now, :now, :now)"
+        ),
+        {
+            "a": ioc_a, "pa": fx.project_a.id,
+            "b": ioc_b, "pb": fx.project_b.id,
+            "g": ioc_global, "now": now,
+        },
+    )
+
+    # Link the Project B IOC to a Project B event (a real event already exists
+    # courtesy of two_project_fixture's events_b list).
+    event_b_id = fx.events_b[0]
+    await db_session.execute(
+        text(
+            "INSERT INTO ioc_event_links (id, ioc_id, event_id, observed_at, source_field) "
+            "VALUES (:id, :ioc, :evt, :now, 'description')"
+        ),
+        {"id": uuid.uuid4(), "ioc": ioc_b, "evt": event_b_id, "now": now},
+    )
+    await db_session.commit()
+
+    async with await _client() as c:
+        # (a) Observer-A (jwt_a) sees A + global only.
+        r_a = await c.get("/api/iocs", headers=_bearer(fx.jwt_a), params={"limit": 200})
+        assert r_a.status_code == 200, r_a.text
+        ids_a = {row["id"] for row in r_a.json()}
+        assert str(ioc_a) in ids_a, (
+            f"LEAK (IOC-03): Project A's IOC missing from jwt_a result: {ids_a}"
+        )
+        assert str(ioc_global) in ids_a, (
+            f"IOC-03: Global IOC missing from jwt_a result (must be visible to all): {ids_a}"
+        )
+        assert str(ioc_b) not in ids_a, (
+            f"LEAK (IOC-03): Project B IOC visible to jwt_a — cross-project leakage: "
+            f"{ids_a}"
+        )
+
+        # (b) Admin sees all three.
+        r_admin = await c.get(
+            "/api/iocs", headers=_bearer(fx.jwt_admin), params={"limit": 200},
+        )
+        assert r_admin.status_code == 200, r_admin.text
+        ids_admin = {row["id"] for row in r_admin.json()}
+        assert {str(ioc_a), str(ioc_b), str(ioc_global)}.issubset(ids_admin), (
+            f"IOC-03: Admin must see all per-project + global rows; got: {ids_admin}"
+        )
+
+        # (c) Event-side leakage gate: jwt_a hitting Project B's event_id MUST
+        #     return [] (NOT 403, NOT the IOC). Returning 403 would itself
+        #     disclose that the event_id exists; returning [] is leak-proof.
+        r_evt = await c.get(
+            f"/api/events/{event_b_id}/iocs", headers=_bearer(fx.jwt_a),
+        )
+        assert r_evt.status_code == 200, (
+            f"Expected 200 with empty body for cross-project event_id, got "
+            f"{r_evt.status_code}: {r_evt.text}"
+        )
+        evt_rows = r_evt.json()
+        evt_ids = {row["id"] for row in evt_rows}
+        assert str(ioc_b) not in evt_ids, (
+            f"LEAK (IOC-08 event-side): Project B IOC surfaced via "
+            f"GET /api/events/{event_b_id}/iocs as jwt_a: {evt_rows}"
+        )
+
+        # (d) Same endpoint as Admin returns the IOC — proves the link is
+        #     correctly wired and (c)'s emptiness was scope-driven, not a
+        #     missing link.
+        r_evt_admin = await c.get(
+            f"/api/events/{event_b_id}/iocs", headers=_bearer(fx.jwt_admin),
+        )
+        assert r_evt_admin.status_code == 200, r_evt_admin.text
+        admin_evt_ids = {row["id"] for row in r_evt_admin.json()}
+        assert str(ioc_b) in admin_evt_ids, (
+            f"IOC-08 positive control: Admin must see the linked IOC via the "
+            f"event-side endpoint; got {admin_evt_ids}"
+        )

@@ -592,6 +592,13 @@ def build_scheduler() -> BlockingScheduler:
         register_ai_jobs = None
     if register_ai_jobs is not None:
         register_ai_jobs(scheduler)
+    # Phase 22: IOC TTL expiry sweep (IOC-05)
+    try:
+        from app.scheduler.ioc_jobs import register_ioc_jobs  # noqa: PLC0415
+
+        register_ioc_jobs(scheduler)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_ioc_jobs_register_failed error=%s", e)
     return scheduler
 
 

@@ -26,6 +26,7 @@ import { DrawerNav } from "./DrawerNav";
 import { AttackGraph } from "./AttackGraph";
 import { TierBadge } from "./TierBadge";
 import { AISummarySection } from "./AISummarySection";
+import { IOCsSection } from "./EventDetailDrawer/IOCsSection";
 import { classifyTier, currentScore } from "@/lib/scoring";
 
 // ---------------------------------------------------------------------------
@@ -296,6 +297,9 @@ export function EventDetailDrawer({
                 <p className="text-xs text-muted-foreground">Score not yet computed.</p>
               )}
             </section>
+
+            {/* Section 3b2 — IOCs (Phase 22 Plan 06 §Surface 5) */}
+            <IOCsSection eventId={event.id} />
 
             {/* Section 3c — AI Summary */}
             <AISummarySection eventId={event.id} />
