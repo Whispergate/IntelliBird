@@ -18,6 +18,11 @@ EXEMPT_PATHS (pre-auth surface — must not require a token):
   /api/auth/oidc/login           redirect to Authentik
   /api/auth/oidc/callback        Authentik redirect target
 
+TAXII 2.1 exemption (Phase 26):
+  /taxii2 (all sub-paths, checked via startswith) — TAXII 2.1 outbound server uses its
+  own partner-key authentication (require_taxii_client Depends), not JWT bearer tokens.
+  The startswith check is used (not a frozenset entry) to cover all TAXII sub-paths.
+
 ASGI order (lock from Phase 8 — preserved):
   outermost -> innermost = RequestLogMiddleware -> AuthMiddleware -> CORSMiddleware -> route
 """
@@ -105,7 +110,7 @@ async def _is_jti_revoked(jti: str) -> bool:
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
-        if request.url.path in EXEMPT_PATHS:
+        if request.url.path in EXEMPT_PATHS or request.url.path.startswith("/taxii2"):
             return await call_next(request)
         if not settings.AUTH_ENABLED:
             # AUTH_ENABLED=false dev mode: inject a stub Admin user so Phase 9+ routers

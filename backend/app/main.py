@@ -48,17 +48,22 @@ from app.routers.admin.source_templates import router as admin_source_templates_
 from app.routers.admin.webhooks import router as admin_webhooks_router
 from app.routers.events import router as events_router
 from app.routers.iocs import router as iocs_router
+from app.routers.jobs import router as jobs_router
 from app.routers.graph import router as graph_router
 from app.routers.graph import projects_graph_router
 from app.routers.presets import router as presets_router
 from app.routers.easm import router as easm_router
 from app.routers.easm import safelist_router as easm_safelist_router
+from app.routers.actors import router as actors_router
+from app.routers.campaigns import router as campaigns_router
+from app.routers.admin.audit import router as audit_router
 from app.routers.enrichment import router as enrichment_router
 from app.routers.brand import router as brand_router
 from app.routers.projects import router as projects_router
 from app.routers.projects import compare_router as projects_compare_router
 from app.routers.system import router as system_router
 from app.routers.tags import router as tags_router
+from app.routers.taxii import router as taxii_router
 from app.routers.tiber import router as tiber_router
 from app.workers import broker as _broker  # noqa: F401 — registers actors
 
@@ -209,6 +214,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(auth_router, prefix="/api")
     fastapi_app.include_router(events_router, prefix="/api")
     fastapi_app.include_router(iocs_router, prefix="/api")
+    fastapi_app.include_router(jobs_router, prefix="/api")
     fastapi_app.include_router(tags_router, prefix="/api")
     fastapi_app.include_router(presets_router, prefix="/api")
     fastapi_app.include_router(graph_router, prefix="/api")
@@ -227,6 +233,9 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(brand_router, prefix="/api")
     fastapi_app.include_router(attack_router, prefix="/api")
     fastapi_app.include_router(ai_router, prefix="/api")
+    fastapi_app.include_router(actors_router, prefix="/api", tags=["actors"])
+    fastapi_app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
+    fastapi_app.include_router(audit_router, prefix="/api/admin", tags=["audit"])
     fastapi_app.include_router(enrichment_router, prefix="/api")
     fastapi_app.include_router(admin_ai_health_router, prefix="/api")
     fastapi_app.include_router(admin_ai_jobs_router, prefix="/api")
@@ -234,6 +243,8 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(assets_router)
     # TIBER report generation router — absolute prefix /api/projects/{id}/tiber
     fastapi_app.include_router(tiber_router)
+    # TAXII 2.1 outbound server — Phase 26. No /api prefix; TAXII uses its own /taxii2 prefix.
+    fastapi_app.include_router(taxii_router, prefix="/taxii2")
 
     return fastapi_app
 

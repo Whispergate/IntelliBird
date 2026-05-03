@@ -225,6 +225,16 @@ class Settings(BaseSettings):
         ),
     )
 
+    # TAXII 2.1 outbound server — Phase 26
+    TAXII_BASE_URL: str = Field(
+        default="",
+        description=(
+            "Public base URL for the TAXII 2.1 outbound server "
+            "(e.g. https://taxii.example.com). Used to build api_roots in "
+            "discovery response. Falls back to request base_url if empty."
+        ),
+    )
+
     @model_validator(mode="after")
     def reject_placeholders(self) -> "Settings":
         if self.SECRET_KEY in PLACEHOLDERS:
