@@ -842,3 +842,107 @@ export async function triggerBackfill(projectId?: string): Promise<IOCBackfillEn
   });
   return _handle<IOCBackfillEnqueued>(res);
 }
+
+// ============================================================
+// Enrichment types — Phase 23 / ENRICH-01, ENRICH-04
+// ============================================================
+
+export type EnrichmentProviderName =
+  | "vt"
+  | "abuseipdb"
+  | "greynoise"
+  | "otx"
+  | "shodan"
+  | "urlhaus";
+
+export type EnrichmentProviderRead = {
+  id: string;
+  project_id: string | null;
+  provider: EnrichmentProviderName;
+  enabled: boolean;
+  api_key_masked: string | null;
+  daily_request_cap: number | null;
+  breaker_open_until: string | null; // ISO 8601 datetime or null
+  created_at: string;
+  updated_at: string;
+};
+
+export type EnrichmentProviderWrite = {
+  enabled: boolean;
+  api_key?: string | null;
+  daily_request_cap?: number | null;
+};
+
+export type IOCEnrichmentRead = {
+  id: string;
+  ioc_id: string;
+  provider: string;
+  verdict: "clean" | "suspicious" | "malicious" | "unknown";
+  score: number | null;
+  fetched_at: string;
+  evidence_text: string | null;
+};
+
+// ============================================================
+// Enrichment API helpers
+// ============================================================
+
+/**
+ * GET /api/projects/{project_id}/enrichment-providers
+ * List all 6 provider slots for a project (with breaker state).
+ * Client-side fetch — uses relative URL through /api/[...path] proxy.
+ */
+export async function listEnrichmentProviders(
+  projectId: string,
+): Promise<EnrichmentProviderRead[]> {
+  const res = await fetch(`/api/projects/${projectId}/enrichment-providers`);
+  if (!res.ok) throw new Error(`listEnrichmentProviders failed: ${res.status}`);
+  return res.json() as Promise<EnrichmentProviderRead[]>;
+}
+
+/**
+ * PUT /api/projects/{project_id}/enrichment-providers/{provider}
+ * Create or update a provider row (encrypted key, enable/disable, cap).
+ */
+export async function upsertEnrichmentProvider(
+  projectId: string,
+  provider: EnrichmentProviderName,
+  payload: EnrichmentProviderWrite,
+): Promise<EnrichmentProviderRead> {
+  const res = await fetch(
+    `/api/projects/${projectId}/enrichment-providers/${provider}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) throw new Error(`upsertEnrichmentProvider failed: ${res.status}`);
+  return res.json() as Promise<EnrichmentProviderRead>;
+}
+
+/**
+ * GET /api/iocs/{id}/enrichments
+ * Fetch per-provider enrichment results for an IOC.
+ */
+export async function getIOCEnrichments(
+  iocId: string,
+): Promise<IOCEnrichmentRead[]> {
+  const res = await fetch(`/api/iocs/${iocId}/enrichments`);
+  if (!res.ok) throw new Error(`getIOCEnrichments failed: ${res.status}`);
+  return res.json() as Promise<IOCEnrichmentRead[]>;
+}
+
+/**
+ * POST /api/iocs/{id}/enrich
+ * Manually trigger re-enrichment. Pass refresh=true to bypass 24h cache.
+ */
+export async function triggerIOCEnrichment(
+  iocId: string,
+  options: { refresh?: boolean } = {},
+): Promise<{ queued: boolean; ioc_id: string }> {
+  const url = `/api/iocs/${iocId}/enrich${options.refresh ? "?refresh=true" : ""}`;
+  const res = await fetch(url, { method: "POST" });
+  if (!res.ok) throw new Error(`triggerIOCEnrichment failed: ${res.status}`);
+  return res.json() as Promise<{ queued: boolean; ioc_id: string }>;
+}
