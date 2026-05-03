@@ -74,7 +74,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 - [x] **Phase 23: IOC Enrichment APIs** — VirusTotal / AbuseIPDB / GreyNoise / OTX / Shodan / URLhaus reputation + quota guard (completed 2026-05-03)
 - [x] **Phase 24: Dark-Web Collection** — Tor + paste + Telegram with isolated egress and OPSEC compartmentation (completed 2026-05-03)
 - [x] **Phase 25: Threat Actors, Campaigns & Audit Log** — Cross-engagement actor catalog, campaign grouping, hypertable audit trail (completed 2026-05-03)
-- [ ] **Phase 26: TAXII Outbound Server** — Spec-correct federation publishing with per-partner ACLs
+- [x] **Phase 26: TAXII Outbound Server** — Spec-correct federation publishing with per-partner ACLs (completed 2026-05-03)
 - [ ] **Phase 27: Sandbox + YARA** — File-detonation pipeline paired with YARA scanning of samples and STIX patterns
 - [ ] **Phase 28: Passive DNS, WHOIS & Multi-hop Graph** — Infrastructure pivoting via shared registrar/IP plus 2-3 hop traversal
 - [ ] **Phase 29: Sigma Rule Engine** — Community Sigma rule sets auto-tagging events at ingest
@@ -435,7 +435,7 @@ Plans:
 | 23. IOC Enrichment APIs | 6/6 | Complete    | 2026-05-03 | - |
 | 24. Dark-Web Collection | 4/7 | In Progress|  | - |
 | 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
-| 26. TAXII Outbound Server | 4/5 | In Progress|  | - |
+| 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
 | 27. Sandbox + YARA | v4.0 | 0/0 | Not started | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | v4.0 | 0/0 | Not started | - |
 | 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |

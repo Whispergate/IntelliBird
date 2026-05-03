@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: completed
-stopped_at: Completed 26-taxii-outbound-server-04-PLAN.md
-last_updated: "2026-05-03T20:30:00.000Z"
+stopped_at: Completed 26-taxii-outbound-server-05-PLAN.md
+last_updated: "2026-05-03T20:29:31.565Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 30
-  completed_plans: 29
+  completed_plans: 30
 ---
 
 # Project State
@@ -225,6 +225,7 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 25 P05 | 42 | 2 tasks | 12 files |
 | Phase 26-taxii-outbound-server P02 | 8 | 2 tasks | 3 files |
 | Phase 26-taxii-outbound-server P03 | 12 | 2 tasks | 3 files |
+| Phase 26-taxii-outbound-server P05 | 18 | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -572,6 +573,8 @@ Recent decisions affecting current work:
 - [Phase 26-taxii-outbound-server]: raw_api_key returned only in TaxiiClientCreated, never in TaxiiClientRead — shown once on creation only
 - [Phase 26-taxii-outbound-server]: TAXII bundle: passthrough raw_stix for indicator/observed-data/vulnerability/report; wrap all others as stix2.ObservedData with x_intellibird_* custom props
 - [Phase 26-taxii-outbound-server]: require_taxii_client: NO CACHING on TaxiiClient DB lookup — revocation is instantaneous per TAXII-03; Redis rate limiter is FAIL-OPEN
+- [Phase 26-taxii-outbound-server]: response_model=None required on FastAPI 0.115 DELETE 204 routes — infers model from -> None annotation otherwise
+- [Phase 26-taxii-outbound-server]: Revoke is soft-delete (revoked=True + revoked_at) not hard-delete — row retained for audit trail
 
 ### Roadmap Evolution
 
@@ -626,7 +629,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-03T20:12:32.578Z
-Stopped at: Completed 26-taxii-outbound-server-03-PLAN.md
+Last session: 2026-05-03T20:29:31.561Z
+Stopped at: Completed 26-taxii-outbound-server-05-PLAN.md
 Resume file: None
 Next: 19-03-PLAN.md (Wave 3: Redis FLUSHDB + per-test TRUNCATE in integration conftest; @pytest.mark.cross_file_pollution decoration on 21 known-failing tests)
