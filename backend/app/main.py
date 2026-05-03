@@ -37,6 +37,7 @@ from app.routers.admin.rekey import router as admin_rekey_router
 from app.routers.admin.setup import router as admin_setup_router
 from app.routers.admin.users import router as admin_users_router
 from app.routers.admin.iocs import router as admin_iocs_router
+from app.routers.admin.taxii_clients import router as admin_taxii_clients_router
 from app.routers.ai import router as ai_router
 from app.routers.attack import router as attack_router
 from app.routers.admin.ai_health import router as admin_ai_health_router
@@ -209,6 +210,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(admin_setup_router, prefix="/api")
     fastapi_app.include_router(admin_users_router, prefix="/api")
     fastapi_app.include_router(admin_iocs_router, prefix="/api")
+    fastapi_app.include_router(admin_taxii_clients_router, prefix="/api")
     fastapi_app.include_router(admin_monitoring_router, prefix="/api")
     fastapi_app.include_router(admin_maintenance_router, prefix="/api")
     fastapi_app.include_router(auth_router, prefix="/api")
