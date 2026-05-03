@@ -9,13 +9,18 @@ import type { components } from "./api-client.generated";
 
 // FeedType: "bbot" added locally (Phase 11 plan 11-05); "brand-monitor" added
 // locally (Phase 12 plan 12-10) — both pending api-client.generated.ts regen.
+// Phase 24 / DARK-07: "tor_html", "paste", "telegram" added for dark-web collection.
 export type FeedType =
   | components["schemas"]["SourceResponse"]["feed_type"]
   | "bbot"
   | "brand-monitor"
   // Quick task 260425-ovt: HTML-scrape source type. Backend FeedType already
   // accepts "custom"; widening here keeps types in sync until openapi regen.
-  | "custom";
+  | "custom"
+  // Phase 24 / DARK-07: dark-web source types.
+  | "tor_html"
+  | "paste"
+  | "telegram";
 
 /**
  * Quick task 260425-ovt: canonical scrape_config shape for feed_type='custom'.
@@ -60,6 +65,8 @@ export type SystemStatus = components["schemas"]["SystemStatusResponse"];
 export type Source = Omit<components["schemas"]["SourceResponse"], "feed_type"> & {
   feed_type: FeedType;
   scrape_config?: ScrapeConfig | null;
+  // Phase 24 / DARK-07: operator OPSEC acknowledgement flag stored on the source row.
+  opsec_authorised?: boolean;
 };
 export type CreateSourcePayload = Omit<components["schemas"]["SourceCreate"], "feed_type"> & {
   feed_type: FeedType;
@@ -945,4 +952,243 @@ export async function triggerIOCEnrichment(
   const res = await fetch(url, { method: "POST" });
   if (!res.ok) throw new Error(`triggerIOCEnrichment failed: ${res.status}`);
   return res.json() as Promise<{ queued: boolean; ioc_id: string }>;
+}
+
+// ── Audit Log ──────────────────────────────────────────────────────────────
+
+export interface AuditLogRead {
+  id: string;
+  time: string;
+  user_sub: string | null;
+  action: string;
+  resource_type: string;
+  resource_id: string | null;
+  project_id: string | null;
+  before_jsonb: Record<string, unknown> | null;
+  after_jsonb: Record<string, unknown> | null;
+  request_id: string | null;
+}
+
+export interface AuditLogListResponse {
+  items: AuditLogRead[];
+  next_cursor: string | null;
+}
+
+export async function listAuditLog(params?: {
+  user_sub?: string;
+  resource_type?: string;
+  action?: string;
+  from_dt?: string;   // ISO string
+  to_dt?: string;     // ISO string
+  limit?: number;
+  cursor?: string;    // ISO timestamp of last row time
+}): Promise<AuditLogListResponse> {
+  const sp = new URLSearchParams();
+  if (params?.user_sub)      sp.set("user_sub",      params.user_sub);
+  if (params?.resource_type) sp.set("resource_type", params.resource_type);
+  if (params?.action)        sp.set("action",        params.action);
+  if (params?.from_dt)       sp.set("from_dt",       params.from_dt);
+  if (params?.to_dt)         sp.set("to_dt",         params.to_dt);
+  if (params?.limit)         sp.set("limit",         String(params.limit));
+  if (params?.cursor)        sp.set("cursor",        params.cursor);
+  const res = await fetch(`/api/admin/audit?${sp}`);
+  if (res.status === 403) throw Object.assign(new Error("forbidden"), { status: 403 });
+  if (!res.ok) throw new Error(`listAuditLog: ${res.status}`);
+  return res.json();
+}
+
+// ── Actors ─────────────────────────────────────────────────────────────────
+
+export interface ActorRead {
+  id: string;
+  primary_name: string;
+  aliases: string[] | null;
+  country: string | null;
+  motivation: string | null;
+  sophistication: string | null;
+  first_seen: string | null;
+  profile_md: string | null;
+  mitre_group_id: string | null;
+  last_bootstrap_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ActorListResponse {
+  items: ActorRead[];
+  next_cursor: string | null;
+  total: number | null;
+}
+
+export interface CampaignRead {
+  id: string;
+  name: string;
+  actor_id: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  summary_md: string | null;
+  project_id: string | null;
+  created_by_user_sub: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CampaignListResponse {
+  items: CampaignRead[];
+  next_cursor: string | null;
+}
+
+export interface ActorGraphData {
+  nodes: Array<{ data: { id: string; label: string; type: string } }>;
+  edges: Array<{ data: { id: string; source: string; target: string; label: string } }>;
+}
+
+export async function listActors(params?: {
+  q?: string;
+  country?: string;
+  sophistication?: string;
+  limit?: number;
+  cursor?: string;
+}): Promise<ActorListResponse> {
+  const sp = new URLSearchParams();
+  if (params?.q) sp.set("q", params.q);
+  if (params?.country) sp.set("country", params.country);
+  if (params?.sophistication) sp.set("sophistication", params.sophistication);
+  if (params?.limit) sp.set("limit", String(params.limit));
+  if (params?.cursor) sp.set("cursor", params.cursor);
+  const res = await fetch(`/api/actors?${sp}`);
+  if (!res.ok) throw new Error(`listActors: ${res.status}`);
+  return res.json();
+}
+
+export async function getActor(id: string): Promise<ActorRead> {
+  const res = await fetch(`/api/actors/${id}`);
+  if (!res.ok) throw new Error(`getActor: ${res.status}`);
+  return res.json();
+}
+
+export async function getActorGraph(id: string): Promise<ActorGraphData> {
+  const res = await fetch(`/api/actors/${id}/graph`);
+  if (!res.ok) throw new Error(`getActorGraph: ${res.status}`);
+  return res.json();
+}
+
+export async function createActor(
+  payload: Omit<ActorRead, "id" | "created_at" | "updated_at" | "mitre_group_id" | "last_bootstrap_at">,
+): Promise<ActorRead> {
+  const res = await fetch("/api/actors", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`createActor: ${res.status}`);
+  return res.json();
+}
+
+export async function patchActor(id: string, payload: Partial<ActorRead>): Promise<ActorRead> {
+  const res = await fetch(`/api/actors/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`patchActor: ${res.status}`);
+  return res.json();
+}
+
+export async function listCampaigns(projectId: string): Promise<CampaignListResponse> {
+  const res = await fetch(`/api/campaigns?project_id=${projectId}`);
+  if (!res.ok) throw new Error(`listCampaigns: ${res.status}`);
+  return res.json();
+}
+
+export async function createCampaign(payload: {
+  name: string;
+  actor_id?: string;
+  start_date?: string;
+  end_date?: string;
+  summary_md?: string;
+  project_id?: string;
+}): Promise<CampaignRead> {
+  const res = await fetch("/api/campaigns", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`createCampaign: ${res.status}`);
+  return res.json();
+}
+
+export async function patchCampaign(
+  id: string,
+  payload: Partial<CampaignRead>,
+): Promise<CampaignRead> {
+  const res = await fetch(`/api/campaigns/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`patchCampaign: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteCampaign(id: string): Promise<void> {
+  const res = await fetch(`/api/campaigns/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`deleteCampaign: ${res.status}`);
+}
+
+export async function linkEventToCampaign(campaignId: string, eventId: string): Promise<void> {
+  const res = await fetch(`/api/campaigns/${campaignId}/events/${eventId}`, { method: "POST" });
+  if (!res.ok) throw new Error(`linkEventToCampaign: ${res.status}`);
+}
+
+export async function unlinkEventFromCampaign(campaignId: string, eventId: string): Promise<void> {
+  const res = await fetch(`/api/campaigns/${campaignId}/events/${eventId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`unlinkEventFromCampaign: ${res.status}`);
+}
+
+// ---------------------------------------------------------------------------
+// TAXII Partner Key Admin — Phase 26 / TAXII-03
+// ---------------------------------------------------------------------------
+
+export interface TaxiiClientRead {
+  id: string;
+  label: string;
+  project_id: string;
+  tlp_max_level: string;
+  rate_limit_rpm: number;
+  revoked: boolean;
+  revoked_at: string | null;
+  created_at: string;
+}
+
+export interface TaxiiClientCreated extends TaxiiClientRead {
+  raw_api_key: string; // shown once — copy immediately
+}
+
+export interface TaxiiClientCreate {
+  label: string;
+  project_id: string;
+  tlp_max_level?: string;
+  rate_limit_rpm?: number;
+}
+
+export async function listTaxiiClients(): Promise<TaxiiClientRead[]> {
+  const res = await fetch('/api/admin/taxii-clients/');
+  if (!res.ok) throw new Error(`listTaxiiClients: ${res.status}`);
+  return res.json();
+}
+
+export async function createTaxiiClient(body: TaxiiClientCreate): Promise<TaxiiClientCreated> {
+  const res = await fetch('/api/admin/taxii-clients/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`createTaxiiClient: ${res.status}`);
+  return res.json();
+}
+
+export async function revokeTaxiiClient(id: string): Promise<void> {
+  const res = await fetch(`/api/admin/taxii-clients/${id}`, { method: 'DELETE' });
+  if (!res.ok && res.status !== 204) throw new Error(`revokeTaxiiClient: ${res.status}`);
 }
