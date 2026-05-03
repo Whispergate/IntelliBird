@@ -71,7 +71,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 **Source plan:** `/home/lavender/.claude/plans/please-find-points-vast-hearth.md`
 
 - [x] **Phase 22: IOC Foundation** — First-class atomic indicator table, bulk import, TTL decay, cross-event pivots — SHIPPED 2026-05-03 (6/6 plans)
-- [ ] **Phase 23: IOC Enrichment APIs** — VirusTotal / AbuseIPDB / GreyNoise / OTX / Shodan / URLhaus reputation + quota guard
+- [x] **Phase 23: IOC Enrichment APIs** — VirusTotal / AbuseIPDB / GreyNoise / OTX / Shodan / URLhaus reputation + quota guard (completed 2026-05-03)
 - [ ] **Phase 24: Dark-Web Collection** — Tor + paste + Telegram with isolated egress and OPSEC compartmentation
 - [ ] **Phase 25: Threat Actors, Campaigns & Audit Log** — Cross-engagement actor catalog, campaign grouping, hypertable audit trail
 - [ ] **Phase 26: TAXII Outbound Server** — Spec-correct federation publishing with per-partner ACLs
@@ -411,7 +411,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 |-------|-----------|----------------|--------|-----------|
 | 1-21 | v1.5–v3.1 | — | Complete | 2026-04-29 |
 | 22. IOC Foundation | 5/6 | Complete    | 2026-05-03 | - |
-| 23. IOC Enrichment APIs | 5/6 | In Progress|  | - |
+| 23. IOC Enrichment APIs | 6/6 | Complete   | 2026-05-03 | - |
 | 24. Dark-Web Collection | v4.0 | 0/0 | Not started | - |
 | 25. Threat Actors, Campaigns & Audit Log | v4.0 | 0/0 | Not started | - |
 | 26. TAXII Outbound Server | v4.0 | 0/0 | Not started | - |
