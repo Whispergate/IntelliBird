@@ -49,6 +49,7 @@ import {
 import { EASMGateForm } from "./components/EASMGateForm";
 import type { EASMGateProject } from "./components/EASMGateForm";
 import { AIProviderCard } from "./settings/AIProviderCard";
+import { EnrichmentProvidersCard } from "./settings/EnrichmentProvidersCard";
 
 const ENGAGEMENT_OPTIONS: ReadonlyArray<{
   value: EngagementType;
@@ -288,13 +289,16 @@ export function SettingsTabContent({
         </p>
       </section>
 
-      {/* AI Provider card — Admin only */}
+      {/* AI Provider card — Lead+ only */}
       {userIsLeadOrAdmin && (
         <AIProviderCard
           projectId={liveProject.id}
           ollamaHealth={ollamaHealth}
         />
       )}
+
+      {/* Enrichment Providers card — Lead+ only for edits, all roles can view */}
+      <EnrichmentProvidersCard projectId={liveProject.id} />
     </div>
   );
 }
