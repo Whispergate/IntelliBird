@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: completed
-stopped_at: Completed 22-06-frontend-ui-PLAN.md (Phase 22 IOC Foundation 6/6 SHIPPED)
-last_updated: "2026-05-03T12:25:00.000Z"
+stopped_at: Completed 23-02-PLAN.md (enrichment DB schema)
+last_updated: "2026-05-03T13:25:45.721Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 1
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 12
+  completed_plans: 8
 ---
 
 # Project State
@@ -213,6 +213,8 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 22 P01 | 10min | 3 tasks | 17 files |
 | Phase 22-ioc-foundation P02 | 6min | 3 tasks | 9 files |
 | Phase 22 P04 | 12min | 3 tasks | 17 files |
+| Phase 23-ioc-enrichment-apis P01 | 25 | 3 tasks | 14 files |
+| Phase 23 P02 | 2 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -532,6 +534,10 @@ Recent decisions affecting current work:
 - [Phase 22]: Wave 0 IOC test stubs use xfail-strict (backend) / it.todo (frontend); leakage suite extension uses per-function marker to preserve existing 13 PROD-01/TIBER-04 tests
 - [Phase 22-ioc-foundation]: Plan 22-02: alembic revision id slug-style — used 019_iocs (down=018_ai_auto_summary_toggle) instead of plan-specified 023/022 to match actual repo head; filename and revision-id numbering have diverged since migration 015
 - [Phase 22-ioc-foundation]: Plan 22-02: IPv4 normaliser pre-strips per-octet leading zeros before delegating to ipaddress.IPv4Address (Python 3.10+ rejects 01.02.03.04); contract requires partner-shared CSVs with padded octets to canonicalise
+- [Phase 23-ioc-enrichment-apis]: Removed unregistered pytest marker 'unit' from all unit stub files — pyproject.toml uses strict-markers; xfail kept per-function
+- [Phase 23-ioc-enrichment-apis]: fakeredis gated at module scope with pytest.importorskip in quota test file — skips cleanly if absent
+- [Phase 23]: ioc_verdict ENUM created via op.execute in migration (not SQLAlchemy create_type) — single source of truth for DDL
+- [Phase 23]: api_key_masked field in EnrichmentProviderRead ensures raw credentials_enc never returned from ORM layer; masking deferred to route handler
 
 ### Roadmap Evolution
 
@@ -586,7 +592,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-03T09:55:34.000Z
-Stopped at: Completed 22-04-writes-scheduler-backfill-PLAN.md
+Last session: 2026-05-03T13:25:45.718Z
+Stopped at: Completed 23-02-PLAN.md (enrichment DB schema)
 Resume file: None
 Next: 19-03-PLAN.md (Wave 3: Redis FLUSHDB + per-test TRUNCATE in integration conftest; @pytest.mark.cross_file_pollution decoration on 21 known-failing tests)

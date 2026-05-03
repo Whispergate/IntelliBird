@@ -134,7 +134,13 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
   3. Operator with no API keys configured sees ingest continue normally; enrichment section renders "no provider configured" rather than erroring
   4. Each provider's results stored as one row per `(ioc_id, provider)` in `ioc_enrichments`; raw JSON retained for re-rendering with new UI without re-fetching
 **OPSEC**: External-API per-project opt-in; UI warns "data leaves perimeter when this provider is enabled".
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 23-01-PLAN.md — Wave 0 test scaffolding (14 stub files)
+- [ ] 23-02-PLAN.md — Migration 024, ORM models, Pydantic schemas
+- [ ] 23-03-PLAN.md — Provider service layer (quota, circuit breaker, cache, 6 external modules)
+- [ ] 23-04-PLAN.md — enrich_ioc actor + ingest hook
+- [ ] 23-05-PLAN.md — Provider settings API + rekey sweep + router registration
+- [ ] 23-06-PLAN.md — Frontend UI (EnrichmentProvidersCard, IOCDetailDrawer, IOCsSection, api-client)
 
 ### Phase 24: Dark-Web Collection
 **Goal**: Operator can configure Tor-routed `.onion` scrapes, paste-site polling, and public Telegram channel ingestion through an isolated egress profile, with auto-extraction of credential pairs and BTC wallets.
@@ -404,8 +410,8 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-21 | v1.5–v3.1 | — | Complete | 2026-04-29 |
-| 22. IOC Foundation | 5/6 | In Progress|  | - |
-| 23. IOC Enrichment APIs | v4.0 | 0/0 | Not started | - |
+| 22. IOC Foundation | 5/6 | Complete    | 2026-05-03 | - |
+| 23. IOC Enrichment APIs | 2/6 | In Progress|  | - |
 | 24. Dark-Web Collection | v4.0 | 0/0 | Not started | - |
 | 25. Threat Actors, Campaigns & Audit Log | v4.0 | 0/0 | Not started | - |
 | 26. TAXII Outbound Server | v4.0 | 0/0 | Not started | - |
