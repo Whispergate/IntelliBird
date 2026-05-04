@@ -9,6 +9,7 @@ class GraphNodeData(BaseModel):
     label: str
     type: str
     tag_source: str | None = None
+    centrality: float | None = None  # server-computed; None for non-traverse endpoints
 
 
 class GraphNode(BaseModel):
@@ -29,3 +30,7 @@ class GraphResponse(BaseModel):
     nodes: list[GraphNode]
     edges: list[GraphEdge]
     truncated: bool = False
+    # Phase 28 centrality fields — only populated by the /traverse endpoint.
+    # Existing endpoints (event graph, project graph) leave these at defaults.
+    per_node_centrality: dict[str, float] | None = None
+    centrality_truncated: bool = False
