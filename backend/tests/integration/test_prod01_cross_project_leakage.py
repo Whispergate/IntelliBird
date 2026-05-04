@@ -886,3 +886,278 @@ async def test_iocs_leakage(two_project_fixture, db_session, monkeypatch):
             f"IOC-08 positive control: Admin must see the linked IOC via the "
             f"event-side endpoint; got {admin_evt_ids}"
         )
+
+
+# ---------------------------------------------------------------------------
+# Phase 23 (IOC Enrichment APIs) — Plan 23-01 Wave 0 stub
+#
+# ENRICH-05: enrichment ACL chokepoint — ioc_enrichments rows for Project B
+# must not be visible to a Project A caller via GET /api/iocs/{id}/enrichments.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+@pytest.mark.xfail(reason="not yet implemented — Phase 23 enrichment ACL not shipped")
+async def test_enrichment_leakage(two_project_fixture):
+    """PROD-01 extension: ioc_enrichments rows for Project B must not be
+    visible to a Project A caller via GET /api/iocs/{id}/enrichments."""
+    # Stub: will be fleshed out in plan 23-05 after routes exist.
+    assert False, "enrichment leakage test not yet implemented"
+
+
+# ---------------------------------------------------------------------------
+# Phase 24 (Dark-Web Collection) — Plan 24-01 Wave 0 stub
+#
+# DARK-01..07: dark-web events (tor_html/paste/telegram) bound to Project B
+# must not appear in Project A's /api/events response.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.skip(reason="Phase 24 not yet implemented")
+async def test_darkweb_event_leakage(two_project_fixture):
+    """Dark-web events (tor_html/paste/telegram) bound to Project B must not appear
+    in Project A's /api/events response, even when Project A's JWT is used.
+    Extends PROD-01 leakage contract to dark-web source types.
+    """
+    pass
+
+
+# ---------------------------------------------------------------------------
+# Phase 25 (Threat Actors, Campaigns & Audit Log) — Plan 25-01 Wave 0 stub
+#
+# ACTOR-03 / ACTOR-05 / ACTOR-06: campaigns bound to Project B must not be
+# accessible via a Project A JWT through GET /api/campaigns.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.xfail(strict=False, reason="actor/campaign routes pending Phase 25")
+@pytest.mark.asyncio
+async def test_actor_campaign_leakage(two_project_fixture):
+    """PROD-01 extension: campaigns scoped to Project B must not be visible to Project A JWT.
+
+    Setup:
+      - Project A has a campaign with actor_id referencing a threat actor.
+      - Project B has no campaigns.
+
+    Assertion:
+      - A JWT for a Project A member hitting GET /api/campaigns?project_id=<B>
+        must NOT return any campaign rows (the project_id=NULL global campaigns
+        and Project B-scoped campaigns must both be absent from a Project A
+        member's cross-project query).
+
+    This stub captures the leakage contract before campaign routes exist.
+    It will be fleshed out in plan 25-05 after the campaign CRUD routes ship.
+    """
+    assert False, "stub — implement after Phase 25 campaign routes ship"
+
+
+# ---------------------------------------------------------------------------
+# Phase 28 (GRAPH-04) — Multi-hop DomainPivot traverse isolation gates
+#
+# These tests prove that 2-hop and 3-hop AGE Cypher traversals scoped to
+# Project A cannot reach DomainPivot nodes belonging to Project B, even when
+# those nodes share a registrar or IP (i.e. WOULD be connected if
+# project_id were not embedded in the vertex properties).
+#
+# Setup per test:
+#   - Insert one domain IOC in project_a and one in project_b, both with
+#     the same registrar in whois_cache (simulating infrastructure overlap).
+#   - Call sync_domain_pivot() which MERGEs DomainPivot nodes. Because the
+#     cross-domain sibling SQL query is project-scoped, no SHARES_INFRA edge
+#     is created between the two projects' nodes.
+#   - Run AGE Cypher traversal scoped to project_a and assert zero project_b
+#     nodes leak through.
+# ---------------------------------------------------------------------------
+
+
+async def _seed_domain_pivot_pair(db_session, project_a_id, project_b_id):
+    """Seed one domain IOC + whois_cache row per project, then sync to AGE graph.
+
+    Returns (domain_a, ioc_id_a, domain_b, ioc_id_b).
+    Both domains share registrar 'SameRegistrar Inc.' to maximise leakage risk.
+    """
+    import uuid as _uuid
+    from datetime import datetime, timezone
+    from sqlalchemy import text as _text
+    from app.services.age_sync import sync_domain_pivot
+
+    now = datetime.now(timezone.utc)
+    domain_a = f"domain-a-{_uuid.uuid4().hex[:8]}.example.com"
+    domain_b = f"domain-b-{_uuid.uuid4().hex[:8]}.example.com"
+    ioc_id_a = _uuid.uuid4()
+    ioc_id_b = _uuid.uuid4()
+
+    # Insert IOC rows
+    await db_session.execute(
+        _text(
+            "INSERT INTO iocs "
+            "(id, project_id, type, value, normalized_value, status, confidence, "
+            " ttl_days, source, first_seen, last_seen, created_at, updated_at) "
+            "VALUES "
+            "(:a, :pa, 'domain', :da, :da, 'active', 0.8, 30, 'manual', :now, :now, :now, :now), "
+            "(:b, :pb, 'domain', :db, :db, 'active', 0.8, 30, 'manual', :now, :now, :now, :now)"
+        ),
+        {
+            "a": ioc_id_a, "pa": project_a_id, "da": domain_a,
+            "b": ioc_id_b, "pb": project_b_id, "db": domain_b,
+            "now": now,
+        },
+    )
+
+    # Insert whois_cache rows — same registrar to simulate infrastructure overlap
+    await db_session.execute(
+        _text(
+            "INSERT INTO whois_cache (domain, registrar, registrant_email, fetched_at) "
+            "VALUES (:da, 'SameRegistrar Inc.', 'admin@same-registrar.example', :now), "
+            "       (:db, 'SameRegistrar Inc.', 'admin@same-registrar.example', :now) "
+            "ON CONFLICT (domain) DO UPDATE SET registrar = EXCLUDED.registrar, "
+            "  registrant_email = EXCLUDED.registrant_email, fetched_at = EXCLUDED.fetched_at"
+        ),
+        {"da": domain_a, "db": domain_b, "now": now},
+    )
+    await db_session.commit()
+
+    # Sync each domain to the AGE graph — this MERGEs DomainPivot nodes and
+    # (correctly) does NOT create cross-project SHARES_INFRA edges.
+    await sync_domain_pivot(db_session, str(ioc_id_a), domain_a, str(project_a_id))
+    await sync_domain_pivot(db_session, str(ioc_id_b), domain_b, str(project_b_id))
+
+    return domain_a, ioc_id_a, domain_b, ioc_id_b
+
+
+@pytest.mark.asyncio
+async def test_traverse_2hop_isolation(two_project_fixture, db_session):
+    """GRAPH-04: 2-hop DomainPivot traversal scoped to Project A returns ZERO Project B nodes.
+
+    Two domain IOCs share the same registrar (prime leakage vector via
+    SHARES_INFRA). After sync, a Project A-scoped 2-hop AGE Cypher traversal
+    must not reach the Project B DomainPivot node.
+
+    Proves: project_id property on DomainPivot vertices structurally prevents
+    cross-project traversal when the WHERE predicate is applied correctly.
+    """
+    fx = two_project_fixture
+    _, _, domain_b, _ = await _seed_domain_pivot_pair(
+        db_session, fx.project_a.id, fx.project_b.id
+    )
+
+    raw = await db_session.connection()
+    await raw.exec_driver_sql("LOAD 'age'")
+    await raw.exec_driver_sql('SET search_path = ag_catalog, "$user", public')
+
+    pid_a = str(fx.project_a.id)
+    pid_b = str(fx.project_b.id)
+
+    # 2-hop traversal from ALL project_a DomainPivot nodes — should never reach project_b
+    cypher_body = (
+        f"MATCH (seed:DomainPivot {{project_id: '{pid_a}'}})"
+        f"-[:SHARES_INFRA*1..2]-(t:DomainPivot) "
+        f"WHERE t.project_id = '{pid_b}' "
+        f"RETURN count(t) AS leaked"
+    )
+    sql = (
+        "SELECT * FROM cypher('intellibird_graph', $$ "
+        + cypher_body
+        + " $$) AS (leaked ag_catalog.agtype)"
+    )
+    row = (await raw.exec_driver_sql(sql)).first()
+    assert row is not None, "AGE traversal returned no rows — graph may be unreachable"
+    leaked = _count_from_agtype(row[0])
+    assert leaked == 0, (
+        f"LEAK (GRAPH-04): 2-hop DomainPivot traversal from project_a reached "
+        f"{leaked} project_b node(s). SHARES_INFRA edges must not cross project boundaries."
+    )
+
+
+@pytest.mark.asyncio
+async def test_traverse_3hop_isolation(two_project_fixture, db_session):
+    """GRAPH-04: 3-hop DomainPivot traversal scoped to Project A returns ZERO Project B nodes.
+
+    Extends test_traverse_2hop_isolation to 3 hops — the maximum supported by
+    the traverse endpoint. Deeper traversal must not create more leakage surface.
+    """
+    fx = two_project_fixture
+    await _seed_domain_pivot_pair(db_session, fx.project_a.id, fx.project_b.id)
+
+    raw = await db_session.connection()
+    await raw.exec_driver_sql("LOAD 'age'")
+    await raw.exec_driver_sql('SET search_path = ag_catalog, "$user", public')
+
+    pid_a = str(fx.project_a.id)
+    pid_b = str(fx.project_b.id)
+
+    cypher_body = (
+        f"MATCH (seed:DomainPivot {{project_id: '{pid_a}'}})"
+        f"-[:SHARES_INFRA*1..3]-(t:DomainPivot) "
+        f"WHERE t.project_id = '{pid_b}' "
+        f"RETURN count(t) AS leaked"
+    )
+    sql = (
+        "SELECT * FROM cypher('intellibird_graph', $$ "
+        + cypher_body
+        + " $$) AS (leaked ag_catalog.agtype)"
+    )
+    row = (await raw.exec_driver_sql(sql)).first()
+    assert row is not None, "AGE 3-hop traversal returned no rows — graph may be unreachable"
+    leaked = _count_from_agtype(row[0])
+    assert leaked == 0, (
+        f"LEAK (GRAPH-04): 3-hop DomainPivot traversal from project_a reached "
+        f"{leaked} project_b node(s). Maximum hop depth must not increase leakage surface."
+    )
+
+
+@pytest.mark.asyncio
+async def test_traverse_2hop_positive_control(two_project_fixture, db_session):
+    """GRAPH-04 positive control: Project A's own DomainPivot is reachable at 1 hop.
+
+    Guards against a vacuous pass where both isolation tests pass only because
+    the graph is empty or the DomainPivot seed node was never created.
+    A Project A-scoped 1-hop traversal must return >= 1 DomainPivot node
+    (the seed itself, since we MERGE it unconditionally in sync_domain_pivot).
+    """
+    fx = two_project_fixture
+    domain_a, _, _, _ = await _seed_domain_pivot_pair(
+        db_session, fx.project_a.id, fx.project_b.id
+    )
+
+    raw = await db_session.connection()
+    await raw.exec_driver_sql("LOAD 'age'")
+    await raw.exec_driver_sql('SET search_path = ag_catalog, "$user", public')
+
+    pid_a = str(fx.project_a.id)
+
+    # Match the seed node itself (0-hop: start at project_a DomainPivot)
+    cypher_body = (
+        f"MATCH (d:DomainPivot {{domain: '{domain_a}', project_id: '{pid_a}'}}) "
+        f"RETURN count(d) AS found"
+    )
+    sql = (
+        "SELECT * FROM cypher('intellibird_graph', $$ "
+        + cypher_body
+        + " $$) AS (found ag_catalog.agtype)"
+    )
+    row = (await raw.exec_driver_sql(sql)).first()
+    assert row is not None
+    found = _count_from_agtype(row[0])
+    assert found >= 1, (
+        f"GRAPH-04 positive control FAILED: domain_a DomainPivot node not found in "
+        f"intellibird_graph after sync_domain_pivot(). "
+        f"Other isolation tests may be vacuous false-negatives. domain_a={domain_a}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# CASE-05: Cross-project case isolation (Phase 31)
+# Added by 31-01-PLAN. Implemented by 31-05-PLAN.
+# Verifies that a Project A JWT cannot read Project B's cases.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_case_isolation(two_project_fixture, monkeypatch):
+    """CASE-05: A Project A JWT cannot read Project B's cases.
+
+    Verifies that GET /api/projects/{project_b_id}/cases with a Project A JWT
+    returns 403, preventing cross-project case data leakage.
+    """
+    pytest.skip("not yet implemented — plan 31-05 will turn this green")
