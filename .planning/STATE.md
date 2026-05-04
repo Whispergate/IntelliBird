@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: verifying
-stopped_at: Completed 30-notification-channels-30-03-PLAN.md
-last_updated: "2026-05-04T11:47:16.422Z"
+stopped_at: Completed 30-notification-channels-30-04-PLAN.md
+last_updated: "2026-05-04T11:52:37.525Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 8
   total_plans: 58
-  completed_plans: 54
+  completed_plans: 55
 ---
 
 # Project State
@@ -248,6 +248,7 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 30-notification-channels P01 | 12 | 2 tasks | 5 files |
 | Phase 30-notification-channels P02 | 15 | 2 tasks | 3 files |
 | Phase 30-notification-channels P03 | 15 | 2 tasks | 4 files |
+| Phase 30-notification-channels P04 | 4 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -640,6 +641,7 @@ Recent decisions affecting current work:
 - [Phase 30-notification-channels]: PagerDuty routing_key uses sentinel _PENDING_INJECTION_ — real key injected from auth_enc in plan 30-05
 - [Phase 30-notification-channels]: ntfy topic sourced from preset_query_params['ntfy_url'] path component, not dashboard_url
 - [Phase 30-notification-channels]: GenieKey auth header added after header branch; PagerDuty auth is in-body only
+- [Phase 30-notification-channels]: asyncio.run() bridge chosen for aiosmtplib (not nest_asyncio) — Dramatiq workers are sync threads; email branch in _drain_and_dispatch returns before build_payload_for_type; test_webhook_send returns ok=False (not 422) for email type
 
 ### Roadmap Evolution
 
@@ -695,7 +697,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-04T11:47:16.419Z
-Stopped at: Completed 30-notification-channels-30-03-PLAN.md
+Last session: 2026-05-04T11:52:37.514Z
+Stopped at: Completed 30-notification-channels-30-04-PLAN.md
 Resume file: None
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)
