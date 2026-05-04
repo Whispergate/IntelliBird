@@ -471,7 +471,7 @@ Plans:
 | 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete    | 2026-05-04 | - |
 | 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
-| 30. Notification Channels | 2/7 | In Progress|  | - |
+| 30. Notification Channels | 3/7 | In Progress|  | - |
 | 31. Case Management | v4.0 | 0/0 | Not started | - |
 | 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
 | 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |
