@@ -237,11 +237,12 @@ def test_pd_auto_resolve() -> None:
     pd_url = "https://events.pagerduty.com/v2/enqueue"
     event_id = str(uuid.uuid4())
 
-    # Session returns one PD webhook row
+    # Session returns one PD webhook row.
+    # archiver accesses rows as row[0]=url, row[1]=auth_enc (tuple-style).
+    _result_mock = _Mock()
+    _result_mock.fetchall.return_value = [(pd_url, auth_enc)]
     session_mock = _Mock()
-    session_mock.execute.return_value = [
-        types.SimpleNamespace(url=pd_url, auth_enc=auth_enc)
-    ]
+    session_mock.execute.return_value = _result_mock
 
     posted: list[dict] = []
 

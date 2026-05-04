@@ -541,6 +541,14 @@ def _drain_and_dispatch(
         settings.DASHBOARD_URL,
         primary_preset.query_params,
     )
+    # PagerDuty: routing_key must be in the JSON body, not an Authorization header.
+    # Inject from auth_enc after the generic payload build.
+    if webhook.destination_type == "pagerduty" and webhook.auth_enc:
+        try:
+            _pd_creds = decrypt_credentials(settings.SECRET_KEY, webhook.auth_enc)
+            payload["routing_key"] = _pd_creds.get("routing_key", "")
+        except Exception:  # noqa: BLE001
+            pass  # sentinel remains; PD will 400, triggers auto-disable path
     headers = {"Content-Type": "application/json; charset=utf-8"}
     headers.update(_build_auth_headers(webhook.auth_enc))
 
