@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: completed
-stopped_at: Completed 26-taxii-outbound-server-05-PLAN.md
-last_updated: "2026-05-03T20:29:31.565Z"
+stopped_at: Completed 27-01-PLAN.md (27-sandbox-yara Wave 0 scaffold)
+last_updated: "2026-05-04T06:38:00.000Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 5
-  total_plans: 30
-  completed_plans: 30
+  total_plans: 37
+  completed_plans: 32
 ---
 
 # Project State
@@ -226,6 +226,8 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 26-taxii-outbound-server P02 | 8 | 2 tasks | 3 files |
 | Phase 26-taxii-outbound-server P03 | 12 | 2 tasks | 3 files |
 | Phase 26-taxii-outbound-server P05 | 18 | 3 tasks | 4 files |
+| Phase 27-sandbox-yara P01 | 17min | 3 tasks | 9 files |
+| Phase 27-sandbox-yara P02 | 12 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -234,6 +236,8 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Phase 27-01]: xfail (not skip) used for Wave 0 stubs — lets pytest collect and report expected failures without erroring the suite; downstream plans replace xfail with real assertions one file at a time
+- [Phase 27-01]: libyara-dev placed in runtime Dockerfile stage (not builder only) — yara-python imports the native shared library at runtime, not just at compile time; yara-python in main deps (not dev group) because YARA engine runs in containers
 - [Phase 16-04]: EWMA_ALPHA = 2/(168+1) ≈ 0.012; drift.py is pure math (no DB); callers pass list[float]; classify_severity(negative z) → None (drift down not alerted; silence detection handles dead sources)
 - [Phase 16-04]: is_maintenance_active uses sync Session only; async sibling deferred to 16-06 if router async context requires it
 - [Phase 16-02]: Sentinel monitoring project UUID 00000000-0000-0000-0000-000000000000 (all zeros) is distinct from legacy sentinel 00000000-0000-0000-0000-000000000001 (mig 009); both satisfy events.project_id NOT NULL; monitoring_synth.py must use the all-zeros UUID
@@ -575,6 +579,9 @@ Recent decisions affecting current work:
 - [Phase 26-taxii-outbound-server]: require_taxii_client: NO CACHING on TaxiiClient DB lookup — revocation is instantaneous per TAXII-03; Redis rate limiter is FAIL-OPEN
 - [Phase 26-taxii-outbound-server]: response_model=None required on FastAPI 0.115 DELETE 204 routes — infers model from -> None annotation otherwise
 - [Phase 26-taxii-outbound-server]: Revoke is soft-delete (revoked=True + revoked_at) not hard-delete — row retained for audit trail
+- [Phase 27-sandbox-yara]: sandbox_reports.event_id is SOFT FK — TimescaleDB hypertables cannot be targets of real FK constraints
+- [Phase 27-sandbox-yara]: SUPPORTED_PROVIDERS uses Pydantic Literal type rather than DB ENUM to allow provider expansion without a migration
+- [Phase 27-sandbox-yara]: compiled_cache excluded from YaraRuleRead schema — internal binary blob never sent to API clients
 
 ### Roadmap Evolution
 
@@ -629,7 +636,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-03T20:29:31.561Z
-Stopped at: Completed 26-taxii-outbound-server-05-PLAN.md
+Last session: 2026-05-04T06:37:25.881Z
+Stopped at: Completed 27-sandbox-yara-02-PLAN.md
 Resume file: None
 Next: 19-03-PLAN.md (Wave 3: Redis FLUSHDB + per-test TRUNCATE in integration conftest; @pytest.mark.cross_file_pollution decoration on 21 known-failing tests)

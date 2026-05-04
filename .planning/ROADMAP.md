@@ -253,7 +253,15 @@ Plans:
   4. Admin uploads YARA rule via `/admin/yara-rules`; subsequent sample matching rule auto-tags event with rule name + family; STIX `pattern` strings at ingest also scanned and tagged
   5. Project with sandbox disabled shows no submission; new SHA256 IOC creation completes normally without external call
 **OPSEC**: Per-project opt-in; UI banner "free-tier sandbox makes submissions public" before enable.
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [x] 27-01-PLAN.md — Wave 0: test stubs (7 files) + Dockerfile libyara-dev + pyproject.toml yara-python
+- [ ] 27-02-PLAN.md — Migration 028: sandbox_configs, sandbox_reports hypertable, yara_rules, yara_matches + ORM models + Pydantic schemas
+- [ ] 27-03-PLAN.md — Sandbox provider modules (cuckoo, anyrun, joesandbox, hybridanalysis, triage) + sample_fetch.py + yara_engine.py
+- [ ] 27-04-PLAN.md — YARA admin router + sandbox config router + main.py registration
+- [ ] 27-05-PLAN.md — Sandbox submit + poll actors + broker queue + IOC ingest hook
+- [ ] 27-06-PLAN.md — GET sandbox-report endpoint + STIX pattern YARA scan hook in TAXII ingest
+- [ ] 27-07-PLAN.md — Frontend: YARA admin page + SandboxReportSection in EventDetailDrawer + api-client helpers (checkpoint)
 
 ### Phase 28: Passive DNS, WHOIS & Multi-hop Graph
 **Goal**: Domain IOCs receive WHOIS + passive-DNS enrichment that powers shared-infrastructure pivots; the attack graph supports analyst-driven 1-3 hop traversal with cross-project isolation preserved.
@@ -436,7 +444,7 @@ Plans:
 | 24. Dark-Web Collection | 4/7 | In Progress|  | - |
 | 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
 | 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
-| 27. Sandbox + YARA | v4.0 | 0/0 | Not started | - |
+| 27. Sandbox + YARA | 2/7 | In Progress|  | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | v4.0 | 0/0 | Not started | - |
 | 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |
 | 30. Notification Channels | v4.0 | 0/0 | Not started | - |
@@ -446,4 +454,4 @@ Plans:
 | 34. Browser Extension | v4.0 | 0/0 | Not started | - |
 
 ---
-*Last updated: 2026-05-03 — Phase 24 planned (7 plans, 6 waves)*
+*Last updated: 2026-05-04 — Phase 27 planned (7 plans, 5 waves)*
