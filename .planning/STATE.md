@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: verifying
-stopped_at: Completed 28-07-PLAN.md
-last_updated: "2026-05-04T08:02:09.768Z"
+stopped_at: Completed 29-sigma-rule-engine/29-01-PLAN.md
+last_updated: "2026-05-04T10:27:24.252Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 7
-  total_plans: 45
-  completed_plans: 45
+  total_plans: 51
+  completed_plans: 47
 ---
 
 # Project State
@@ -240,6 +240,8 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 28 P06 | 4 | 2 tasks | 4 files |
 | Phase 28 P08 | 3 | 2 tasks | 3 files |
 | Phase 28 P07 | 18 | 2 tasks | 8 files |
+| Phase 29-sigma-rule-engine P01 | 4 | 3 tasks | 5 files |
+| Phase 29-sigma-rule-engine P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -615,6 +617,10 @@ Recent decisions affecting current work:
 - [Phase 28]: WHOIS TTL unit tests use mocked SQLAlchemy session instead of testcontainer for speed
 - [Phase 28]: CSS for cytoscape-context-menus loaded in globals.css (not component) for Next.js App Router compatibility
 - [Phase 28]: projectId added as optional prop to AttackGraphImpl so existing usages without project context continue to work
+- [Phase 29-sigma-rule-engine]: pySigma pinned to >=0.10,<0.11 (resolved to 0.10.10) for API stability across Sigma plans 29-02 through 29-05
+- [Phase 29-sigma-rule-engine]: Wave 0 stubs use @pytest.mark.skip not @pytest.mark.xfail per plan specification — clean SKIPPED output as Nyquist baseline
+- [Phase 29-sigma-rule-engine]: JSONB for SigmaRule.compiled_cache (not LargeBinary) — Sigma compilation produces a Python dict, not binary; JSONB enables introspection and partial updates
+- [Phase 29-sigma-rule-engine]: No SigmaMatch join table — Sigma scanner writes directly to attack_technique_tags on matched events, keeping schema flatter than YARA approach
 
 ### Roadmap Evolution
 
@@ -670,7 +676,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-04T08:02:09.765Z
-Stopped at: Completed 28-07-PLAN.md
+Last session: 2026-05-04T10:27:09.214Z
+Stopped at: Completed 29-sigma-rule-engine/29-01-PLAN.md
 Resume file: None
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)

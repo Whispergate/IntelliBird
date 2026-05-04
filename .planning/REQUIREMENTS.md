@@ -72,10 +72,10 @@
 
 ### Tier 2 — Sigma rule engine
 
-- [ ] **SIGMA-01**: System ingests Sigma YAML rules into `sigma_rules` table (per-project or global, level, tags[], enabled toggle) via `pySigma` library.
-- [ ] **SIGMA-02**: System evaluates each new event against active rule set after `_persist_event_for_bindings`; matches inject auto-tags + bump `tag_relevance` score component.
-- [ ] **SIGMA-03**: Admin UI at `/admin/sigma-rules` lets operator paste/upload Sigma YAML, test against last-100-events sample, enable/disable.
-- [ ] **SIGMA-04**: System provides a Sigma-field-mapping layer translating Sigma fields (`title`, `description`, `raw_stix.objects[*].pattern`) to IntelliBird event shape.
+- [x] **SIGMA-01**: System ingests Sigma YAML rules into `sigma_rules` table (per-project or global, level, tags[], enabled toggle) via `pySigma` library.
+- [x] **SIGMA-02**: System evaluates each new event against active rule set after `_persist_event_for_bindings`; matches inject auto-tags + bump `tag_relevance` score component.
+- [x] **SIGMA-03**: Admin UI at `/admin/sigma-rules` lets operator paste/upload Sigma YAML, test against last-100-events sample, enable/disable.
+- [x] **SIGMA-04**: System provides a Sigma-field-mapping layer translating Sigma fields (`title`, `description`, `raw_stix.objects[*].pattern`) to IntelliBird event shape.
 
 ### Tier 2 — Notification channels (email + PagerDuty + ntfy)
 
@@ -206,10 +206,10 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | GRAPH-02 | Phase 28 | Complete |
 | GRAPH-03 | Phase 28 | Complete |
 | GRAPH-04 | Phase 28 | Complete |
-| SIGMA-01 | Phase 29 | Pending |
-| SIGMA-02 | Phase 29 | Pending |
-| SIGMA-03 | Phase 29 | Pending |
-| SIGMA-04 | Phase 29 | Pending |
+| SIGMA-01 | Phase 29 | Complete |
+| SIGMA-02 | Phase 29 | Complete |
+| SIGMA-03 | Phase 29 | Complete |
+| SIGMA-04 | Phase 29 | Complete |
 | NOTIF-01 | Phase 30 | Pending |
 | NOTIF-02 | Phase 30 | Pending |
 | NOTIF-03 | Phase 30 | Pending |

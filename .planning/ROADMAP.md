@@ -312,10 +312,16 @@ Plans:
   - Rule disable must take effect immediately (no worker reload required)
 **Success Criteria** (what must be TRUE):
   1. Admin pastes a Sigma YAML rule from SigmaHQ at `/admin/sigma-rules`; rule compiles and persists to `sigma_rules` table; UI tests rule against last-100-events sample and shows match count
-  2. New event matching enabled rule receives auto-tag from rule's `tags[]` and bumps `tag_relevance` scoring component; provenance recorded with `tag_source='sigma'`
+  2. New event matching enabled rule receives auto-tag from rule's `tags[]` and bumps `tag_relevance` scoring component; provenance recorded with `tag_source='auto'`
   3. Admin disables a rule; subsequent events do not receive its tags within one ingest cycle
   4. Field-mapping layer translates Sigma fields (`title`, `description`, `raw_stix.objects[*].pattern`) to IntelliBird event shape; mapping documented in `docs/ops/sigma-mapping.md`
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 29-01-PLAN.md — Wave 0 test scaffolding + pySigma dep
+- [ ] 29-02-PLAN.md — Migration 030, SigmaRule ORM model, Pydantic schemas
+- [ ] 29-03-PLAN.md — sigma_engine.py (parser + evaluator + tag writer) + sigma-mapping.md
+- [ ] 29-04-PLAN.md — Ingest hook: wire evaluate_sigma_rules into _persist_event
+- [ ] 29-05-PLAN.md — Admin CRUD router (POST/GET/PATCH/DELETE/test) + main.py registration
+- [ ] 29-06-PLAN.md — Frontend /admin/sigma-rules page + api-client.ts helpers
 
 ### Phase 30: Notification Channels
 **Goal**: Admin can route alerts to email, PagerDuty, Opsgenie, and ntfy alongside existing Slack/Teams/Discord webhooks, reusing the existing dispatch pipeline.
@@ -455,8 +461,8 @@ Plans:
 | 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
 | 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
 | 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
-| 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete   | 2026-05-04 | - |
-| 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |
+| 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete    | 2026-05-04 | - |
+| 29. Sigma Rule Engine | 2/6 | In Progress|  | - |
 | 30. Notification Channels | v4.0 | 0/0 | Not started | - |
 | 31. Case Management | v4.0 | 0/0 | Not started | - |
 | 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
