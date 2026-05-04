@@ -66,9 +66,9 @@
 ### Tier 2 — Multi-hop graph traversal
 
 - [x] **GRAPH-01**: System exposes `GET /api/projects/{id}/graph/traverse?seed={id}&hops={1-3}&edge_filter[]=…` returning bounded BFS via AGE Cypher (`MATCH (s)-[:SEEN_IN*1..3]->(t)`).
-- [ ] **GRAPH-02**: Cytoscape canvas adds right-click context menu: "Expand 1 hop" / "Expand 3 hops" / "Path to…" (analyst-driven exploration).
+- [x] **GRAPH-02**: Cytoscape canvas adds right-click context menu: "Expand 1 hop" / "Expand 3 hops" / "Path to…" (analyst-driven exploration).
 - [x] **GRAPH-03**: System computes node centrality (PageRank, betweenness) via Cytoscape built-in algorithms; UI encodes centrality as node size.
-- [ ] **GRAPH-04**: Multi-hop traversal preserves cross-project isolation (PROD-01 leakage tests still pass against deeper paths).
+- [x] **GRAPH-04**: Multi-hop traversal preserves cross-project isolation (PROD-01 leakage tests still pass against deeper paths).
 
 ### Tier 2 — Sigma rule engine
 
@@ -203,9 +203,9 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | ACTOR-05 | Phase 25 | Complete |
 | ACTOR-06 | Phase 25 | Complete |
 | GRAPH-01 | Phase 28 | Complete |
-| GRAPH-02 | Phase 28 | Pending |
+| GRAPH-02 | Phase 28 | Complete |
 | GRAPH-03 | Phase 28 | Complete |
-| GRAPH-04 | Phase 28 | Pending |
+| GRAPH-04 | Phase 28 | Complete |
 | SIGMA-01 | Phase 29 | Pending |
 | SIGMA-02 | Phase 29 | Pending |
 | SIGMA-03 | Phase 29 | Pending |

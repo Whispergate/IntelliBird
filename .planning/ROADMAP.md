@@ -76,7 +76,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 - [x] **Phase 25: Threat Actors, Campaigns & Audit Log** — Cross-engagement actor catalog, campaign grouping, hypertable audit trail (completed 2026-05-03)
 - [x] **Phase 26: TAXII Outbound Server** — Spec-correct federation publishing with per-partner ACLs (completed 2026-05-03)
 - [x] **Phase 27: Sandbox + YARA** — File-detonation pipeline paired with YARA scanning of samples and STIX patterns (completed 2026-05-04)
-- [ ] **Phase 28: Passive DNS, WHOIS & Multi-hop Graph** — Infrastructure pivoting via shared registrar/IP plus 2-3 hop traversal
+- [x] **Phase 28: Passive DNS, WHOIS & Multi-hop Graph** — Infrastructure pivoting via shared registrar/IP plus 2-3 hop traversal (completed 2026-05-04)
 - [ ] **Phase 29: Sigma Rule Engine** — Community Sigma rule sets auto-tagging events at ingest
 - [ ] **Phase 30: Notification Channels** — Email / PagerDuty / Opsgenie / ntfy reusing webhook dispatcher
 - [ ] **Phase 31: Case Management** — Lightweight cases, kanban, IOC + event linking
@@ -455,7 +455,7 @@ Plans:
 | 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
 | 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
 | 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
-| 28. Passive DNS, WHOIS & Multi-hop Graph | 3/8 | In Progress|  | - |
+| 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete   | 2026-05-04 | - |
 | 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |
 | 30. Notification Channels | v4.0 | 0/0 | Not started | - |
 | 31. Case Management | v4.0 | 0/0 | Not started | - |

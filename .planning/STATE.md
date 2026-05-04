@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
-status: in_progress
-stopped_at: Completed 28-03-PLAN.md
-last_updated: "2026-05-04T08:00:00.000Z"
+status: verifying
+stopped_at: Completed 28-07-PLAN.md
+last_updated: "2026-05-04T08:02:09.768Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 45
-  completed_plans: 40
+  completed_plans: 45
 ---
 
 # Project State
@@ -235,6 +235,11 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 28 P02 | 5 | 2 tasks | 2 files |
 | Phase 28 P01 | 2 | 2 tasks | 3 files |
 | Phase 28-passive-dns P03 | 18min | 2 tasks | 6 files |
+| Phase 28 P04 | 15 | 2 tasks | 2 files |
+| Phase 28 P05 | 12 | 1 tasks | 1 files |
+| Phase 28 P06 | 4 | 2 tasks | 4 files |
+| Phase 28 P08 | 3 | 2 tasks | 3 files |
+| Phase 28 P07 | 18 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -602,6 +607,14 @@ Recent decisions affecting current work:
 - [Phase 28]: Migration 029 not 028: 028_sandbox_yara already occupies the 028 slot; new passive DNS/WHOIS migration uses 029_passive_dns_whois_age with down_revision=028_sandbox_yara
 - [Phase 28]: enrichment_providers.provider is plain TEXT (no CHECK constraint) — new passive-DNS providers accepted without schema change
 - [Phase 28]: AGE DDL uses op.get_bind() raw connection (not op.execute()) — LOAD 'age' must be session-scoped on the same connection as Cypher statements
+- [Phase 28]: Wire domain enrichment into iocs.py not ai.py; AGE errors swallowed in sync_domain_pivot; SHARES_INFRA project-scoped via SQL JOIN
+- [Phase 28]: GRAPH-04 isolation tests ship before traverse endpoint — both isolation tests pass because project_id is embedded in DomainPivot vertex properties and _find_sibling_domains_sql is project-scoped, structurally preventing cross-project SHARES_INFRA edge creation
+- [Phase 28]: Added numpy + scipy as explicit backend deps — networkx>=3.3 pagerank unconditionally uses _pagerank_scipy() which requires both
+- [Phase 28]: NODE_CAP imported from graph_traversal.py to keep BFS and AGE traversal caps in sync at 200
+- [Phase 28]: SecurityTrails mock: side_effect list for A+AAAA dual-call prevents double-count
+- [Phase 28]: WHOIS TTL unit tests use mocked SQLAlchemy session instead of testcontainer for speed
+- [Phase 28]: CSS for cytoscape-context-menus loaded in globals.css (not component) for Next.js App Router compatibility
+- [Phase 28]: projectId added as optional prop to AttackGraphImpl so existing usages without project context continue to work
 
 ### Roadmap Evolution
 
@@ -657,7 +670,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-04T08:00:00.000Z
-Stopped at: Completed 28-03-PLAN.md
+Last session: 2026-05-04T08:02:09.765Z
+Stopped at: Completed 28-07-PLAN.md
 Resume file: None
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)
