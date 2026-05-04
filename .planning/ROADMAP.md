@@ -75,7 +75,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 - [x] **Phase 24: Dark-Web Collection** — Tor + paste + Telegram with isolated egress and OPSEC compartmentation (completed 2026-05-03)
 - [x] **Phase 25: Threat Actors, Campaigns & Audit Log** — Cross-engagement actor catalog, campaign grouping, hypertable audit trail (completed 2026-05-03)
 - [x] **Phase 26: TAXII Outbound Server** — Spec-correct federation publishing with per-partner ACLs (completed 2026-05-03)
-- [ ] **Phase 27: Sandbox + YARA** — File-detonation pipeline paired with YARA scanning of samples and STIX patterns
+- [x] **Phase 27: Sandbox + YARA** — File-detonation pipeline paired with YARA scanning of samples and STIX patterns (completed 2026-05-04)
 - [ ] **Phase 28: Passive DNS, WHOIS & Multi-hop Graph** — Infrastructure pivoting via shared registrar/IP plus 2-3 hop traversal
 - [ ] **Phase 29: Sigma Rule Engine** — Community Sigma rule sets auto-tagging events at ingest
 - [ ] **Phase 30: Notification Channels** — Email / PagerDuty / Opsgenie / ntfy reusing webhook dispatcher
@@ -285,7 +285,17 @@ Plans:
   4. Node size encodes centrality (PageRank score); larger nodes are more connected hubs
   5. PROD-01 leakage suite extended with 2-hop and 3-hop traversal assertions; zero cross-project nodes appear in any traversal
 **OPSEC**: Provider opt-in per project; AGE Cypher queries pass through `build_scope_predicate` chokepoint.
-**Plans**: TBD
+**Plans**: 8 plans across 7 waves
+
+Plans:
+- [ ] 28-01-PLAN.md — DB migration: passive_dns_records, whois_cache, AGE labels, pyproject deps (wave 0)
+- [ ] 28-02-PLAN.md — ORM models + GraphResponse schema extension (wave 1)
+- [ ] 28-03-PLAN.md — Passive DNS provider modules (SecurityTrails/Mnemonic/RiskIQ) + WHOIS service (wave 2)
+- [ ] 28-04-PLAN.md — AGE sync service: DomainPivot MERGE + SHARES_INFRA edges + worker wiring (wave 3)
+- [ ] 28-05-PLAN.md — PROD-01 extension: 2-hop and 3-hop traverse isolation tests (wave 4, HARD GATE)
+- [ ] 28-06-PLAN.md — Traverse endpoint GET /graph/traverse with centrality (wave 5)
+- [ ] 28-07-PLAN.md — Frontend: context menu, DomainPivot styles, centrality sizing (wave 6)
+- [ ] 28-08-PLAN.md — Integration tests: ENRICH-06/07/08 + traverse smoke tests (wave 6)
 
 ### Phase 29: Sigma Rule Engine
 **Goal**: Operator can paste community Sigma rules and have every new event automatically tagged when it matches, with rule effectiveness testable against a sample window.
@@ -444,8 +454,8 @@ Plans:
 | 24. Dark-Web Collection | 4/7 | In Progress|  | - |
 | 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
 | 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
-| 27. Sandbox + YARA | 5/7 | In Progress|  | - |
-| 28. Passive DNS, WHOIS & Multi-hop Graph | v4.0 | 0/0 | Not started | - |
+| 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
+| 28. Passive DNS, WHOIS & Multi-hop Graph | 2/8 | In Progress|  | - |
 | 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |
 | 30. Notification Channels | v4.0 | 0/0 | Not started | - |
 | 31. Case Management | v4.0 | 0/0 | Not started | - |

@@ -24,9 +24,9 @@
 - [x] **ENRICH-03**: System honours per-provider quota limits via Redis rolling-window counter (e.g. VT free tier 4 req/min) with circuit-breaker abort on repeated quota exhaust.
 - [x] **ENRICH-04**: User can view IOC enrichment results in event detail drawer (reputation badges: clean/suspicious/malicious/unknown + provider attribution + pivot links).
 - [x] **ENRICH-05**: System caches enrichment results in Redis (`enrich:{provider}:{indicator}` TTL 24h) to respect free-tier quotas.
-- [ ] **ENRICH-06**: Admin can configure passive DNS providers (SecurityTrails, Mnemonic PassiveTotal, RiskIQ Community) with same provider-abstraction pattern as §ENRICH-01.
-- [ ] **ENRICH-07**: System enriches each new domain IOC with WHOIS registration data cached for 7 days.
-- [ ] **ENRICH-08**: Cytoscape graph adds `:DomainPivot` node type connecting domains by shared registrar / registration email / historical IP for infrastructure clustering.
+- [x] **ENRICH-06**: Admin can configure passive DNS providers (SecurityTrails, Mnemonic PassiveTotal, RiskIQ Community) with same provider-abstraction pattern as §ENRICH-01.
+- [x] **ENRICH-07**: System enriches each new domain IOC with WHOIS registration data cached for 7 days.
+- [x] **ENRICH-08**: Cytoscape graph adds `:DomainPivot` node type connecting domains by shared registrar / registration email / historical IP for infrastructure clustering.
 
 ### Tier 1 — Dark-web / paste / Telegram collection
 
@@ -65,9 +65,9 @@
 
 ### Tier 2 — Multi-hop graph traversal
 
-- [ ] **GRAPH-01**: System exposes `GET /api/projects/{id}/graph/traverse?seed={id}&hops={1-3}&edge_filter[]=…` returning bounded BFS via AGE Cypher (`MATCH (s)-[:SEEN_IN*1..3]->(t)`).
+- [x] **GRAPH-01**: System exposes `GET /api/projects/{id}/graph/traverse?seed={id}&hops={1-3}&edge_filter[]=…` returning bounded BFS via AGE Cypher (`MATCH (s)-[:SEEN_IN*1..3]->(t)`).
 - [ ] **GRAPH-02**: Cytoscape canvas adds right-click context menu: "Expand 1 hop" / "Expand 3 hops" / "Path to…" (analyst-driven exploration).
-- [ ] **GRAPH-03**: System computes node centrality (PageRank, betweenness) via Cytoscape built-in algorithms; UI encodes centrality as node size.
+- [x] **GRAPH-03**: System computes node centrality (PageRank, betweenness) via Cytoscape built-in algorithms; UI encodes centrality as node size.
 - [ ] **GRAPH-04**: Multi-hop traversal preserves cross-project isolation (PROD-01 leakage tests still pass against deeper paths).
 
 ### Tier 2 — Sigma rule engine
@@ -176,9 +176,9 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | ENRICH-03 | Phase 23 | Complete |
 | ENRICH-04 | Phase 23 | Complete |
 | ENRICH-05 | Phase 23 | Complete |
-| ENRICH-06 | Phase 28 | Pending |
-| ENRICH-07 | Phase 28 | Pending |
-| ENRICH-08 | Phase 28 | Pending |
+| ENRICH-06 | Phase 28 | Complete |
+| ENRICH-07 | Phase 28 | Complete |
+| ENRICH-08 | Phase 28 | Complete |
 | DARK-01 | Phase 24 | Complete |
 | DARK-02 | Phase 24 | Complete |
 | DARK-03 | Phase 24 | Complete |
@@ -202,9 +202,9 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | ACTOR-04 | Phase 25 | Complete |
 | ACTOR-05 | Phase 25 | Complete |
 | ACTOR-06 | Phase 25 | Complete |
-| GRAPH-01 | Phase 28 | Pending |
+| GRAPH-01 | Phase 28 | Complete |
 | GRAPH-02 | Phase 28 | Pending |
-| GRAPH-03 | Phase 28 | Pending |
+| GRAPH-03 | Phase 28 | Complete |
 | GRAPH-04 | Phase 28 | Pending |
 | SIGMA-01 | Phase 29 | Pending |
 | SIGMA-02 | Phase 29 | Pending |

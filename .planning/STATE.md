@@ -2,32 +2,32 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
-status: completed
-stopped_at: Completed 27-05-PLAN.md (Sandbox + YARA workers)
-last_updated: "2026-05-04T06:51:00.670Z"
+status: verifying
+stopped_at: Completed 28-01-PLAN.md
+last_updated: "2026-05-04T07:39:36.793Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
-  completed_phases: 5
-  total_plans: 37
-  completed_plans: 35
+  completed_phases: 6
+  total_plans: 45
+  completed_plans: 39
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-25 after v2.0)
+See: .planning/PROJECT.md (updated 2026-05-04 after Phase 27)
 
 **Core value:** A single operator can see the current cyber threat landscape — world events, actor activity, CVEs, feed signal — in one place, filter and tag it, and drill from a geo view into the attack graph behind any event.
-**Current focus:** v3.0 Phase 15 Scoring Engine Foundation — COMPLETE (9/9 plans shipped). Phase 16 Continuous Monitoring is next.
+**Current focus:** v4.0 Phase 28 — Passive DNS, WHOIS & Multi-hop Graph (not started)
 
 ## Current Position
 
 Milestone: v4.0 Threat Intelligence Platform Maturity
-Phase: 25 — Threat Actors, Campaigns & Audit Log (Complete — 6/6 plans shipped)
-Plan: 26-04 taxii-router (complete)
-Status: Plan 26-04 complete (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
+Phase: 28 — Passive DNS, WHOIS & Multi-hop Graph (Ready to plan)
+Plan: Not started
+Status: Phase 27 (Sandbox + YARA) complete — 7/7 plans shipped, 8/8 requirements verified (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
 Last activity: 2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven.
 
 ---
@@ -49,7 +49,7 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | 24 | Dark-Web Collection | DARK-01..07 | 7/7 ✅ | Yes (Tor egress isolation; Telethon session persistence) |
 | 25 | Threat Actors, Campaigns & Audit Log | ACTOR-01..06, AUDIT-01..03 | 6/6 ✅ | Yes (FastAPI middleware diff capture) |
 | 26 | TAXII Outbound Server | TAXII-01..05 | 4/4 ✅ | No |
-| 27 | Sandbox + YARA | SANDBOX-01..05, YARA-01..03 | TBD | Yes (yara-python native binary; sandbox polling pattern) |
+| 27 | Sandbox + YARA | SANDBOX-01..05, YARA-01..03 | 7/7 ✅ | Yes (yara-python native binary; sandbox polling pattern) |
 | 28 | Passive DNS, WHOIS & Multi-hop Graph | ENRICH-06..08, GRAPH-01..04 | TBD | Yes (AGE Cypher adoption; centrality at scale) |
 | 29 | Sigma Rule Engine | SIGMA-01..04 | TBD | No |
 | 30 | Notification Channels | NOTIF-01..05 | TBD | No |
@@ -231,6 +231,9 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 27-sandbox-yara P03 | 2 | 2 tasks | 8 files |
 | Phase 27-sandbox-yara P04 | 18 | 2 tasks | 5 files |
 | Phase 27-sandbox-yara P05 | 25 | 2 tasks | 4 files |
+| Phase 27-sandbox-yara P07 | 15 | 3 tasks | 4 files |
+| Phase 28 P02 | 5 | 2 tasks | 2 files |
+| Phase 28 P01 | 2 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -591,6 +594,13 @@ Recent decisions affecting current work:
 - [Phase 27-sandbox-yara]: Sandbox router placed at app/routers/sandbox.py (flat file) instead of projects/sandbox.py — creating a projects/ subpackage would shadow the existing 1514-LOC projects.py flat file
 - [Phase 27-05]: Direct pg_insert(IOC.__table__) for sandbox network IOC upsert — upsert_ioc_for_event_sync incompatible signature
 - [Phase 27-05]: trigger_sandbox_if_sha256 hook in workers/iocs.py + called from services/iocs.py actual insert trigger point
+- [Phase 27-sandbox-yara]: asyncio.run() bridge pattern used to call async yara_engine from sync TAXII Dramatiq worker; event_id resolved via content_hash+source_id sync SQL lookup before bridge
+- [Phase 27-sandbox-yara]: Extract projectId from pathname regex (/projects/[uuid]/) instead of prop-drilling — EventDetail generated type lacks project_id field
+- [Phase 27-sandbox-yara]: SandboxReportSection renders null on 404 report — no skeleton/empty state to avoid visual noise on events without sandbox analysis
+- [Phase 28]: GraphResponse centrality fields use optional defaults so existing event-graph and project-graph callers require zero changes
+- [Phase 28]: Migration 029 not 028: 028_sandbox_yara already occupies the 028 slot; new passive DNS/WHOIS migration uses 029_passive_dns_whois_age with down_revision=028_sandbox_yara
+- [Phase 28]: enrichment_providers.provider is plain TEXT (no CHECK constraint) — new passive-DNS providers accepted without schema change
+- [Phase 28]: AGE DDL uses op.get_bind() raw connection (not op.execute()) — LOAD 'age' must be session-scoped on the same connection as Cypher statements
 
 ### Roadmap Evolution
 
@@ -627,6 +637,7 @@ Recent decisions affecting current work:
 | 260425-ovt | Add HTML-scrape source type (any webpage → RSS via CSS selectors) | 2026-04-25 | uncommitted (per user rule) | [260425-ovt-add-a-way-to-turn-any-webpage-into-an-rs](./quick/260425-ovt-add-a-way-to-turn-any-webpage-into-an-rs/) |
 | 260426-aas | Simplify HTML scraper: Auto mode (URL-only, trafilatura-powered article discovery) with manual-selector fallback | 2026-04-26 | uncommitted (per user rule) | [260426-aas-make-the-html-scraper-simpler-to-use-tak](./quick/260426-aas-make-the-html-scraper-simpler-to-use-tak/) |
 | 260429-tyq | Thread project_id binding through feed ingest (per-project fan-out, dedup migration, LEGACY backfill) | 2026-04-29 | uncommitted (per user rule) | [260429-tyq-thread-project-id-binding-through-feed-i](./quick/260429-tyq-thread-project-id-binding-through-feed-i/) |
+| 260504-d97 | Seed country/motivation/sophistication data for major MITRE ATT&CK threat actor groups in the threat_actors table | 2026-05-04 | uncommitted (per user rule) | [260504-d97-seed-country-motivation-sophistication-d](./quick/260504-d97-seed-country-motivation-sophistication-d/) |
 
 ## Deferred Items
 
@@ -645,7 +656,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-04T06:51:00.665Z
-Stopped at: Completed 27-05-PLAN.md (Sandbox + YARA workers)
+Last session: 2026-05-04T07:39:36.790Z
+Stopped at: Completed 28-01-PLAN.md
 Resume file: None
 Next: 19-03-PLAN.md (Wave 3: Redis FLUSHDB + per-test TRUNCATE in integration conftest; @pytest.mark.cross_file_pollution decoration on 21 known-failing tests)
