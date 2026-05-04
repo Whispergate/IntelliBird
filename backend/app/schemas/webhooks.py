@@ -11,7 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # Type aliases
 # ---------------------------------------------------------------------------
 
-DestinationType = Literal["slack", "teams", "discord", "generic"]
+DestinationType = Literal["slack", "teams", "discord", "generic", "email", "pagerduty", "opsgenie", "ntfy"]
 DeliveryStatus = Literal["ok", "http_error", "network_error", "timeout"]
 
 _BATCHING_ALLOWED = {0, 60, 300, 900, 1800}  #
