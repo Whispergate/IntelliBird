@@ -60,3 +60,9 @@ from app.workers import ai  # noqa: E402,F401
 from app.workers import reports  # noqa: E402,F401
 # Register IOC actors (Phase 22 / IOC-07) — ingest queue
 from app.workers import iocs as _iocs_actor  # noqa: E402,F401
+# Register dark-web collection actors (Phase 24 / DARK-01..07) — darkweb queue
+from app.workers import tor_html as _tor_html_actor  # noqa: E402,F401
+from app.workers import paste as _paste_actor  # noqa: E402,F401
+from app.workers import telegram as _telegram_actor  # noqa: E402,F401
+# Register Sandbox + YARA actors (Phase 27 / SANDBOX-02..05, YARA-02) — sandbox queue
+from app.workers import sandbox as _sandbox_actor  # noqa: E402,F401

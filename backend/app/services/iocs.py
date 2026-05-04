@@ -278,6 +278,17 @@ def upsert_ioc_for_event_sync(
                 "enrich_ioc_enqueue_failed ioc_id=%s error=%r", ioc_id, _enq_exc
             )
 
+        # Phase 27: Trigger sandbox analysis for SHA256 IOCs (SANDBOX-02).
+        # trigger_sandbox_if_sha256 checks ioc_type internally; safe to call on all types.
+        try:
+            from app.workers.iocs import trigger_sandbox_if_sha256 as _trigger_sandbox  # noqa: PLC0415
+            _trigger_sandbox(str(ioc_id), ioc_type, str(project_id))
+        except Exception as _sandbox_exc:  # noqa: BLE001
+            import logging as _logging  # noqa: PLC0415
+            _logging.getLogger(__name__).warning(
+                "trigger_sandbox_enqueue_failed ioc_id=%s error=%r", ioc_id, _sandbox_exc
+            )
+
         link_stmt = (
             _pg_insert(_IOCLink)
             .values(

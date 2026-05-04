@@ -249,6 +249,7 @@ __all__ = [
     "_async_bulk_import",
     "enrich_ioc",
     "_async_enrich",
+    "trigger_sandbox_if_sha256",
 ]
 
 
@@ -415,3 +416,30 @@ def enrich_ioc(ioc_id: str) -> None:
     refresh path handles recovery instead.
     """
     asyncio.run(_async_enrich(ioc_id))
+
+
+# ===== Section 4: sandbox trigger hook (Phase 27 / SANDBOX-02) =====
+
+
+def trigger_sandbox_if_sha256(ioc_id: str, ioc_type: str, project_id: str) -> None:
+    """Trigger sandbox submission for SHA256 IOCs if project has sandbox enabled.
+
+    Called from app.services.iocs immediately after IOC upsert when ioc_type='sha256'.
+    Safe to call on every IOC insert — the worker itself checks SandboxConfig.enabled
+    before submitting, so this is a best-effort enqueue (never raises).
+
+    Args:
+        ioc_id:     UUID string of the newly inserted/upserted IOC row.
+        ioc_type:   IOC type string (IOC.type column — confirmed as 'type' not 'ioc_type').
+        project_id: UUID string of the owning project.
+    """
+    if ioc_type != "sha256":
+        return
+    try:
+        from app.workers.sandbox import submit_sandbox_report  # noqa: PLC0415 — lazy, avoids circular at broker init
+        submit_sandbox_report.send(ioc_id, project_id)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "trigger_sandbox_enqueue_failed ioc_id=%s project_id=%s error=%r",
+            ioc_id, project_id, exc,
+        )
