@@ -44,7 +44,7 @@
 - [x] **SANDBOX-02**: System auto-fetches file samples by SHA256 (from VirusTotal Premium or MalwareBazaar) and submits to configured sandbox when a new `iocs.type='sha256'` is created AND project has `sandbox_enabled=true`.
 - [x] **SANDBOX-03**: System polls sandbox for completion and stores result in `sandbox_reports` table linked to event.
 - [x] **SANDBOX-04**: Event detail drawer shows "Sandbox Report" section (process tree, network IOCs, MITRE techniques) when available.
-- [ ] **SANDBOX-05**: System auto-tags event with ATT&CK techniques returned by sandbox output (`tag_source='auto'` via existing `attack_technique_tags` write path).
+- [x] **SANDBOX-05**: System auto-tags event with ATT&CK techniques returned by sandbox output (`tag_source='auto'` via existing `attack_technique_tags` write path).
 
 ### Tier 2 — TAXII outbound server
 
@@ -190,7 +190,7 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | SANDBOX-02 | Phase 27 | Complete |
 | SANDBOX-03 | Phase 27 | Complete |
 | SANDBOX-04 | Phase 27 | Complete |
-| SANDBOX-05 | Phase 27 | Pending |
+| SANDBOX-05 | Phase 27 | Complete |
 | TAXII-01 | Phase 26 | Complete |
 | TAXII-02 | Phase 26 | Complete |
 | TAXII-03 | Phase 26 | Complete |

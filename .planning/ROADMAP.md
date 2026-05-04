@@ -444,7 +444,7 @@ Plans:
 | 24. Dark-Web Collection | 4/7 | In Progress|  | - |
 | 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
 | 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
-| 27. Sandbox + YARA | 3/7 | In Progress|  | - |
+| 27. Sandbox + YARA | 5/7 | In Progress|  | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | v4.0 | 0/0 | Not started | - |
 | 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |
 | 30. Notification Channels | v4.0 | 0/0 | Not started | - |
