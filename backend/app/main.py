@@ -38,6 +38,9 @@ from app.routers.admin.setup import router as admin_setup_router
 from app.routers.admin.users import router as admin_users_router
 from app.routers.admin.iocs import router as admin_iocs_router
 from app.routers.admin.taxii_clients import router as admin_taxii_clients_router
+from app.routers.admin.yara_rules import router as admin_yara_rules_router
+from app.routers.admin.sigma_rules import router as admin_sigma_rules_router
+from app.routers.sandbox import router as sandbox_router
 from app.routers.ai import router as ai_router
 from app.routers.attack import router as attack_router
 from app.routers.admin.ai_health import router as admin_ai_health_router
@@ -57,6 +60,7 @@ from app.routers.easm import router as easm_router
 from app.routers.easm import safelist_router as easm_safelist_router
 from app.routers.actors import router as actors_router
 from app.routers.campaigns import router as campaigns_router
+from app.routers.cases import router as cases_router
 from app.routers.admin.audit import router as audit_router
 from app.routers.enrichment import router as enrichment_router
 from app.routers.brand import router as brand_router
@@ -211,6 +215,10 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(admin_users_router, prefix="/api")
     fastapi_app.include_router(admin_iocs_router, prefix="/api")
     fastapi_app.include_router(admin_taxii_clients_router, prefix="/api")
+    fastapi_app.include_router(admin_yara_rules_router, prefix="/api")
+    fastapi_app.include_router(admin_sigma_rules_router, prefix="/api")
+    # Sandbox config router — absolute prefix /api/projects/{id}/sandbox-config (Phase 27)
+    fastapi_app.include_router(sandbox_router)
     fastapi_app.include_router(admin_monitoring_router, prefix="/api")
     fastapi_app.include_router(admin_maintenance_router, prefix="/api")
     fastapi_app.include_router(auth_router, prefix="/api")
@@ -237,6 +245,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(ai_router, prefix="/api")
     fastapi_app.include_router(actors_router, prefix="/api", tags=["actors"])
     fastapi_app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
+    fastapi_app.include_router(cases_router, prefix="/api", tags=["cases"])
     fastapi_app.include_router(audit_router, prefix="/api/admin", tags=["audit"])
     fastapi_app.include_router(enrichment_router, prefix="/api")
     fastapi_app.include_router(admin_ai_health_router, prefix="/api")
