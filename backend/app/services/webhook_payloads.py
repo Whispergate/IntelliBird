@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import urlparse
 
 # — Slack TLP emoji shortcodes
 _TLP_SLACK_EMOJI: dict[str, str] = {
@@ -208,12 +209,132 @@ def build_generic_payload(
     }
 
 
+# ------------------------------------------------------------ PagerDuty ----
+_PD_SEVERITY: dict[str, str] = {
+    "S": "critical",
+    "A": "error",
+    "B": "warning",
+    "C": "info",
+    "D": "info",
+}
+
+
+def build_pagerduty_payload(
+    events: list[dict],
+    preset_name: str,
+    dashboard_url: str,
+    preset_query_params: dict | None = None,
+) -> dict[str, Any]:
+    """PagerDuty Events API v2 payload. Uses events[0]; routing_key is a sentinel.
+
+    Plan 30-05 injects the real routing_key from auth_enc post-build.
+    """
+    ev = events[0]
+    link = f"{dashboard_url}/events?event={ev.get('id')}"
+    severity = _PD_SEVERITY.get(ev.get("tlp") or "", "info")
+    return {
+        "routing_key": "_PENDING_INJECTION_",
+        "event_action": "trigger",
+        "dedup_key": str(ev["id"]),
+        "payload": {
+            "summary": ev.get("title") or "IntelliBird Alert",
+            "severity": severity,
+            "source": "IntelliBird",
+            "timestamp": ev.get("observed_at") or datetime.now(timezone.utc).isoformat(),
+            "custom_details": {
+                "preset": preset_name,
+                "stix_type": ev.get("stix_type") or "",
+                "tlp": ev.get("tlp") or "",
+                "tags": ev.get("tags") or [],
+                "link": link,
+            },
+        },
+    }
+
+
+# ------------------------------------------------------------ Opsgenie ----
+_OG_PRIORITY: dict[str, str] = {
+    "S": "P1",
+    "A": "P2",
+    "B": "P3",
+    "C": "P4",
+    "D": "P5",
+}
+
+
+def build_opsgenie_payload(
+    events: list[dict],
+    preset_name: str,
+    dashboard_url: str,
+    preset_query_params: dict | None = None,
+) -> dict[str, Any]:
+    """Opsgenie Create Alert API payload. Uses events[0]."""
+    ev = events[0]
+    link = f"{dashboard_url}/events?event={ev.get('id')}"
+    priority = _OG_PRIORITY.get(ev.get("tlp") or "", "P3")
+    return {
+        "message": ev.get("title") or "IntelliBird Alert",
+        "alias": str(ev["id"]),
+        "description": ev.get("description") or "",
+        "priority": priority,
+        "source": "IntelliBird",
+        "tags": [preset_name],
+        "details": {
+            "stix_type": ev.get("stix_type") or "",
+            "tlp": ev.get("tlp") or "",
+            "link": link,
+        },
+    }
+
+
+# ------------------------------------------------------------------ ntfy -
+_NTFY_PRIORITY: dict[str, int] = {
+    "S": 5,
+    "A": 4,
+    "B": 3,
+    "C": 2,
+    "D": 2,
+}
+
+
+def build_ntfy_payload(
+    events: list[dict],
+    preset_name: str,
+    dashboard_url: str,
+    preset_query_params: dict | None = None,
+) -> dict[str, Any]:
+    """ntfy push notification payload. Uses events[0].
+
+    Topic is extracted from the webhook URL passed via preset_query_params['ntfy_url'].
+    Falls back to 'intellibird' if the URL is missing or has an empty path.
+    """
+    ev = events[0]
+    link = f"{dashboard_url}/events?event={ev.get('id')}"
+    priority = _NTFY_PRIORITY.get(ev.get("tlp") or "", 3)
+
+    ntfy_url = (preset_query_params or {}).get("ntfy_url", "")
+    topic = urlparse(ntfy_url).path.lstrip("/") if ntfy_url else ""
+    topic = topic or "intellibird"
+
+    return {
+        "topic": topic,
+        "title": "IntelliBird Alert",
+        "message": ev.get("title") or "IntelliBird Alert",
+        "priority": priority,
+        "tags": ["warning"],
+        "click": link,
+    }
+
+
 # ---------------------------------------------------------------- dispatch
 _BUILDERS = {
     "slack": build_slack_payload,
     "teams": build_teams_payload,
     "discord": build_discord_payload,
     "generic": build_generic_payload,
+    "pagerduty": build_pagerduty_payload,
+    "opsgenie": build_opsgenie_payload,
+    "ntfy": build_ntfy_payload,
 }
 
 
