@@ -29,6 +29,10 @@ PROVIDER_MINUTE_CAPS: dict[str, int] = {
     "otx": 60,
     "shodan": 1,
     "urlhaus": 60,
+    # Passive DNS providers (Phase 28 / ENRICH-06)
+    "securitytrails": 2,
+    "mnemonic": 10,
+    "riskiq_community": 12,
 }
 
 PROVIDER_DEFAULT_DAILY_CAPS: dict[str, int | None] = {
@@ -38,6 +42,10 @@ PROVIDER_DEFAULT_DAILY_CAPS: dict[str, int | None] = {
     "otx": None,
     "shodan": None,
     "urlhaus": None,
+    # Passive DNS providers (Phase 28 / ENRICH-06)
+    "securitytrails": 50,
+    "mnemonic": 1000,
+    "riskiq_community": 1000,
 }
 
 # ---------------------------------------------------------------------------

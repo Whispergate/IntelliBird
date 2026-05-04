@@ -35,12 +35,16 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 PROVIDER_IOC_ROUTING: dict[str, set[str]] = {
-    "vt":        {"ip", "ipv6", "domain", "url", "sha256", "sha1", "md5"},
-    "abuseipdb": {"ip", "ipv6"},
-    "greynoise": {"ip", "ipv6"},
-    "shodan":    {"ip", "ipv6"},
-    "otx":       {"domain", "sha256", "sha1", "md5"},
-    "urlhaus":   {"domain", "url"},
+    "vt":              {"ip", "ipv6", "domain", "url", "sha256", "sha1", "md5"},
+    "abuseipdb":       {"ip", "ipv6"},
+    "greynoise":       {"ip", "ipv6"},
+    "shodan":          {"ip", "ipv6"},
+    "otx":             {"domain", "sha256", "sha1", "md5"},
+    "urlhaus":         {"domain", "url"},
+    # Passive DNS providers (Phase 28 / ENRICH-06) — domain only
+    "securitytrails":  {"domain"},
+    "mnemonic":        {"domain"},
+    "riskiq_community": {"domain"},
 }
 
 
