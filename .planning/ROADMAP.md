@@ -77,7 +77,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 - [x] **Phase 26: TAXII Outbound Server** — Spec-correct federation publishing with per-partner ACLs (completed 2026-05-03)
 - [x] **Phase 27: Sandbox + YARA** — File-detonation pipeline paired with YARA scanning of samples and STIX patterns (completed 2026-05-04)
 - [x] **Phase 28: Passive DNS, WHOIS & Multi-hop Graph** — Infrastructure pivoting via shared registrar/IP plus 2-3 hop traversal (completed 2026-05-04)
-- [ ] **Phase 29: Sigma Rule Engine** — Community Sigma rule sets auto-tagging events at ingest
+- [x] **Phase 29: Sigma Rule Engine** — Community Sigma rule sets auto-tagging events at ingest (completed 2026-05-04)
 - [ ] **Phase 30: Notification Channels** — Email / PagerDuty / Opsgenie / ntfy reusing webhook dispatcher
 - [ ] **Phase 31: Case Management** — Lightweight cases, kanban, IOC + event linking
 - [ ] **Phase 32: CertStream + MISP** — Sub-second CT log streaming and bidirectional MISP sync
@@ -343,7 +343,15 @@ Plans:
   3. Admin runs `docker compose --profile notify up`; ntfy service starts; ntfy destination publishes to topic; subscriber receives push notification
   4. Admin adds Opsgenie destination via Alert API; alert created on S-tier event; severity mapped per project rule overrides
   5. All 4 new destination types respect existing burst-suppression (5 HIGH/project/hour) and auto-disable after 5 consecutive failures
-**Plans**: TBD
+**Plans**: 7 plans
+Plans:
+- [ ] 30-01-PLAN.md — Wave 1: aiosmtplib dep + test stubs
+- [ ] 30-02-PLAN.md — Wave 2: Migration 031 ENUM extension + Pydantic schema widening
+- [ ] 30-03-PLAN.md — Wave 3: PagerDuty/Opsgenie/ntfy payload builders + GenieKey auth header
+- [ ] 30-04-PLAN.md — Wave 4: _dispatch_email + email branch in _drain_and_dispatch + test-send guard
+- [ ] 30-05-PLAN.md — Wave 5: PD routing_key body injection + PD auto-resolve hook in archiver
+- [ ] 30-06-PLAN.md — Wave 5: ntfy compose service (docker-compose.yml)
+- [ ] 30-07-PLAN.md — Wave 6: Frontend schema + WebhookDialog per-type credential sections (checkpoint)
 
 ### Phase 31: Case Management
 **Goal**: Analysts can open cases, attach events and IOCs, track status through a kanban, and request AI roll-up summaries — without leaving IntelliBird for an external tool.
@@ -462,12 +470,12 @@ Plans:
 | 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
 | 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete    | 2026-05-04 | - |
-| 29. Sigma Rule Engine | 4/6 | In Progress|  | - |
-| 30. Notification Channels | v4.0 | 0/0 | Not started | - |
+| 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
+| 30. Notification Channels | v4.0 | 0/7 | Not started | - |
 | 31. Case Management | v4.0 | 0/0 | Not started | - |
 | 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
 | 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |
 | 34. Browser Extension | v4.0 | 0/0 | Not started | - |
 
 ---
-*Last updated: 2026-05-04 — Phase 27 planned (7 plans, 5 waves)*
+*Last updated: 2026-05-04 — Phase 30 planned (7 plans, 6 waves)*
