@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
-status: verifying
-stopped_at: Completed 31-01-PLAN.md
-last_updated: "2026-05-04T13:27:14.729Z"
+status: in_progress
+stopped_at: Completed 31-02-PLAN.md
+last_updated: "2026-05-04T00:15:00.000Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 9
   total_plans: 66
-  completed_plans: 60
+  completed_plans: 61
 ---
 
 # Project State
@@ -20,13 +20,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04 after Phase 27)
 
 **Core value:** A single operator can see the current cyber threat landscape — world events, actor activity, CVEs, feed signal — in one place, filter and tag it, and drill from a geo view into the attack graph behind any event.
-**Current focus:** v4.0 Phase 30 — Notification Channels (in progress, plan 02/7 complete)
+**Current focus:** v4.0 Phase 31 — Case Management (in progress, plan 02/7 complete)
 
 ## Current Position
 
 Milestone: v4.0 Threat Intelligence Platform Maturity
-Phase: 30 — Notification Channels (In progress)
-Plan: 02 complete — destination_type_enum ENUM extended + DestinationType Pydantic Literal widened to 8 values (NOTIF-01)
+Phase: 31 — Case Management (In progress)
+Plan: 02 complete — migration 032_cases (cases/case_events/case_iocs + 2 ENUMs), Case/CaseEvent/CaseIOC ORM models, Pydantic v2 schemas (CASE-01, CASE-02)
 Status: Phase 27 (Sandbox + YARA) complete — 7/7 plans shipped, 8/8 requirements verified (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
 Last activity: 2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven.
 
@@ -262,6 +262,9 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Phase 31-02]: case_events.event_id is a soft FK (no ForeignKey constraint) — events is a TimescaleDB hypertable; FK constraints against hypertables are unsupported; matches campaign_events and ioc_event_links precedents
+- [Phase 31-02]: case_iocs.ioc_id is a hard FK (ForeignKey('iocs.id')) — iocs is a regular PostgreSQL table; FK enforces referential integrity and is safe
+- [Phase 31-02]: Case.status/severity ORM columns use Text type (not SA Enum type) to avoid SQLAlchemy conflicts with migration-managed DB ENUMs
 - [Phase 27-01]: xfail (not skip) used for Wave 0 stubs — lets pytest collect and report expected failures without erroring the suite; downstream plans replace xfail with real assertions one file at a time
 - [Phase 27-01]: libyara-dev placed in runtime Dockerfile stage (not builder only) — yara-python imports the native shared library at runtime, not just at compile time; yara-python in main deps (not dev group) because YARA engine runs in containers
 - [Phase 16-04]: EWMA_ALPHA = 2/(168+1) ≈ 0.012; drift.py is pure math (no DB); callers pass list[float]; classify_severity(negative z) → None (drift down not alerted; silence detection handles dead sources)
