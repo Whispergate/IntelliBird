@@ -452,3 +452,71 @@ async def test_list_includes_bound_preset_names(client):
     assert len(items) == 1
     names = sorted(items[0]["bound_preset_names"])
     assert names == ["preset-a", "preset-b"]
+
+
+# ---------------------------------------------------------------------------
+# Email guard in test-send (NOTIF-02)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_test_send_email_returns_200_with_ok_false():
+    """NOTIF-02: test-send with email type returns HTTP 200, ok=False, no ValueError raised."""
+    from app.routers.admin.webhooks import router
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[require_admin] = _fake_admin
+    app.dependency_overrides[require_auth] = _fake_admin
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        resp = await c.post(
+            "/admin/webhooks/test-send",
+            json={"destination_type": "email", "url": "smtp://smtp.example.com:587"},
+        )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ok"] is False
+    # Must contain informative message about email test-send limitation
+    assert data["error_detail"] is not None
+    assert "email" in data["error_detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_test_send_slack_still_works_after_email_guard(monkeypatch):
+    """Existing slack/generic path not affected by email guard."""
+    from app.routers.admin import webhooks as wh_module
+
+    class FakeResponse:
+        status_code = 200
+
+    class FakeClient:
+        def __init__(self, **_kw):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            pass
+
+        def post(self, *_a, **_kw):
+            return FakeResponse()
+
+    monkeypatch.setattr(wh_module.httpx, "Client", FakeClient)
+
+    from app.routers.admin.webhooks import router
+    app = FastAPI()
+    app.include_router(router)
+    app.dependency_overrides[require_admin] = _fake_admin
+    app.dependency_overrides[require_auth] = _fake_admin
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        resp = await c.post(
+            "/admin/webhooks/test-send",
+            json={"destination_type": "slack", "url": "https://hooks.slack.com/fake"},
+        )
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["ok"] is True

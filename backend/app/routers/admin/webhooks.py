@@ -110,6 +110,16 @@ def test_webhook_send(
     _admin: AuthUser = Depends(require_admin),
 ) -> TestSendResponse:
     """Non-blocking test send.: always HTTP 200; ok flag in body signals result."""
+    # Email type cannot use HTTP test-send — return early with informative message.
+    # Real SMTP test requires live credentials; callers should configure a real
+    # SMTP destination and trigger a manual alert.
+    if payload.destination_type == "email":
+        return TestSendResponse(
+            ok=False,
+            latency_ms=0,
+            error_detail="email test-send not supported via this endpoint: configure a real SMTP destination and trigger an alert",
+        )
+
     dummy_event = _make_dummy_event()
     result_payload = build_payload_for_type(
         payload.destination_type,
