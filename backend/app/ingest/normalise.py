@@ -231,6 +231,19 @@ def _persist_event(session: Session, row: dict) -> int:
             exc_info=True,
         )
 
+    # Phase 29 / SIGMA-02: evaluate active Sigma rules against this event.
+    # Best-effort — must NEVER raise into the ingest hot path.
+    try:
+        from app.services.sigma_engine import evaluate_sigma_rules  # noqa: PLC0415
+        evaluate_sigma_rules(session, inserted[0], row.get("project_id"))
+    except Exception:  # noqa: BLE001
+        import logging  # noqa: PLC0415
+        logging.getLogger(__name__).warning(
+            "sigma_eval_failed event_id=%s project_id=%s",
+            inserted[0], row.get("project_id"),
+            exc_info=True,
+        )
+
     # Auto-summarise newly-ingested event when an Ollama provider is configured
     # for this project (or globally via LEGACY fallback). Ollama is local + free,
     # so per-event summarisation is cost-free; cloud providers are gated to
