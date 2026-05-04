@@ -30,6 +30,7 @@ dependencies = [
   "trafilatura>=1.12,<2",
   "geoip2>=4.8,<5",
   "PyJWT>=2.12,<3",
+  "pySigma>=0.10,<0.11",
   "pwdlib[argon2]>=0.2,<0.3",
   "authlib>=1.6,<2",
   "dnstwist>=20240219",
@@ -40,6 +41,8 @@ dependencies = [
   "rapidfuzz>=3.0,<4",
   "yara-python>=4.5,<5",
   "networkx>=3.3,<4",
+  "numpy>=1.26,<3",
+  "scipy>=1.13,<2",
   "asyncwhois>=1.1,<2",
 ]
 
