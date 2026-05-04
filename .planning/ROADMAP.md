@@ -479,7 +479,7 @@ Plans:
 | 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete    | 2026-05-04 | - |
 | 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
 | 30. Notification Channels | 8/8 | Complete    | 2026-05-04 | - |
-| 31. Case Management | 2/7 | In Progress|  | - |
+| 31. Case Management | 3/7 | In Progress|  | - |
 | 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
 | 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |
 | 34. Browser Extension | v4.0 | 0/0 | Not started | - |
