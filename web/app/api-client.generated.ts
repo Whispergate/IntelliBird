@@ -2695,7 +2695,7 @@ export interface components {
              * Destination Type
              * @enum {string}
              */
-            destination_type: "slack" | "teams" | "discord" | "generic";
+            destination_type: "slack" | "teams" | "discord" | "generic" | "email" | "pagerduty" | "opsgenie" | "ntfy";
             /** Url */
             url: string;
             /** Auth */
@@ -2841,7 +2841,7 @@ export interface components {
              * Destination Type
              * @enum {string}
              */
-            destination_type: "slack" | "teams" | "discord" | "generic";
+            destination_type: "slack" | "teams" | "discord" | "generic" | "email" | "pagerduty" | "opsgenie" | "ntfy";
             /** Url */
             url: string;
             /** Auth */
@@ -2879,7 +2879,7 @@ export interface components {
              * Destination Type
              * @enum {string}
              */
-            destination_type: "slack" | "teams" | "discord" | "generic";
+            destination_type: "slack" | "teams" | "discord" | "generic" | "email" | "pagerduty" | "opsgenie" | "ntfy";
             /** Url */
             url: string;
             /** Batching Window Sec */

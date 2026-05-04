@@ -78,7 +78,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 - [x] **Phase 27: Sandbox + YARA** — File-detonation pipeline paired with YARA scanning of samples and STIX patterns (completed 2026-05-04)
 - [x] **Phase 28: Passive DNS, WHOIS & Multi-hop Graph** — Infrastructure pivoting via shared registrar/IP plus 2-3 hop traversal (completed 2026-05-04)
 - [x] **Phase 29: Sigma Rule Engine** — Community Sigma rule sets auto-tagging events at ingest (completed 2026-05-04)
-- [ ] **Phase 30: Notification Channels** — Email / PagerDuty / Opsgenie / ntfy reusing webhook dispatcher
+- [x] **Phase 30: Notification Channels** — Email / PagerDuty / Opsgenie / ntfy reusing webhook dispatcher (completed 2026-05-04)
 - [ ] **Phase 31: Case Management** — Lightweight cases, kanban, IOC + event linking
 - [ ] **Phase 32: CertStream + MISP** — Sub-second CT log streaming and bidirectional MISP sync
 - [ ] **Phase 33: Disinformation + Pattern-of-Life Timeline** — CIB heuristics on social listening + temporal heatmap
@@ -471,7 +471,7 @@ Plans:
 | 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete    | 2026-05-04 | - |
 | 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
-| 30. Notification Channels | 5/7 | In Progress|  | - |
+| 30. Notification Channels | 7/7 | Complete   | 2026-05-04 | - |
 | 31. Case Management | v4.0 | 0/0 | Not started | - |
 | 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
 | 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |

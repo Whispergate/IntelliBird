@@ -33,6 +33,7 @@ import { AuthField } from "./AuthField";
 import { PresetMultiSelect } from "./PresetMultiSelect";
 import {
   BATCHING_OPTIONS,
+  DESTINATION_DEFAULT_URLS,
   buildCreatePayload,
   buildUpdatePayload,
   webhookFormSchema,
@@ -67,6 +68,7 @@ function defaultValuesFor(
       bound_preset_names: [],
       batching_window_sec: 300,
       enabled: true,
+      email_use_starttls: true,
     };
   }
   return {
@@ -77,6 +79,7 @@ function defaultValuesFor(
     bound_preset_names: wh.bound_preset_names,
     batching_window_sec: wh.batching_window_sec as 0 | 60 | 300 | 900 | 1800,
     enabled: wh.enabled,
+    email_use_starttls: true,
   };
 }
 
@@ -137,6 +140,17 @@ export function WebhookDialog({
 
   const destinationType = watch("destination_type");
   const boundPresetNames = watch("bound_preset_names") ?? [];
+  const starttls = watch("email_use_starttls") ?? true;
+
+  // Pre-fill URL when type changes to a type with a known default URL
+  function handleTypeChange(v: string) {
+    const next = v as WebhookFormValues["destination_type"];
+    setValue("destination_type", next, { shouldDirty: true });
+    const defaultUrl = DESTINATION_DEFAULT_URLS[next];
+    if (defaultUrl !== undefined) {
+      setValue("url", defaultUrl, { shouldDirty: true });
+    }
+  }
 
   async function runTest() {
     setTesting(true);
@@ -174,7 +188,15 @@ export function WebhookDialog({
           dirtyFields.auth_username ||
           dirtyFields.auth_password ||
           dirtyFields.auth_header_name ||
-          dirtyFields.auth_header_value,
+          dirtyFields.auth_header_value ||
+          dirtyFields.email_from ||
+          dirtyFields.email_to ||
+          dirtyFields.email_username ||
+          dirtyFields.email_password ||
+          dirtyFields.email_use_starttls ||
+          dirtyFields.pd_routing_key ||
+          dirtyFields.opsgenie_api_key ||
+          dirtyFields.ntfy_token,
       );
       await onSubmit(buildUpdatePayload(values, authTouched));
     }
@@ -211,13 +233,7 @@ export function WebhookDialog({
               <Label htmlFor="destination_type">Type</Label>
               <Select
                 value={destinationType}
-                onValueChange={(v) =>
-                  setValue(
-                    "destination_type",
-                    v as WebhookFormValues["destination_type"],
-                    { shouldDirty: true },
-                  )
-                }
+                onValueChange={handleTypeChange}
                 disabled={mode === "edit"}
               >
                 <SelectTrigger id="destination_type">
@@ -228,6 +244,10 @@ export function WebhookDialog({
                   <SelectItem value="teams">Microsoft Teams</SelectItem>
                   <SelectItem value="discord">Discord</SelectItem>
                   <SelectItem value="generic">Generic JSON</SelectItem>
+                  <SelectItem value="email">Email (SMTP)</SelectItem>
+                  <SelectItem value="pagerduty">PagerDuty</SelectItem>
+                  <SelectItem value="opsgenie">Opsgenie</SelectItem>
+                  <SelectItem value="ntfy">ntfy</SelectItem>
                 </SelectContent>
               </Select>
               {mode === "edit" && (
@@ -242,9 +262,15 @@ export function WebhookDialog({
               )}
             </div>
 
-            {/* Field 3: URL*/}
+            {/* Field 3: URL — label varies by type*/}
             <div className="flex flex-col gap-1">
-              <Label htmlFor="url">URL</Label>
+              <Label htmlFor="url">
+                {destinationType === "email"
+                  ? "SMTP URL (smtp://host:587)"
+                  : destinationType === "ntfy"
+                  ? "Topic URL (e.g. https://ntfy.sh/my-topic)"
+                  : "URL"}
+              </Label>
               <Input id="url" type="url" {...register("url")} />
               {errors.url && (
                 <span className="text-xs text-destructive">
@@ -255,6 +281,127 @@ export function WebhookDialog({
 
             {/* Field 4: Auth — conditional on Generic destination type*/}
             <AuthField />
+
+            {/* Email credential fields */}
+            {destinationType === "email" && (
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <div className="flex-1 flex flex-col gap-1">
+                    <Label htmlFor="email_from">From address</Label>
+                    <Input
+                      id="email_from"
+                      type="email"
+                      autoComplete="off"
+                      placeholder="alerts@example.com"
+                      {...register("email_from")}
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <Label htmlFor="email_to">To address</Label>
+                    <Input
+                      id="email_to"
+                      type="email"
+                      autoComplete="off"
+                      placeholder="team@example.com"
+                      {...register("email_to")}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex-1 flex flex-col gap-1">
+                    <Label htmlFor="email_username">SMTP username</Label>
+                    <Input
+                      id="email_username"
+                      autoComplete="off"
+                      spellCheck={false}
+                      {...register("email_username")}
+                    />
+                  </div>
+                  <div className="flex-1 flex flex-col gap-1">
+                    <Label htmlFor="email_password">SMTP password</Label>
+                    <Input
+                      id="email_password"
+                      type="password"
+                      autoComplete="off"
+                      spellCheck={false}
+                      {...register("email_password")}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="email_use_starttls"
+                    type="checkbox"
+                    checked={starttls}
+                    onChange={(e) =>
+                      setValue("email_use_starttls", e.target.checked, { shouldDirty: true })
+                    }
+                    className="h-4 w-4"
+                  />
+                  <Label htmlFor="email_use_starttls" className="cursor-pointer">
+                    Use STARTTLS
+                  </Label>
+                </div>
+              </div>
+            )}
+
+            {/* PagerDuty credential fields */}
+            {destinationType === "pagerduty" && (
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="pd_routing_key">Routing key</Label>
+                <Input
+                  id="pd_routing_key"
+                  type="password"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="R01234567890123456789012345678901"
+                  {...register("pd_routing_key")}
+                />
+                {errors.pd_routing_key && (
+                  <span className="text-xs text-destructive">
+                    {errors.pd_routing_key.message}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Opsgenie credential fields */}
+            {destinationType === "opsgenie" && (
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="opsgenie_api_key">API key</Label>
+                <Input
+                  id="opsgenie_api_key"
+                  type="password"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  {...register("opsgenie_api_key")}
+                />
+                {errors.opsgenie_api_key && (
+                  <span className="text-xs text-destructive">
+                    {errors.opsgenie_api_key.message}
+                  </span>
+                )}
+                <span className="text-xs text-muted-foreground">
+                  EU region: use https://api.eu.opsgenie.com/v2/alerts as URL above.
+                </span>
+              </div>
+            )}
+
+            {/* ntfy credential fields */}
+            {destinationType === "ntfy" && (
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="ntfy_token">Bearer token for private topics (optional)</Label>
+                <Input
+                  id="ntfy_token"
+                  type="password"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="tk_..."
+                  {...register("ntfy_token")}
+                />
+              </div>
+            )}
 
             {/* Field 5: Bound presets — async-loaded on open*/}
             <div className="flex flex-col gap-1">
