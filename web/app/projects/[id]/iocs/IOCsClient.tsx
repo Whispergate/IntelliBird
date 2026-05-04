@@ -47,6 +47,7 @@ import { TypeBadge, StatusPill, ConfidenceBadge, SourceBadge } from "./badges";
 import { IOCDetailDrawer } from "./IOCDetailDrawer";
 import { IOCBulkImportDialog } from "./IOCBulkImportDialog";
 import { BackfillButton } from "./BackfillButton";
+import { AttachToCaseModal } from "@/app/events/components/AttachToCaseModal";
 
 const PAGE_SIZE = 50;
 
@@ -125,6 +126,8 @@ export function IOCsClient({ projectId, initialRows }: Props) {
   const [hasMore, setHasMore] = useState(initialRows.length >= PAGE_SIZE);
   const [error, setError] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [attachToCaseOpen, setAttachToCaseOpen] = useState(false);
   const selectedIocId = sp.get("ioc");
 
   const isFirstRender = useRef(true);
@@ -456,6 +459,30 @@ export function IOCsClient({ projectId, initialRows }: Props) {
         )}
       </div>
 
+      {/* Multi-select toolbar — appears when ≥1 row selected */}
+      {selectedRows.size >= 1 && (
+        <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/50 border border-border">
+          <span className="text-sm text-muted-foreground">
+            {selectedRows.size} IOC{selectedRows.size === 1 ? "" : "s"} selected
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAttachToCaseOpen(true)}
+          >
+            Attach to Case
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedRows(new Set())}
+            className="ml-auto"
+          >
+            Clear selection
+          </Button>
+        </div>
+      )}
+
       {/* Error */}
       {error && (
         <Alert variant="destructive">
@@ -502,6 +529,7 @@ export function IOCsClient({ projectId, initialRows }: Props) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[36px]" />
                 <TableHead className="w-[96px]">Type</TableHead>
                 <TableHead className="max-w-[360px]">Value</TableHead>
                 <TableHead className="w-[140px]">Confidence</TableHead>
@@ -516,7 +544,7 @@ export function IOCsClient({ projectId, initialRows }: Props) {
               {loading && rows.length === 0
                 ? Array.from({ length: 6 }).map((_, i) => (
                     <TableRow key={`sk-${i}`}>
-                      <TableCell colSpan={isObserver ? 7 : 8}>
+                      <TableCell colSpan={isObserver ? 8 : 9}>
                         <div className="h-[28px] bg-card/50 animate-pulse rounded-sm" />
                       </TableCell>
                     </TableRow>
@@ -525,11 +553,29 @@ export function IOCsClient({ projectId, initialRows }: Props) {
                     <TableRow
                       key={ioc.id}
                       className={
-                        selectedIocId === ioc.id
-                          ? "bg-card/60"
-                          : undefined
+                        selectedRows.has(ioc.id)
+                          ? "bg-muted/40"
+                          : selectedIocId === ioc.id
+                            ? "bg-card/60"
+                            : undefined
                       }
                     >
+                      <TableCell onClick={(e) => e.stopPropagation()} className="pr-0">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 cursor-pointer"
+                          checked={selectedRows.has(ioc.id)}
+                          onChange={() => {
+                            setSelectedRows((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(ioc.id)) next.delete(ioc.id);
+                              else next.add(ioc.id);
+                              return next;
+                            });
+                          }}
+                          aria-label={`Select IOC ${ioc.value}`}
+                        />
+                      </TableCell>
                       <TableCell>
                         <TypeBadge type={ioc.type} />
                       </TableCell>
@@ -619,6 +665,15 @@ export function IOCsClient({ projectId, initialRows }: Props) {
           onComplete={refetch}
         />
       )}
+
+      {/* Attach to Case modal */}
+      <AttachToCaseModal
+        projectId={projectId}
+        iocIds={Array.from(selectedRows)}
+        open={attachToCaseOpen}
+        onOpenChange={setAttachToCaseOpen}
+        onSuccess={() => setSelectedRows(new Set())}
+      />
     </div>
   );
 }
