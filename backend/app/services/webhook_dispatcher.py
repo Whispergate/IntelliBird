@@ -533,6 +533,8 @@ def _build_auth_headers(auth_enc: str | None) -> dict[str, str]:
         return {"Authorization": f"Basic {encoded}"}
     if atype == "header":
         return {creds["name"]: creds["value"]}
+    if atype == "geniekey":
+        return {"Authorization": f"GenieKey {creds['api_key']}"}
     return {}
 
 
