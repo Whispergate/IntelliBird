@@ -401,6 +401,35 @@ export async function getEventGraph(
   return _handle<GraphResponse>(res);
 }
 
+// Phase 28 — extended GraphResponse with centrality fields
+export type TraverseGraphResponse = GraphResponse & {
+  per_node_centrality?: Record<string, number> | null;
+  centrality_truncated?: boolean;
+};
+
+/**
+ * GET /api/projects/{id}/graph/traverse — multi-hop AGE Cypher traversal.
+ *
+ * Client-side only — uses relative URL through the [...path] proxy.
+ * Per CLAUDE.md: browser fetches must use relative URLs (no _apiFetch).
+ */
+export async function traverseGraph(
+  projectId: string,
+  seedIocId: string,
+  hops: 1 | 2 | 3,
+  edgeFilter: string[] = [],
+): Promise<TraverseGraphResponse> {
+  const params = new URLSearchParams({
+    seed_ioc_id: seedIocId,
+    hops: String(hops),
+  });
+  for (const f of edgeFilter) {
+    params.append("edge_filter[]", f);
+  }
+  const res = await fetch(`/api/projects/${projectId}/graph/traverse?${params.toString()}`);
+  return _handle<TraverseGraphResponse>(res);
+}
+
 // ============================================================
 // Filter presets — FIL-05
 // ============================================================
@@ -1191,4 +1220,112 @@ export async function createTaxiiClient(body: TaxiiClientCreate): Promise<TaxiiC
 export async function revokeTaxiiClient(id: string): Promise<void> {
   const res = await fetch(`/api/admin/taxii-clients/${id}`, { method: 'DELETE' });
   if (!res.ok && res.status !== 204) throw new Error(`revokeTaxiiClient: ${res.status}`);
+}
+
+// === Phase 27: Sandbox + YARA ===
+
+export interface SandboxReportRead {
+  id: string;
+  event_id: string;
+  project_id: string;
+  provider: string;
+  status: string;
+  sha256: string;
+  report_json: Record<string, unknown> | null;
+  techniques: string[] | null;
+  network_iocs: string[] | null;
+  process_tree: Record<string, unknown> | null;
+  score: number | null;
+  verdict: string | null;
+  submitted_at: string;
+  completed_at: string | null;
+  poll_attempts: number;
+}
+
+export interface YaraRuleRead {
+  id: string;
+  name: string;
+  family: string;
+  enabled: boolean;
+  project_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface YaraRuleCreate {
+  name: string;
+  family: string;
+  content: string;
+  enabled: boolean;
+  project_id?: string | null;
+}
+
+export interface SandboxConfigCreate {
+  provider: "cuckoo" | "anyrun" | "joesandbox" | "hybridanalysis" | "triage";
+  api_key?: string | null;
+  enabled: boolean;
+  public_warning_acknowledged: boolean;
+  options?: Record<string, unknown>;
+}
+
+export async function getSandboxReport(
+  projectId: string,
+  eventId: string,
+): Promise<SandboxReportRead | null> {
+  const res = await _apiFetch(`/api/projects/${projectId}/events/${eventId}/sandbox-report`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function listYaraRules(params?: {
+  project_id?: string;
+  enabled?: boolean;
+}): Promise<YaraRuleRead[]> {
+  const qs = new URLSearchParams();
+  if (params?.project_id) qs.set("project_id", params.project_id);
+  if (params?.enabled !== undefined) qs.set("enabled", String(params.enabled));
+  const res = await _apiFetch(`/api/admin/yara-rules?${qs}`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function createYaraRule(body: YaraRuleCreate): Promise<YaraRuleRead> {
+  const res = await _apiFetch("/api/admin/yara-rules", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function patchYaraRule(
+  ruleId: string,
+  patch: { enabled?: boolean; name?: string; family?: string },
+): Promise<YaraRuleRead> {
+  const res = await _apiFetch(`/api/admin/yara-rules/${ruleId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteYaraRule(ruleId: string): Promise<void> {
+  const res = await _apiFetch(`/api/admin/yara-rules/${ruleId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+export async function upsertSandboxConfig(
+  projectId: string,
+  body: SandboxConfigCreate,
+): Promise<void> {
+  const res = await _apiFetch(`/api/projects/${projectId}/sandbox-config`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
 }

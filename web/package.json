@@ -30,6 +30,8 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cytoscape": "^3.33.2",
+    "cytoscape-context-menus": "^4.2.1",
+    "cytoscape-cose-bilkent": "^4.1.0",
     "cytoscape-dagre": "^2.5.0",
     "lucide-react": "^1.8.0",
     "maplibre-gl": "^5.23.0",

@@ -455,7 +455,7 @@ Plans:
 | 25. Threat Actors, Campaigns & Audit Log | 6/6 | Complete   | 2026-05-03 | - |
 | 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
 | 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
-| 28. Passive DNS, WHOIS & Multi-hop Graph | 2/8 | In Progress|  | - |
+| 28. Passive DNS, WHOIS & Multi-hop Graph | 3/8 | In Progress|  | - |
 | 29. Sigma Rule Engine | v4.0 | 0/0 | Not started | - |
 | 30. Notification Channels | v4.0 | 0/0 | Not started | - |
 | 31. Case Management | v4.0 | 0/0 | Not started | - |

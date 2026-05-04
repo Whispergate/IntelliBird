@@ -1,3 +1,4 @@
+@import 'cytoscape-context-menus/cytoscape-context-menus.css';
 @import "tailwindcss";
 
 /* IntelliBird brand palette
@@ -117,4 +118,9 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: var(--font-mono-size);
   }
+}
+
+/* Hide scrollbar in tab strips (WebKit/Blink) — Firefox handled via scrollbarWidth:none inline */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
