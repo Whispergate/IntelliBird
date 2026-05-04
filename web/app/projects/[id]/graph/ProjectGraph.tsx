@@ -163,6 +163,35 @@ const NODE_STYLES = [
     selector: "node[tag_source='auto']",
     style: { "border-style": "dashed", "border-width": 2, "border-opacity": 0.5 },
   },
+  // ── DomainPivot node (Phase 28) ─────────────────────────────────
+  {
+    selector: "node[type='domain_pivot']",
+    style: {
+      "background-color": "#7C3AED",
+      "border-color": "#A78BFA",
+      "border-width": 2,
+      color: "#F5F3FF",
+      label: "data(label)",
+      "font-size": 10,
+      "text-valign": "center",
+      "text-halign": "center",
+      shape: "diamond",
+      width: 28,
+      height: 28,
+    },
+  },
+  // ── Shares-infra edge (Phase 28) ─────────────────────────────────
+  {
+    selector: "edge[relation='shares_infra']",
+    style: {
+      "line-color": "#7C3AED",
+      "target-arrow-color": "#7C3AED",
+      "line-style": "dashed",
+      "target-arrow-shape": "triangle",
+      "curve-style": "bezier",
+      width: 1,
+    },
+  },
 ];
 
 // ── Component ───────────────────────────────────────────────────────────────

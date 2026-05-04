@@ -4,10 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import CytoscapeComponent from "react-cytoscapejs";
 import Cytoscape from "cytoscape";
 import dagre from "cytoscape-dagre";
+import contextMenus from "cytoscape-context-menus";
+// Note: cytoscape-context-menus CSS imported in globals.css, NOT here
 
 import {
   getEventGraph,
+  traverseGraph,
   type GraphResponse,
+  type TraverseGraphResponse,
 } from "@/app/api-client";
 import { useRole } from "@/app/lib/role-context";
 import { AttackGraphToolbar } from "@/app/components/AttackGraphToolbar";
@@ -19,6 +23,17 @@ if (!dagreRegistered) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (Cytoscape as any).use(dagre);
     dagreRegistered = true;
+  } catch {
+    // Plugin already registered — ignore.
+  }
+}
+
+let contextMenusRegistered = false;
+if (!contextMenusRegistered) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (Cytoscape as any).use(contextMenus);
+    contextMenusRegistered = true;
   } catch {
     // Plugin already registered — ignore.
   }
@@ -160,14 +175,46 @@ const NODE_STYLES = [
     selector: "node[tag_source='auto']",
     style: { "border-style": "dashed", "border-width": 2, "border-opacity": 0.5 },
   },
+  // ── DomainPivot node (Phase 28) ─────────────────────────────────
+  {
+    selector: "node[type='domain_pivot']",
+    style: {
+      "background-color": "#7C3AED",
+      "border-color": "#A78BFA",
+      "border-width": 2,
+      color: "#F5F3FF",
+      label: "data(label)",
+      "font-size": 10,
+      "text-valign": "center",
+      "text-halign": "center",
+      shape: "diamond",
+      width: 28,
+      height: 28,
+    },
+  },
+  // ── Shares-infra edge (Phase 28) ─────────────────────────────────
+  {
+    selector: "edge[relation='shares_infra']",
+    style: {
+      "line-color": "#7C3AED",
+      "target-arrow-color": "#7C3AED",
+      "line-style": "dashed",
+      "target-arrow-shape": "triangle",
+      "curve-style": "bezier",
+      width: 1,
+    },
+  },
 ];
 
 export function AttackGraphImpl({
   eventId,
   height = 240,
+  projectId,
 }: {
   eventId: string;
   height?: number;
+  /** Optional project UUID — enables multi-hop expand via right-click context menu. */
+  projectId?: string | null;
 }) {
   const role = useRole();
   const [graph, setGraph] = useState<GraphResponse | null>(null);
@@ -196,6 +243,49 @@ export function AttackGraphImpl({
       cancelled = true;
     };
   }, [eventId, role]);
+
+  /**
+   * Expand a node N hops via the AGE traverse endpoint (Phase 28 / GRAPH-02).
+   * Appends new nodes/edges without a full re-render.
+   */
+  const handleExpand = async (nodeId: string, hops: 1 | 2 | 3) => {
+    const cy = cyRef.current;
+    if (!cy || !projectId) return;
+    try {
+      const data: TraverseGraphResponse = await traverseGraph(projectId, nodeId, hops);
+      const existingIds = new Set(cy.elements().map((el) => el.id()));
+      const newElements: Cytoscape.ElementDefinition[] = [];
+      for (const node of data.nodes) {
+        if (!existingIds.has(node.data.id)) {
+          newElements.push({ data: node.data });
+        }
+      }
+      for (const edge of data.edges) {
+        const edgeKey = `${edge.data.source}__${edge.data.target}`;
+        if (!existingIds.has(edgeKey)) {
+          newElements.push({ data: { ...edge.data, id: edgeKey } });
+        }
+      }
+      if (newElements.length > 0) {
+        cy.add(newElements);
+        // Apply centrality sizing if returned
+        if (data.per_node_centrality) {
+          cy.batch(() => {
+            for (const [nid, score] of Object.entries(data.per_node_centrality!)) {
+              const node = cy.$(`#${nid}`);
+              if (node.length > 0) {
+                const size = 20 + score * 60; // range 20-80px per CONTEXT.md
+                node.style({ width: size, height: size });
+              }
+            }
+          });
+        }
+        cy.layout({ name: "dagre", rankDir: "TB", nodeSep: 40, rankSep: 60 } as never).run();
+      }
+    } catch (err) {
+      console.error("traverse expand failed", err);
+    }
+  };
 
   if (loading) {
     return (
@@ -262,6 +352,40 @@ export function AttackGraphImpl({
         elements={elements}
         cy={(instance) => {
           cyRef.current = instance;
+          // Register right-click context menu (Phase 28 / GRAPH-02)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (instance as any).contextMenus({
+            menuItems: [
+              {
+                id: "expand-1-hop",
+                content: "Expand 1 hop",
+                selector: "node",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClickFunction: (event: any) => {
+                  handleExpand(event.target.id(), 1);
+                },
+              },
+              {
+                id: "expand-3-hops",
+                content: "Expand 3 hops",
+                selector: "node",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClickFunction: (event: any) => {
+                  handleExpand(event.target.id(), 3);
+                },
+              },
+              {
+                id: "path-to",
+                content: "Path to…",
+                selector: "node",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onClickFunction: (event: any) => {
+                  // Phase 28 stub: log nodeId for future path-finding feature
+                  console.info("path-to requested for", event.target.id());
+                },
+              },
+            ],
+          });
         }}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         layout={{ name: "dagre", rankDir: "TB", nodeSep: 40, rankSep: 60 } as any}

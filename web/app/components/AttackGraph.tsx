@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-export const AttackGraph = dynamic<{ eventId: string; height?: number }>(
+export const AttackGraph = dynamic<{ eventId: string; height?: number; projectId?: string | null }>(
   () => import("./AttackGraphImpl").then((m) => m.AttackGraphImpl),
   {
     ssr: false,

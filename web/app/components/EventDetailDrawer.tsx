@@ -27,6 +27,7 @@ import { AttackGraph } from "./AttackGraph";
 import { TierBadge } from "./TierBadge";
 import { AISummarySection } from "./AISummarySection";
 import { IOCsSection } from "./EventDetailDrawer/IOCsSection";
+import { SandboxReportSection } from "./EventDetailDrawer/SandboxReportSection";
 import { classifyTier, currentScore } from "@/lib/scoring";
 
 // ---------------------------------------------------------------------------
@@ -98,6 +99,9 @@ export function EventDetailDrawer({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const selectedEventId = searchParams.get("event");
+  // Extract project ID from /projects/[uuid]/... URL patterns
+  const projectIdMatch = pathname?.match(/\/projects\/([0-9a-f-]{36})/i);
+  const drawerProjectId = projectIdMatch ? projectIdMatch[1] : null;
 
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -301,6 +305,11 @@ export function EventDetailDrawer({
             {/* Section 3b2 — IOCs (Phase 22 Plan 06 §Surface 5) */}
             <IOCsSection eventId={event.id} />
 
+            {/* Section 3b3 — Sandbox Report (Phase 27 SANDBOX-04) */}
+            {drawerProjectId && (
+              <SandboxReportSection eventId={event.id} projectId={drawerProjectId} />
+            )}
+
             {/* Section 3c — AI Summary */}
             <AISummarySection eventId={event.id} />
 
@@ -364,7 +373,7 @@ export function EventDetailDrawer({
               <p className="brand-caption text-muted-foreground mb-2">
                 ATTACK GRAPH
               </p>
-              <AttackGraph eventId={event.id} height={240} />
+              <AttackGraph eventId={event.id} height={240} projectId={drawerProjectId} />
             </section>
 
             {/* Section 7 — Raw STIX / CVE (collapsed by default)*/}
