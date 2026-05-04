@@ -35,6 +35,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         curl \
         docker.io \
+        libyara-dev \
         libpango-1.0-0 \
         libharfbuzz0b \
         libfontconfig1 \
