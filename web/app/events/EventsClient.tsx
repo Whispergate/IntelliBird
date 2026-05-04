@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 import {
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/tooltip";
 import { FilterChips } from "./components/FilterChips";
 import { EventsTable } from "./components/EventsTable";
+import { AttachToCaseModal } from "./components/AttachToCaseModal";
 
 // ---------------------------------------------------------------------------
 // BrandProvenanceBadge — rendered in EventsTable when event.source_type === 'brand-monitor'.
@@ -192,6 +194,9 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const { data: _session } = useSession();
+  const isAdmin =
+    ((_session?.user as { role?: string } | undefined)?.role ?? "") === "Admin";
   const [role, setRole] = useState<"red" | "blue" | undefined>(undefined);
   const [filter, setFilter] = useState<EventsQuery>({});
   const [sortValue, setSortValue] = useState<SortValue>("observed_desc");
@@ -200,11 +205,16 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
   // Phase 12 / BRP-05: off-by-default toggle that unhides source_type='brand-monitor'
   // events in the main feed. Mirrors includeBbot placement / query-append pattern.
   const [includeBrandMatch, setIncludeBrandMatch] = useState(false);
+  // Source-monitoring synthesised alerts (source_silence, volume_drift,
+  // parse_error_rate). Admin/lead-only — toggle hidden from analyst+observer.
+  const [includeMonitoring, setIncludeMonitoring] = useState(false);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [selectedPreset, setSelectedPreset] = useState<string>("");
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [attachToCaseOpen, setAttachToCaseOpen] = useState(false);
 
   // Resolve role from localStorage
   useEffect(() => {
@@ -268,6 +278,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         limit: parsed.limit ?? 50,
         ...(includeBbot ? { include_bbot: true } : {}),
         ...(includeBrandMatch ? ({ include_brand_match: true } as Partial<EventsQuery>) : {}),
+        ...(includeMonitoring ? ({ include_monitoring: true } as Partial<EventsQuery>) : {}),
         ...(apiSort ? ({ sort: apiSort } as Partial<EventsQuery>) : {}),
         ...(tierParam ? ({ tier: tierParam } as Partial<EventsQuery>) : {}),
       },
@@ -291,7 +302,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, role, includeBbot, includeBrandMatch]);
+  }, [searchParams, role, includeBbot, includeBrandMatch, includeMonitoring]);
 
   // ---------------------------------------------------------------------------
   // URL manipulation helpers
@@ -361,6 +372,18 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
     if (eventId) params.set("event", eventId);
     const qs = params.toString();
     router.replace(qs ? `/events?${qs}` : "/events");
+  }
+
+  function toggleRowSelection(id: string) {
+    setSelectedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   }
 
   function handleSortChange(newSort: string) {
@@ -588,6 +611,30 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         )}
       </div>
 
+      {/* Multi-select toolbar — appears when ≥1 row selected */}
+      {selectedRows.size >= 1 && (
+        <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/50 border border-border mb-2">
+          <span className="text-sm text-muted-foreground">
+            {selectedRows.size} event{selectedRows.size === 1 ? "" : "s"} selected
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAttachToCaseOpen(true)}
+          >
+            Attach to Case
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedRows(new Set())}
+            className="ml-auto"
+          >
+            Clear selection
+          </Button>
+        </div>
+      )}
+
       {/* include_bbot toggle — off by default; keeps main events feed clean (H-4) */}
       <div className="flex items-center justify-end gap-2 mt-2 mb-2">
         <Label htmlFor="include-bbot" className="text-sm text-muted-foreground cursor-pointer">
@@ -615,6 +662,25 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
           onCheckedChange={setIncludeBrandMatch}
         />
       </div>
+
+      {/* include_monitoring toggle — Admin/lead only.
+          Synthesised source-monitoring alerts (source_silence, volume_drift,
+          parse_error_rate) are noise for analysts; only ops surfaces them. */}
+      {isAdmin && (
+        <div className="flex items-center justify-end gap-2 mb-4">
+          <Label
+            htmlFor="include-monitoring"
+            className="text-sm text-muted-foreground cursor-pointer"
+          >
+            Include monitoring alerts
+          </Label>
+          <Switch
+            id="include-monitoring"
+            checked={includeMonitoring}
+            onCheckedChange={setIncludeMonitoring}
+          />
+        </div>
+      )}
 
       {/* Events table*/}
       {showError ? (
@@ -644,6 +710,9 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
                   ...filter,
                   limit: filter.limit ?? 50,
                   ...(includeBbot ? { include_bbot: true } : {}),
+                  ...(includeMonitoring
+                    ? ({ include_monitoring: true } as Partial<EventsQuery>)
+                    : {}),
                   ...(includeBrandMatch
                     ? ({ include_brand_match: true } as Partial<EventsQuery>)
                     : {}),
@@ -690,8 +759,19 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
           items={events}
           loading={loading}
           onRowClick={handleRowClick}
+          selectedRows={selectedRows}
+          onToggleRow={toggleRowSelection}
         />
       )}
+
+      {/* Attach to Case modal — opens when "Attach to Case" button clicked */}
+      <AttachToCaseModal
+        projectId={projectId ?? ""}
+        eventIds={Array.from(selectedRows)}
+        open={attachToCaseOpen}
+        onOpenChange={setAttachToCaseOpen}
+        onSuccess={() => setSelectedRows(new Set())}
+      />
 
       {/* Event detail drawer — unconditional mount; opens on ?event=<id>*/}
       <EventDetailDrawer />

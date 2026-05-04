@@ -80,14 +80,19 @@ type Props = {
   items: EventItem[];
   loading: boolean;
   onRowClick: (id: string) => void;
+  /** Optional multi-select support — provide both to enable checkboxes */
+  selectedRows?: Set<string>;
+  onToggleRow?: (id: string) => void;
 };
 
 const SKELETON_ROWS = 5;
 
-export function EventsTable({ items, loading, onRowClick }: Props) {
+export function EventsTable({ items, loading, onRowClick, selectedRows, onToggleRow }: Props) {
+  const hasSelection = selectedRows !== undefined && onToggleRow !== undefined;
   const headers = (
     <TableHeader>
       <TableRow>
+        {hasSelection && <TableHead style={{ width: 36 }} />}
         <TableHead>Title</TableHead>
         <TableHead style={{ width: 80 }}>Type</TableHead>
         <TableHead style={{ width: 72 }}>TLP</TableHead>
@@ -105,7 +110,7 @@ export function EventsTable({ items, loading, onRowClick }: Props) {
         <TableBody>
           {Array.from({ length: SKELETON_ROWS }).map((_, i) => (
             <TableRow key={i} data-testid="events-skeleton-row">
-              <TableCell colSpan={6}>
+              <TableCell colSpan={hasSelection ? 7 : 6}>
                 <div className="animate-pulse bg-muted rounded h-4 w-full" />
               </TableCell>
             </TableRow>
@@ -133,8 +138,19 @@ export function EventsTable({ items, loading, onRowClick }: Props) {
                 onRowClick(evt.id);
               }
             }}
-            className="cursor-pointer hover:bg-card h-12"
+            className={`cursor-pointer hover:bg-card h-12 ${hasSelection && selectedRows!.has(evt.id) ? "bg-muted/40" : ""}`}
           >
+            {hasSelection && (
+              <TableCell onClick={(e) => e.stopPropagation()} className="pr-0">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 cursor-pointer"
+                  checked={selectedRows!.has(evt.id)}
+                  onChange={() => onToggleRow!(evt.id)}
+                  aria-label={`Select event ${evt.id}`}
+                />
+              </TableCell>
+            )}
             <TableCell
               className="truncate"
               style={{ maxWidth: "60ch" }}
