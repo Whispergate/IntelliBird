@@ -40,10 +40,10 @@
 
 ### Tier 1 — Sandbox / file-detonation
 
-- [ ] **SANDBOX-01**: Admin can configure per-project sandbox provider (Cuckoo, ANY.RUN, Joe Sandbox, Hybrid Analysis, Triage) with API key encrypted via existing crypto pattern.
-- [ ] **SANDBOX-02**: System auto-fetches file samples by SHA256 (from VirusTotal Premium or MalwareBazaar) and submits to configured sandbox when a new `iocs.type='sha256'` is created AND project has `sandbox_enabled=true`.
-- [ ] **SANDBOX-03**: System polls sandbox for completion and stores result in `sandbox_reports` table linked to event.
-- [ ] **SANDBOX-04**: Event detail drawer shows "Sandbox Report" section (process tree, network IOCs, MITRE techniques) when available.
+- [x] **SANDBOX-01**: Admin can configure per-project sandbox provider (Cuckoo, ANY.RUN, Joe Sandbox, Hybrid Analysis, Triage) with API key encrypted via existing crypto pattern.
+- [x] **SANDBOX-02**: System auto-fetches file samples by SHA256 (from VirusTotal Premium or MalwareBazaar) and submits to configured sandbox when a new `iocs.type='sha256'` is created AND project has `sandbox_enabled=true`.
+- [x] **SANDBOX-03**: System polls sandbox for completion and stores result in `sandbox_reports` table linked to event.
+- [x] **SANDBOX-04**: Event detail drawer shows "Sandbox Report" section (process tree, network IOCs, MITRE techniques) when available.
 - [ ] **SANDBOX-05**: System auto-tags event with ATT&CK techniques returned by sandbox output (`tag_source='auto'` via existing `attack_technique_tags` write path).
 
 ### Tier 2 — TAXII outbound server
@@ -127,9 +127,9 @@
 
 ### Tier 3 — YARA rule scanning
 
-- [ ] **YARA-01**: Admin can store YARA rules in `yara_rules` table (per-project or global, enabled toggle) via `yara-python` library.
-- [ ] **YARA-02**: System scans file samples fetched by sandbox provider (§SANDBOX-02) against active YARA rules; matches auto-tag event with rule name + family.
-- [ ] **YARA-03**: System scans `events.raw_stix` `pattern` strings against active YARA rules at ingest.
+- [x] **YARA-01**: Admin can store YARA rules in `yara_rules` table (per-project or global, enabled toggle) via `yara-python` library.
+- [x] **YARA-02**: System scans file samples fetched by sandbox provider (§SANDBOX-02) against active YARA rules; matches auto-tag event with rule name + family.
+- [x] **YARA-03**: System scans `events.raw_stix` `pattern` strings against active YARA rules at ingest.
 
 ### Tier 3 — Browser extension for analyst pivoting
 
@@ -186,10 +186,10 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | DARK-05 | Phase 24 | Complete |
 | DARK-06 | Phase 24 | Complete |
 | DARK-07 | Phase 24 | Complete |
-| SANDBOX-01 | Phase 27 | Pending |
-| SANDBOX-02 | Phase 27 | Pending |
-| SANDBOX-03 | Phase 27 | Pending |
-| SANDBOX-04 | Phase 27 | Pending |
+| SANDBOX-01 | Phase 27 | Complete |
+| SANDBOX-02 | Phase 27 | Complete |
+| SANDBOX-03 | Phase 27 | Complete |
+| SANDBOX-04 | Phase 27 | Complete |
 | SANDBOX-05 | Phase 27 | Pending |
 | TAXII-01 | Phase 26 | Complete |
 | TAXII-02 | Phase 26 | Complete |
@@ -237,9 +237,9 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | TIMELINE-01 | Phase 33 | Pending |
 | TIMELINE-02 | Phase 33 | Pending |
 | TIMELINE-03 | Phase 33 | Pending |
-| YARA-01 | Phase 27 | Pending |
-| YARA-02 | Phase 27 | Pending |
-| YARA-03 | Phase 27 | Pending |
+| YARA-01 | Phase 27 | Complete |
+| YARA-02 | Phase 27 | Complete |
+| YARA-03 | Phase 27 | Complete |
 | EXT-01 | Phase 34 | Pending |
 | EXT-02 | Phase 34 | Pending |
 | EXT-03 | Phase 34 | Pending |

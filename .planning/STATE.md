@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: completed
-stopped_at: Completed 27-01-PLAN.md (27-sandbox-yara Wave 0 scaffold)
-last_updated: "2026-05-04T06:38:00.000Z"
+stopped_at: "Completed 27-03-PLAN.md (27-sandbox-yara Plan 03: provider modules + sample fetch + YARA engine)"
+last_updated: "2026-05-04T06:42:27.623Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 5
   total_plans: 37
-  completed_plans: 32
+  completed_plans: 33
 ---
 
 # Project State
@@ -228,6 +228,7 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 26-taxii-outbound-server P05 | 18 | 3 tasks | 4 files |
 | Phase 27-sandbox-yara P01 | 17min | 3 tasks | 9 files |
 | Phase 27-sandbox-yara P02 | 12 | 2 tasks | 4 files |
+| Phase 27-sandbox-yara P03 | 2 | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -582,6 +583,9 @@ Recent decisions affecting current work:
 - [Phase 27-sandbox-yara]: sandbox_reports.event_id is SOFT FK — TimescaleDB hypertables cannot be targets of real FK constraints
 - [Phase 27-sandbox-yara]: SUPPORTED_PROVIDERS uses Pydantic Literal type rather than DB ENUM to allow provider expansion without a migration
 - [Phase 27-sandbox-yara]: compiled_cache excluded from YaraRuleRead schema — internal binary blob never sent to API clients
+- [Phase 27-sandbox-yara]: Deferred yara import inside scan functions so modules are importable without libyara binary
+- [Phase 27-sandbox-yara]: Sandbox provider shape: caller-provided httpx.AsyncClient, PROVIDER constant, async submit/poll — matches enrichment provider shape
+- [Phase 27-sandbox-yara]: STIX pattern scanning filtered by stix_pattern_scan text in rule content — no separate metadata column needed
 
 ### Roadmap Evolution
 
@@ -636,7 +640,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-04T06:37:25.881Z
-Stopped at: Completed 27-sandbox-yara-02-PLAN.md
+Last session: 2026-05-04T06:42:27.618Z
+Stopped at: Completed 27-03-PLAN.md (27-sandbox-yara Plan 03: provider modules + sample fetch + YARA engine)
 Resume file: None
 Next: 19-03-PLAN.md (Wave 3: Redis FLUSHDB + per-test TRUNCATE in integration conftest; @pytest.mark.cross_file_pollution decoration on 21 known-failing tests)
