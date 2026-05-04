@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
-status: verifying
-stopped_at: Completed 29-sigma-rule-engine/29-02-PLAN.md
-last_updated: "2026-05-04T10:27:26.908Z"
+status: in_progress
+stopped_at: Completed 29-sigma-rule-engine/29-04-PLAN.md
+last_updated: "2026-05-04T11:00:00.000Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 7
   total_plans: 51
-  completed_plans: 47
+  completed_plans: 49
 ---
 
 # Project State
@@ -20,13 +20,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04 after Phase 27)
 
 **Core value:** A single operator can see the current cyber threat landscape — world events, actor activity, CVEs, feed signal — in one place, filter and tag it, and drill from a geo view into the attack graph behind any event.
-**Current focus:** v4.0 Phase 28 — Passive DNS, WHOIS & Multi-hop Graph (in progress, plan 03/TBD complete)
+**Current focus:** v4.0 Phase 29 — Sigma Rule Engine (in progress, plan 04/TBD complete)
 
 ## Current Position
 
 Milestone: v4.0 Threat Intelligence Platform Maturity
-Phase: 28 — Passive DNS, WHOIS & Multi-hop Graph (In progress)
-Plan: 03 complete — passive DNS providers (SecurityTrails, Mnemonic, RiskIQ) + WHOIS service
+Phase: 29 — Sigma Rule Engine (In progress)
+Plan: 04 complete — evaluate_sigma_rules hook wired into _persist_event (SIGMA-02 active)
 Status: Phase 27 (Sandbox + YARA) complete — 7/7 plans shipped, 8/8 requirements verified (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
 Last activity: 2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven.
 
@@ -242,6 +242,7 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 28 P07 | 18 | 2 tasks | 8 files |
 | Phase 29-sigma-rule-engine P01 | 4 | 3 tasks | 5 files |
 | Phase 29-sigma-rule-engine P02 | 2min | 2 tasks | 3 files |
+| Phase 29 P03 | 4m | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -621,6 +622,8 @@ Recent decisions affecting current work:
 - [Phase 29-sigma-rule-engine]: Wave 0 stubs use @pytest.mark.skip not @pytest.mark.xfail per plan specification — clean SKIPPED output as Nyquist baseline
 - [Phase 29-sigma-rule-engine]: JSONB for SigmaRule.compiled_cache (not LargeBinary) — Sigma compilation produces a Python dict, not binary; JSONB enables introspection and partial updates
 - [Phase 29-sigma-rule-engine]: No SigmaMatch join table — Sigma scanner writes directly to attack_technique_tags on matched events, keeping schema flatter than YARA approach
+- [Phase 29]: pySigma 0.10.10 has pyparsing 3.x incompatibility in sigma/exceptions.py — patched .venv to replace 'from pyparsing import List' with 'from typing import List'; must re-apply after uv sync on fresh checkout
+- [Phase 29]: evaluate_sigma_rules dispatches rescore_project.send() once per call not once per matched rule to avoid N scoring jobs for N matching rules on a single event
 
 ### Roadmap Evolution
 
@@ -676,7 +679,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-04T10:27:26.903Z
-Stopped at: Completed 29-sigma-rule-engine/29-02-PLAN.md
+Last session: 2026-05-04T10:33:30.769Z
+Stopped at: Completed 29-sigma-rule-engine/29-03-PLAN.md
 Resume file: None
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)

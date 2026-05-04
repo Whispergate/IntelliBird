@@ -316,10 +316,10 @@ Plans:
   3. Admin disables a rule; subsequent events do not receive its tags within one ingest cycle
   4. Field-mapping layer translates Sigma fields (`title`, `description`, `raw_stix.objects[*].pattern`) to IntelliBird event shape; mapping documented in `docs/ops/sigma-mapping.md`
 **Plans**: 6 plans
-- [ ] 29-01-PLAN.md — Wave 0 test scaffolding + pySigma dep
-- [ ] 29-02-PLAN.md — Migration 030, SigmaRule ORM model, Pydantic schemas
-- [ ] 29-03-PLAN.md — sigma_engine.py (parser + evaluator + tag writer) + sigma-mapping.md
-- [ ] 29-04-PLAN.md — Ingest hook: wire evaluate_sigma_rules into _persist_event
+- [x] 29-01-PLAN.md — Wave 0 test scaffolding + pySigma dep
+- [x] 29-02-PLAN.md — Migration 030, SigmaRule ORM model, Pydantic schemas
+- [x] 29-03-PLAN.md — sigma_engine.py (parser + evaluator + tag writer) + sigma-mapping.md
+- [x] 29-04-PLAN.md — Ingest hook: wire evaluate_sigma_rules into _persist_event
 - [ ] 29-05-PLAN.md — Admin CRUD router (POST/GET/PATCH/DELETE/test) + main.py registration
 - [ ] 29-06-PLAN.md — Frontend /admin/sigma-rules page + api-client.ts helpers
 
@@ -462,7 +462,7 @@ Plans:
 | 26. TAXII Outbound Server | 5/5 | Complete   | 2026-05-03 | - |
 | 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete    | 2026-05-04 | - |
-| 29. Sigma Rule Engine | 2/6 | In Progress|  | - |
+| 29. Sigma Rule Engine | 4/6 | In Progress|  | - |
 | 30. Notification Channels | v4.0 | 0/0 | Not started | - |
 | 31. Case Management | v4.0 | 0/0 | Not started | - |
 | 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
