@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: verifying
-stopped_at: Completed 30-notification-channels-30-07-PLAN.md
-last_updated: "2026-05-04T12:05:10.152Z"
+stopped_at: Completed 31-01-PLAN.md
+last_updated: "2026-05-04T13:27:14.729Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 9
-  total_plans: 58
-  completed_plans: 58
+  total_plans: 66
+  completed_plans: 60
 ---
 
 # Project State
@@ -252,6 +252,8 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 30 P05 | 15 | 2 tasks | 3 files |
 | Phase 30-notification-channels P06 | 3 | 1 tasks | 1 files |
 | Phase 30-notification-channels P07 | 18 | 2 tasks | 4 files |
+| Phase 30-notification-channels P08 | 6 | 1 tasks | 1 files |
+| Phase 31-case-management P01 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -649,6 +651,8 @@ Recent decisions affecting current work:
 - [Phase 30]: PD resolve is best-effort fire-and-forget (timeout=10s, failure logged not raised) — auto-resolve on next PD trigger+dedup is the safety net
 - [Phase 30-notification-channels]: Port 2586 for ntfy to avoid clash with common ports; no network isolation needed (clearnet push, unlike tor darkweb_net); ntfy-cache + ntfy-etc volumes for persistence
 - [Phase 30-07]: Email/PagerDuty/Opsgenie/ntfy credentials serialised as JSON in bearer token field for auth_enc shaping; api-client.generated.ts destination_type hand-widened to 8 types
+- [Phase 30-notification-channels]: Use as-unknown-as-WebhookAuth cast for opaque credential dicts in webhookSchema.ts — avoids generated api-client.ts modification while correctly encoding flat dicts for backend dispatcher
+- [Phase 31-case-management]: Wave-0 TDD scaffold: pytest.skip stubs define case API contract before router ships; test_case_isolation in leakage file for cross-project isolation coverage (CASE-05)
 
 ### Roadmap Evolution
 
@@ -704,7 +708,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-04T12:05:10.146Z
-Stopped at: Completed 30-notification-channels-30-07-PLAN.md
+Last session: 2026-05-04T13:27:14.725Z
+Stopped at: Completed 31-01-PLAN.md
 Resume file: None
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)

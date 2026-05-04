@@ -79,19 +79,19 @@
 
 ### Tier 2 — Notification channels (email + PagerDuty + ntfy)
 
-- [ ] **NOTIF-01**: `webhook_destination_type` ENUM extended with `email`, `pagerduty`, `opsgenie`, `ntfy`.
-- [ ] **NOTIF-02**: Admin can add email destination (SMTP via aiosmtplib; SMTP_HOST/USER encrypted in `app_settings`); reuse webhook batching, retry, burst-suppression.
-- [ ] **NOTIF-03**: Admin can add PagerDuty Events API v2 destination; map S-tier event to incident create / dedup / auto-resolve.
-- [ ] **NOTIF-04**: Admin can add ntfy.sh destination publishing to topic (self-hosted ntfy compose service profile `notify`).
-- [ ] **NOTIF-05**: Admin can add Opsgenie destination via Alert API.
+- [x] **NOTIF-01**: `webhook_destination_type` ENUM extended with `email`, `pagerduty`, `opsgenie`, `ntfy`.
+- [x] **NOTIF-02**: Admin can add email destination (SMTP via aiosmtplib; SMTP_HOST/USER encrypted in `app_settings`); reuse webhook batching, retry, burst-suppression.
+- [x] **NOTIF-03**: Admin can add PagerDuty Events API v2 destination; map S-tier event to incident create / dedup / auto-resolve.
+- [x] **NOTIF-04**: Admin can add ntfy.sh destination publishing to topic (self-hosted ntfy compose service profile `notify`).
+- [x] **NOTIF-05**: Admin can add Opsgenie destination via Alert API.
 
 ### Tier 2 — Lightweight case management
 
-- [ ] **CASE-01**: System stores `cases` table (id, project_id, title, status ENUM(open, in_progress, on_hold, resolved, closed), severity, assignee_user_sub, opened_at, closed_at, summary_md).
-- [ ] **CASE-02**: M2M `case_events` and `case_iocs` link tables enable analyst to attach evidence to a case.
-- [ ] **CASE-03**: Per-case activity log records notes + status transitions (also satisfies audit trail for case workflow).
+- [x] **CASE-01**: System stores `cases` table (id, project_id, title, status ENUM(open, in_progress, on_hold, resolved, closed), severity, assignee_user_sub, opened_at, closed_at, summary_md).
+- [x] **CASE-02**: M2M `case_events` and `case_iocs` link tables enable analyst to attach evidence to a case.
+- [x] **CASE-03**: Per-case activity log records notes + status transitions (also satisfies audit trail for case workflow).
 - [ ] **CASE-04**: User can browse `/projects/{id}/cases` route in both kanban and table view; filter by status/severity/assignee.
-- [ ] **CASE-05**: AI "summarise case" actor produces narrative roll-up of all linked events (reuses existing digest pattern).
+- [x] **CASE-05**: AI "summarise case" actor produces narrative roll-up of all linked events (reuses existing digest pattern).
 
 ### Tier 3 — Audit log
 
@@ -210,16 +210,16 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | SIGMA-02 | Phase 29 | Complete |
 | SIGMA-03 | Phase 29 | Complete |
 | SIGMA-04 | Phase 29 | Complete |
-| NOTIF-01 | Phase 30 | Pending |
-| NOTIF-02 | Phase 30 | Pending |
-| NOTIF-03 | Phase 30 | Pending |
-| NOTIF-04 | Phase 30 | Pending |
-| NOTIF-05 | Phase 30 | Pending |
-| CASE-01 | Phase 31 | Pending |
-| CASE-02 | Phase 31 | Pending |
-| CASE-03 | Phase 31 | Pending |
+| NOTIF-01 | Phase 30 | Complete |
+| NOTIF-02 | Phase 30 | Complete |
+| NOTIF-03 | Phase 30 | Complete |
+| NOTIF-04 | Phase 30 | Complete |
+| NOTIF-05 | Phase 30 | Complete |
+| CASE-01 | Phase 31 | Complete |
+| CASE-02 | Phase 31 | Complete |
+| CASE-03 | Phase 31 | Complete |
 | CASE-04 | Phase 31 | Pending |
-| CASE-05 | Phase 31 | Pending |
+| CASE-05 | Phase 31 | Complete |
 | AUDIT-01 | Phase 25 | Complete (25-02) |
 | AUDIT-02 | Phase 25 | Complete (25-02) |
 | AUDIT-03 | Phase 25 | Complete |

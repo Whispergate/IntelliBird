@@ -371,7 +371,14 @@ Plans:
   3. Status transitions (open → in_progress → resolved → closed) appear in case activity log with user + timestamp; activity log surfaces audit_log rows filtered to this case
   4. Analyst clicks "AI Summarise"; `ai_summarise_case` actor produces narrative roll-up of all linked events; result cached on the case row
   5. Cross-project leakage tests confirm Observer in Project A cannot read Project B's cases
-**Plans**: TBD
+**Plans**: 7 plans
+- [ ] 31-01-PLAN.md — Wave 0 test scaffold (test_cases_crud.py stubs + leakage test stub)
+- [ ] 31-02-PLAN.md — Migration 032_cases + ORM models + Pydantic schemas
+- [ ] 31-03-PLAN.md — Cases router (CRUD + evidence attach + AI summarise trigger) + main.py registration
+- [ ] 31-04-PLAN.md — ai_summarise_case actor in ai.py (poll-based, writes cases.summary_md)
+- [ ] 31-05-PLAN.md — Implement test bodies (6 CRUD tests green + test_case_isolation green)
+- [ ] 31-06-PLAN.md — Frontend kanban + table view (@dnd-kit/core + 5 new files)
+- [ ] 31-07-PLAN.md — Case detail page + api-client helpers + ProjectTabs Cases tab
 
 ### Phase 32: CertStream + MISP
 **Goal**: Brand monitoring upgrades from 15-min crt.sh polling to sub-second CertStream WebSocket; MISP integration adds bidirectional sync (pull attributes as IOCs, push validated AI suggestions as proposals).
@@ -471,8 +478,8 @@ Plans:
 | 27. Sandbox + YARA | 7/7 | Complete    | 2026-05-04 | - |
 | 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete    | 2026-05-04 | - |
 | 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
-| 30. Notification Channels | 7/7 | Complete   | 2026-05-04 | - |
-| 31. Case Management | v4.0 | 0/0 | Not started | - |
+| 30. Notification Channels | 8/8 | Complete    | 2026-05-04 | - |
+| 31. Case Management | 1/7 | In Progress|  | - |
 | 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
 | 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |
 | 34. Browser Extension | v4.0 | 0/0 | Not started | - |
