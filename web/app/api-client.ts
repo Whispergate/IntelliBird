@@ -1329,3 +1329,270 @@ export async function upsertSandboxConfig(
   });
   if (!res.ok) throw new Error(await res.text());
 }
+
+// === Phase 29: Sigma Rule Engine ===
+
+export interface SigmaRuleRead {
+  id: string;
+  name: string;
+  content: string;
+  level: string | null;
+  tags: string[];
+  enabled: boolean;
+  project_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SigmaRuleCreate {
+  name: string;
+  content: string;
+  level?: string | null;
+  tags?: string[];
+  enabled: boolean;
+  project_id?: string | null;
+}
+
+export interface SigmaRuleTestResult {
+  match_count: number;
+  matched_event_ids: string[];
+}
+
+export async function listSigmaRules(params?: {
+  project_id?: string;
+  enabled?: boolean;
+}): Promise<SigmaRuleRead[]> {
+  const qs = new URLSearchParams();
+  if (params?.project_id) qs.set("project_id", params.project_id);
+  if (params?.enabled !== undefined) qs.set("enabled", String(params.enabled));
+  const res = await _apiFetch(`/api/admin/sigma-rules?${qs}`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function createSigmaRule(body: SigmaRuleCreate): Promise<SigmaRuleRead> {
+  const res = await _apiFetch("/api/admin/sigma-rules", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function patchSigmaRule(
+  ruleId: string,
+  patch: { enabled?: boolean; name?: string },
+): Promise<SigmaRuleRead> {
+  const res = await _apiFetch(`/api/admin/sigma-rules/${ruleId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteSigmaRule(ruleId: string): Promise<void> {
+  const res = await _apiFetch(`/api/admin/sigma-rules/${ruleId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+export async function testSigmaRule(body: {
+  rule_yaml: string;
+  project_id: string | null;
+}): Promise<SigmaRuleTestResult> {
+  const res = await _apiFetch("/api/admin/sigma-rules/test", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Cases (Phase 31 — CASE-01..05)
+// ---------------------------------------------------------------------------
+
+export interface CaseRow {
+  id: string;
+  project_id: string;
+  title: string;
+  status: "open" | "in_progress" | "on_hold" | "resolved" | "closed";
+  severity: "low" | "medium" | "high" | "critical" | null;
+  assignee_user_sub: string | null;
+  description: string | null;
+  summary_md: string | null;
+  opened_at: string;
+  closed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CaseListResponse {
+  items: CaseRow[];
+  total: number;
+}
+
+export interface CaseEvidenceEvent {
+  case_id: string;
+  event_id: string;
+  attached_at: string;
+  attached_by: string | null;
+}
+
+export interface CaseEvidenceIOC {
+  case_id: string;
+  ioc_id: string;
+  attached_at: string;
+  attached_by: string | null;
+}
+
+export async function listCases(
+  projectId: string,
+  params?: { status?: string; severity?: string; assignee_user_sub?: string; limit?: number; offset?: number }
+): Promise<CaseListResponse> {
+  const sp = new URLSearchParams();
+  if (params?.status) sp.set("status", params.status);
+  if (params?.severity) sp.set("severity", params.severity);
+  if (params?.assignee_user_sub) sp.set("assignee_user_sub", params.assignee_user_sub);
+  if (params?.limit) sp.set("limit", String(params.limit));
+  if (params?.offset) sp.set("offset", String(params.offset));
+  const qs = sp.toString() ? `?${sp.toString()}` : "";
+  const res = await fetch(`/api/projects/${projectId}/cases${qs}`);
+  if (!res.ok) throw new Error(`listCases failed: ${res.status}`);
+  return res.json();
+}
+
+export async function createCase(
+  projectId: string,
+  body: { title: string; severity?: string | null; description?: string | null; assignee_user_sub?: string | null }
+): Promise<CaseRow> {
+  const res = await fetch(`/api/projects/${projectId}/cases`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`createCase failed: ${res.status}`);
+  return res.json();
+}
+
+export async function patchCase(
+  projectId: string,
+  caseId: string,
+  body: Partial<{ title: string; status: string; severity: string | null; assignee_user_sub: string | null; description: string | null }>
+): Promise<CaseRow> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`patchCase failed: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteCase(projectId: string, caseId: string): Promise<void> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error(`deleteCase failed: ${res.status}`);
+}
+
+export async function attachEvents(
+  projectId: string, caseId: string, eventIds: string[]
+): Promise<{ attached: number }> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/events`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event_ids: eventIds }),
+  });
+  if (!res.ok) throw new Error(`attachEvents failed: ${res.status}`);
+  return res.json();
+}
+
+export async function detachEvent(
+  projectId: string, caseId: string, eventId: string
+): Promise<void> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/events/${eventId}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error(`detachEvent failed: ${res.status}`);
+}
+
+export async function getCaseEvents(
+  projectId: string, caseId: string, params?: { limit?: number; offset?: number }
+): Promise<CaseEvidenceEvent[]> {
+  const sp = new URLSearchParams();
+  if (params?.limit) sp.set("limit", String(params.limit));
+  if (params?.offset) sp.set("offset", String(params.offset));
+  const qs = sp.toString() ? `?${sp.toString()}` : "";
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/events${qs}`);
+  if (!res.ok) throw new Error(`getCaseEvents failed: ${res.status}`);
+  return res.json();
+}
+
+export async function attachIOCs(
+  projectId: string, caseId: string, iocIds: string[]
+): Promise<{ attached: number }> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/iocs`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ioc_ids: iocIds }),
+  });
+  if (!res.ok) throw new Error(`attachIOCs failed: ${res.status}`);
+  return res.json();
+}
+
+export async function detachIOC(
+  projectId: string, caseId: string, iocId: string
+): Promise<void> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/iocs/${iocId}`, { method: "DELETE" });
+  if (!res.ok && res.status !== 204) throw new Error(`detachIOC failed: ${res.status}`);
+}
+
+export async function getCaseIOCs(
+  projectId: string, caseId: string, params?: { limit?: number; offset?: number }
+): Promise<CaseEvidenceIOC[]> {
+  const sp = new URLSearchParams();
+  if (params?.limit) sp.set("limit", String(params.limit));
+  if (params?.offset) sp.set("offset", String(params.offset));
+  const qs = sp.toString() ? `?${sp.toString()}` : "";
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/iocs${qs}`);
+  if (!res.ok) throw new Error(`getCaseIOCs failed: ${res.status}`);
+  return res.json();
+}
+
+export interface CaseActivityEntry {
+  id: string;
+  action: string;
+  user_sub: string | null;
+  time: string;
+  after_jsonb: Record<string, unknown> | null;
+}
+
+export async function getCase(projectId: string, caseId: string): Promise<CaseRow> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}`);
+  if (!res.ok) throw new Error(`getCase failed: ${res.status}`);
+  return res.json();
+}
+
+export async function getCaseActivity(
+  projectId: string, caseId: string
+): Promise<CaseActivityEntry[]> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/activity`);
+  if (!res.ok) throw new Error(`getCaseActivity failed: ${res.status}`);
+  return res.json();
+}
+
+export async function summariseCase(
+  projectId: string, caseId: string
+): Promise<{ status: string }> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/summarise`, { method: "POST" });
+  if (!res.ok) throw new Error(`summariseCase failed: ${res.status}`);
+  return res.json();
+}
+
+export async function regenerateCaseSummary(
+  projectId: string, caseId: string
+): Promise<{ status: string }> {
+  const res = await fetch(`/api/projects/${projectId}/cases/${caseId}/summarise/regenerate`, { method: "POST" });
+  if (!res.ok) throw new Error(`regenerateCaseSummary failed: ${res.status}`);
+  return res.json();
+}

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectTabs — 20-tab sub-navigation strip for /projects/[id]/*.
+ * ProjectTabs — 21-tab sub-navigation strip for /projects/[id]/*.
  *
  * Locked order (per 10-UI-SPEC §/projects/[id] detail §Tabs + 11-UI-SPEC §Surface 1):
  *   1. Overview
@@ -24,6 +24,7 @@
  *  18. AI Review              → navigates to /projects/[id]/ai-review (nested route)
  *  19. Digest                 → navigates to /projects/[id]/digest (nested route)
  *  20. TIBER                  → navigates to /projects/[id]/tiber (nested route)
+ *  21. Cases                  → navigates to /projects/[id]/cases (nested route)
  *
  * Navigation rules:
  *   - Tabs 1..11 use ?tab= query param (router.replace so history doesn't
@@ -93,6 +94,7 @@ const TABS: TabDef[] = [
   { key: "ai-review", label: "AI Review", route: "ai-review" },
   { key: "digest", label: "Digest", route: "digest" },
   { key: "tiber", label: "TIBER", route: "tiber" },
+  { key: "cases", label: "Cases", route: "cases" },
 ];
 
 export function ProjectTabs({
@@ -119,6 +121,7 @@ export function ProjectTabs({
     if (pathname.includes("/scoring")) return "scoring";
     if (pathname.includes("/ai-review")) return "ai-review";
     if (pathname.includes("/tiber")) return "tiber";
+    if (pathname.includes("/cases")) return "cases";
     if (pathname.includes("/digest")) return "digest";
     return sp.get("tab") ?? "overview";
   })();
