@@ -24,14 +24,18 @@ Burst suppression (Phase 15 / SCR-05 — Roadmap pitfall H-1):
 """
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import logging
 import time
 import uuid
 from datetime import datetime, timedelta, timezone
+from email.mime.text import MIMEText
 from typing import Any
+from urllib.parse import urlparse
 
+import aiosmtplib
 import httpx
 import redis as redis_lib
 import structlog
@@ -410,6 +414,72 @@ def _tag_burst_cluster(session: SyncSession, event_id: uuid.UUID) -> None:
     )
 
 
+# ---- email helpers ----------------------------------------------------------
+def _build_email_body(events: list[dict]) -> str:
+    """Build a plain-text digest body from a list of event dicts.
+
+    One line per event: "{tier} | {title} | {observed_at}".
+    Prefixed with an IntelliBird header.
+    """
+    header = f"IntelliBird Alert Digest — {len(events)} event(s)\n{'=' * 50}\n"
+    lines = [
+        f"{ev.get('tier', '?')} | {ev.get('title', '(no title)')} | {ev.get('observed_at', '')}"
+        for ev in events
+    ]
+    return header + "\n".join(lines)
+
+
+def _dispatch_email(
+    webhook: Webhook,
+    events: list[dict],
+) -> tuple[bool, str | None]:
+    """Send an email digest via SMTP using aiosmtplib.
+
+    URL format: smtp://host:port — port defaults to 587 if absent.
+    auth_enc must contain: username, password, from_addr, to_addr, use_starttls (bool).
+
+    use_starttls=True  → STARTTLS (port 587): start_tls=True,  use_tls=False
+    use_starttls=False → implicit TLS (port 465): start_tls=False, use_tls=True
+
+    Returns (True, None) on success; (False, str(e)[:200]) on any exception.
+    """
+    try:
+        parsed = urlparse(webhook.url)
+        host = parsed.hostname or "localhost"
+        port = parsed.port or 587
+
+        creds = decrypt_credentials(settings.SECRET_KEY, webhook.auth_enc)
+        username = creds.get("username")
+        password = creds.get("password")
+        from_addr = creds.get("from_addr", username or "noreply@localhost")
+        to_addr = creds.get("to_addr", "")
+        use_starttls: bool = bool(creds.get("use_starttls", True))
+
+        body = _build_email_body(events)
+        subject = f"[IntelliBird] {len(events)} alert(s) — {webhook.name}"
+        msg = MIMEText(body, "plain", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = from_addr
+        msg["To"] = to_addr
+
+        async def _send() -> None:
+            await aiosmtplib.send(
+                msg,
+                hostname=host,
+                port=port,
+                username=username,
+                password=password,
+                use_tls=not use_starttls,   # True = implicit TLS (port 465)
+                start_tls=use_starttls,       # True = STARTTLS (port 587)
+            )
+
+        asyncio.run(_send())
+        return True, None
+
+    except Exception as e:  # noqa: BLE001
+        return False, str(e)[:200]
+
+
 # ---- drain + dispatch -------------------------------------------------------
 def _drain_and_dispatch(
     webhook: Webhook,
@@ -437,6 +507,32 @@ def _drain_and_dispatch(
         json.loads(x.decode() if isinstance(x, bytes) else x) for x in raw_items
     ]
     max_observed = _max_observed_at(events)
+
+    # Email branch: SMTP dispatch — must return early before HTTP payload build.
+    # Burst-suppression and auto-disable operate upstream; both apply equally to
+    # email because _record_delivery_result + consecutive_failures are called here.
+    if webhook.destination_type == "email":
+        ok, err = _dispatch_email(webhook, events)
+        _record_delivery_result(session, webhook, ok, err)
+        if ok:
+            _advance_cursor(session, webhook, max_observed)
+            r.delete(batch_key, ts_key)
+            log.info(
+                "webhook_delivery_ok",
+                webhook_id=str(webhook.id),
+                destination_type=webhook.destination_type,
+                event_count=len(events),
+            )
+        else:
+            log.warning(
+                "webhook_delivery_failed",
+                webhook_id=str(webhook.id),
+                destination_type=webhook.destination_type,
+                event_count=len(events),
+                error=err,
+            )
+        session.commit()
+        return
 
     payload = build_payload_for_type(
         webhook.destination_type,
