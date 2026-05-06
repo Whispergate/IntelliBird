@@ -114,8 +114,8 @@
 
 ### Tier 3 — Disinformation / CIB detection
 
-- [ ] **DISINFO-01**: System adds `social_listening` source type ingesting from Mastodon firehose (free) + 4chan/Reddit (free); paid Twitter/X opt-in.
-- [ ] **DISINFO-02**: Heuristic detector flags Coordinated Inauthentic Behaviour: account-age clustering, post-time synchrony |Δt|<5min across N accounts, MinHash template-text similarity.
+- [x] **DISINFO-01**: System adds `social_listening` source type ingesting from Mastodon firehose (free) + 4chan/Reddit (free); paid Twitter/X opt-in.
+- [x] **DISINFO-02**: Heuristic detector flags Coordinated Inauthentic Behaviour: account-age clustering, post-time synchrony |Δt|<5min across N accounts, MinHash template-text similarity.
 - [ ] **DISINFO-03**: AI suggestion prompt extended to classify event as `narrative_op` and extract claim/amplifier/audience triple.
 - [ ] **DISINFO-04**: Dashboard adds "Influence Operations" widget showing recent CIB clusters + narrative themes.
 
@@ -133,9 +133,9 @@
 
 ### Tier 3 — Browser extension for analyst pivoting
 
-- [ ] **EXT-01**: System ships a Manifest V3 browser extension (Chrome/Firefox/Edge) that adds right-click "Lookup in IntelliBird" on any selected text.
-- [ ] **EXT-02**: Selected text routes to `/iocs?value={text}` opening pre-filtered IOC search in new tab with operator's existing session cookie.
-- [ ] **EXT-03**: Extension distributed as zip in `/docs/ops/browser-extension/`; not Chrome Store target — operator-loaded only.
+- [x] **EXT-01**: System ships a Manifest V3 browser extension (Chrome/Firefox/Edge) that adds right-click "Lookup in IntelliBird" on any selected text.
+- [x] **EXT-02**: Selected text routes to `/iocs?value={text}` opening pre-filtered IOC search in new tab with operator's existing session cookie.
+- [x] **EXT-03**: Extension distributed as zip in `/docs/ops/browser-extension/`; not Chrome Store target — operator-loaded only.
 
 ## Future Requirements (deferred)
 
@@ -230,8 +230,8 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | MISP-02 | Phase 32 | Complete |
 | MISP-03 | Phase 32 | Complete |
 | MISP-04 | Phase 32 | Complete |
-| DISINFO-01 | Phase 33 | Pending |
-| DISINFO-02 | Phase 33 | Pending |
+| DISINFO-01 | Phase 33 | Complete |
+| DISINFO-02 | Phase 33 | Complete |
 | DISINFO-03 | Phase 33 | Pending |
 | DISINFO-04 | Phase 33 | Pending |
 | TIMELINE-01 | Phase 33 | Pending |
@@ -240,9 +240,9 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | YARA-01 | Phase 27 | Complete |
 | YARA-02 | Phase 27 | Complete |
 | YARA-03 | Phase 27 | Complete |
-| EXT-01 | Phase 34 | Pending |
-| EXT-02 | Phase 34 | Pending |
-| EXT-03 | Phase 34 | Pending |
+| EXT-01 | Phase 34 | Complete |
+| EXT-02 | Phase 34 | Complete |
+| EXT-03 | Phase 34 | Complete |
 
 **Coverage:**
 - v4.0 requirements: 80 total (across 17 features / 3 tiers)

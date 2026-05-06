@@ -503,7 +503,7 @@ Plans:
 | 31. Case Management | 7/7 | Complete   | 2026-05-04 | - |
 | 32. CertStream + MISP | 6/6 | Complete | 2026-05-06 | - |
 | 33. Disinformation + Pattern-of-Life Timeline | 3/7 | In Progress|  | - |
-| 34. Browser Extension | v4.0 | 1/4 | In Progress | - |
+| 34. Browser Extension | 3/4 | In Progress|  | - |
 
 ---
 *Last updated: 2026-05-04 — Phase 30 planned (7 plans, 6 waves)*
