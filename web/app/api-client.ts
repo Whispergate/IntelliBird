@@ -1596,3 +1596,100 @@ export async function regenerateCaseSummary(
   if (!res.ok) throw new Error(`regenerateCaseSummary failed: ${res.status}`);
   return res.json();
 }
+
+// ── MISP types ─────────────────────────────────────────────────────────────
+// Phase 32 / MISP-01: MISP config CRUD + test-connection helpers.
+// Types inlined pending api-client.generated.ts regen.
+
+export interface MispConfigRead {
+  id: string;
+  project_id: string;
+  url: string;
+  pull_tags: string[];
+  push_types: string[];
+  enabled: boolean;
+  ssl_verify: boolean;
+  api_key_masked: string;
+}
+
+export interface MispConfigCreate {
+  url: string;
+  api_key: string;
+  pull_tags?: string[];
+  push_types?: string[];
+  enabled?: boolean;
+  ssl_verify?: boolean;
+}
+
+export interface MispConfigUpdate {
+  url?: string;
+  api_key?: string;
+  pull_tags?: string[];
+  push_types?: string[];
+  enabled?: boolean;
+  ssl_verify?: boolean;
+}
+
+export interface MispTestConnectionRequest {
+  url: string;
+  api_key: string;
+  ssl_verify?: boolean;
+}
+
+export interface MispTestConnectionResponse {
+  ok: boolean;
+  version?: string;
+  error?: string;
+}
+
+// ── MISP helpers ──────────────────────────────────────────────────────────────
+
+export async function getMispConfig(projectId: string): Promise<MispConfigRead> {
+  const res = await fetch(`/api/projects/${projectId}/misp`);
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function upsertMispConfig(
+  projectId: string,
+  body: MispConfigCreate,
+): Promise<MispConfigRead> {
+  const res = await fetch(`/api/projects/${projectId}/misp`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function patchMispConfig(
+  projectId: string,
+  body: MispConfigUpdate,
+): Promise<MispConfigRead> {
+  const res = await fetch(`/api/projects/${projectId}/misp`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteMispConfig(projectId: string): Promise<void> {
+  const res = await fetch(`/api/projects/${projectId}/misp`, { method: "DELETE" });
+  if (!res.ok) throw new Error(await res.text());
+}
+
+export async function testMispConnection(
+  projectId: string,
+  body: MispTestConnectionRequest,
+): Promise<MispTestConnectionResponse> {
+  const res = await fetch(`/api/projects/${projectId}/misp/test-connection`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
