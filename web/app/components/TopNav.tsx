@@ -174,6 +174,40 @@ export function TopNav() {
         Events
       </Link>
 
+      {/* IOCs nav link — global cross-project IOC search (Phase 34) */}
+      <Link
+        href="/iocs"
+        className={`${linkBase} ${pathname?.startsWith("/iocs") ? linkActiveClass : linkInactive}`}
+        style={
+          pathname?.startsWith("/iocs")
+            ? {
+                color: "var(--brand-primary)",
+                borderColor: "var(--brand-primary)",
+              }
+            : { color: "var(--brand-fog)" }
+        }
+        aria-current={pathname?.startsWith("/iocs") ? "page" : undefined}
+      >
+        IOCs
+      </Link>
+
+      {/* Actors nav link */}
+      <Link
+        href="/actors"
+        className={`${linkBase} ${pathname?.startsWith("/actors") ? linkActiveClass : linkInactive}`}
+        style={
+          pathname?.startsWith("/actors")
+            ? {
+                color: "var(--brand-primary)",
+                borderColor: "var(--brand-primary)",
+              }
+            : { color: "var(--brand-fog)" }
+        }
+        aria-current={pathname?.startsWith("/actors") ? "page" : undefined}
+      >
+        Actors
+      </Link>
+
       {/* Spacer*/}
       <div className="flex-1" />
 
@@ -219,6 +253,11 @@ export function TopNav() {
           {user?.role === "Admin" && (
             <DropdownMenuItem onClick={() => router.push("/admin/ai-jobs")}>
               AI Jobs
+            </DropdownMenuItem>
+          )}
+          {user?.role === "Admin" && (
+            <DropdownMenuItem onClick={() => router.push("/admin/ai-defaults")}>
+              Global AI Defaults
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>
