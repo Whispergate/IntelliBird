@@ -83,7 +83,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 180s
 
   worker:
     image: intellibird-api:m1
@@ -119,6 +119,66 @@ services:
         condition: service_healthy
       api:
         condition: service_healthy
+
+  # --- CertStream realtime CT log consumer (Phase 32 / CERT-01..03) ---
+  # Long-lived asyncio WebSocket consumer; NOT a Dramatiq actor.
+  # Connects to wss://certstream.calidog.io (or CERTSTREAM_URL env override for
+  # operators running a self-hosted CertStream instance). Pattern set is reloaded
+  # from DB every 30s — no restart required when brand_terms change.
+  # Only active when at least one project has certstream_enabled=True.
+  certstream-worker:
+    image: intellibird-api:m1
+    command: python -m app.workers.certstream_worker
+    env_file: .env
+    environment:
+      CERTSTREAM_URL: ${CERTSTREAM_URL:-wss://certstream.calidog.io}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # --- Tor SOCKS5 proxy (dark-web collection — opt-in via `docker compose --profile darkweb up`) ---
+  # Phase 24 / DARK-01: isolated on darkweb_net (internal: true).
+  # No clearnet egress from darkweb_net; tor daemon is the sole Tor egress point.
+  # Image default: osminogin/tor-simple — binds SOCKS5 to 0.0.0.0:9050 out of the box.
+  # Override: set TOR_IMAGE env var (e.g. torproject/tor requires custom torrc for SOCKS).
+  tor:
+    image: ${TOR_IMAGE:-osminogin/tor-simple:latest}
+    profiles: ["darkweb"]
+    networks:
+      - darkweb_net
+    restart: unless-stopped
+    # No host-port published — tor-worker reaches via compose DNS tor:9050
+
+  # --- Dark-web ingest worker (darkweb Dramatiq queue) ---
+  # Phase 24 / DARK-01..04: processes tor_html, paste, telegram actors.
+  # Attached to BOTH networks:
+  #   - default compose network → db:5432 + redis:6379 access (paste clearnet HTTP also exits here)
+  #   - darkweb_net → tor:9050 access for .onion routing
+  # internal:true on darkweb_net prevents clearnet from that interface;
+  # clearnet paste-site HTTP requests exit via the default network interface.
+  tor-worker:
+    image: intellibird-api:m1
+    profiles: ["darkweb"]
+    command: dramatiq app.workers.broker --queues darkweb --processes 1 --threads 2
+    env_file: .env
+    environment:
+      TOR_SOCKS5_HOST: tor:9050
+    networks:
+      - default
+      - darkweb_net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      tor:
+        condition: service_started
+    restart: unless-stopped
 
   web:
     build:
@@ -315,6 +375,23 @@ services:
     profiles: ["reports"]
     restart: unless-stopped
 
+  # ---------------------------------------------------------------------------
+  # ntfy notification service (optional — profile: notify)
+  # Run: docker compose --profile notify up
+  # Self-hosted push notification broker for NOTIF-04.
+  # Default port 2586; override with NTFY_PORT env var.
+  # ---------------------------------------------------------------------------
+  ntfy:
+    image: ${NTFY_IMAGE:-binwiederhier/ntfy:latest}
+    profiles: ["notify"]
+    command: serve
+    volumes:
+      - ntfy-cache:/var/cache/ntfy
+      - ntfy-etc:/etc/ntfy
+    ports:
+      - "${NTFY_PORT:-2586}:80"
+    restart: unless-stopped
+
   # On-demand GeoLite2 downloader. Pulls City/ASN/Country mmdb via jsDelivr
   # from wp-statistics/geolite2-* packages (no MaxMind account needed).
   # Run explicitly:  docker compose --profile geoip run --rm geoip-update
@@ -349,3 +426,13 @@ volumes:
   caddy_data:
   caddy_config:
   ollama_models:
+  ntfy-cache:
+  ntfy-etc:
+
+networks:
+  darkweb_net:
+    driver: bridge
+    internal: true
+    # internal: true — containers on darkweb_net cannot reach the public internet directly.
+    # The tor daemon is the sole clearnet egress point via the Tor network.
+    # tor-worker is also attached to the default compose network for db/redis + paste clearnet access.

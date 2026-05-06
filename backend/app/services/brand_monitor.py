@@ -384,6 +384,11 @@ _TERMS_SQL = text(
 )
 
 
+_CERTSTREAM_ENABLED_SQL = text(
+    "SELECT certstream_enabled FROM projects WHERE id = CAST(:project_id AS uuid)"
+)
+
+
 async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int]:
     """Run the full FTS + CT log + dnstwist scan for all active terms in a project.
 
@@ -392,12 +397,22 @@ async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int
     Phase 21 / BRAND-01: loads per-project stoplist ONCE at scan entry and threads
     the frozenset through to _fts_sql_for_term so FTS branch reflects project-level
     suppression terms alongside the global DEFAULT_STOPLIST + env extras.
+
+    Phase 32 / CERT-03: fetches certstream_enabled flag to skip CT log branch when
+    CertStream WebSocket worker is active for this project. dnstwist and FTS still
+    run regardless of certstream_enabled.
     """
     # Load per-project stoplist once — includes DEFAULT ∪ env ∪ project terms
     runtime_stoplist = await load_runtime_stoplist_for_project(session, project_id)
 
     terms_result = await session.execute(_TERMS_SQL, {"project_id": str(project_id)})
     terms = [dict(r) for r in terms_result.mappings().all()]
+
+    # Phase 32 / CERT-03: fetch certstream_enabled toggle (added by migration 033)
+    _cert_row = await session.execute(
+        _CERTSTREAM_ENABLED_SQL, {"project_id": str(project_id)}
+    )
+    certstream_enabled: bool = bool((_cert_row.scalar_one_or_none()) or False)
 
     stats = {"fts": 0, "ct_log": 0, "dnstwist": 0, "synthesised": 0}
 
@@ -420,24 +435,25 @@ async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int
             if synthed:
                 stats["synthesised"] += 1
 
-    # ---- CT log branch ----
-    for term in terms:
-        for match in await _ctlog_scan(term):
-            severity = score("ct_log", False)
-            stored = await _upsert_match(
-                session, project_id=project_id, term=term, match=match, severity=severity
-            )
-            synthed = await _maybe_synth(
-                session,
-                project_id=project_id,
-                term=term,
-                match=match,
-                stored=stored,
-                severity=severity,
-            )
-            stats["ct_log"] += 1
-            if synthed:
-                stats["synthesised"] += 1
+    # ---- CT log branch — skip when CertStream WebSocket is active for this project ----
+    if not certstream_enabled:
+        for term in terms:
+            for match in await _ctlog_scan(term):
+                severity = score("ct_log", False)
+                stored = await _upsert_match(
+                    session, project_id=project_id, term=term, match=match, severity=severity
+                )
+                synthed = await _maybe_synth(
+                    session,
+                    project_id=project_id,
+                    term=term,
+                    match=match,
+                    stored=stored,
+                    severity=severity,
+                )
+                stats["ct_log"] += 1
+                if synthed:
+                    stats["synthesised"] += 1
 
     # ---- dnstwist branch (batched 5, 5s sleep between batches) ----
     domain_terms = [t for t in terms if t["term_type"] == "domain"]
