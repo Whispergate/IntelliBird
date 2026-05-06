@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: verifying
-stopped_at: Completed 31-07-PLAN.md
-last_updated: "2026-05-04T19:51:18.682Z"
+stopped_at: "Completed 32-02-PLAN.md — migration 033, MispConfig ORM, pymisp dep"
+last_updated: "2026-05-06T08:45:36.000Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 10
-  total_plans: 66
-  completed_plans: 66
+  total_plans: 72
+  completed_plans: 68
 ---
 
 # Project State
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-05-04 after Phase 27)
 ## Current Position
 
 Milestone: v4.0 Threat Intelligence Platform Maturity
-Phase: 31 — Case Management (In progress)
-Plan: 03 complete — cases FastAPI router (14 endpoints: CRUD + bulk evidence attach/detach + activity log + AI summarise), registered in main.py (CASE-01, CASE-02, CASE-03, CASE-05)
+Phase: 32 — CertStream + MISP (In progress)
+Plan: 02 complete — migration 033 (ENUM extensions + certstream_enabled + misp_configs table), MispConfig ORM model, IOC_SOURCES extended with 'misp', brand_match_source extended with 'certstream', Project.certstream_enabled column, pymisp>=2.5,<3 dependency (MISP-01, CERT-02, CERT-03)
 Status: Phase 27 (Sandbox + YARA) complete — 7/7 plans shipped, 8/8 requirements verified (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
 Last activity: 2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven.
 
@@ -257,6 +257,8 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 31-case-management P04 | 8 | 1 tasks | 1 files |
 | Phase 31-case-management P05 | 75 | 2 tasks | 4 files |
 | Phase 31-case-management P06 | 3 | 3 tasks | 8 files |
+| Phase 32-certstream-misp P01 | 8 | 2 tasks | 6 files |
+| Phase 32-certstream-misp P02 | 2 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -265,6 +267,8 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
+- [Phase 32-02]: Migration 033 uses autocommit_block() for ALTER TYPE ENUM extensions — required because PostgreSQL cannot add ENUM values inside a transaction; follows 031/030/025 precedent
+- [Phase 32-02]: MispConfig uses JSONB for pull_tags and push_types arrays — flexible per CONTEXT.md locked decision; ssl_verify included for self-signed cert MISP instances
 - [Phase 31-02]: case_events.event_id is a soft FK (no ForeignKey constraint) — events is a TimescaleDB hypertable; FK constraints against hypertables are unsupported; matches campaign_events and ioc_event_links precedents
 - [Phase 31-02]: case_iocs.ioc_id is a hard FK (ForeignKey('iocs.id')) — iocs is a regular PostgreSQL table; FK enforces referential integrity and is safe
 - [Phase 31-02]: Case.status/severity ORM columns use Text type (not SA Enum type) to avoid SQLAlchemy conflicts with migration-managed DB ENUMs
@@ -664,6 +668,7 @@ Recent decisions affecting current work:
 - [Phase 31-case-management]: npm install --legacy-peer-deps required for @dnd-kit because it declares React 17-18 peer range but project uses React 19
 - [Phase 31-case-management]: KanbanBoard defines minimal CaseRow locally; CaseTableView/CasesClient use full CaseRow from api-client.ts (structural superset)
 - [Phase 31-case-management]: AttachToCaseModal generalized to handle eventIds and iocIds via isIOCMode flag — single component reused from both EventsClient and IOCsClient
+- [Phase 32-certstream-misp]: All production imports inside test bodies to prevent collection errors before modules exist
 
 ### Roadmap Evolution
 
@@ -719,7 +724,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-04T19:51:14.709Z
-Stopped at: Completed 31-07-PLAN.md
+Last session: 2026-05-06T08:46:30.803Z
+Stopped at: Completed 32-certstream-misp-01-PLAN.md
 Resume file: None
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)

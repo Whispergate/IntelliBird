@@ -401,7 +401,14 @@ Plans:
   4. Validated AI suggestion (e.g. confirmed CVE) can be pushed to MISP as a proposal via per-suggestion-type opt-in toggle
   5. MISP galaxy clusters mapped → `threat_actors` rows; duplicate detection by `mitre_group_id` prevents catalog pollution
 **OPSEC**: MISP push opt-in per suggestion type; CertStream uses public service (no key required) but operator may self-host.
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+- [ ] 32-01-PLAN.md — Wave 0 test scaffolding (6 unit stub files)
+- [ ] 32-02-PLAN.md — Migration 033, MispConfig ORM, pymisp dep, ENUM extensions
+- [ ] 32-03-PLAN.md — CertStream worker + brand_monitor guard + docker-compose service
+- [ ] 32-04-PLAN.md — MISP pull job + push actor + scheduler + ai.py hook
+- [ ] 32-05-PLAN.md — MISP CRUD router + Pydantic schemas + main.py registration
+- [ ] 32-06-PLAN.md — Frontend CT Log Mode selector + MISP settings section (checkpoint)
 
 ### Phase 33: Disinformation + Pattern-of-Life Timeline
 **Goal**: Counter-disinformation tradecraft via Mastodon/4chan/Reddit social listening with CIB heuristics, plus a temporal timeline view exposing actor operational rhythm.
@@ -480,7 +487,7 @@ Plans:
 | 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
 | 30. Notification Channels | 8/8 | Complete    | 2026-05-04 | - |
 | 31. Case Management | 7/7 | Complete   | 2026-05-04 | - |
-| 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
+| 32. CertStream + MISP | 2/6 | In Progress|  | - |
 | 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |
 | 34. Browser Extension | v4.0 | 0/0 | Not started | - |
 

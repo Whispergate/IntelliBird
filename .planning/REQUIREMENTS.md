@@ -90,7 +90,7 @@
 - [x] **CASE-01**: System stores `cases` table (id, project_id, title, status ENUM(open, in_progress, on_hold, resolved, closed), severity, assignee_user_sub, opened_at, closed_at, summary_md).
 - [x] **CASE-02**: M2M `case_events` and `case_iocs` link tables enable analyst to attach evidence to a case.
 - [x] **CASE-03**: Per-case activity log records notes + status transitions (also satisfies audit trail for case workflow).
-- [ ] **CASE-04**: User can browse `/projects/{id}/cases` route in both kanban and table view; filter by status/severity/assignee.
+- [x] **CASE-04**: User can browse `/projects/{id}/cases` route in both kanban and table view; filter by status/severity/assignee.
 - [x] **CASE-05**: AI "summarise case" actor produces narrative roll-up of all linked events (reuses existing digest pattern).
 
 ### Tier 3 — Audit log
@@ -101,16 +101,16 @@
 
 ### Tier 3 — CertStream realtime cert transparency
 
-- [ ] **CERT-01**: System runs `certstream_worker` connecting to `wss://certstream.calidog.io` (or self-hosted CertStream) filtering domains via dnstwist patterns already loaded per project.
-- [ ] **CERT-02**: CertStream hits persist as brand-monitor events with `tag_source='certstream'`.
-- [ ] **CERT-03**: Operator can disable 15-min `crt.sh` poll OR run alongside CertStream for redundancy.
+- [x] **CERT-01**: System runs `certstream_worker` connecting to `wss://certstream.calidog.io` (or self-hosted CertStream) filtering domains via dnstwist patterns already loaded per project.
+- [x] **CERT-02**: CertStream hits persist as brand-monitor events with `tag_source='certstream'`.
+- [x] **CERT-03**: Operator can disable 15-min `crt.sh` poll OR run alongside CertStream for redundancy.
 
 ### Tier 3 — MISP direct API (PyMISP)
 
-- [ ] **MISP-01**: Admin can configure MISP instance URL + API key per project; encrypted credentials.
-- [ ] **MISP-02**: System pulls MISP attributes by tag/galaxy via PyMISP and persists as IOCs (reuses §IOC-01 table).
-- [ ] **MISP-03**: System can push validated `ai_suggestions` to MISP as proposals via PyMISP push (operator opt-in per suggestion type).
-- [ ] **MISP-04**: System maps MISP galaxy clusters → IntelliBird `threat_actors` (reuses §ACTOR-01 table).
+- [x] **MISP-01**: Admin can configure MISP instance URL + API key per project; encrypted credentials.
+- [x] **MISP-02**: System pulls MISP attributes by tag/galaxy via PyMISP and persists as IOCs (reuses §IOC-01 table).
+- [x] **MISP-03**: System can push validated `ai_suggestions` to MISP as proposals via PyMISP push (operator opt-in per suggestion type).
+- [x] **MISP-04**: System maps MISP galaxy clusters → IntelliBird `threat_actors` (reuses §ACTOR-01 table).
 
 ### Tier 3 — Disinformation / CIB detection
 
@@ -218,18 +218,18 @@ Filled by `gsd-roadmapper` 2026-05-03. Every v4.0 requirement maps to exactly on
 | CASE-01 | Phase 31 | Complete |
 | CASE-02 | Phase 31 | Complete |
 | CASE-03 | Phase 31 | Complete |
-| CASE-04 | Phase 31 | Pending |
+| CASE-04 | Phase 31 | Complete |
 | CASE-05 | Phase 31 | Complete |
 | AUDIT-01 | Phase 25 | Complete (25-02) |
 | AUDIT-02 | Phase 25 | Complete (25-02) |
 | AUDIT-03 | Phase 25 | Complete |
-| CERT-01 | Phase 32 | Pending |
-| CERT-02 | Phase 32 | Pending |
-| CERT-03 | Phase 32 | Pending |
-| MISP-01 | Phase 32 | Pending |
-| MISP-02 | Phase 32 | Pending |
-| MISP-03 | Phase 32 | Pending |
-| MISP-04 | Phase 32 | Pending |
+| CERT-01 | Phase 32 | Complete |
+| CERT-02 | Phase 32 | Complete |
+| CERT-03 | Phase 32 | Complete |
+| MISP-01 | Phase 32 | Complete |
+| MISP-02 | Phase 32 | Complete |
+| MISP-03 | Phase 32 | Complete |
+| MISP-04 | Phase 32 | Complete |
 | DISINFO-01 | Phase 33 | Pending |
 | DISINFO-02 | Phase 33 | Pending |
 | DISINFO-03 | Phase 33 | Pending |
