@@ -34,7 +34,7 @@ IOC_TYPES = (
     "email", "btc", "eth", "mutex", "registry_key", "filename",
 )
 IOC_STATUSES = ("active", "expired", "whitelisted")
-IOC_SOURCES = ("manual", "csv", "json", "stix", "event", "backfill")
+IOC_SOURCES = ("manual", "csv", "json", "stix", "event", "backfill", "misp")
 
 
 class IOC(Base):

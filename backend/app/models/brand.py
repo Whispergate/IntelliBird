@@ -80,7 +80,7 @@ class BrandMatch(Base):
     matched_value: Mapped[str] = mapped_column(Text, nullable=False)
     match_source: Mapped[str] = mapped_column(
         PgEnum(
-            "fts", "ct_log", "dnstwist",
+            "fts", "ct_log", "dnstwist", "certstream",
             name="brand_match_source", create_type=False,
         ),
         nullable=False,

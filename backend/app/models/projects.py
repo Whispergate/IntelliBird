@@ -113,11 +113,23 @@ class Project(Base):
     ai_rerank_enabled: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false"), default=False,
     )
+    # Quick task: auto-summarise every newly-ingested event when an Ollama
+    # provider is configured. Off by default — bulk ingest (e.g. NVD initial
+    # backfill) would otherwise queue thousands of summary jobs.
+    ai_auto_summary_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false"), default=False,
+    )
     ai_daily_token_cap: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default=text("100000"), default=100000,
     )
     digest_schedule_cron: Mapped[str] = mapped_column(
         Text, nullable=False, server_default=text("'0 6 * * *'"), default="0 6 * * *",
+    )
+
+    # Phase 32 / CERT-02: certstream monitoring toggle per project.
+    # Migration 033 adds this column with server_default false.
+    certstream_enabled: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false"), default=False,
     )
 
     # Phase 11 EASM relationship

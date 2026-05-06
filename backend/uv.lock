@@ -59,6 +59,15 @@ wheels = [
 ]
 
 [[package]]
+name = "aiosmtplib"
+version = "5.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/ad/240a7ce4e50713b111dff8b781a898d8d4770e5d6ad4899103f84c86005c/aiosmtplib-5.1.0.tar.gz", hash = "sha256:2504a23b2b63c9de6bc4ea719559a38996dba68f73f6af4eb97be20ee4c5e6c4", size = 66176, upload-time = "2026-01-25T01:51:11.408Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/37/82/70f2c452acd7ed18c558c8ace9a8cf4fdcc70eae9a41749b5bdc53eb6f45/aiosmtplib-5.1.0-py3-none-any.whl", hash = "sha256:368029440645b486b69db7029208a7a78c6691b90d24a5332ddba35d9109d55b", size = 27778, upload-time = "2026-01-25T01:51:10.026Z" },
+]
+
+[[package]]
 name = "aiosqlite"
 version = "0.22.1"
 source = { registry = "https://pypi.org/simple" }
@@ -438,6 +447,18 @@ wheels = [
 ]
 
 [[package]]
+name = "deprecated"
+version = "1.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "wrapt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/49/85/12f0a49a7c4ffb70572b6c2ef13c90c88fd190debda93b23f026b25f9634/deprecated-1.3.1.tar.gz", hash = "sha256:b1b50e0ff0c1fddaa5708a2c6b0a6588bb09b892825ab2b214ac9ea9d92a5223", size = 2932523, upload-time = "2025-10-30T08:19:02.757Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/84/d0/205d54408c08b13550c733c4b85429e7ead111c7f0014309637425520a9a/deprecated-1.3.1-py2.py3-none-any.whl", hash = "sha256:597bfef186b6f60181535a29fbe44865ce137a5079f295b479886c82729d5f3f", size = 11298, upload-time = "2025-10-30T08:19:00.758Z" },
+]
+
+[[package]]
 name = "distro"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -782,6 +803,7 @@ name = "intellibird-backend"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "aiosmtplib" },
     { name = "alembic" },
     { name = "apscheduler" },
     { name = "asgi-correlation-id" },
@@ -808,6 +830,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "pyjwt" },
+    { name = "pymisp" },
     { name = "pysigma" },
     { name = "rapidfuzz" },
     { name = "redis" },
@@ -838,6 +861,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiosmtplib", specifier = ">=3.0,<6" },
     { name = "alembic", specifier = ">=1.13,<1.14" },
     { name = "apscheduler", specifier = ">=3.10,<4" },
     { name = "asgi-correlation-id", specifier = ">=4,<5" },
@@ -864,6 +888,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.7,<3" },
     { name = "pydantic-settings", specifier = ">=2.3,<3" },
     { name = "pyjwt", specifier = ">=2.12,<3" },
+    { name = "pymisp", specifier = ">=2.5,<3" },
     { name = "pysigma", specifier = ">=0.10,<0.11" },
     { name = "rapidfuzz", specifier = ">=3.0,<4" },
     { name = "redis", specifier = ">=5,<6" },
@@ -1470,6 +1495,20 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c2/27/a3b6e5bf6ff856d2509292e95c8f57f0df7017cf5394921fc4e4ef40308a/pyjwt-2.12.1.tar.gz", hash = "sha256:c74a7a2adf861c04d002db713dd85f84beb242228e671280bf709d765b03672b", size = 102564, upload-time = "2026-03-13T19:27:37.25Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e5/7a/8dd906bd22e79e47397a61742927f6747fe93242ef86645ee9092e610244/pyjwt-2.12.1-py3-none-any.whl", hash = "sha256:28ca37c070cad8ba8cd9790cd940535d40274d22f80ab87f3ac6a713e6e8454c", size = 29726, upload-time = "2026-03-13T19:27:35.677Z" },
+]
+
+[[package]]
+name = "pymisp"
+version = "2.5.34.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "deprecated" },
+    { name = "python-dateutil" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/95/59/d195ab701e1cb2c1fb44cdfb83fbef46cf40b3a206ce313666817cfb9098/pymisp-2.5.34.1.tar.gz", hash = "sha256:dc7d44213064b5fc920dfeb8feae21165eb6543288e3809f2a5c6dd86ec37fa5", size = 2071382, upload-time = "2026-04-28T12:07:12.433Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9e/64/3746646025f649d233f769e14ee4ab1da41d6dd36812c78b1f969393e1ff/pymisp-2.5.34.1-py3-none-any.whl", hash = "sha256:7ed974fa4ab325ddcb8eee4be7d6723636f849516c54a055da1ea1638cbfcd37", size = 544181, upload-time = "2026-04-28T12:07:10.535Z" },
 ]
 
 [[package]]
