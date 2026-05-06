@@ -487,7 +487,7 @@ Plans:
 | 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
 | 30. Notification Channels | 8/8 | Complete    | 2026-05-04 | - |
 | 31. Case Management | 7/7 | Complete   | 2026-05-04 | - |
-| 32. CertStream + MISP | 2/6 | In Progress|  | - |
+| 32. CertStream + MISP | 3/6 | In Progress|  | - |
 | 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |
 | 34. Browser Extension | v4.0 | 0/0 | Not started | - |
 

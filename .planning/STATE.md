@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: verifying
-stopped_at: "Completed 32-02-PLAN.md — migration 033, MispConfig ORM, pymisp dep"
-last_updated: "2026-05-06T08:45:36.000Z"
+stopped_at: Completed 32-certstream-misp/32-05-PLAN.md
+last_updated: "2026-05-06T09:02:32.267Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
   completed_phases: 10
   total_plans: 72
-  completed_plans: 68
+  completed_plans: 69
 ---
 
 # Project State
@@ -259,6 +259,7 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 31-case-management P06 | 3 | 3 tasks | 8 files |
 | Phase 32-certstream-misp P01 | 8 | 2 tasks | 6 files |
 | Phase 32-certstream-misp P02 | 2 | 2 tasks | 6 files |
+| Phase 32-certstream-misp P05 | 0 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -669,6 +670,8 @@ Recent decisions affecting current work:
 - [Phase 31-case-management]: KanbanBoard defines minimal CaseRow locally; CaseTableView/CasesClient use full CaseRow from api-client.ts (structural superset)
 - [Phase 31-case-management]: AttachToCaseModal generalized to handle eventIds and iocIds via isIOCMode flag — single component reused from both EventsClient and IOCsClient
 - [Phase 32-certstream-misp]: All production imports inside test bodies to prevent collection errors before modules exist
+- [Phase 32-certstream-misp]: Used local _require_lead_or_above pattern (not global require_lead) matching campaigns/actors.py
+- [Phase 32-certstream-misp]: MISP router: api_key encrypted at write time; masked as '***' in MispConfigRead responses
 
 ### Roadmap Evolution
 
@@ -724,7 +727,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-06T08:46:30.803Z
-Stopped at: Completed 32-certstream-misp-01-PLAN.md
+Last session: 2026-05-06T09:02:32.258Z
+Stopped at: Completed 32-certstream-misp/32-05-PLAN.md
 Resume file: None
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)
