@@ -62,6 +62,7 @@ from app.routers.actors import router as actors_router
 from app.routers.campaigns import router as campaigns_router
 from app.routers.cases import router as cases_router
 from app.routers.admin.audit import router as audit_router
+from app.routers.misp import router as misp_router
 from app.routers.enrichment import router as enrichment_router
 from app.routers.brand import router as brand_router
 from app.routers.projects import router as projects_router
@@ -246,6 +247,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(actors_router, prefix="/api", tags=["actors"])
     fastapi_app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
     fastapi_app.include_router(cases_router, prefix="/api", tags=["cases"])
+    fastapi_app.include_router(misp_router, prefix="/api", tags=["misp"])
     fastapi_app.include_router(audit_router, prefix="/api/admin", tags=["audit"])
     fastapi_app.include_router(enrichment_router, prefix="/api")
     fastapi_app.include_router(admin_ai_health_router, prefix="/api")
