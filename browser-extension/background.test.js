@@ -1,18 +1,17 @@
 // browser-extension/background.test.js
-// Node built-in test runner (Node 18+) — Phase 34 Plan 01 (Wave 0 RED)
+// Node built-in test runner (Node 18+) — Phase 34 Plan 02 (Wave 1 GREEN)
 //
 // Tests for the buildLookupUrl utility exported from background.js.
-// These tests are intentionally RED — background.js does not yet export
-// buildLookupUrl. They will go Green when Wave 1 (plan 34-02) delivers
-// the implementation.
+// Uses require() / CJS style to match the module.exports guard in background.js.
+// background.js runs as a classic (non-module) service worker in the browser;
+// module.exports is only defined in Node.js where `module` is a global.
 //
 // Run: node --test browser-extension/background.test.js
 
-import { describe, it } from "node:test";
-import assert from "node:assert/strict";
+const { describe, it } = require("node:test");
+const assert = require("node:assert/strict");
 
-// RED: background.js does not export buildLookupUrl yet — this import will throw
-import { buildLookupUrl } from "./background.js";
+const { buildLookupUrl } = require("./background.js");
 
 describe("buildLookupUrl", () => {
   it("builds correct URL for plain text", () => {
