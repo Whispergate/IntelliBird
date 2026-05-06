@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
 status: verifying
-stopped_at: Completed 32-03-PLAN.md — CertStream asyncio worker, certstream_enabled guard in brand_monitor, docker-compose service
-last_updated: "2026-05-06T09:04:50.727Z"
+stopped_at: "Paused at checkpoint 32-06 Task 3: human-verify"
+last_updated: "2026-05-06T09:11:03.209Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 72
-  completed_plans: 71
+  completed_plans: 72
 ---
 
 # Project State
@@ -677,6 +677,8 @@ Recent decisions affecting current work:
 - [Phase 32-certstream-misp]: md5/sha256 map to 'hash' type per CONTEXT.md; mitre_group_id dedup takes priority over primary_name in galaxy sync
 - [Phase 32-certstream-misp]: MISP push uses fire-and-forget Dramatiq actor; push failure logged but never blocks confirm_suggestion response
 - [Phase 32-certstream-misp]: certstream_worker.py uses build_event_dict(match=, term=) kwargs; certstream_enabled fetched inside scan_project via text() SQL keeping public signature unchanged; certstream-worker always-present in compose (no profile)
+- [Phase 32-certstream-misp]: certstream_enabled added as optional field to ProjectResponse; lib/api.ts force-added with git add -f due to gitignore
+- [Phase 32-certstream-misp]: CTLogModeSection.tsx wrapper created for client-side Lead authority detection; brand/page.tsx updated to server component fetching project
 
 ### Roadmap Evolution
 
@@ -732,7 +734,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-06T09:04:50.717Z
-Stopped at: Completed 32-03-PLAN.md — CertStream asyncio worker, certstream_enabled guard in brand_monitor, docker-compose service
+Last session: 2026-05-06T09:10:55.238Z
+Stopped at: Paused at checkpoint 32-06 Task 3: human-verify
 Resume file: None
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)
