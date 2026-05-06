@@ -79,7 +79,7 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 - [x] **Phase 28: Passive DNS, WHOIS & Multi-hop Graph** — Infrastructure pivoting via shared registrar/IP plus 2-3 hop traversal (completed 2026-05-04)
 - [x] **Phase 29: Sigma Rule Engine** — Community Sigma rule sets auto-tagging events at ingest (completed 2026-05-04)
 - [x] **Phase 30: Notification Channels** — Email / PagerDuty / Opsgenie / ntfy reusing webhook dispatcher (completed 2026-05-04)
-- [ ] **Phase 31: Case Management** — Lightweight cases, kanban, IOC + event linking
+- [x] **Phase 31: Case Management** — Lightweight cases, kanban, IOC + event linking (completed 2026-05-04)
 - [ ] **Phase 32: CertStream + MISP** — Sub-second CT log streaming and bidirectional MISP sync
 - [ ] **Phase 33: Disinformation + Pattern-of-Life Timeline** — CIB heuristics on social listening + temporal heatmap
 - [ ] **Phase 34: Browser Extension** — Manifest V3 right-click pivot from external tools to IntelliBird IOC search
@@ -479,7 +479,7 @@ Plans:
 | 28. Passive DNS, WHOIS & Multi-hop Graph | 8/8 | Complete    | 2026-05-04 | - |
 | 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
 | 30. Notification Channels | 8/8 | Complete    | 2026-05-04 | - |
-| 31. Case Management | 3/7 | In Progress|  | - |
+| 31. Case Management | 7/7 | Complete   | 2026-05-04 | - |
 | 32. CertStream + MISP | v4.0 | 0/0 | Not started | - |
 | 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |
 | 34. Browser Extension | v4.0 | 0/0 | Not started | - |
