@@ -50,6 +50,7 @@ import { EASMGateForm } from "./components/EASMGateForm";
 import type { EASMGateProject } from "./components/EASMGateForm";
 import { AIProviderCard } from "./settings/AIProviderCard";
 import { EnrichmentProvidersCard } from "./settings/EnrichmentProvidersCard";
+import { MispConfigSection } from "./settings/MispConfigSection";
 
 const ENGAGEMENT_OPTIONS: ReadonlyArray<{
   value: EngagementType;
@@ -299,6 +300,12 @@ export function SettingsTabContent({
 
       {/* Enrichment Providers card — Lead+ only for edits, all roles can view */}
       <EnrichmentProvidersCard projectId={liveProject.id} />
+
+      {/* MISP Integration — Lead+ only */}
+      <MispConfigSection
+        projectId={liveProject.id}
+        isLead={userIsLeadOrAdmin}
+      />
     </div>
   );
 }
