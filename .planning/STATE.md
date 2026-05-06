@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v4.0
 milestone_name: Threat Intelligence Platform Maturity
-status: verifying
-stopped_at: "Paused at checkpoint 32-06 Task 3: human-verify"
-last_updated: "2026-05-06T09:11:03.209Z"
+status: in_progress
+stopped_at: Phase 34-browser-extension Plan 01 complete (Wave 0 TDD Red stubs)
+last_updated: "2026-05-06T14:11:41Z"
 last_activity: "2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven."
 progress:
   total_phases: 13
-  completed_phases: 11
-  total_plans: 72
-  completed_plans: 72
+  completed_phases: 12
+  total_plans: 79
+  completed_plans: 79
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-04 after Phase 27)
 
 **Core value:** A single operator can see the current cyber threat landscape — world events, actor activity, CVEs, feed signal — in one place, filter and tag it, and drill from a geo view into the attack graph behind any event.
-**Current focus:** v4.0 Phase 31 — Case Management (in progress, plan 03/7 complete)
+**Current focus:** v4.0 Phase 34 — Browser Extension (in progress, plan 01/3 complete)
 
 ## Current Position
 
 Milestone: v4.0 Threat Intelligence Platform Maturity
-Phase: 32 — CertStream + MISP (In progress)
-Plan: 02 complete — migration 033 (ENUM extensions + certstream_enabled + misp_configs table), MispConfig ORM model, IOC_SOURCES extended with 'misp', brand_match_source extended with 'certstream', Project.certstream_enabled column, pymisp>=2.5,<3 dependency (MISP-01, CERT-02, CERT-03)
-Status: Phase 27 (Sandbox + YARA) complete — 7/7 plans shipped, 8/8 requirements verified (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
+Phase: 33 — Disinformation + Pattern-of-Life Timeline (Complete — 7/7 plans shipped)
+Plan: 07/07 complete — Social listening worker (Mastodon/4chan/Reddit), CIB MinHashLSH detector, narrative_op AI extension, Timeline API (series + heatmap), Timeline frontend (Recharts AreaChart + CSS grid heatmap), InfluenceOpsWidget (Blue dashboard), DB migration 034. Human checkpoint approved 2026-05-06. All DISINFO-01..04 + TIMELINE-01..03 verified.
+Status: Phase 32 (CertStream + MISP) complete — 6/6 plans shipped, CERT-01..03 + MISP-01..04 verified. Previous: Phase 27 (Sandbox + YARA) complete — 7/7 plans shipped, 8/8 requirements verified (3/3 tasks; 9/9 frontend tests green; tsc clean except 2 pre-existing Webhook baseline errors). Shipped: IOCs tab in ProjectTabs (Sources → IOCs → Memberships, now 21-tab strip); web/app/projects/[id]/iocs/page.tsx (RSC, _apiFetch SSR initial page); IOCsClient.tsx (filter bar with type/status/age/min_confidence/q-search debounced 300ms; URL-param sync via router.replace; sortable table; cursor pagination Load more; 3 empty states; Lead+ Import IOCs + Admin Backfill gates); IOCDetailDrawer.tsx (Sheet right-side + 4a header + 4b metadata grid + 4c linked events + 4d actions footer + 4e collapsible Edit panel calling PATCH /api/iocs/{id} + Surface 7 Delete confirm Dialog calling DELETE /api/iocs/{id}; AlertDialog substituted with Dialog since alert-dialog primitive not installed); BackfillButton.tsx (Admin-only, async 1.5s polling against POST /api/admin/iocs/backfill 202 + {job_id} + GET /api/jobs/{job_id}, 5min timeout); IOCBulkImportDialog.tsx (4-step stepper Upload→Configure→Preview→Import; client-side 5MB + 10k-row gates; Lead+ via parent open-prop gate); EventDetailDrawer/IOCsSection.tsx (sources from concrete GET /api/events/{id}/iocs per Plan 22-03 revision; chip click deep-links to /projects/{id}/iocs?ioc=<uuid>); api-client.ts extended with 12 new IOC functions (listIOCs, getIOC, getIOCEvents, listEventIOCs, whitelistIOC[+projectId opt for clone-on-whitelist], unwhitelistIOC, patchIOC, deleteIOC, dryRunBulkImport, submitBulkImport, pollJobStatus, triggerBackfill) + 8 new IOC types. Files staged for user commit per IntelliBird `feedback_no_auto_commit` MEMORY. IOC-02, IOC-04, IOC-05, IOC-06, IOC-07 marked complete in REQUIREMENTS.md.
 Last activity: 2026-05-03 — v4.0 ROADMAP.md written. 13 phases (22-34) covering 80 v4.0 requirements across IOC foundation, enrichment APIs, dark-web collection, threat actors+audit, TAXII server, sandbox+YARA, passive DNS+multi-hop graph, Sigma rules, notification channels, case management, CertStream+MISP, disinformation+timeline, browser extension. 100% requirement coverage validated. REQUIREMENTS.md traceability table populated. Phase 22 (IOC Foundation, IOC-01..08) is the unblocking foundation per source-plan execution order — pivots into ENRICH (Phase 23), DARK (Phase 24), SANDBOX (Phase 27), CASE (Phase 31). Previous: 2026-05-02 — Milestone v4.0 started; scope sourced from /home/lavender/.claude/plans/please-find-points-vast-hearth.md (intelligence-officer review). 17 features across 3 tiers: Tier 1 = IOC table + enrichment APIs + dark-web/paste/Telegram + passive DNS/WHOIS + sandbox detonation; Tier 2 = TAXII outbound server + global threat-actors/campaigns + multi-hop graph + Sigma rule engine + email/PagerDuty/ntfy + lightweight cases; Tier 3 = audit log + CertStream realtime + MISP direct API + disinformation/CIB + pattern-of-life timeline + YARA + browser extension. Execution order: §1.4 → §1.2 → §1.1 → §2.2+§3.1 → §2.1 → remainder demand-driven.
 
 ---
@@ -262,6 +262,9 @@ v3.0 progress: Phase 15 Scoring Engine Foundation complete — 9/9 plans shipped
 | Phase 32-certstream-misp P05 | 0 | 2 tasks | 3 files |
 | Phase 32-certstream-misp P04 | 3 | 2 tasks | 4 files |
 | Phase 32-certstream-misp P03 | 20 | 2 tasks | 3 files |
+| Phase 33-disinformation-pattern-of-life-timeline P02 | 8 | 3 tasks | 4 files |
+| Phase 33-disinformation-pattern-of-life-timeline P03 | 25 | 2 tasks | 4 files |
+| Phase 34-browser-extension P01 | 1 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -679,6 +682,10 @@ Recent decisions affecting current work:
 - [Phase 32-certstream-misp]: certstream_worker.py uses build_event_dict(match=, term=) kwargs; certstream_enabled fetched inside scan_project via text() SQL keeping public signature unchanged; certstream-worker always-present in compose (no profile)
 - [Phase 32-certstream-misp]: certstream_enabled added as optional field to ProjectResponse; lib/api.ts force-added with git add -f due to gitignore
 - [Phase 32-certstream-misp]: CTLogModeSection.tsx wrapper created for client-side Lead authority detection; brand/page.tsx updated to server component fetching project
+- [Phase 33]: Both ENUM extensions in one autocommit_block — avoids separate DISINFO-03 migration
+- [Phase 33]: source_config JSONB separate from scrape_config — social sources use source_config; HTML-scrape sources use scrape_config
+- [Phase 33-disinformation-pattern-of-life-timeline]: social_normalise in app/ingest/ (not worker) for unit testability without broker overhead
+- [Phase 33-disinformation-pattern-of-life-timeline]: Twitter/X not implemented — documented as paid API opt-in in docs/ops/social-sources.md
 
 ### Roadmap Evolution
 
@@ -734,7 +741,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-05-06T09:10:55.238Z
-Stopped at: Paused at checkpoint 32-06 Task 3: human-verify
-Resume file: None
+Last session: 2026-05-06T13:56:07.228Z
+Stopped at: Phase 34 context gathered
+Resume file: .planning/phases/34-browser-extension/34-CONTEXT.md
 Next: 28-04-PLAN.md (AGE sync service — populate passive_dns_records + whois_cache → AGE graph)

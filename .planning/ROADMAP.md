@@ -80,8 +80,8 @@ See [milestones/v3.1-ROADMAP.md](milestones/v3.1-ROADMAP.md).
 - [x] **Phase 29: Sigma Rule Engine** — Community Sigma rule sets auto-tagging events at ingest (completed 2026-05-04)
 - [x] **Phase 30: Notification Channels** — Email / PagerDuty / Opsgenie / ntfy reusing webhook dispatcher (completed 2026-05-04)
 - [x] **Phase 31: Case Management** — Lightweight cases, kanban, IOC + event linking (completed 2026-05-04)
-- [ ] **Phase 32: CertStream + MISP** — Sub-second CT log streaming and bidirectional MISP sync
-- [ ] **Phase 33: Disinformation + Pattern-of-Life Timeline** — CIB heuristics on social listening + temporal heatmap
+- [x] **Phase 32: CertStream + MISP** — Sub-second CT log streaming and bidirectional MISP sync (completed 2026-05-06)
+- [x] **Phase 33: Disinformation + Pattern-of-Life Timeline** — CIB heuristics on social listening + temporal heatmap (completed 2026-05-06)
 - [ ] **Phase 34: Browser Extension** — Manifest V3 right-click pivot from external tools to IntelliBird IOC search
 
 ## Phase Details
@@ -403,12 +403,12 @@ Plans:
 **OPSEC**: MISP push opt-in per suggestion type; CertStream uses public service (no key required) but operator may self-host.
 **Plans**: 6 plans
 Plans:
-- [ ] 32-01-PLAN.md — Wave 0 test scaffolding (6 unit stub files)
-- [ ] 32-02-PLAN.md — Migration 033, MispConfig ORM, pymisp dep, ENUM extensions
-- [ ] 32-03-PLAN.md — CertStream worker + brand_monitor guard + docker-compose service
-- [ ] 32-04-PLAN.md — MISP pull job + push actor + scheduler + ai.py hook
-- [ ] 32-05-PLAN.md — MISP CRUD router + Pydantic schemas + main.py registration
-- [ ] 32-06-PLAN.md — Frontend CT Log Mode selector + MISP settings section (checkpoint)
+- [x] 32-01-PLAN.md — Wave 0 test scaffolding (6 unit stub files)
+- [x] 32-02-PLAN.md — Migration 033, MispConfig ORM, pymisp dep, ENUM extensions
+- [x] 32-03-PLAN.md — CertStream worker + brand_monitor guard + docker-compose service
+- [x] 32-04-PLAN.md — MISP pull job + push actor + scheduler + ai.py hook
+- [x] 32-05-PLAN.md — MISP CRUD router + Pydantic schemas + main.py registration
+- [x] 32-06-PLAN.md — Frontend CT Log Mode selector + MISP settings section (checkpoint)
 
 ### Phase 33: Disinformation + Pattern-of-Life Timeline
 **Goal**: Counter-disinformation tradecraft via Mastodon/4chan/Reddit social listening with CIB heuristics, plus a temporal timeline view exposing actor operational rhythm.
@@ -432,7 +432,16 @@ Plans:
   4. Operator visits `/projects/{id}/timeline`; sees stacked area chart of events by tag/actor over time AND hour-of-day × day-of-week heatmap; both respect existing `events_query` filters (project scope, dashboard role, tier, tags)
   5. Cross-project leakage tests cover the timeline endpoint
 **OPSEC**: Twitter/X paid integration off by default; Mastodon firehose opt-in per project.
-**Plans**: TBD
+**Plans**: 7 plans
+
+Plans:
+- [ ] 33-01-PLAN.md — Wave 0 test scaffolds for all Phase 33 test targets
+- [ ] 33-02-PLAN.md — DB migration: feed_type_enum extension, source_config column, cib_clusters table, new deps
+- [ ] 33-03-PLAN.md — Social listening worker (Mastodon/4chan/Reddit) + APScheduler registration
+- [ ] 33-04-PLAN.md — CIB detector (MinHashLSH) + AI narrative_op extension + GET /api/projects/{id}/cib-clusters endpoint
+- [ ] 33-05-PLAN.md — Timeline API router (/series + /heatmap endpoints)
+- [ ] 33-06-PLAN.md — Timeline frontend page + Influence Ops widget (BlueWidgets injection) + ProjectTabs update
+- [ ] 33-07-PLAN.md — Full backend test sweep + human verify checkpoint
 
 ### Phase 34: Browser Extension
 **Goal**: Analyst working in any external tool can right-click selected text and pivot to IntelliBird IOC search in one click.
@@ -450,7 +459,12 @@ Plans:
   2. Operator selects an IP address on any webpage; right-click menu shows "Lookup in IntelliBird"; click opens new tab to `/iocs?value=<ip>` pre-filtered with operator's existing session
   3. Documentation at `/docs/ops/browser-extension/README.md` covers install, origin allowlist config, and uninstall
 **OPSEC**: Operator-loaded only; not published to web stores; no telemetry.
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+- [x] 34-01-PLAN.md — Wave 0 test stubs (IOCsGlobalClient.test.tsx + background.test.js, Red phase)
+- [ ] 34-02-PLAN.md — Browser extension files (manifest.json, background.js, options, icons, polyfill)
+- [ ] 34-03-PLAN.md — Global /iocs Next.js page (RSC + IOCsGlobalClient + TopNav link)
+- [ ] 34-04-PLAN.md — Distribution zip + operator README + human verification checkpoint
 
 ## Coverage
 
@@ -487,9 +501,9 @@ Plans:
 | 29. Sigma Rule Engine | 6/6 | Complete    | 2026-05-04 | - |
 | 30. Notification Channels | 8/8 | Complete    | 2026-05-04 | - |
 | 31. Case Management | 7/7 | Complete   | 2026-05-04 | - |
-| 32. CertStream + MISP | 5/6 | In Progress|  | - |
-| 33. Disinformation + Pattern-of-Life Timeline | v4.0 | 0/0 | Not started | - |
-| 34. Browser Extension | v4.0 | 0/0 | Not started | - |
+| 32. CertStream + MISP | 6/6 | Complete | 2026-05-06 | - |
+| 33. Disinformation + Pattern-of-Life Timeline | 3/7 | In Progress|  | - |
+| 34. Browser Extension | v4.0 | 1/4 | In Progress | - |
 
 ---
 *Last updated: 2026-05-04 — Phase 30 planned (7 plans, 6 waves)*
