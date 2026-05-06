@@ -30,8 +30,11 @@ from app.workers import broker as _broker  # noqa: F401
 from app.workers.bootstrap import bootstrap_attack
 from app.workers.html_scrape import poll_html_scrape
 from app.workers.nvd import poll_nvd
+from app.workers.paste import poll_paste
 from app.workers.rss import poll_rss
 from app.workers.taxii import poll_taxii
+from app.workers.telegram import poll_telegram
+from app.workers.tor_html import poll_tor_html
 from app.services.archiver import archive_once
 from app.services.source_events import RELOAD_CHANNEL
 
@@ -45,6 +48,9 @@ _ACTOR_MAP: dict[str, object] = {
     "taxii": poll_taxii,
     "nvd": poll_nvd,
     "custom": poll_html_scrape,
+    "tor_html": poll_tor_html,  # Phase 24 / DARK-02
+    "paste": poll_paste,  # Phase 24 / DARK-03
+    "telegram": poll_telegram,  # Phase 24 / DARK-04
 }
 
 
@@ -483,6 +489,46 @@ def register_brand_jobs(scheduler: BlockingScheduler, settings_obj) -> None:  # 
     )
 
 
+def register_misp_jobs(scheduler: BlockingScheduler) -> None:  # type: ignore[no-untyped-def]
+    """Register misp_pull_job for all enabled MISP configs (one per project).
+
+    Job ID: misp_pull_{project_id} — allows per-project add/remove.
+    Interval: 6 hours (CONTEXT.md locked decision).
+    """
+    import psycopg2  # noqa: PLC0415
+    from app.workers.misp_pull import misp_pull_job_wrapper  # noqa: PLC0415
+
+    conn = psycopg2.connect(_brand_sync_pg_url())
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT project_id::text, url, api_key_enc, pull_tags, "
+                "       push_types, enabled, ssl_verify "
+                "FROM misp_configs WHERE enabled = TRUE"
+            )
+            rows = cur.fetchall()
+    finally:
+        conn.close()
+
+    for row in rows:
+        project_id = row[0]
+        misp_config = {
+            "url": row[1], "api_key_enc": row[2],
+            "pull_tags": row[3] or [], "push_types": row[4] or [],
+            "enabled": row[5], "ssl_verify": row[6] if row[6] is not None else True,
+        }
+        job_id = f"misp_pull_{project_id}"
+        scheduler.add_job(
+            misp_pull_job_wrapper,
+            IntervalTrigger(hours=6),
+            id=job_id,
+            replace_existing=True,
+            kwargs={"project_id": project_id, "misp_config": misp_config},
+        )
+        logger.info("scheduler_registered misp_pull project_id=%s", project_id)
+    logger.info("misp_jobs_registered count=%d", len(rows))
+
+
 def build_scheduler() -> BlockingScheduler:
     scheduler = BlockingScheduler(timezone="UTC")
     # jobs (preserved)
@@ -599,6 +645,11 @@ def build_scheduler() -> BlockingScheduler:
         register_ioc_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_ioc_jobs_register_failed error=%s", e)
+    # Phase 32: MISP pull jobs (MISP-02, MISP-04)
+    try:
+        register_misp_jobs(scheduler)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_misp_jobs_register_failed error=%s", e)
     return scheduler
 
 

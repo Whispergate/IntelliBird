@@ -4,6 +4,7 @@ Endpoints:
   POST   /api/events/{event_id}/ai/summarise       — enqueue AI summary job (Analyst+)
   GET    /api/ai/jobs/{job_id}/stream              — SSE token stream from Redis buffer
   GET    /api/events/{event_id}/ai/suggestions     — list suggestions for event (member)
+  GET    /api/projects/{project_id}/ai/suggestions — list all suggestions for project (Observer+)
   POST   /api/ai/suggestions/{suggestion_id}/confirm   — confirm single suggestion (Analyst+)
   POST   /api/ai/suggestions/{suggestion_id}/discard   — discard single suggestion (Analyst+)
   POST   /api/projects/{project_id}/ai/suggestions/bulk-confirm  — bulk confirm (Analyst+)
@@ -292,6 +293,59 @@ async def stream_job(
 # ---------------------------------------------------------------------------
 
 
+@router.get("/events/{event_id}/ai/summary")
+async def get_event_summary(
+    event_id: uuid.UUID,
+    user: AuthUser = Depends(require_auth),
+    db: AsyncSession = Depends(get_session),
+) -> dict:
+    """Return the most recent persisted AI summary for an event.
+
+    Returns 404 if no summary exists yet — the UI prompts the analyst to
+    click "Summarise". Reads `ai_summaries` directly so the result survives
+    Redis stream chunk expiry (the 1h CHUNKS_TTL only governs live SSE).
+    """
+    event_row: Event | None = (
+        await db.execute(select(Event).where(Event.id == event_id))
+    ).scalar_one_or_none()
+    if event_row is None:
+        raise HTTPException(status_code=404, detail="event_not_found")
+
+    if user.role != "Admin":
+        pid_str = str(event_row.project_id)
+        cached_rank = user.project_memberships.get(pid_str, 0)
+        if cached_rank == 0:
+            if not user.pm_truncated:
+                raise HTTPException(status_code=403, detail="not a project member")
+            row = (await db.execute(
+                select(ProjectMembership.project_role).where(
+                    ProjectMembership.user_sub == user.id,
+                    ProjectMembership.project_id == event_row.project_id,
+                )
+            )).scalar_one_or_none()
+            if row is None:
+                raise HTTPException(status_code=403, detail="not a project member")
+
+    summary: AISummary | None = (
+        await db.execute(
+            select(AISummary)
+            .where(AISummary.event_id == event_id, AISummary.summary_type == "event")
+            .order_by(AISummary.created_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+    if summary is None:
+        raise HTTPException(status_code=404, detail="no_summary")
+
+    return {
+        "id": str(summary.id),
+        "summary_text": summary.summary_text,
+        "model_used": summary.model_used,
+        "tokens_used": summary.tokens_used,
+        "created_at": summary.created_at.isoformat(),
+    }
+
+
 @router.get("/events/{event_id}/ai/suggestions", response_model=list[AISuggestionRead])
 async def list_suggestions(
     event_id: uuid.UUID,
@@ -379,6 +433,36 @@ async def _transition_suggestion(
     return AISuggestionRead.model_validate(row)
 
 
+async def _enqueue_misp_push_if_configured(
+    suggestion: AISuggestionRead, db: AsyncSession
+) -> None:
+    """Post-commit hook: enqueue MISP push if project has push_types configured."""
+    from sqlalchemy import select as _select  # noqa: PLC0415
+    from app.models.misp import MispConfig  # noqa: PLC0415
+    from app.workers.misp_push import _maybe_push_to_misp  # noqa: PLC0415
+
+    try:
+        result = await db.execute(
+            _select(MispConfig.push_types).where(
+                MispConfig.project_id == suggestion.project_id,
+                MispConfig.enabled.is_(True),
+            )
+        )
+        push_types = result.scalar_one_or_none()
+        if not push_types:
+            return
+        _maybe_push_to_misp(
+            suggestion_id=str(suggestion.id),
+            project_id=str(suggestion.project_id),
+            suggestion_type=suggestion.suggestion_type,
+            status="confirmed",
+            push_types=push_types,
+        )
+    except Exception as exc:  # noqa: BLE001
+        import logging as _logging  # noqa: PLC0415
+        _logging.getLogger(__name__).warning("misp_push_hook_failed error=%s", exc)
+
+
 @router.post("/ai/suggestions/{suggestion_id}/confirm", response_model=AISuggestionRead)
 async def confirm_suggestion(
     suggestion_id: uuid.UUID,
@@ -386,7 +470,10 @@ async def confirm_suggestion(
     db: AsyncSession = Depends(get_session),
 ) -> AISuggestionRead:
     """Confirm a single AI suggestion. Requires Contributor+ on its project."""
-    return await _transition_suggestion(suggestion_id, "confirmed", user, db)
+    result = await _transition_suggestion(suggestion_id, "confirmed", user, db)
+    # MISP push hook — fire-and-forget, does not affect response
+    await _enqueue_misp_push_if_configured(result, db)
+    return result
 
 
 @router.post("/ai/suggestions/{suggestion_id}/discard", response_model=AISuggestionRead)
@@ -397,6 +484,46 @@ async def discard_suggestion(
 ) -> AISuggestionRead:
     """Discard a single AI suggestion. Requires Contributor+ on its project."""
     return await _transition_suggestion(suggestion_id, "discarded", user, db)
+
+
+# ---------------------------------------------------------------------------
+# GET /api/projects/{project_id}/ai/suggestions
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/projects/{project_id}/ai/suggestions",
+    response_model=list[AISuggestionRead],
+)
+async def list_project_suggestions(
+    project_id: uuid.UUID,
+    type: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    since: str | None = Query(default=None),
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
+    db: AsyncSession = Depends(get_session),
+) -> list[AISuggestionRead]:
+    """List all AI suggestions for a project. Observer+ required.
+
+    Filters:
+      type   — cve | attack | actor
+      status — pending | confirmed | discarded
+      since  — 24h | 7d | 30d
+    """
+    stmt = select(AISuggestion).where(AISuggestion.project_id == project_id)
+    if type is not None:
+        stmt = stmt.where(AISuggestion.suggestion_type == type)
+    if status is not None:
+        stmt = stmt.where(AISuggestion.status == status)
+    if since is not None:
+        from datetime import timedelta  # noqa: PLC0415
+        delta_map = {"24h": timedelta(hours=24), "7d": timedelta(days=7), "30d": timedelta(days=30)}
+        if since in delta_map:
+            cutoff = datetime.now(timezone.utc) - delta_map[since]
+            stmt = stmt.where(AISuggestion.created_at >= cutoff)
+    stmt = stmt.order_by(AISuggestion.created_at.desc())
+    rows = (await db.execute(stmt)).scalars().all()
+    return [AISuggestionRead.model_validate(r) for r in rows]
 
 
 # ---------------------------------------------------------------------------
