@@ -28,6 +28,7 @@
  */
 
 import { Suspense } from "react";
+import Link from "next/link";
 import { fetchProjectDetail } from "../../lib/api";
 import { EventsClient } from "@/app/events/EventsClient";
 
@@ -41,17 +42,34 @@ export default async function ProjectIntelPage({
   const { id } = await params;
   const project = await fetchProjectDetail(id);
   return (
-    <Suspense
-      fallback={
-        <div
-          className="p-6 text-muted-foreground"
-          data-testid="project-intel-loading"
+    <div>
+      <div className="flex items-center justify-end px-4 pt-3 pb-1">
+        <Link
+          href={`/projects/${id}/graph`}
+          className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium"
+          style={{ backgroundColor: "var(--brand-signal)", color: "var(--brand-ink)" }}
         >
-          Loading events…
-        </div>
-      }
-    >
-      <EventsClient projectId={project.id} projectName={project.name} />
-    </Suspense>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="3"/><circle cx="4" cy="6" r="2"/><circle cx="20" cy="6" r="2"/>
+            <circle cx="4" cy="18" r="2"/><circle cx="20" cy="18" r="2"/>
+            <line x1="6" y1="6" x2="10" y2="11"/><line x1="18" y1="6" x2="14" y2="11"/>
+            <line x1="6" y1="18" x2="10" y2="13"/><line x1="18" y1="18" x2="14" y2="13"/>
+          </svg>
+          Analyse Attack Path
+        </Link>
+      </div>
+      <Suspense
+        fallback={
+          <div
+            className="p-6 text-muted-foreground"
+            data-testid="project-intel-loading"
+          >
+            Loading events…
+          </div>
+        }
+      >
+        <EventsClient projectId={project.id} projectName={project.name} />
+      </Suspense>
+    </div>
   );
 }

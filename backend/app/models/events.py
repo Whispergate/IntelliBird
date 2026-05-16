@@ -74,3 +74,6 @@ class Event(Base):
     score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     scored_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
     score_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # Phase 17 / SCR-04: AI-adjusted score written by ai_rescore_project actor.
+    # NULL means "not yet AI-rescored". Read path: COALESCE(ai_score, score).
+    ai_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)

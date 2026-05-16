@@ -52,6 +52,8 @@ from app.schemas.ai import (
     AIProviderTestResponse,
     AIProviderUpdate,
     AIRerankStatus,
+    AttackPathRequest,
+    AttackPathResponse,
 )
 from app.schemas.projects import (
     CompareResponse,
@@ -1221,6 +1223,7 @@ async def get_ai_provider(
         credentials_key_version=row.credentials_key_version,
         ai_rerank_enabled=project.ai_rerank_enabled,
         ai_digest_enabled=project.ai_digest_enabled,
+        ai_auto_summary_enabled=project.ai_auto_summary_enabled,
         ai_daily_token_cap=project.ai_daily_token_cap,
         digest_schedule_cron=project.digest_schedule_cron,
         created_at=row.created_at,
@@ -1241,8 +1244,10 @@ async def upsert_ai_provider(
     from app.models.ai import AIProvider  # noqa: PLC0415
     from app.workers.ai import ai_rescore_project  # noqa: PLC0415
 
-    _legacy_guard(project_id)
-
+    # NOTE: _legacy_guard is intentionally NOT called here. The AIProvider row
+    # keyed to LEGACY_PROJECT_ID doubles as the system-wide AI default
+    # (editable via /admin/ai-defaults). All other LEGACY mutations (rename,
+    # scope, members, etc.) remain blocked at their respective endpoints.
     project = (
         await db.execute(select(Project).where(Project.id == project_id))
     ).scalar_one_or_none()
@@ -1290,6 +1295,8 @@ async def upsert_ai_provider(
         project.ai_rerank_enabled = body.ai_rerank_enabled
     if body.ai_digest_enabled is not None:
         project.ai_digest_enabled = body.ai_digest_enabled
+    if body.ai_auto_summary_enabled is not None:
+        project.ai_auto_summary_enabled = body.ai_auto_summary_enabled
     if body.ai_daily_token_cap is not None:
         project.ai_daily_token_cap = body.ai_daily_token_cap
     if body.digest_schedule_cron is not None:
@@ -1317,6 +1324,7 @@ async def upsert_ai_provider(
         credentials_key_version=row.credentials_key_version,
         ai_rerank_enabled=project.ai_rerank_enabled,
         ai_digest_enabled=project.ai_digest_enabled,
+        ai_auto_summary_enabled=project.ai_auto_summary_enabled,
         ai_daily_token_cap=project.ai_daily_token_cap,
         digest_schedule_cron=project.digest_schedule_cron,
         created_at=row.created_at,
@@ -1361,6 +1369,43 @@ async def test_ai_provider(
     except Exception as exc:  # noqa: BLE001
         latency_ms = int((time.monotonic() - t0) * 1000)
         return AIProviderTestResponse(ok=False, latency_ms=latency_ms, error=str(exc))
+
+
+@router.get("/{project_id}/ai-provider/ollama-models")
+async def list_ollama_models(
+    project_id: uuid.UUID,
+    _admin: AuthUser = Depends(require_admin),
+    db: AsyncSession = Depends(get_session),
+) -> dict:
+    """List installed Ollama models so the UI can offer a dropdown.
+
+    Resolves the api_base via the same precedence as resolve_provider (project
+    api_base → OLLAMA_BASE_URL env → http://ollama:11434), so the dropdown
+    reflects what the worker will actually reach. project_id is in the path
+    only for auth scoping; the call hits the cluster-wide ollama instance.
+    """
+    import os  # noqa: PLC0415
+    import httpx  # noqa: PLC0415
+    from app.models.ai import AIProvider  # noqa: PLC0415
+
+    row = (
+        await db.execute(select(AIProvider).where(AIProvider.project_id == project_id))
+    ).scalar_one_or_none()
+    env_default = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
+    api_base = (row.api_base if row else None) or env_default
+    if "localhost" in api_base or "127.0.0.1" in api_base:
+        api_base = env_default
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            r = await client.get(f"{api_base.rstrip('/')}/api/tags")
+            r.raise_for_status()
+            data = r.json()
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "models": [], "error": str(exc)}
+
+    models = [m.get("name") for m in (data.get("models") or []) if m.get("name")]
+    return {"ok": True, "models": models}
 
 
 @router.post("/{project_id}/ai-rescore", status_code=202)
@@ -1435,6 +1480,45 @@ async def get_ai_rerank_status(
         in_progress_count=1 if in_progress else 0,
         total_count=int(total_count or 0),
     )
+
+
+# ---------------------------------------------------------------------------
+# Attack path analysis — Phase 35 / ATK-01..ATK-05
+# ---------------------------------------------------------------------------
+
+from app.services.llm.attack_path import analyse_attack_path  # noqa: E402
+from litellm.exceptions import APIConnectionError as LiteLLMConnectionError, Timeout as LiteLLMTimeout  # noqa: E402
+
+
+@router.post("/{project_id}/attack-path", response_model=AttackPathResponse)
+async def analyse_project_attack_path(
+    project_id: uuid.UUID,
+    body: AttackPathRequest,
+    _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
+    user: AuthUser = Depends(require_auth),
+    db: AsyncSession = Depends(get_session),
+) -> AttackPathResponse:
+    """Reconstruct MITRE ATT&CK kill-chain from project events via LLM.
+
+    Auth: Observer+ project membership required.
+    Body: { "days": 30 }  (default 30, max 90)
+    Returns: Structured attack path graph (nodes + edges).
+    """
+    _legacy_guard(project_id)
+    try:
+        return await analyse_attack_path(db, project_id, body.days, user)
+    except (LiteLLMConnectionError, LiteLLMTimeout) as exc:
+        raise HTTPException(
+            status_code=504,
+            detail="AI provider timed out — local models (Ollama) may be too slow for this request. Configure an OpenAI or Anthropic provider in Admin → AI Settings for faster results.",
+        ) from exc
+    except ValueError as exc:
+        msg = str(exc)
+        if "No events" in msg:
+            raise HTTPException(status_code=400, detail="No events in window") from exc
+        if "No AI provider" in msg or "provider" in msg.lower():
+            raise HTTPException(status_code=503, detail="AI provider not configured") from exc
+        raise HTTPException(status_code=500, detail=msg) from exc
 
 
 # ---------------------------------------------------------------------------

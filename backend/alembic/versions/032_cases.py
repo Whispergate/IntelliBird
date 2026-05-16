@@ -1,4 +1,4 @@
-"""Case management foundation — cases, case_events, case_iocs tables + 2 ENUMs.
+"""Case management foundation — cases, case_events, case_iocs tables.
 
 Revision ID: 032_cases
 Revises: a3f8b2c
@@ -13,14 +13,17 @@ Creates three tables that form the database foundation for case management:
   case_iocs      M2M junction: case ↔ ioc (HARD FK — iocs is a regular table).
 
 Design notes:
+  * status and severity are TEXT columns (not ENUMs) matching the ORM model (Mapped[str]).
+    Using TEXT avoids ENUM migration complexity and preserves flexibility for future
+    status/severity additions without a DDL migration.
   * case_events.event_id is a SOFT FK (no REFERENCES clause) because events is a
     TimescaleDB hypertable; real FK constraints are not supported against hypertables.
     Matches precedent in campaign_events.event_id (migration 026).
   * case_iocs.ioc_id is a HARD FK (REFERENCES iocs(id) ON DELETE CASCADE) — iocs
     is a regular PostgreSQL table and FK constraints are safe.
-  * ENUMs created via op.execute to match project pattern; column definitions use
-    create_type=False so SQLAlchemy never attempts CREATE TYPE at migration time.
-  * downgrade() drops tables in reverse dependency order then drops the ENUMs.
+  * Migration 029 (passive_dns_whois_age) sets search_path = ag_catalog, "$user", public
+    on the alembic connection. We reset it to "$user", public before creating tables
+    so that CREATE TABLE cases lands in the public schema, not ag_catalog.
 """
 from __future__ import annotations
 
@@ -35,20 +38,14 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # ------------------------------------------------------------------
-    # 1. Create ENUMs (outside any table DDL so both tables can reference them)
-    # ------------------------------------------------------------------
-    op.execute(
-        "CREATE TYPE case_status_enum AS ENUM "
-        "('open', 'in_progress', 'on_hold', 'resolved', 'closed')"
-    )
-    op.execute(
-        "CREATE TYPE case_severity_enum AS ENUM "
-        "('low', 'medium', 'high', 'critical')"
-    )
+    # Reset search_path to public before creating tables.
+    # Migration 029 (passive_dns_whois_age) sets search_path = ag_catalog, "$user", public
+    # on the alembic connection. Without this reset, op.create_table("cases", ...) would
+    # create the table in ag_catalog (where AGE stores its own graph tables) instead of public.
+    op.execute('SET search_path = "$user", public')
 
     # ------------------------------------------------------------------
-    # 2. cases — per-project investigation case
+    # 1. cases — per-project investigation case (status/severity as TEXT)
     # ------------------------------------------------------------------
     op.create_table(
         "cases",
@@ -67,13 +64,13 @@ def upgrade() -> None:
         sa.Column("title", sa.Text(), nullable=False),
         sa.Column(
             "status",
-            postgresql.ENUM(name="case_status_enum", create_type=False),
+            sa.Text(),
             nullable=False,
             server_default="open",
         ),
         sa.Column(
             "severity",
-            postgresql.ENUM(name="case_severity_enum", create_type=False),
+            sa.Text(),
             nullable=True,
         ),
         sa.Column("assignee_user_sub", sa.Text(), nullable=True),
@@ -103,7 +100,7 @@ def upgrade() -> None:
     op.create_index("ix_cases_status", "cases", ["status"])
 
     # ------------------------------------------------------------------
-    # 3. case_events — M2M case ↔ event (SOFT FK on event_id)
+    # 2. case_events — M2M case ↔ event (SOFT FK on event_id)
     # ------------------------------------------------------------------
     op.create_table(
         "case_events",
@@ -131,7 +128,7 @@ def upgrade() -> None:
     )
 
     # ------------------------------------------------------------------
-    # 4. case_iocs — M2M case ↔ ioc (HARD FK on ioc_id — iocs is not a hypertable)
+    # 3. case_iocs — M2M case ↔ ioc (HARD FK on ioc_id — iocs is not a hypertable)
     # ------------------------------------------------------------------
     op.create_table(
         "case_iocs",
@@ -165,5 +162,3 @@ def downgrade() -> None:
     op.drop_index("ix_cases_status", table_name="cases")
     op.drop_index("ix_cases_project_id", table_name="cases")
     op.drop_table("cases")
-    op.execute("DROP TYPE IF EXISTS case_severity_enum")
-    op.execute("DROP TYPE IF EXISTS case_status_enum")

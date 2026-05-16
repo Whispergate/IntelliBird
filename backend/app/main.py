@@ -61,6 +61,8 @@ from app.routers.easm import safelist_router as easm_safelist_router
 from app.routers.actors import router as actors_router
 from app.routers.campaigns import router as campaigns_router
 from app.routers.cases import router as cases_router
+from app.routers.cib_clusters import router as cib_clusters_router
+from app.routers.timeline import router as timeline_router
 from app.routers.admin.audit import router as audit_router
 from app.routers.misp import router as misp_router
 from app.routers.enrichment import router as enrichment_router
@@ -247,6 +249,10 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(actors_router, prefix="/api", tags=["actors"])
     fastapi_app.include_router(campaigns_router, prefix="/api", tags=["campaigns"])
     fastapi_app.include_router(cases_router, prefix="/api", tags=["cases"])
+    fastapi_app.include_router(cib_clusters_router, prefix="/api", tags=["cib-clusters"])
+    # Timeline router MUST be registered before projects_router so
+    # /api/projects/{id}/timeline/... resolves before the /{project_id} catchall.
+    fastapi_app.include_router(timeline_router, prefix="/api/projects/{project_id}", tags=["timeline"])
     fastapi_app.include_router(misp_router, prefix="/api", tags=["misp"])
     fastapi_app.include_router(audit_router, prefix="/api/admin", tags=["audit"])
     fastapi_app.include_router(enrichment_router, prefix="/api")

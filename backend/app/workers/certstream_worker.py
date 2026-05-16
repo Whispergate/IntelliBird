@@ -19,7 +19,6 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.config import settings
 from app.services.brand_synth import build_event_dict
 
 log = logging.getLogger(__name__)
@@ -253,6 +252,8 @@ async def _certstream_loop(session_factory: async_sessionmaker) -> None:
 
 async def main() -> None:
     """Entry point. Runs pattern refresh + certstream consumer concurrently."""
+    from app.config import settings  # noqa: PLC0415
+
     engine = create_async_engine(settings.DATABASE_URL)
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
 

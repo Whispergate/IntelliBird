@@ -397,6 +397,102 @@ async def _async_enrich(ioc_id: str) -> None:
                 ioc_id, upserted, len(applicable),
             )
 
+            # Phase 28: passive DNS + WHOIS + AGE sync for domain IOCs.
+            # This block runs AFTER the standard reputation enrichment above so that
+            # VT/AbuseIPDB/etc. are not affected. AGE sync errors are swallowed inside
+            # sync_domain_pivot — they must never fail the enrichment worker.
+            if ioc.type == "domain":
+                import httpx as _httpx  # noqa: PLC0415
+                from datetime import datetime as _dt, timezone as _tz  # noqa: PLC0415
+
+                from app.services.whois import fetch_and_cache_whois  # noqa: PLC0415
+                from app.services.age_sync import sync_domain_pivot  # noqa: PLC0415
+                from app.services.enrichment.external import (  # noqa: PLC0415
+                    securitytrails,
+                    mnemonic,
+                    riskiq_community,
+                )
+                from app.models.passive_dns import PassiveDnsRecord  # noqa: PLC0415
+
+                # WHOIS fetch — 7-day TTL gate inside the service
+                try:
+                    await fetch_and_cache_whois(session, redis, ioc.normalized_value)
+                except Exception as _whois_exc:  # noqa: BLE001
+                    logger.warning(
+                        "enrich_ioc_whois_failed ioc_id=%s domain=%s error=%r",
+                        ioc_id, ioc.normalized_value, _whois_exc,
+                    )
+
+                # Passive DNS enrichment — try each enabled provider in turn.
+                # get_enabled_providers already includes pdns providers for domain type.
+                _pdns_providers = [
+                    ("securitytrails", securitytrails),
+                    ("mnemonic", mnemonic),
+                    ("riskiq_community", riskiq_community),
+                ]
+                # Build a quick lookup of configured api_keys from already-resolved providers
+                _key_lookup: dict[str, str | None] = {
+                    p.provider: p.api_key for p in all_providers
+                }
+                _scope_lookup: dict[str, str] = {
+                    p.provider: p.project_scope_str for p in all_providers
+                }
+
+                async with _httpx.AsyncClient(
+                    limits=_httpx.Limits(max_connections=5, max_keepalive_connections=3),
+                    timeout=None,
+                ) as _pdns_client:
+                    for _provider_name, _provider_mod in _pdns_providers:
+                        # Only call provider if it's in the enabled set
+                        if _provider_name not in _key_lookup:
+                            continue
+                        _api_key = _key_lookup[_provider_name]
+                        _scope = _scope_lookup.get(_provider_name, "global")
+                        try:
+                            _pdns_rows = await _provider_mod.enrich_pdns(
+                                _pdns_client,
+                                redis,
+                                _api_key,
+                                ioc.normalized_value,
+                                _scope,
+                            )
+                        except Exception as _pdns_exc:  # noqa: BLE001
+                            logger.warning(
+                                "enrich_ioc_pdns_failed ioc_id=%s provider=%s error=%r",
+                                ioc_id, _provider_name, _pdns_exc,
+                            )
+                            continue
+
+                        if _pdns_rows:
+                            _now = _dt.now(_tz.utc)
+                            for _row in _pdns_rows:
+                                session.add(
+                                    PassiveDnsRecord(
+                                        ioc_id=ioc.id,
+                                        ip=_row["ip"],
+                                        first_seen=_row.get("first_seen"),
+                                        last_seen=_row.get("last_seen"),
+                                        source=_row["source"],
+                                        fetched_at=_now,
+                                    )
+                                )
+                            try:
+                                await session.commit()
+                            except Exception as _db_exc:  # noqa: BLE001
+                                logger.warning(
+                                    "enrich_ioc_pdns_commit_failed ioc_id=%s provider=%s error=%r",
+                                    ioc_id, _provider_name, _db_exc,
+                                )
+                                await session.rollback()
+
+                # AGE sync — build DomainPivot vertex + SHARES_INFRA edges
+                await sync_domain_pivot(
+                    session,
+                    str(ioc.id),
+                    ioc.normalized_value,
+                    str(ioc.project_id),
+                )
+
         # After successful commit, clean up the force_refresh flag if it was set
         if force_refresh:
             await redis.delete(force_refresh_key)

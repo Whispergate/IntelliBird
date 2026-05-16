@@ -34,6 +34,7 @@ from app.models.tiber import (  # noqa: F401  — Phase 18 / TIBER-01..03, AI-08
 )
 from app.models.iocs import IOC, IOCEventLink  # noqa: F401  — Phase 22 / IOC-01, IOC-08
 from app.models.enrichment import EnrichmentProvider, IOCEnrichment  # noqa: F401  # Phase 23
+from app.models.cib_clusters import CibCluster  # noqa: F401  — Phase 33 / DISINFO-02
 
 __all__ = [
     "Base",

@@ -1157,7 +1157,61 @@ async def test_traverse_2hop_positive_control(two_project_fixture, db_session):
 async def test_case_isolation(two_project_fixture, monkeypatch):
     """CASE-05: A Project A JWT cannot read Project B's cases.
 
-    Verifies that GET /api/projects/{project_b_id}/cases with a Project A JWT
-    returns 403, preventing cross-project case data leakage.
+    Verifies that:
+    1. Project B Contributor can create a case in Project B (POST 201).
+    2. Project A JWT cannot list Project B's cases:
+       - Either 403 (RBAC blocks cross-project access), or
+       - 200 with len(items) == 0 (isolation via WHERE project_id scope).
+    3. Project A JWT cannot fetch a specific Project B case by ID (403 or 404).
     """
-    pytest.skip("not yet implemented — plan 31-05 will turn this green")
+    _patch_auth(monkeypatch)
+    fx = two_project_fixture
+
+    # Step 1: Create a case in Project B as Project B Contributor (jwt_b)
+    async with await _client() as c:
+        create_r = await c.post(
+            f"/api/projects/{fx.project_b.id}/cases",
+            headers=_bearer(fx.jwt_b),
+            json={"title": "Project B Secret Case"},
+        )
+    assert create_r.status_code == 201, (
+        f"Expected 201 when creating case in Project B, got {create_r.status_code}: {create_r.text}"
+    )
+    project_b_case_id = create_r.json()["id"]
+
+    # Step 2: Try to list Project B's cases with Project A JWT
+    async with await _client() as c:
+        list_r = await c.get(
+            f"/api/projects/{fx.project_b.id}/cases",
+            headers=_bearer(fx.jwt_a),
+        )
+
+    if list_r.status_code == 403:
+        # RBAC blocked cross-project access — preferred isolation path
+        isolation_mode = "403 RBAC block"
+    elif list_r.status_code == 200:
+        items = list_r.json().get("items", [])
+        assert len(items) == 0, (
+            f"LEAK (CASE-05): Project A JWT listed {len(items)} Project B case(s) via "
+            f"GET /api/projects/{fx.project_b.id}/cases. "
+            f"Cases: {[i.get('title') for i in items]}"
+        )
+        isolation_mode = "200 with empty items (project_id scope)"
+    else:
+        raise AssertionError(
+            f"Unexpected status {list_r.status_code} for cross-project case list: {list_r.text}"
+        )
+
+    # Step 3: Try to fetch the specific Project B case by ID with Project A JWT
+    async with await _client() as c:
+        get_r = await c.get(
+            f"/api/projects/{fx.project_b.id}/cases/{project_b_case_id}",
+            headers=_bearer(fx.jwt_a),
+        )
+
+    assert get_r.status_code in (403, 404), (
+        f"LEAK (CASE-05): Project A JWT fetched Project B case {project_b_case_id} "
+        f"via GET /api/projects/{fx.project_b.id}/cases/{project_b_case_id}. "
+        f"Status: {get_r.status_code}. Expected 403 or 404. "
+        f"Body: {get_r.text}"
+    )

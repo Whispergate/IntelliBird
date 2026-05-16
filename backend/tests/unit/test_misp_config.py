@@ -4,7 +4,13 @@ MISP-01 — Admin configures MISP URL + API key per project via misp_configs tab
 
 Implemented in: backend/app/routers/misp.py (Phase 32 Plan 05)
 """
+import os
+
 import pytest
+
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("SECRET_KEY", "s" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 
 @pytest.mark.xfail(reason="misp_configs table/router not yet implemented", strict=False)

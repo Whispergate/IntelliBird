@@ -33,6 +33,7 @@ from app.workers.nvd import poll_nvd
 from app.workers.paste import poll_paste
 from app.workers.rss import poll_rss
 from app.workers.taxii import poll_taxii
+from app.workers.social_worker import poll_social
 from app.workers.telegram import poll_telegram
 from app.workers.tor_html import poll_tor_html
 from app.services.archiver import archive_once
@@ -51,6 +52,7 @@ _ACTOR_MAP: dict[str, object] = {
     "tor_html": poll_tor_html,  # Phase 24 / DARK-02
     "paste": poll_paste,  # Phase 24 / DARK-03
     "telegram": poll_telegram,  # Phase 24 / DARK-04
+    "social_listening": poll_social,  # Phase 33 / DISINFO-01
 }
 
 
@@ -529,6 +531,46 @@ def register_misp_jobs(scheduler: BlockingScheduler) -> None:  # type: ignore[no
     logger.info("misp_jobs_registered count=%d", len(rows))
 
 
+def register_social_jobs(scheduler: BlockingScheduler) -> None:  # type: ignore[no-untyped-def]
+    """Register per-source social listening poll jobs.
+
+    Phase 33 / DISINFO-01 — mirrors register_source_poll_jobs but filtered
+    to social_listening feed_type only.  Social sources use
+    source_config.poll_interval_seconds if present, otherwise default 300 s.
+    Minimum effective interval is 60 s.
+    """
+    from app.config import settings  # noqa: PLC0415
+
+    sync_url = settings.DATABASE_URL.replace("+asyncpg", "")
+    engine = create_engine(sync_url)
+    with SyncSession(engine) as session:
+        rows = session.execute(
+            text(
+                "SELECT id, "
+                "  COALESCE((source_config->>'poll_interval_seconds')::int, 300) AS interval_sec "
+                "FROM sources "
+                "WHERE feed_type = 'social_listening' AND enabled = true"
+            )
+        ).fetchall()
+    engine.dispose()
+
+    for row in rows:
+        source_id = str(row.id)
+        interval = max(60, int(row.interval_sec))
+        scheduler.add_job(
+            lambda sid=source_id: poll_social.send(sid),
+            IntervalTrigger(seconds=interval),
+            id=f"social_{source_id}",
+            replace_existing=True,
+            misfire_grace_time=60,
+        )
+        logger.info(
+            "scheduler_registered social_listening source_id=%s interval=%d",
+            source_id, interval,
+        )
+    logger.info("social_jobs_registered count=%d", len(rows))
+
+
 def build_scheduler() -> BlockingScheduler:
     scheduler = BlockingScheduler(timezone="UTC")
     # jobs (preserved)
@@ -650,6 +692,24 @@ def build_scheduler() -> BlockingScheduler:
         register_misp_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_misp_jobs_register_failed error=%s", e)
+    # Phase 33: social listening poll jobs (DISINFO-01)
+    try:
+        register_social_jobs(scheduler)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_social_jobs_register_failed error=%s", e)
+    # Phase 33: CIB detection sweep (DISINFO-02) — global, every 300s
+    try:
+        from app.services.cib_detector import run_cib_sweep  # noqa: PLC0415
+        scheduler.add_job(
+            run_cib_sweep,
+            IntervalTrigger(seconds=300),
+            id="cib_detection_global",
+            replace_existing=True,
+            misfire_grace_time=60,
+        )
+        logger.info("scheduler_registered cib_detection_global interval=300")
+    except Exception as e:  # noqa: BLE001
+        logger.warning("scheduler_cib_jobs_register_failed error=%s", e)
     return scheduler
 
 

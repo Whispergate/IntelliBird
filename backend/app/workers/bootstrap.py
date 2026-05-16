@@ -83,9 +83,13 @@ def fetch_with_fallback(matrix: str) -> dict | None:
 def bootstrap_attack() -> None:
     """Fetch ATT&CK for all three matrices with fallback chain."""
     from app.workers.attack_writer import upsert_techniques_sync
+    from app.workers.actor_writer import upsert_actors_sync
 
     for matrix in MATRICES:
         bundle = fetch_with_fallback(matrix)
         if bundle:
             count = upsert_techniques_sync(bundle, matrix)
             logger.info("attack_bootstrap_wrote matrix=%s count=%d", matrix, count)
+            if matrix in ("enterprise", "ics"):
+                actor_count = upsert_actors_sync(bundle, matrix)
+                logger.info("bootstrap_attack: upserted %d actors matrix=%s", actor_count, matrix)

@@ -543,3 +543,65 @@ export async function deleteBrandStoplistTerm(
   );
   await _handle<void>(r);
 }
+
+// ---------------------------------------------------------------------------
+// Attack Path Analysis — Phase 35 / ATK-01..ATK-04
+// ---------------------------------------------------------------------------
+
+export interface AttackPathNode {
+  id: string;
+  technique_id: string;
+  tactic: string;
+  name: string;
+  confidence: number;
+  rationale: string;
+}
+
+export interface AttackPathEdge {
+  from: string;
+  to: string;
+  rationale: string;
+}
+
+export interface AttackPathResponse {
+  nodes: AttackPathNode[];
+  edges: AttackPathEdge[];
+  truncated: boolean;
+  model_used: string;
+  events_analysed: number;
+}
+
+/**
+ * POST /api/projects/{id}/attack-path
+ * Triggers AI reconstruction of MITRE kill-chain from project events.
+ * Returns structured attack path graph suitable for Cytoscape overlay.
+ *
+ * @param projectId - Project UUID
+ * @param days - Lookback window in days (default 30, max 90)
+ */
+export async function analyseAttackPath(
+  projectId: string,
+  days: number = 30,
+): Promise<AttackPathResponse> {
+  const res = await _apiFetch(`/api/projects/${projectId}/attack-path`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ days }),
+  });
+  if (res.status === 400) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail ?? "No events in window");
+  }
+  if (res.status === 503) {
+    throw new Error("AI provider not configured for this project");
+  }
+  if (res.status === 504) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail ?? "AI provider timed out — try a cloud provider (OpenAI / Anthropic) in Admin → AI Settings");
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail ?? `Attack path analysis failed: HTTP ${res.status}`);
+  }
+  return res.json() as Promise<AttackPathResponse>;
+}

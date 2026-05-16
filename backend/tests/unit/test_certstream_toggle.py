@@ -4,7 +4,13 @@ CERT-03 — When certstream_enabled=True for a project, brand_monitor_tick_job
 
 Implemented in: backend/app/services/brand_monitor.py (Phase 32 Plan 03)
 """
+import os
+
 import pytest
+
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("SECRET_KEY", "s" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 
 @pytest.mark.xfail(reason="certstream_enabled guard not yet implemented", strict=False)

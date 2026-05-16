@@ -46,6 +46,8 @@ dependencies = [
   "scipy>=1.13,<2",
   "asyncwhois>=1.1,<2",
   "aiosmtplib>=3.0,<6",
+  "mastodon-py>=1.8,<2",
+  "datasketch>=1.6,<2",
 ]
 
 [dependency-groups]

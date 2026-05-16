@@ -232,7 +232,7 @@ async def patch_case(
     return case
 
 
-@router.delete("/{case_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{case_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def delete_case(
     project_id: uuid.UUID,
     case_id: uuid.UUID,
@@ -307,7 +307,7 @@ async def attach_events(
     return {"attached": attached_count}
 
 
-@router.delete("/{case_id}/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{case_id}/events/{event_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def detach_event(
     project_id: uuid.UUID,
     case_id: uuid.UUID,
@@ -411,7 +411,7 @@ async def attach_iocs(
     return {"attached": attached_count}
 
 
-@router.delete("/{case_id}/iocs/{ioc_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{case_id}/iocs/{ioc_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 async def detach_ioc(
     project_id: uuid.UUID,
     case_id: uuid.UUID,

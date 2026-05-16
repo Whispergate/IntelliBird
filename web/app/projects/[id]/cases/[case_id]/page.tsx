@@ -5,15 +5,16 @@ import { notFound } from "next/navigation";
 export default async function CaseDetailPage({
   params,
 }: {
-  params: { id: string; case_id: string };
+  params: Promise<{ id: string; case_id: string }>;
 }) {
+  const { id, case_id } = await params;
   let caseData;
   try {
-    const res = await _apiFetch(`/api/projects/${params.id}/cases/${params.case_id}`, { method: "GET" });
+    const res = await _apiFetch(`/api/projects/${id}/cases/${case_id}`, { method: "GET" });
     if (!res.ok) notFound();
     caseData = await res.json();
   } catch {
     notFound();
   }
-  return <CaseDetailClient projectId={params.id} initialCase={caseData} />;
+  return <CaseDetailClient projectId={id} initialCase={caseData} />;
 }

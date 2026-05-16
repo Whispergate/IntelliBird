@@ -244,26 +244,81 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
             db.add(summary_row)
             await db.flush()  # get summary_row.id
 
-            # 9. Suggestion extraction pass (second LLM call, non-streaming).
+            # 9. Suggestion extraction pass — second LLM call.
+            # Round-robin + failover across the configured model pool.
+            # Validated attack technique IDs are also auto-attached to the event
+            # via attack_technique_tags(tag_source='auto') so the graph + tag UI
+            # surface the AI-inferred TTPs without waiting for analyst review.
             try:
                 import litellm as _litellm  # noqa: PLC0415
-                suggestion_messages = build_suggestion_messages(event_payload)
-                sugg_kwargs: dict = {
-                    "model": model_str,
-                    "messages": suggestion_messages,
-                    "stream": False,
-                    "max_tokens": 512,
-                    "timeout": 60,
-                }
-                if api_base is not None:
-                    sugg_kwargs["api_base"] = api_base
-                if api_key is not None:
-                    sugg_kwargs["api_key"] = api_key
-                sugg_response = await _litellm.acompletion(**sugg_kwargs)
-                raw_json = sugg_response.choices[0].message.content or "{}"
+                from app.services.llm.client import resolve_provider_models  # noqa: PLC0415
+                from app.services.llm.suggestion_validator import (  # noqa: PLC0415
+                    validate_attack_technique,
+                )
+                from app.models.tags import AttackTechniqueTag  # noqa: PLC0415
+                from sqlalchemy.dialects.postgresql import insert as _pg_insert  # noqa: PLC0415
+
+                sugg_models, sugg_api_base, sugg_api_key = await resolve_provider_models(
+                    db, project_uuid,
+                )
+                # Enrich the suggestion payload with the freshly-generated
+                # summary so the LLM can map narrative behaviour to TTP IDs.
+                sugg_payload = {**event_payload, "ai_summary": summary_text}
+                suggestion_messages = build_suggestion_messages(sugg_payload)
+
+                raw_json = "{}"
+                last_exc: Exception | None = None
+                for attempt, chosen in enumerate(sugg_models):
+                    sugg_kwargs: dict = {
+                        "model": chosen,
+                        "messages": suggestion_messages,
+                        "stream": False,
+                        "max_tokens": 512,
+                        "timeout": 180,
+                    }
+                    if sugg_api_base is not None:
+                        sugg_kwargs["api_base"] = sugg_api_base
+                    if sugg_api_key is not None:
+                        sugg_kwargs["api_key"] = sugg_api_key
+                    try:
+                        sugg_response = await _litellm.acompletion(**sugg_kwargs)
+                        raw_json = sugg_response.choices[0].message.content or "{}"
+                        last_exc = None
+                        break
+                    except Exception as exc:  # noqa: BLE001
+                        last_exc = exc
+                        log.warning(
+                            "ai_suggestion_model_failed job_id=%s model=%s attempt=%d error=%r",
+                            job_id, chosen, attempt + 1, exc,
+                        )
+                if last_exc is not None:
+                    raise last_exc
+
+                # Some local models (gemma, llama) wrap JSON in markdown fences
+                # like ```json {...} ``` despite "strict JSON" instruction. Strip
+                # fences + leading/trailing prose before parsing.
+                cleaned = raw_json.strip()
+                if cleaned.startswith("```"):
+                    # Drop opening fence (with or without language tag) and any
+                    # closing fence at the end.
+                    cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else cleaned[3:]
+                    if cleaned.endswith("```"):
+                        cleaned = cleaned[:-3]
+                    cleaned = cleaned.strip()
+                # Sometimes the model emits prose then a JSON object — extract
+                # the first balanced {...} block.
+                if not cleaned.startswith("{"):
+                    start = cleaned.find("{")
+                    end = cleaned.rfind("}")
+                    if start != -1 and end > start:
+                        cleaned = cleaned[start:end + 1]
                 try:
-                    extracted = json.loads(raw_json)
-                except json.JSONDecodeError:
+                    extracted = json.loads(cleaned)
+                except json.JSONDecodeError as je:
+                    log.warning(
+                        "ai_suggestion_json_parse_failed job_id=%s error=%s raw=%r",
+                        job_id, je, raw_json[:200],
+                    )
                     extracted = {}
 
                 candidates: list[tuple[str, str]] = []
@@ -281,6 +336,101 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
                         project_id=project_uuid,
                         event_id=event_uuid,
                         candidates=candidates,
+                    )
+
+                # Auto-attach validated ATT&CK techniques as tags. Each
+                # technique_id is re-validated against the catalog (cheap —
+                # already-cached lookup). Unknown IDs are skipped silently;
+                # they remain in ai_suggestions for analyst review.
+                attached = 0
+                rejected = 0
+                evidence = (summary_text or "")[:500]
+                raw_ids = extracted.get("attack_technique_ids", []) or []
+                # Defensive: model sometimes returns objects like
+                # [{"id": "T1234", "confidence": 0.9}] instead of plain strings.
+                normalized_ids: list[str] = []
+                for item in raw_ids:
+                    if isinstance(item, str):
+                        normalized_ids.append(item.strip())
+                    elif isinstance(item, dict):
+                        v = item.get("id") or item.get("technique_id") or item.get("value")
+                        if isinstance(v, str):
+                            normalized_ids.append(v.strip())
+                for tech_id in normalized_ids:
+                    try:
+                        if await validate_attack_technique(db, tech_id):
+                            await db.execute(
+                                _pg_insert(AttackTechniqueTag.__table__)
+                                .values(
+                                    event_id=event_uuid,
+                                    technique_id=tech_id,
+                                    tag_source="auto",
+                                    confidence=0.7,
+                                    evidence_text=evidence,
+                                )
+                                .on_conflict_do_nothing()
+                            )
+                            attached += 1
+                        else:
+                            rejected += 1
+                    except Exception as tag_exc:  # noqa: BLE001
+                        log.warning(
+                            "ai_attack_tag_attach_failed job_id=%s tech=%s error=%r",
+                            job_id, tech_id, tag_exc,
+                        )
+                log.info(
+                    "ai_attack_tags_summary job_id=%s event_id=%s extracted=%d "
+                    "attached=%d rejected_unknown=%d",
+                    job_id, event_uuid, len(normalized_ids), attached, rejected,
+                )
+
+                # Merge AI-extracted free-form tags into events.tags. Sanitised
+                # to lowercase alphanumeric + hyphens, capped at 32 chars and
+                # max 8 per event. De-duplicates against existing tags.
+                import re as _re  # noqa: PLC0415
+                MAX_TAGS = 8
+                MAX_TAG_LEN = 32
+                ALLOWED_TAG_RE = _re.compile(r"^[a-z0-9][a-z0-9-]{0,31}$")
+                STOPLIST = {
+                    "malware", "attack", "security", "threat", "cyber",
+                    "incident", "vulnerability", "exploit",
+                }
+                raw_tags = extracted.get("tags", []) or []
+                clean_tags: list[str] = []
+                for t in raw_tags:
+                    if not isinstance(t, str):
+                        continue
+                    norm = t.strip().lower().replace(" ", "-").replace("_", "-")
+                    norm = _re.sub(r"-{2,}", "-", norm).strip("-")
+                    if not norm or len(norm) > MAX_TAG_LEN:
+                        continue
+                    if not ALLOWED_TAG_RE.match(norm) or norm in STOPLIST:
+                        continue
+                    if norm not in clean_tags:
+                        clean_tags.append(norm)
+                    if len(clean_tags) >= MAX_TAGS:
+                        break
+
+                tags_added = 0
+                if clean_tags:
+                    existing_tags = list(event_row.tags or [])
+                    new_tags = [t for t in clean_tags if t not in existing_tags]
+                    if new_tags:
+                        merged = existing_tags + new_tags
+                        await db.execute(
+                            update(Event)
+                            .where(
+                                Event.id == event_uuid,
+                                Event.observed_at == event_row.observed_at,
+                            )
+                            .values(tags=merged)
+                        )
+                        tags_added = len(new_tags)
+                if clean_tags or tags_added:
+                    log.info(
+                        "ai_event_tags_merged job_id=%s event_id=%s "
+                        "extracted=%d added=%d",
+                        job_id, event_uuid, len(clean_tags), tags_added,
                     )
             except Exception as sugg_exc:  # noqa: BLE001
                 log.warning(
@@ -340,7 +490,6 @@ async def _async_rescore(project_id: str) -> None:
         async with session_factory() as db:
             from app.models.events import Event  # noqa: PLC0415
             from app.models.projects import Project  # noqa: PLC0415
-            from app.services.llm.client import resolve_provider  # noqa: PLC0415
             import litellm as _litellm  # noqa: PLC0415
 
             project_row: Project | None = (
@@ -351,8 +500,9 @@ async def _async_rescore(project_id: str) -> None:
                 log.warning("ai_rescore_project_not_found project_id=%s", project_id)
                 return
 
-            # Resolve provider.
-            model_str, api_base, api_key = await resolve_provider(db, project_uuid)
+            # Resolve provider — full model pool for round-robin + failover.
+            from app.services.llm.client import resolve_provider_models  # noqa: PLC0415
+            models, api_base, api_key = await resolve_provider_models(db, project_uuid)
 
             # Query events for last 24h, ordered by score DESC.
             rows = (
@@ -361,65 +511,107 @@ async def _async_rescore(project_id: str) -> None:
                     .where(
                         Event.project_id == project_uuid,
                         Event.archived.is_(False),
-                        text("observed_at > NOW() - INTERVAL '24 hours'"),
+                        text("observed_at > NOW() - INTERVAL '48 hours'"),
                     )
                     .order_by(Event.score.desc().nullslast())
                 )
             ).all()
 
-            log.info("ai_rescore_events_fetched project_id=%s count=%d", project_id, len(rows))
+            log.info(
+                "ai_rescore_events_fetched project_id=%s count=%d models=%d",
+                project_id, len(rows), len(models),
+            )
+
+            # Circuit breaker: N consecutive event-level failures (any model) → abort.
+            # Prevents a misconfigured model from burning hours on a 29k-event batch.
+            CB_THRESHOLD = 3
+            consecutive_failures = 0
+            rr_index = 0  # round-robin pointer over `models`
 
             updated_count = 0
+            aborted = False
             for row in rows:
                 event_id, observed_at, rule_score, title, description = row
 
                 if rule_score is None:
                     continue  # Cannot clamp without a base score.
 
-                # Single non-streaming acompletion for reranking.
-                try:
-                    rerank_messages = [
-                        {
-                            "role": "system",
-                            "content": (
-                                "You are a threat intelligence scoring assistant. "
-                                "Given an event, suggest a score adjustment in the range "
-                                "[-15, +15] relative to the existing rule-computed score. "
-                                "Respond with ONLY a JSON object: {\"adjustment\": <number>}. "
-                                "No explanation."
-                            ),
-                        },
-                        {
-                            "role": "user",
-                            "content": json.dumps({
-                                "title": title,
-                                "description": description,
-                                "rule_score": float(rule_score),
-                            }, default=str),
-                        },
-                    ]
+                rerank_messages = [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are a threat intelligence scoring assistant. "
+                            "Given an event, suggest a score adjustment in the range "
+                            "[-15, +15] relative to the existing rule-computed score. "
+                            "Respond with ONLY a JSON object: {\"adjustment\": <number>}. "
+                            "No explanation."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": json.dumps({
+                            "title": title,
+                            "description": description,
+                            "rule_score": float(rule_score),
+                        }, default=str),
+                    },
+                ]
+
+                # Failover loop: try models[rr_index], on error advance and try next.
+                # On success, leave rr_index pointing at the model that worked + 1
+                # so the NEXT event round-robins to the following model.
+                raw_adjustment: float | None = None
+                last_exc: Exception | None = None
+                for attempt in range(len(models)):
+                    chosen = models[(rr_index + attempt) % len(models)]
                     rerank_kwargs: dict = {
-                        "model": model_str,
+                        "model": chosen,
                         "messages": rerank_messages,
                         "stream": False,
                         "max_tokens": 64,
-                        "timeout": 30,
+                        # Large CPU models (e.g. gemma4:latest at ~9.6GB) can take
+                        # 60-90s for the first prompt while the model loads.
+                        "timeout": 180,
                     }
                     if api_base is not None:
                         rerank_kwargs["api_base"] = api_base
                     if api_key is not None:
                         rerank_kwargs["api_key"] = api_key
+                    try:
+                        response = await _litellm.acompletion(**rerank_kwargs)
+                        raw_text = response.choices[0].message.content or "{}"
+                        data = json.loads(raw_text)
+                        raw_adjustment = float(data.get("adjustment", 0))
+                        # Advance round-robin past the model that worked.
+                        rr_index = (rr_index + attempt + 1) % len(models)
+                        break
+                    except Exception as exc:  # noqa: BLE001
+                        last_exc = exc
+                        log.warning(
+                            "ai_rescore_event_model_failed project_id=%s event_id=%s "
+                            "model=%s attempt=%d error=%r",
+                            project_id, event_id, chosen, attempt + 1, exc,
+                        )
 
-                    response = await _litellm.acompletion(**rerank_kwargs)
-                    raw_text = response.choices[0].message.content or "{}"
-                    data = json.loads(raw_text)
-                    raw_adjustment = float(data.get("adjustment", 0))
-                except Exception as exc:  # noqa: BLE001
+                if raw_adjustment is None:
+                    # All models failed for this event.
+                    consecutive_failures += 1
                     log.warning(
-                        "ai_rescore_event_llm_failed project_id=%s event_id=%s error=%r",
-                        project_id, event_id, exc,
+                        "ai_rescore_event_llm_failed project_id=%s event_id=%s "
+                        "consecutive=%d/%d error=%r",
+                        project_id, event_id, consecutive_failures, CB_THRESHOLD, last_exc,
                     )
+                    if consecutive_failures >= CB_THRESHOLD:
+                        log.error(
+                            "ai_rescore_circuit_open project_id=%s aborting batch "
+                            "after %d consecutive failures across %d model(s)",
+                            project_id, consecutive_failures, len(models),
+                        )
+                        aborted = True
+                        break
                     continue
+
+                consecutive_failures = 0  # success resets the breaker
 
                 # ±15 clamp then overall [0, 100] clamp.
                 clamped_adjustment = max(-15, min(15, raw_adjustment))
@@ -442,8 +634,8 @@ async def _async_rescore(project_id: str) -> None:
 
             await db.commit()
             log.info(
-                "ai_rescore_project_complete project_id=%s updated=%d",
-                project_id, updated_count,
+                "ai_rescore_project_complete project_id=%s updated=%d aborted=%s",
+                project_id, updated_count, aborted,
             )
 
     finally:
@@ -489,13 +681,13 @@ async def _async_digest(project_id: str) -> None:
                 log.warning("ai_digest_project_not_found project_id=%s", project_id)
                 return
 
-            # Window count M — total events in last 24h for project.
+            # Window count M — total events in last 48h for project.
             m_result = await db.execute(
                 select(Event.id)
                 .where(
                     Event.project_id == project_uuid,
                     Event.archived.is_(False),
-                    text("observed_at > NOW() - INTERVAL '24 hours'"),
+                    text("observed_at > NOW() - INTERVAL '48 hours'"),
                 )
             )
             window_count = len(m_result.all())
@@ -507,7 +699,7 @@ async def _async_digest(project_id: str) -> None:
                     .where(
                         Event.project_id == project_uuid,
                         Event.archived.is_(False),
-                        text("observed_at > NOW() - INTERVAL '24 hours'"),
+                        text("observed_at > NOW() - INTERVAL '48 hours'"),
                     )
                     .order_by(
                         text("COALESCE(ai_score, score) DESC NULLS LAST")
@@ -845,3 +1037,252 @@ def ai_draft_scenario_narrative(
             job_id, scenario_id, exc,
         )
         raise
+
+
+# ---------------------------------------------------------------------------
+# _async_summarise_case — ai_summarise_case implementation (Phase 31 / CASE-05)
+# ---------------------------------------------------------------------------
+
+
+async def _async_summarise_case(case_id: str, project_id: str) -> None:
+    """Narrative roll-up of all events linked to a case.
+
+    Clones _async_digest pattern (non-streaming acompletion, writes to row field).
+    Output: cases.summary_md — frontend polls GET /api/projects/{id}/cases/{id}.
+    No SSE keys needed (poll-based per CONTEXT.md decision).
+    """
+    from uuid import UUID as _UUID  # noqa: PLC0415
+
+    case_uuid = _UUID(case_id)
+    project_uuid = _UUID(project_id)
+    engine, session_factory = _make_engine_and_session()
+    try:
+        async with session_factory() as db:
+            from app.models.cases import Case, CaseEvent  # noqa: PLC0415
+            from app.models.events import Event  # noqa: PLC0415
+            from app.models.projects import Project  # noqa: PLC0415
+            from app.services.llm.client import (  # noqa: PLC0415
+                resolve_provider, DEFAULT_MAX_TOKENS_DIGEST,
+            )
+            from app.services.llm.token_budget import (  # noqa: PLC0415
+                check_and_reserve_budget, record_actual_tokens,
+            )
+            from app.services.audit import log_audit  # noqa: PLC0415
+            from app.services.redis_client import get_redis  # noqa: PLC0415
+            import litellm as _litellm  # noqa: PLC0415
+            from sqlalchemy import select as _select  # noqa: PLC0415
+
+            # Load case + scope to project
+            case_row: Case | None = (
+                await db.execute(
+                    _select(Case).where(
+                        Case.id == case_uuid,
+                        Case.project_id == project_uuid,
+                    )
+                )
+            ).scalar_one_or_none()
+
+            if case_row is None:
+                log.warning(
+                    "ai_summarise_case_not_found case_id=%s project_id=%s",
+                    case_id, project_id,
+                )
+                return
+
+            # Load linked event UUIDs
+            event_link_rows = (
+                await db.execute(
+                    _select(CaseEvent).where(CaseEvent.case_id == case_uuid)
+                )
+            ).scalars().all()
+
+            event_ids = [row.event_id for row in event_link_rows]
+
+            if not event_ids:
+                log.info(
+                    "ai_summarise_case_no_events case_id=%s", case_id
+                )
+                case_row.summary_md = (
+                    "No events are attached to this case yet. "
+                    "Attach events and regenerate the summary."
+                )
+                log_audit(
+                    db,
+                    action="summarised",
+                    resource_type="case",
+                    resource_id=case_id,
+                    project_id=project_uuid,
+                    after={"summary_md": case_row.summary_md},
+                )
+                await db.commit()
+                return
+
+            # Load event details (title + description) for linked events
+            event_rows = (
+                await db.execute(
+                    _select(Event).where(Event.id.in_(event_ids))
+                )
+            ).scalars().all()
+
+            events_payload = [
+                {
+                    "id": str(e.id),
+                    "title": e.title,
+                    "description": e.description or "",
+                    "observed_at": str(e.observed_at),
+                }
+                for e in event_rows
+            ]
+
+            # Resolve LLM provider for project
+            try:
+                model_str, api_base, api_key = await resolve_provider(db, project_uuid)
+            except ValueError as exc:
+                log.warning("ai_summarise_case_no_provider case_id=%s: %s", case_id, exc)
+                case_row.summary_md = (
+                    "**AI provider not configured.** "
+                    "Set up an AI provider in Project Settings → AI Provider, then regenerate."
+                )
+                await db.commit()
+                return
+
+            # Token budget check
+            estimated_tokens = sum(
+                len(ev.get("title", "")) + len(ev.get("description", ""))
+                for ev in events_payload
+            ) // 4 + 200  # rough estimate
+
+            project_row: Project | None = (
+                await db.execute(_select(Project).where(Project.id == project_uuid))
+            ).scalar_one_or_none()
+            token_cap = (project_row.ai_daily_token_cap if project_row else None) or 100_000
+
+            redis = await get_redis()
+            allowed, used = await check_and_reserve_budget(redis, project_id, estimated_tokens, token_cap)
+            if not allowed:
+                log.warning(
+                    "ai_summarise_case_budget_exceeded case_id=%s used=%d",
+                    case_id, used,
+                )
+                case_row.summary_md = (
+                    "**Daily AI token budget exhausted.** Resets at 00:00 UTC."
+                )
+                await db.commit()
+                return
+
+            # Build prompt messages
+            case_summary_prompt = (
+                "You are an intelligence analyst. Produce a concise narrative summary "
+                "of the following threat intelligence events linked to this investigation case. "
+                "Highlight key threat actors, TTPs, IOCs, and recommended actions. "
+                "Use Markdown formatting with headers."
+            )
+            events_text = "\n\n".join(
+                f"### Event {i+1}: {ev['title']}\n{ev['description']}\n(observed: {ev['observed_at']})"
+                for i, ev in enumerate(events_payload)
+            )
+            messages = [
+                {"role": "system", "content": case_summary_prompt},
+                {
+                    "role": "user",
+                    "content": f"Case: {case_row.title}\n\nLinked Events:\n{events_text}",
+                },
+            ]
+
+            summarise_kwargs: dict = {
+                "model": model_str,
+                "messages": messages,
+                "stream": False,
+                "max_tokens": DEFAULT_MAX_TOKENS_DIGEST,
+                "timeout": 120,
+            }
+            if api_base is not None:
+                summarise_kwargs["api_base"] = api_base
+            if api_key is not None:
+                summarise_kwargs["api_key"] = api_key
+
+            response = await _litellm.acompletion(**summarise_kwargs)
+            summary_text: str = response.choices[0].message.content or ""
+            actual_tokens = 0
+            try:
+                actual_tokens = response.usage.total_tokens or 0
+            except Exception:  # noqa: BLE001
+                actual_tokens = estimated_tokens
+            await record_actual_tokens(redis, project_id, actual_tokens - estimated_tokens)
+
+            case_row.summary_md = summary_text
+            log_audit(
+                db,
+                action="summarised",
+                resource_type="case",
+                resource_id=case_id,
+                project_id=project_uuid,
+                after={"summary_md_len": len(summary_text)},
+            )
+            await db.commit()
+            log.info(
+                "ai_summarise_case_complete case_id=%s tokens=%d",
+                case_id, actual_tokens,
+            )
+
+    finally:
+        await engine.dispose()
+
+
+# ---------------------------------------------------------------------------
+# ai_summarise_case Dramatiq actor (CASE-05)
+# ---------------------------------------------------------------------------
+
+
+async def _write_case_summary_error(case_id: str, project_id: str, msg: str) -> None:
+    """Best-effort: write an error string to cases.summary_md so the frontend poll resolves."""
+    from uuid import UUID as _UUID  # noqa: PLC0415
+    from app.models.cases import Case  # noqa: PLC0415
+    from sqlalchemy import select as _select  # noqa: PLC0415
+    engine, session_factory = _make_engine_and_session()
+    try:
+        async with session_factory() as db:
+            row: Case | None = (
+                await db.execute(
+                    _select(Case).where(
+                        Case.id == _UUID(case_id),
+                        Case.project_id == _UUID(project_id),
+                    )
+                )
+            ).scalar_one_or_none()
+            if row is not None:
+                row.summary_md = msg
+                await db.commit()
+    except Exception:  # noqa: BLE001
+        log.exception("ai_summarise_case_error_write_failed case_id=%s", case_id)
+    finally:
+        await engine.dispose()
+
+
+@dramatiq.actor(queue_name="ai", max_retries=0)
+def ai_summarise_case(case_id: str, project_id: str) -> None:
+    """Narrative roll-up of all linked case events. Writes to cases.summary_md.
+
+    Args:
+        case_id:    UUID string of the case to summarise.
+        project_id: UUID string of the owning project.
+
+    Frontend polls: GET /api/projects/{id}/cases/{id} every 3s until summary_md != null.
+    No SSE keys — poll-based per Phase 31 CONTEXT.md decision.
+    """
+    try:
+        asyncio.run(_async_summarise_case(case_id, project_id))
+        log.info("ai_summarise_case_complete case_id=%s", case_id)
+    except Exception as exc:
+        log.exception(
+            "ai_summarise_case_failed case_id=%s error=%r", case_id, exc
+        )
+        # Write error to summary_md so frontend poll resolves instead of timing out.
+        asyncio.run(
+            _write_case_summary_error(
+                case_id,
+                project_id,
+                f"**Summary generation failed:** {type(exc).__name__}: {exc}\n\n"
+                "Check the AI worker logs. Verify the AI provider is reachable and the model is available.",
+            )
+        )

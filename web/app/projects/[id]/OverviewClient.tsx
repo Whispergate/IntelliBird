@@ -40,6 +40,7 @@ import { ArchivedBadge } from "../components/ArchivedBadge";
 import { Button } from "@/components/ui/button";
 import { ExportDialog } from "./components/ExportDialog";
 import { useProjectRole } from "./ProjectRoleProvider";
+import InfluenceOpsWidget from "./InfluenceOpsWidget";
 
 export function OverviewClient({ project }: { project: ProjectResponse }) {
   const { isObserver } = useProjectRole();
@@ -48,6 +49,7 @@ export function OverviewClient({ project }: { project: ProjectResponse }) {
     project.member_count ?? null,
   );
   const [sourceCount, setSourceCount] = useState<number | null>(null);
+  const [socialSourceCount, setSocialSourceCount] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,7 +61,12 @@ export function OverviewClient({ project }: { project: ProjectResponse }) {
         ]);
         if (cancelled) return;
         if (members) setMembershipCount(members.length);
-        if (sources) setSourceCount(sources.length);
+        if (sources) {
+          setSourceCount(sources.length);
+          setSocialSourceCount(
+            sources.filter((s) => s.feed_type === "social_listening").length
+          );
+        }
       } catch {
         // Silent degrade to "—" — overview is a summary view, not a
         // load-bearing surface. Transient backend errors should not block
@@ -141,6 +148,11 @@ export function OverviewClient({ project }: { project: ProjectResponse }) {
           </dd>
         </dl>
       </section>
+
+      <InfluenceOpsWidget
+        projectId={project.id}
+        socialSourceCount={socialSourceCount}
+      />
 
       <p className="text-sm text-muted-foreground">
         Full widget grid (event-count sparkline, top tags, source breakdown)

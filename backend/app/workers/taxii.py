@@ -23,7 +23,7 @@ from taxii2client.v20 import Server as _taxii_v20_Server_real
 from taxii2client.v21 import Server as _taxii_v21_Server_real
 
 from app.crypto import decrypt_credentials
-from app.ingest.normalise import _persist_event, update_source_health
+from app.ingest.normalise import _persist_event_for_bindings, update_source_health
 from app.services.source_health import update_silent_failure_count, record_ingest_stats
 from app.ingest.taxii_parser import normalise_stix_object, parse_stix_bundle
 from app.models.markings import TlpMarking
@@ -214,13 +214,65 @@ def poll_taxii_impl(source_id_str: str) -> None:
                         row = normalise_stix_object(p, source_id, tlp_cache)
                         if row is None:
                             continue
-                        rc = _persist_event(session, row)
-                        if rc == 1:
-                            inserted += 1
+                        rc, _fanout = _persist_event_for_bindings(session, row, source_id)
+                        if rc >= 1:
+                            inserted += rc
                         parse_ok += 1
                         mod_field = row["raw_stix"].get("modified") or row["raw_stix"].get("created")
                         if mod_field and (latest_modified_str is None or str(mod_field) > latest_modified_str):
                             latest_modified_str = str(mod_field)
+                        # Phase 27 YARA-03: scan STIX pattern string against yara rules with stix_pattern_scan metadata
+                        _raw = row.get("raw_stix") or {}
+                        _stix_pattern = _raw.get("pattern", "") if isinstance(_raw, dict) else ""
+                        if _stix_pattern:
+                            try:
+                                _event_row = session.execute(
+                                    text(
+                                        "SELECT id FROM events WHERE source_id = :sid AND content_hash = :ch "
+                                        "ORDER BY observed_at DESC LIMIT 1"
+                                    ),
+                                    {"sid": str(source_id), "ch": row.get("content_hash")},
+                                ).one_or_none()
+                                _event_id = uuid.UUID(str(_event_row[0])) if _event_row else None
+                                _project_id_val = row.get("project_id")
+                                _project_id = uuid.UUID(str(_project_id_val)) if _project_id_val else None
+                                if _event_id is not None:
+                                    import asyncio  # noqa: PLC0415
+                                    from app.services.yara_engine import (  # noqa: PLC0415
+                                        scan_stix_pattern,
+                                        write_yara_matches,
+                                    )
+
+                                    async def _run_stix_yara_scan(
+                                        _pid: uuid.UUID | None,
+                                        _eid: uuid.UUID,
+                                        _pattern: str,
+                                    ) -> None:
+                                        from app.config import settings as _settings  # noqa: PLC0415
+                                        from sqlalchemy.ext.asyncio import (  # noqa: PLC0415
+                                            create_async_engine,
+                                            AsyncSession,
+                                        )
+                                        _async_engine = create_async_engine(_settings.DATABASE_URL)
+                                        try:
+                                            async with AsyncSession(_async_engine) as _adb:
+                                                _hits = await scan_stix_pattern(_adb, _pid, _pattern)
+                                                if _hits:
+                                                    await write_yara_matches(
+                                                        _adb, _hits, _eid, scan_context="stix_pattern"
+                                                    )
+                                                    await _adb.commit()
+                                        finally:
+                                            await _async_engine.dispose()
+
+                                    asyncio.run(
+                                        _run_stix_yara_scan(_project_id, _event_id, _stix_pattern)
+                                    )
+                            except Exception as _yara_exc:  # noqa: BLE001
+                                logger.warning(
+                                    "stix_yara_scan_error event_id=%s error=%r",
+                                    row.get("content_hash"), _yara_exc,
+                                )
                     except Exception as obj_err:  # noqa: BLE001
                         parse_error += 1
                         logger.error(

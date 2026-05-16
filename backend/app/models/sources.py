@@ -20,7 +20,10 @@ class Source(Base):
     )
     name: Mapped[str] = mapped_column(Text, nullable=False)
     feed_type: Mapped[str] = mapped_column(
-        Enum("rss", "taxii", "nvd", "custom", name="feed_type_enum", create_type=False),
+        Enum(
+            "rss", "taxii", "nvd", "custom", "certstream", "misp", "social_listening",
+            name="feed_type_enum", create_type=False,
+        ),
         nullable=False,
     )
     url: Mapped[str] = mapped_column(Text, nullable=False)
@@ -67,6 +70,26 @@ class Source(Base):
     # .validate_scrape_config (item_selector / title_selector / link_selector
     # required). Added by migration 017_html_scrape.
     scrape_config: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # Phase 33 / DISINFO-01: social listening source config. Populated only
+    # when feed_type='social_listening'. Schema:
+    # {platform: "mastodon"|"4chan"|"reddit",
+    #  instance_url: str (Mastodon only),
+    #  board: str (4chan only),
+    #  subreddit: str (Reddit only),
+    #  topic_keywords: list[str],
+    #  poll_interval_seconds: int (default 300)}
+    # Added by migration 034_social_listening.
+    source_config: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # Phase 24 / DARK-07: operator must explicitly authorise dark-web source types.
+    # Set to True via API after operator acknowledges OPSEC warning in UI.
+    # Migration 025_darkweb_sources adds this column with DEFAULT false.
+    opsec_authorised: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
+    # Phase 24 / DARK-04: Telethon StringSession for telegram sources, encrypted
+    # via AES-256-GCM (same crypto.encrypt_credentials pattern as enrichment_providers).
+    # NULL for non-telegram source types. Migration 025_darkweb_sources adds this column.
+    session_enc: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 class SourceIngestStats(Base):

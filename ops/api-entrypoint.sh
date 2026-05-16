@@ -40,6 +40,20 @@ python -m app.scripts.seed_iocs || {
     echo "WARN: seed_iocs failed — IOC backfill may be incomplete; admin can re-run via POST /api/admin/iocs/backfill" >&2
 }
 
+# --- Threat actor seed: MITRE ATT&CK enterprise intrusion-sets -------------
+# Idempotent upsert on mitre_group_id. Falls through TAXII → GitHub → bundled.
+# Analyst-edited profile_md is preserved across re-bootstraps.
+python -m app.scripts.seed_actors || {
+    echo "WARN: seed_actors failed — threat_actors table may be empty; re-run bootstrap_attack from Admin > Maintenance" >&2
+}
+
+# --- Threat actor attribution seed: country / motivation / sophistication --
+# Idempotent UPDATE WHERE mitre_group_id = :id. Only patches rows seeded by
+# seed_actors — non-matching group IDs are silently skipped.
+python -m app.scripts.seed_actor_attributions || {
+    echo "WARN: seed_actor_attributions failed — country/motivation/sophistication columns may be empty" >&2
+}
+
 exec gunicorn app.main:app \
     --worker-class uvicorn.workers.UvicornWorker \
     --workers 2 \

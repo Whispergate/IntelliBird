@@ -1693,3 +1693,80 @@ export async function testMispConnection(
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// ── Phase 33: Timeline + CIB Clusters ─────────────────────────────────────
+
+export interface BucketRow {
+  ts: string; // ISO-8601
+  counts_by_tag: Record<string, number>;
+}
+
+export interface TimelineSeriesResponse {
+  buckets: BucketRow[];
+  tags: string[];
+  bucket_interval: "hour" | "day" | "week";
+}
+
+export interface HeatmapCell {
+  hour: number; // 0-23
+  dow: number; // 0-6 (0=Monday)
+  count: number;
+}
+
+export interface TimelineHeatmapResponse {
+  cells: HeatmapCell[];
+}
+
+export interface CibCluster {
+  id: string;
+  project_id: string;
+  detected_at: string;
+  member_count: number;
+  severity: "medium" | "high";
+  evidence: {
+    delta_ts_seconds?: number;
+    similarity_score?: number;
+  } | null;
+}
+
+export interface CibClustersResponse {
+  clusters: CibCluster[];
+  total: number;
+}
+
+export async function getTimelineSeries(
+  projectId: string,
+  rangeDays = 30,
+  params?: { tag?: string[]; tier?: string[] },
+): Promise<TimelineSeriesResponse> {
+  const search = new URLSearchParams({ range_days: String(rangeDays) });
+  params?.tag?.forEach((t) => search.append("tag", t));
+  params?.tier?.forEach((t) => search.append("tier", t));
+  const res = await _apiFetch(`/api/projects/${projectId}/timeline/series?${search}`);
+  if (!res.ok) throw new Error(`timeline/series: ${res.status}`);
+  return res.json();
+}
+
+export async function getTimelineHeatmap(
+  projectId: string,
+  rangeDays = 30,
+): Promise<TimelineHeatmapResponse> {
+  const res = await _apiFetch(
+    `/api/projects/${projectId}/timeline/heatmap?range_days=${rangeDays}`,
+  );
+  if (!res.ok) throw new Error(`timeline/heatmap: ${res.status}`);
+  return res.json();
+}
+
+export async function getCibClusters(
+  projectId: string,
+  limit = 5,
+): Promise<CibClustersResponse> {
+  const res = await fetch(`/api/projects/${projectId}/cib-clusters?limit=${limit}`);
+  if (!res.ok) {
+    // 404 means no clusters yet — return empty gracefully
+    if (res.status === 404) return { clusters: [], total: 0 };
+    throw new Error(`cib-clusters: ${res.status}`);
+  }
+  return res.json();
+}

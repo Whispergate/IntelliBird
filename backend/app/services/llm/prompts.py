@@ -50,10 +50,25 @@ SYSTEM_PROMPT_META_V1: str = (
 )
 
 SYSTEM_PROMPT_SUGGESTIONS_V1: str = (
-    "Extract structured entities from the supplied event JSON. Return strict JSON "
-    "with keys cve_ids[], attack_technique_ids[], actor_names[]. CVE IDs match "
-    "^CVE-\\d{4}-\\d{4,7}$. ATT&CK technique IDs match ^T\\d{4}(\\.\\d{3})?$. "
-    "Do not include any other keys."
+    "You are a threat intelligence analyst. Read the supplied event JSON "
+    "(includes title, description, and a prior AI-generated summary when "
+    "available) and extract structured entities. INFER MITRE ATT&CK techniques "
+    "(TTPs) even when not literally named — map described behaviour to the "
+    "best-fitting technique IDs (e.g. spearphishing attachment → T1566.001, "
+    "credential dumping → T1003, lateral movement via PsExec → T1021.002). "
+    "Prefer specific sub-technique IDs (T1566.001) over parent IDs (T1566) "
+    "when the evidence supports it. "
+    "Also produce up to 8 short topical TAGS — single tokens or short hyphenated "
+    "phrases capturing campaign names, malware/tool families, targeted "
+    "sectors, geographic focus, attack vectors, or notable behaviours "
+    "(e.g. 'apt29', 'cobalt-strike', 'healthcare', 'eastern-europe', "
+    "'spearphishing', 'wiper', 'zero-day'). Tags must be lowercase, "
+    "alphanumeric + hyphens only, 1-32 chars each. Skip generic words like "
+    "'malware', 'attack', 'security'. "
+    "Return STRICT JSON with keys cve_ids[], attack_technique_ids[], "
+    "actor_names[], tags[]. CVE IDs match ^CVE-\\d{4}-\\d{4,7}$. ATT&CK "
+    "technique IDs match ^T\\d{4}(\\.\\d{3})?$. Do not include any other keys, "
+    "prose, or markdown fences."
 )
 
 # ---------------------------------------------------------------------------
@@ -123,6 +138,53 @@ SYSTEM_PROMPT_SCENARIO_NARRATIVE_V1: str = (
     "Do not invent IOCs, CVE IDs, actor names, or ATT&CK technique IDs that are not present "
     "in the supplied context."
 )
+
+
+# ---------------------------------------------------------------------------
+# Narrative operation classification prompt — Phase 33 / DISINFO-03
+# ---------------------------------------------------------------------------
+
+SYSTEM_PROMPT_NARRATIVE_OP_V1: str = (
+    "You are a disinformation analyst. Read the supplied social media post JSON "
+    "and classify it as a narrative operation if applicable. Extract the following "
+    "fields as JSON: "
+    "{\"claim\": \"<core factual assertion being made>\", "
+    "\"amplifier\": \"<accounts or communities spreading it>\", "
+    "\"audience\": \"<apparent target demographic or community>\", "
+    "\"is_narrative_op\": true|false}. "
+    "Return only valid JSON. If the post is not a narrative operation, "
+    "return {\"is_narrative_op\": false}. "
+    "Do not invent information not present in the post."
+)
+
+
+# ---------------------------------------------------------------------------
+# Attack path analysis prompt — Phase 35 / ATK-01
+# ---------------------------------------------------------------------------
+
+SYSTEM_PROMPT_ATTACK_PATH_V1: str = (
+    "You are a threat analyst. Given security events, output ONLY a JSON object "
+    "with keys 'nodes' and 'edges' describing the MITRE ATT&CK kill-chain. "
+    "nodes: array of {id:\"step_1\", technique_id:\"T1566\", tactic:\"initial-access\", "
+    "name:\"short label\", confidence:0.8, rationale:\"one sentence\"}. "
+    "edges: array of {from:\"step_1\", to:\"step_2\", rationale:\"reason\"}. "
+    "Max 8 nodes, max 8 edges. Use only technique IDs present in the events. "
+    "Return valid JSON only. No markdown, no explanation."
+)
+
+ATTACK_PATH_PROMPT_V1: str = "attack_path_v1"
+
+
+def build_attack_path_messages(events_payload: dict) -> list[dict]:
+    """Build messages for MITRE kill-chain reconstruction (C-3 compliant).
+
+    events_payload must have keys: events, truncated, project_days_window.
+    Never uses f-strings with raw event content.
+    """
+    return [
+        {"role": "system", "content": SYSTEM_PROMPT_ATTACK_PATH_V1},
+        {"role": "user", "content": json.dumps(events_payload, default=str)},
+    ]
 
 
 def tiber_scenario_narrative_messages(scenario, actor, report) -> list[dict]:

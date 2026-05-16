@@ -15,7 +15,7 @@ import dramatiq
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
-from app.ingest.normalise import _persist_event, update_source_health
+from app.ingest.normalise import _persist_event_for_bindings, update_source_health
 from app.ingest.rss_parser import normalise_rss_entry, parse_rss_feed
 from app.services.source_health import update_silent_failure_count, record_ingest_stats
 
@@ -110,9 +110,9 @@ def poll_rss_impl(source_id_str: str) -> None:
                             (str(getattr(entry, "title", "") or "")[:100]),
                         )
                         continue
-                    rc = _persist_event(session, row)
-                    if rc == 1:
-                        inserted += 1
+                    rc, _fanout = _persist_event_for_bindings(session, row, source_id)
+                    if rc >= 1:
+                        inserted += rc
                         parse_ok += 1
                     else:
                         deduped += 1

@@ -205,6 +205,17 @@ def poll_nvd_impl(source_id_str: str) -> None:
         latest_mod: datetime | None = None
         attack_written = 0
 
+        # Per-source project binding lookup — hoisted outside per-CVE loop.
+        # Zero bindings → fall back to LEGACY (preserves prior behaviour for
+        # unbound sources). One+ bindings → fan out one event per project.
+        # Quick task 260429-tyq.
+        from app.models.projects import LEGACY_PROJECT_ID  # noqa: PLC0415
+        binding_rows = session.execute(
+            text("SELECT project_id FROM project_sources WHERE source_id = :sid"),
+            {"sid": str(source_id)},
+        ).all()
+        project_ids = [r[0] for r in binding_rows] or [LEGACY_PROJECT_ID]
+
         try:
             for cve in cves:
                 try:
@@ -218,15 +229,9 @@ def poll_nvd_impl(source_id_str: str) -> None:
                         continue
                     event_row, cve_details_row, attack_links = result
 
-                    # Phase 10: events.project_id is NOT NULL. Default to the LEGACY
-                    # sentinel until NVD is wired to per-source project bindings.
-                    if event_row.get("project_id") is None:
-                        from app.models.projects import LEGACY_PROJECT_ID  # lazy import
-                        event_row["project_id"] = LEGACY_PROJECT_ID
-
-                    # Phase 15 / SCR-01: inject score at ingest using CVSS3 base score.
-                    # cvss_v3_score lives in cve_details_row (separate table); use it here
-                    # to produce an accurate initial score before the event is written.
+                    # Phase 15 / SCR-01: inject score ONCE per CVE (pure function —
+                    # does not depend on project_id). Result is reused across
+                    # per-project event rows in the inner fan-out loop.
                     if event_row.get("score") is None:
                         from app.services.scoring import score_event, ScoringWeights  # noqa: PLC0415
                         from app.services.scoring.defaults import DEFAULT_SOURCE_CONFIDENCE  # noqa: PLC0415
@@ -249,30 +254,34 @@ def poll_nvd_impl(source_id_str: str) -> None:
                         event_row["scored_at"] = _scored_at_ts
                         event_row["score_version"] = _score_ver
 
-                    # Insert the event row with RETURNING id so we can link child rows.
-                    # ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING matches
-                    # the 3-column unique index from migration 002 (TimescaleDB hypertable).
-                    stmt = (
-                        pg_insert(Event.__table__)
-                        .values(**event_row)
-                        .on_conflict_do_nothing(
-                            index_elements=["source_id", "content_hash", "observed_at"]
+                    # Fan-out: one event row per bound project. Each row gets its
+                    # own cve_details + attack_tag children (cve_details has
+                    # UNIQUE(event_id) so distinct event_id per project is correct).
+                    # ON CONFLICT (project_id, source_id, content_hash, observed_at) DO NOTHING
+                    # matches the 4-column unique index from migration 021.
+                    for pid in project_ids:
+                        per_event_row = {**event_row, "project_id": pid}
+                        stmt = (
+                            pg_insert(Event.__table__)
+                            .values(**per_event_row)
+                            .on_conflict_do_nothing(
+                                index_elements=["project_id", "source_id", "content_hash", "observed_at"]
+                            )
+                            .returning(Event.__table__.c.id)
                         )
-                        .returning(Event.__table__.c.id)
-                    )
-                    result_row = session.execute(stmt).fetchone()
-                    if result_row is None:
-                        # Conflict — row already exists; child rows already exist too.
-                        continue
-                    event_id = result_row[0]
-                    inserted += 1
-                    # Phase 16 MON-01: bump last_event_at after successful insert
-                    bump_last_event_at(session, source_id)
+                        result_row = session.execute(stmt).fetchone()
+                        if result_row is None:
+                            # Conflict — row already exists for this project; children too.
+                            continue
+                        event_id = result_row[0]
+                        inserted += 1
+                        # Phase 16 MON-01: bump last_event_at after successful insert
+                        bump_last_event_at(session, source_id)
 
-                    _write_cve_details(session, event_id, cve_details_row)
-                    for technique_id, url in attack_links:
-                        _write_attack_tag(session, event_id, technique_id, url)
-                        attack_written += 1
+                        _write_cve_details(session, event_id, cve_details_row)
+                        for technique_id, url in attack_links:
+                            _write_attack_tag(session, event_id, technique_id, url)
+                            attack_written += 1
 
                     last_mod_dt = cve_details_row.get("last_modified")
                     if last_mod_dt is not None and (latest_mod is None or last_mod_dt > latest_mod):

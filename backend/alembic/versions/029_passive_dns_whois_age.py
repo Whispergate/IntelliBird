@@ -120,20 +120,32 @@ def upgrade() -> None:
             sa.text("SELECT * FROM ag_catalog.create_graph('intellibird_graph')")
         )
 
-    # Vertex label for domain pivot nodes
-    conn.execute(
+    # CREATE VLABEL/ELABEL are AGE SQL-level DDL, not Cypher — call via
+    # ag_catalog.create_vlabel / create_elabel SQL functions.
+    # Gate on ag_catalog.ag_label to stay idempotent.
+    row = conn.execute(
         sa.text(
-            "SELECT * FROM cypher('intellibird_graph', $$ CREATE VLABEL IF NOT EXISTS DomainPivot $$)"
-            " AS (r agtype)"
+            "SELECT 1 FROM ag_catalog.ag_label"
+            " JOIN ag_catalog.ag_graph ON ag_label.graph = ag_graph.graphid"
+            " WHERE ag_graph.name = 'intellibird_graph' AND ag_label.name = 'DomainPivot'"
         )
-    )
-    # Edge label for shared-infrastructure connections
-    conn.execute(
+    ).first()
+    if row is None:
+        conn.execute(
+            sa.text("SELECT ag_catalog.create_vlabel('intellibird_graph', 'DomainPivot')")
+        )
+
+    row = conn.execute(
         sa.text(
-            "SELECT * FROM cypher('intellibird_graph', $$ CREATE ELABEL IF NOT EXISTS SHARES_INFRA $$)"
-            " AS (r agtype)"
+            "SELECT 1 FROM ag_catalog.ag_label"
+            " JOIN ag_catalog.ag_graph ON ag_label.graph = ag_graph.graphid"
+            " WHERE ag_graph.name = 'intellibird_graph' AND ag_label.name = 'SHARES_INFRA'"
         )
-    )
+    ).first()
+    if row is None:
+        conn.execute(
+            sa.text("SELECT ag_catalog.create_elabel('intellibird_graph', 'SHARES_INFRA')")
+        )
 
 
 def downgrade() -> None:
@@ -141,18 +153,30 @@ def downgrade() -> None:
     conn = op.get_bind()
     conn.execute(sa.text("LOAD 'age'"))
     conn.execute(sa.text("SET search_path = ag_catalog, \"$user\", public"))
-    conn.execute(
+    # DROP VLABEL/ELABEL are AGE SQL DDL — use drop_label SQL function.
+    row = conn.execute(
         sa.text(
-            "SELECT * FROM cypher('intellibird_graph', $$ DROP ELABEL IF EXISTS SHARES_INFRA $$)"
-            " AS (r agtype)"
+            "SELECT 1 FROM ag_catalog.ag_label"
+            " JOIN ag_catalog.ag_graph ON ag_label.graph = ag_graph.graphid"
+            " WHERE ag_graph.name = 'intellibird_graph' AND ag_label.name = 'SHARES_INFRA'"
         )
-    )
-    conn.execute(
+    ).first()
+    if row is not None:
+        conn.execute(
+            sa.text("SELECT ag_catalog.drop_label('intellibird_graph', 'SHARES_INFRA')")
+        )
+
+    row = conn.execute(
         sa.text(
-            "SELECT * FROM cypher('intellibird_graph', $$ DROP VLABEL IF EXISTS DomainPivot $$)"
-            " AS (r agtype)"
+            "SELECT 1 FROM ag_catalog.ag_label"
+            " JOIN ag_catalog.ag_graph ON ag_label.graph = ag_graph.graphid"
+            " WHERE ag_graph.name = 'intellibird_graph' AND ag_label.name = 'DomainPivot'"
         )
-    )
+    ).first()
+    if row is not None:
+        conn.execute(
+            sa.text("SELECT ag_catalog.drop_label('intellibird_graph', 'DomainPivot')")
+        )
 
     # Drop tables in reverse dependency order
     op.drop_index("ix_whois_cache_domain", table_name="whois_cache")

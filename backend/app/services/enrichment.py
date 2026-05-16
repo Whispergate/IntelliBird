@@ -233,8 +233,13 @@ def _extract_domains(text: str, ignore_ips: Iterable[str]) -> set[str]:
         parts = dom.split(".")
         if len(parts) < 2:
             continue
-        # Exclude common filename noise (".md", ".tar")
-        if parts[-1] in {"md", "py", "ts", "tsx", "js", "html", "txt", "log", "tar", "gz", "zip"}:
+        # Exclude common filename noise (".md", ".tar", ".exe", ".sys", etc.)
+        if parts[-1] in {
+            "md", "py", "ts", "tsx", "js", "html", "txt", "log", "tar", "gz", "zip",
+            "exe", "dll", "sys", "bat", "cmd", "ps1", "vbs", "vba", "wsf", "hta",
+            "msi", "msp", "msc", "com", "scr", "pif", "cpl", "ocx", "inf",
+            "lnk", "jar", "class", "sh", "rb", "go", "rs",
+        }:
             continue
         # Exclude leading version-like digits ("1.2.3.foo")
         if all(p.isdigit() for p in parts[:-1]):

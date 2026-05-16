@@ -21,6 +21,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -86,6 +87,32 @@ export function AISummarySection({
       setLoadingSuggestions(false);
     }
   }
+
+  // Hydrate from persisted summary if not pre-loaded.
+  // /api/events/{id}/ai/summary returns the latest ai_summaries row so the
+  // narrative survives drawer close/reopen and Redis chunk TTL expiry.
+  useEffect(() => {
+    if (aiSummary) return; // already pre-loaded
+    let cancelled = false;
+    async function loadCached() {
+      try {
+        const res = await fetch(`/api/events/${eventId}/ai/summary`);
+        if (!res.ok) return;
+        const data: { summary_text: string } = await res.json();
+        if (!cancelled && data.summary_text) {
+          setSummaryText(data.summary_text);
+        }
+      } catch {
+        // Non-fatal — user can click Summarise.
+      }
+    }
+    loadCached();
+    fetchSuggestions();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -208,10 +235,25 @@ export function AISummarySection({
         {/* Summary body — shown once streaming starts or pre-loaded summary exists */}
         {(hasSummary || isStreaming) && (
           <div
-            className="brand-mono whitespace-pre-wrap leading-relaxed text-foreground mt-2 rounded-md bg-card p-3 text-[13px]"
+            className="leading-relaxed text-foreground mt-2 rounded-md bg-card p-3 text-[13px]"
             data-testid="ai-summary-body"
           >
-            {body}
+            <ReactMarkdown
+              components={{
+                h1: ({ children }) => <p className="text-foreground font-semibold mt-2 mb-0.5 text-[13px]">{children}</p>,
+                h2: ({ children }) => <p className="text-foreground font-semibold mt-2 mb-0.5 text-[13px]">{children}</p>,
+                h3: ({ children }) => <p className="text-foreground font-semibold mt-1.5 mb-0.5 text-[13px]">{children}</p>,
+                p: ({ children }) => <p className="text-foreground my-1 text-[13px]">{children}</p>,
+                strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+                em: ({ children }) => <em className="italic text-foreground">{children}</em>,
+                ul: ({ children }) => <ul className="my-1 pl-4 list-disc text-[13px]">{children}</ul>,
+                ol: ({ children }) => <ol className="my-1 pl-4 list-decimal text-[13px]">{children}</ol>,
+                li: ({ children }) => <li className="text-foreground my-0.5">{children}</li>,
+                code: ({ children }) => <code className="bg-muted px-1 rounded text-[12px] text-foreground">{children}</code>,
+              }}
+            >
+              {body}
+            </ReactMarkdown>
             {/* Streaming cursor */}
             {isStreaming && (
               <span

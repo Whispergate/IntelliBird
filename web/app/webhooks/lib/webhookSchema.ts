@@ -100,28 +100,27 @@ function _authFromValues(v: WebhookFormValues): WebhookAuth | null {
           return null;
       }
     case "email":
-      // Email credentials sent as JSON in auth_enc on the backend; mapped via bearer type
-      // with a structured payload. Backend handles email-specific auth_enc shaping.
+      // Send flat credential dict. Backend _dispatch_email calls creds.get('username') etc.
+      // directly on the decrypted dict — no bearer wrapper accepted.
       return {
-        type: "bearer",
-        token: JSON.stringify({
-          username: v.email_username ?? "",
-          password: v.email_password ?? "",
-          from_addr: v.email_from ?? "",
-          to_addr: v.email_to ?? "",
-          use_starttls: v.email_use_starttls ?? true,
-        }),
-      };
+        type: "email_smtp" as unknown as WebhookAuth["type"],
+        username: v.email_username ?? "",
+        password: v.email_password ?? "",
+        from_addr: v.email_from ?? "",
+        to_addr: v.email_to ?? "",
+        use_starttls: v.email_use_starttls ?? true,
+      } as unknown as WebhookAuth;
     case "pagerduty":
+      // Send flat dict. Backend PD injection calls _pd_creds.get('routing_key') directly.
       return {
-        type: "bearer",
-        token: JSON.stringify({ routing_key: v.pd_routing_key ?? "" }),
-      };
+        routing_key: v.pd_routing_key ?? "",
+      } as unknown as WebhookAuth;
     case "opsgenie":
+      // Send flat dict. Backend _build_auth_headers checks atype == 'geniekey'.
       return {
-        type: "bearer",
-        token: JSON.stringify({ type: "geniekey", api_key: v.opsgenie_api_key ?? "" }),
-      };
+        type: "geniekey" as unknown as WebhookAuth["type"],
+        api_key: v.opsgenie_api_key ?? "",
+      } as unknown as WebhookAuth;
     case "ntfy":
       if (!v.ntfy_token) return null;
       return {

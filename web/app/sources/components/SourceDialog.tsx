@@ -6,6 +6,7 @@ import { FormProvider, useForm } from "react-hook-form";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AlertTriangle } from "lucide-react";
 import { testConnection, fetchSourceTemplates } from "@/app/api-client";
 import type { Source, SourceTemplate } from "@/app/api-client";
 
@@ -34,6 +36,8 @@ import {
   buildCredentialsDict,
   buildScrapeConfig,
   buildUpdatePayload,
+  DARK_WEB_FEED_TYPES,
+  OPSEC_WARNING_TEXT,
   RETENTION_PRESETS,
   type SourceFormValues,
 } from "../lib/sourceSchema";
@@ -69,6 +73,8 @@ function defaultValuesFor(
       enabled: true,
       // Quick task 260426-aas: new custom sources default to auto-discovery.
       scrape_mode: "auto",
+      // Phase 24 / DARK-07: starts unchecked; operator must tick for dark-web types.
+      opsec_authorised: false,
     };
   }
 
@@ -106,6 +112,8 @@ function defaultValuesFor(
   const supportedFeedType: SourceFormValues["feed_type"] =
     src.feed_type === "rss" || src.feed_type === "taxii"
     || src.feed_type === "nvd" || src.feed_type === "custom"
+    || src.feed_type === "tor_html" || src.feed_type === "paste"
+    || src.feed_type === "telegram"
       ? src.feed_type
       : "rss";
 
@@ -136,6 +144,8 @@ function defaultValuesFor(
         : sc?.mode === "manual"
         ? "manual"
         : "manual",
+    // Phase 24 / DARK-07: pre-check if previously authorised on a dark-web source.
+    opsec_authorised: src.opsec_authorised ?? false,
   };
 }
 
@@ -225,6 +235,16 @@ export function SourceDialog({
   }
 
   const feedType = watch("feed_type");
+  const opsecAuthorised = watch("opsec_authorised");
+  const isDarkWebType = DARK_WEB_FEED_TYPES.has(feedType as "tor_html" | "paste" | "telegram");
+
+  // Phase 24 / DARK-07: reset the OPSEC checkbox whenever feed_type changes
+  // away from a dark-web type so the operator cannot carry forward a stale ack.
+  useEffect(() => {
+    if (!DARK_WEB_FEED_TYPES.has(feedType as "tor_html" | "paste" | "telegram")) {
+      setValue("opsec_authorised", false);
+    }
+  }, [feedType, setValue]);
 
   async function runTest() {
     setTesting(true);
@@ -345,7 +365,7 @@ export function SourceDialog({
                 onValueChange={(v) =>
                   setValue(
                     "feed_type",
-                    v as "rss" | "taxii" | "nvd" | "custom",
+                    v as "rss" | "taxii" | "nvd" | "custom" | "tor_html" | "paste" | "telegram",
                     { shouldDirty: true },
                   )
                 }
@@ -359,6 +379,9 @@ export function SourceDialog({
                   <SelectItem value="taxii">TAXII</SelectItem>
                   <SelectItem value="nvd">NVD</SelectItem>
                   <SelectItem value="custom">Custom (HTML scrape)</SelectItem>
+                  <SelectItem value="tor_html">Tor .onion (HTML scrape)</SelectItem>
+                  <SelectItem value="paste">Paste site</SelectItem>
+                  <SelectItem value="telegram">Telegram channel</SelectItem>
                 </SelectContent>
               </Select>
               {mode === "edit" && (
@@ -446,6 +469,35 @@ export function SourceDialog({
               </Alert>
             )}
 
+            {/* Phase 24 / DARK-07: OPSEC warning banner + checkbox for dark-web source types.
+                Renders only when feed_type is tor_html, paste, or telegram.
+                Save button is gated until the operator ticks the checkbox. */}
+            {isDarkWebType && (
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    {OPSEC_WARNING_TEXT[feedType] ?? "This source type requires explicit operator authorisation."}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="opsec-authorised"
+                    checked={opsecAuthorised}
+                    onCheckedChange={(checked) =>
+                      setValue("opsec_authorised", checked === true, { shouldValidate: true })
+                    }
+                  />
+                  <label
+                    htmlFor="opsec-authorised"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    I understand the risks and authorise this source
+                  </label>
+                </div>
+              </div>
+            )}
+
             </div>
 
             <DialogFooter className="flex gap-2 px-6 py-4 border-t shrink-0">
@@ -466,10 +518,11 @@ export function SourceDialog({
               >
                 {testing ? "Testing connection..." : "Test Connection"}
               </Button>
-              {/* Save button — NEVER disabled by test result.
+              {/* Save button — disabled by test result never, but gated by OPSEC ack for dark-web types.
  Brand: Signal amber — primary CTA*/}
               <Button
                 type="submit"
+                disabled={isDarkWebType && !opsecAuthorised}
                 style={{
                   backgroundColor: "var(--brand-signal)",
                   color: "var(--brand-ink)",

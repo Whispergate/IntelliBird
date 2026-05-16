@@ -36,6 +36,8 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 class RekeyResponse(BaseModel):
     rekeyed: int
     skipped: int
+    # Phase 24 / DARK-04: count of sources.session_enc blobs re-encrypted.
+    sources_session_enc_swept: int = 0
 
 
 class RekeyErrorDetail(BaseModel):
@@ -145,6 +147,44 @@ async def rekey_credentials(
         ep_row.credentials_enc = new_blob
         ep_row.credentials_key_version = (ep_row.credentials_key_version or 1) + 1
 
+    # --- sources.session_enc sweep (Phase 24 / DARK-04 — Telethon session strings) ---
+    sources_session_swept = 0
+    session_rows = (
+        await session.execute(
+            select(Source).where(Source.session_enc.isnot(None))
+        )
+    ).scalars().all()
+
+    for src_row in session_rows:
+        # Idempotency: skip rows already encrypted under the current key.
+        try:
+            decrypt_credentials(settings.SECRET_KEY, src_row.session_enc)
+            skipped_already_current.append(f"session:{src_row.id}")
+            continue
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            creds = decrypt_credentials(settings.REKEY_FROM_SECRET, src_row.session_enc)
+        except Exception:  # noqa: BLE001
+            failed_ids.append(f"session:{src_row.id}")
+            continue
+        src_row.session_enc = encrypt_credentials(settings.SECRET_KEY, creds)
+        sources_session_swept += 1
+
+    if failed_ids:
+        await session.rollback()
+        log.critical(
+            "rekey_sources_session_enc_failed",
+            failed_source_ids=failed_ids,
+            failed_count=len(failed_ids),
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "decrypt_failed", "source_ids": failed_ids},
+        )
+
+    log.info("rekey_sources_session_enc_swept count=%d", sources_session_swept)
+
     await session.commit()
     total_rekeyed = len(updates) + len(ep_updates)
     total_skipped = (len(rows) - len(updates)) + (len(ep_rows) - len(ep_updates))
@@ -152,5 +192,10 @@ async def rekey_credentials(
         "rekey_credentials_ok",
         rekeyed=total_rekeyed,
         skipped=total_skipped,
+        sources_session_enc_swept=sources_session_swept,
     )
-    return RekeyResponse(rekeyed=total_rekeyed, skipped=total_skipped)
+    return RekeyResponse(
+        rekeyed=total_rekeyed,
+        skipped=total_skipped,
+        sources_session_enc_swept=sources_session_swept,
+    )

@@ -18,7 +18,7 @@ import uuid
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
@@ -67,7 +67,7 @@ class AISuggestionRead(BaseModel):
     ai_summary_id: uuid.UUID
     project_id: uuid.UUID
     event_id: uuid.UUID | None
-    suggestion_type: Literal["cve", "attack", "actor"]
+    suggestion_type: Literal["cve", "attack", "actor", "narrative_op"]
     value: str
     status: Literal["pending", "confirmed", "discarded"]
     created_at: datetime
@@ -108,6 +108,7 @@ class AIProviderRead(BaseModel):
     credentials_key_version: int
     ai_rerank_enabled: bool = False
     ai_digest_enabled: bool = False
+    ai_auto_summary_enabled: bool = False
     ai_daily_token_cap: int = 100_000
     digest_schedule_cron: str = "0 6 * * *"
     created_at: datetime
@@ -130,6 +131,7 @@ class AIProviderUpdate(BaseModel):
     api_key: str | None = None
     ai_rerank_enabled: bool | None = None
     ai_digest_enabled: bool | None = None
+    ai_auto_summary_enabled: bool | None = None
     ai_daily_token_cap: int | None = Field(default=None, ge=1000)
     digest_schedule_cron: str | None = None
 
@@ -204,3 +206,54 @@ class AIHealthResponse(BaseModel):
 
     ollama_health: Literal["healthy", "slow", "down", "unknown"]
     providers_configured_count: int
+
+
+# ---------------------------------------------------------------------------
+# Attack path analysis — Phase 35 / ATK-01..ATK-05
+# ---------------------------------------------------------------------------
+
+import re as _re  # noqa: E402
+
+
+class AttackPathNode(BaseModel):
+    """A single MITRE ATT&CK technique node in the reconstructed kill-chain."""
+
+    id: str
+    technique_id: str
+    tactic: str
+    name: str
+    confidence: float = Field(ge=0.0, le=1.0)
+    rationale: str
+
+    @field_validator("technique_id")
+    @classmethod
+    def validate_technique_id(cls, v: str) -> str:
+        if not _re.match(r"^T\d{4}(\.\d{3})?$", v):
+            raise ValueError(f"Invalid ATT&CK technique ID: {v!r}")
+        return v
+
+
+class AttackPathEdge(BaseModel):
+    """A directed edge between two attack path nodes."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    from_: str = Field(alias="from")
+    to: str
+    rationale: str
+
+
+class AttackPathRequest(BaseModel):
+    """POST /{project_id}/attack-path request body."""
+
+    days: int = Field(default=30, ge=1, le=90)
+
+
+class AttackPathResponse(BaseModel):
+    """Reconstructed MITRE ATT&CK kill-chain graph from LLM analysis."""
+
+    nodes: list[AttackPathNode]
+    edges: list[AttackPathEdge]
+    truncated: bool
+    model_used: str
+    events_analysed: int

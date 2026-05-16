@@ -1,11 +1,16 @@
-"""Suggestion validator gate — Phase 17 / AI-03.
+"""Suggestion validator gate — Phase 17 / AI-03, updated Phase 25 / ACTOR-04.
 
-Every LLM-extracted CVE / ATT&CK technique / actor name passes:
-  1. A format regex.
-  2. A catalog presence check against an existing DB row.
+Every LLM-extracted CVE / ATT&CK technique / actor name passes validation:
+  - CVE / ATT&CK: format regex + catalog presence check (bool path)
+  - Actor names: rapidfuzz fuzzy alias match against threat_actors table
 
-Both checks must pass for a suggestion to be staged. Failures are logged at
-INFO and silently dropped — they never reach the ai_suggestions table.
+The actor branch uses match_actor_name() with three outcomes:
+  score >= 85  → "auto_link"  — write ActorEventLink directly (no ai_suggestion)
+  score 60–84  → "stage"      — create AISuggestion type='actor' for analyst review
+  score < 60   → "discard"    — drop silently
+
+Both CVE/ATT&CK checks must pass for a suggestion to be staged. Failures are
+logged at INFO and silently dropped — they never reach the ai_suggestions table.
 
 This enforces C-2 (analyst confirmation queue must be signal-rich) and
 prevents unvalidated entity rows from polluting downstream analysis.
@@ -18,7 +23,7 @@ ATTCK_REGEX
     Compiled regex for ATT&CK technique ID format validation.
 validate_cve(db, value) -> bool
 validate_attack_technique(db, value) -> bool
-validate_actor_name(db, value) -> bool
+validate_actor_name(db, value) -> bool  [legacy; replaced by match_actor_name branch]
 validate_and_stage_suggestions(db, *, ai_summary_id, project_id, event_id, candidates) -> list[AISuggestion]
 """
 from __future__ import annotations
@@ -30,6 +35,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import select
 
 from app.models.ai import AISuggestion
+from app.services.actor_alias_matcher import match_actor_name
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -120,10 +126,21 @@ async def validate_actor_name(db: "AsyncSession", value: str) -> bool:
 # Dispatch table
 # ---------------------------------------------------------------------------
 
+async def validate_narrative_op(db: "AsyncSession", value: str) -> bool:
+    """narrative_op values are free-form JSON metadata — structural validation only.
+
+    The AI pipeline stores the raw LLM JSON in suggestion.value. Format:
+    {"claim": "...", "amplifier": "...", "audience": "...", "is_narrative_op": true}
+    No catalog lookup required — always passes validator stage.
+    """
+    return True
+
+
 VALIDATORS = {
     "cve": validate_cve,
     "attack": validate_attack_technique,
     "actor": validate_actor_name,
+    "narrative_op": validate_narrative_op,
 }
 
 
@@ -168,31 +185,59 @@ async def validate_and_stage_suggestions(
     staged: list[AISuggestion] = []
 
     for stype, value in candidates:
-        validator = VALIDATORS.get(stype)
-        if validator is None:
-            logger.info(
-                "ai_suggestion_validation_failed",
-                extra={
-                    "reason": "unknown_type",
-                    "type": stype,
-                    "value": value,
-                    "project_id": str(project_id),
-                },
-            )
-            continue
+        # ── Actor branch: fuzzy alias matching (Phase 25 / ACTOR-04) ──────────
+        if stype == "actor":
+            decision, matched_actor = await match_actor_name(db, value)
+            if decision == "auto_link" and matched_actor is not None:
+                # Write direct actor-event link — skip ai_suggestion staging
+                from app.models.actors import ActorEventLink  # noqa: PLC0415
+                db.add(ActorEventLink(
+                    actor_id=matched_actor.id,
+                    event_id=event_id,
+                    linked_by="auto",
+                ))
+                await db.flush()
+                continue  # do not stage as ai_suggestion
+            elif decision == "discard":
+                logger.info(
+                    "ai_suggestion_validation_failed",
+                    extra={
+                        "reason": "actor_fuzzy_discard",
+                        "type": stype,
+                        "value": value,
+                        "project_id": str(project_id),
+                    },
+                )
+                continue  # silently drop
+            # decision == "stage" falls through to normal AISuggestion creation below
 
-        valid = await validator(db, value)
-        if not valid:
-            logger.info(
-                "ai_suggestion_validation_failed",
-                extra={
-                    "reason": "regex_or_catalog_miss",
-                    "type": stype,
-                    "value": value,
-                    "project_id": str(project_id),
-                },
-            )
-            continue
+        # ── CVE / ATT&CK branch: regex + catalog bool validator ───────────────
+        else:
+            validator = VALIDATORS.get(stype)
+            if validator is None:
+                logger.info(
+                    "ai_suggestion_validation_failed",
+                    extra={
+                        "reason": "unknown_type",
+                        "type": stype,
+                        "value": value,
+                        "project_id": str(project_id),
+                    },
+                )
+                continue
+
+            valid = await validator(db, value)
+            if not valid:
+                logger.info(
+                    "ai_suggestion_validation_failed",
+                    extra={
+                        "reason": "regex_or_catalog_miss",
+                        "type": stype,
+                        "value": value,
+                        "project_id": str(project_id),
+                    },
+                )
+                continue
 
         row = AISuggestion(
             ai_summary_id=ai_summary_id,

@@ -51,7 +51,6 @@ services:
       context: ..
       dockerfile: ops/api.Dockerfile
     image: intellibird-api:m1
-    # PROD-07: entrypoint guards AUTH_ENABLED=true + companion vars before
     # running alembic + gunicorn. See ops/api-entrypoint.sh.
     command: ["/app/api-entrypoint.sh"]
     # PROD-07: api is compose-network-internal. Caddy is the only public edge.
@@ -83,7 +82,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 180s
+      start_period: 240s
 
   worker:
     image: intellibird-api:m1

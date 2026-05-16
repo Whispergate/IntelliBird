@@ -6,7 +6,13 @@ CERT-02 — Matching CT log entries persist as brand-monitor events with
 
 Implemented in: backend/app/workers/certstream_worker.py (Phase 32 Plan 03)
 """
+import os
+
 import pytest
+
+os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
+os.environ.setdefault("SECRET_KEY", "s" * 64)
+os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 
 @pytest.mark.xfail(reason="certstream_worker not yet implemented", strict=False)
