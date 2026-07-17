@@ -1,5 +1,5 @@
 /**
- * /projects — Projects list page (Phase 10 Plan 08).
+ * /projects — Projects list page.
  *
  * Server component: fetches the initial non-archived project list via the
  * `listProjects` helper so the first paint has rows + legacy-sentinel visible

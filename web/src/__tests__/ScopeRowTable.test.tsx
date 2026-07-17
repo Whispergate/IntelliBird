@@ -1,5 +1,5 @@
 /**
- * ScopeRowTable.test.tsx — Phase 20-01 (UX-01 audit + test coverage)
+ * ScopeRowTable.test.tsx — -01 (UX-01 audit + test coverage)
  *
  * Asserts that all three toggle fields in ScopeRowTable (exclude, active_test_scope,
  * intel_scope) fire a single PATCH call via updateScopeRow and NEVER call
@@ -31,7 +31,7 @@
  *   catch: toast.error("Could not update row. ...") + await reload() (full revert).
  *
  * Audit verdict: UX-01 is fully implemented. No code path falls back to DELETE+POST.
- * PROJECT.md note "Phase 10 plan 10-10 carry-over" was stale text.
+ * PROJECT.md note " carry-over" was stale text.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";

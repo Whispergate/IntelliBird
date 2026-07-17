@@ -4,7 +4,7 @@ Revision ID: 007_credentials_key_version
 Revises: 006_webhooks
 Create Date: 2026-04-18
 
-Phase 8 / INFRA-01, INFRA-03.
+INFRA-01, INFRA-03.
 
 - ADD COLUMN sources.credentials_key_version INT NOT NULL DEFAULT 1
   PG 11+ fast-path: server_default='1' on a non-null column updates every

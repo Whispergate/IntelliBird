@@ -1,5 +1,5 @@
 /**
- * IOCsClient + IOCDetailDrawer + badges tests — Phase 22 Plan 06.
+ * IOCsClient + IOCDetailDrawer + badges tests
  *
  * Covers:
  *   - Type/Status/Confidence badges render with the correct colour classes

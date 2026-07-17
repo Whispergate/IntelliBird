@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * BackfillButton — Phase 22 Plan 06 (UI-SPEC §Surface 6).
+ * BackfillButton — (UI-SPEC §Surface 6).
  *
  * Admin-only widget that triggers POST /api/admin/iocs/backfill (returns
  * 202 + {job_id}) and polls GET /api/jobs/{job_id} every 1.5s until the

@@ -1,4 +1,4 @@
-"""MISP push actor — Phase 32 MISP-03.
+"""MISP push actor — MISP-03.
 
 Dramatiq fire-and-forget actor on 'ingest' queue.
 Triggered after ai_suggestion status transitions to 'confirmed'

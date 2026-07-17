@@ -2,7 +2,7 @@
 
 /**
  * SourceHealthTable — shadcn Table listing all source health metrics.
- * Phase 16 plan 16-07. MON-04 dashboard requirement.
+ * MON-04 dashboard requirement.
  *
  * Columns:
  *   Name (clickable → opens MonitoringConfigDrawer)
@@ -29,7 +29,7 @@ import { IngestSparkline } from "./IngestSparkline";
 import type { MonitoringSourceRow } from "./MonitoringConfigDrawer";
 import { formatRelativeTime } from "@/app/sources/lib/relativeTime";
 
-// Per CONTEXT.md: INGEST_SILENT_FAILURE_THRESHOLD = 3 (Phase 02 pattern)
+// Per CONTEXT.md: INGEST_SILENT_FAILURE_THRESHOLD = 3 (pattern)
 const SILENT_FAILURE_WARN_THRESHOLD = 3;
 
 const DRIFT_SEVERITY_STYLES: Record<string, React.CSSProperties> = {

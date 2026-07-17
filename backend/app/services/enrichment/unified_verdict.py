@@ -1,4 +1,4 @@
-"""Unified verdict aggregation across enrichment providers — Phase 23 / ENRICH-02.
+"""Unified verdict aggregation across enrichment providers — ENRICH-02.
 
 Computes the worst-case verdict across all IOCEnrichment rows for a single
 IOC. Severity ordering: malicious > suspicious > unknown > clean.

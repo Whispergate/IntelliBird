@@ -1,4 +1,4 @@
-"""TIBER report generation service layer — Phase 18 / TIBER-01..04.
+"""TIBER report generation service layer — TIBER-01..04.
 
 Sub-modules:
   auto_populate  — 4 section auto-populate functions (Threat Landscape, Actor Profiles,

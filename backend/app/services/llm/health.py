@@ -1,4 +1,4 @@
-"""Ollama startup health probe — Phase 17 / AI-05.
+"""Ollama startup health probe — AI-05.
 
 Public API:
   probe_ollama(base_url, timeout) -> HealthStatus

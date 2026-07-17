@@ -1,4 +1,4 @@
-"""TIBER STIX 2.1 exporter — Phase 18 / TIBER-03.
+"""TIBER STIX 2.1 exporter — TIBER-03.
 
 Builds a STIX 2.1 Bundle containing:
   - stix2.Identity("IntelliBird", "system") — producer provenance

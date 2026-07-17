@@ -1,4 +1,4 @@
-"""TIBER PDF exporter — Phase 18 / TIBER-03.
+"""TIBER PDF exporter — TIBER-03.
 
 WeasyPrint subprocess isolation (H-5 RSS mitigation):
   NEVER import weasyprint at module level.

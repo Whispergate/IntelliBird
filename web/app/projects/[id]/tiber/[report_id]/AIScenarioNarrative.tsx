@@ -2,9 +2,9 @@
 
 /**
  * AIScenarioNarrative — Surface 6: per-scenario AI narrative streaming.
- * Phase 18 plan 18-07. UI-SPEC §Surface 6 verbatim.
+ * UI-SPEC §Surface 6 verbatim.
  *
- * Mirrors AISummarySection.tsx (Phase 17) exactly:
+ * Mirrors AISummarySection.tsx exactly:
  *   - POST /draft-narrative → { job_id }
  *   - EventSource GET /api/ai/jobs/{job_id}/stream → token streaming
  *   - brand-mono streaming display + pulse cursor
@@ -123,7 +123,7 @@ export function AIScenarioNarrative({
         throw e;
       }
 
-      // Open SSE stream — mirror Phase 17 AISummarySection pattern exactly
+      // Open SSE stream — mirror AISummarySection pattern exactly
       const es = new EventSource(`/api/ai/jobs/${jobId}/stream`);
       eventSourceRef.current = es;
 
@@ -243,7 +243,7 @@ export function AIScenarioNarrative({
         </p>
       )}
 
-      {/* Streaming display — brand-mono pattern from Phase 17 */}
+      {/* Streaming display — brand-mono pattern from */}
       {(hasNarrative || isStreaming) && !streamComplete && (
         <div
           className="brand-mono whitespace-pre-wrap leading-relaxed text-foreground mt-2 rounded-md bg-card p-3 text-xs"

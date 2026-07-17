@@ -1,5 +1,5 @@
 """
-Phase 27 — Sample fetcher: MalwareBazaar (primary) -> VirusTotal Premium (fallback).
+— Sample fetcher: MalwareBazaar (primary) -> VirusTotal Premium (fallback).
 SECURITY: Sample bytes are NEVER written to disk. Caller must use in-memory only.
 """
 from __future__ import annotations

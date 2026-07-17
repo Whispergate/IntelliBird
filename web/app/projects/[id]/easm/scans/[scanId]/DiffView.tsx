@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * DiffView — Phase 11 plan 11-09 (UI-SPEC §Surface 6 §"Diff vs previous").
+ * DiffView — (UI-SPEC §Surface 6 §"Diff vs previous").
  *
  * Lazy-loaded by ScanDetailClient only when Diff tab is first selected.
  * Calls getScanDiff(projectId, scanId) on mount.

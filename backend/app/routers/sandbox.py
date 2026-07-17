@@ -1,5 +1,5 @@
 """
-Per-project sandbox configuration — Phase 27 SANDBOX-01.
+Per-project sandbox configuration — SANDBOX-01.
 PUT /api/projects/{id}/sandbox-config  — Lead+ sets provider + API key (OPSEC gated)
 GET /api/projects/{id}/sandbox-config  — Lead+ reads current config (API key NOT returned)
 

@@ -2,7 +2,7 @@
 
 /**
  * ScenarioXSection — Section 3f: Scenario X.
- * Phase 18 plan 18-06. UI-SPEC §3f.
+ * UI-SPEC §3f.
  *
  * Manual only. Free-form analyst narrative for additional scenarios.
  * readOnly: textarea disabled, save button unmounted.

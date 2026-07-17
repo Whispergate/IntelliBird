@@ -1,4 +1,4 @@
-"""ORM models for Phase 31 Case Management — CASE-01, CASE-02.
+"""ORM models for Case Management — CASE-01, CASE-02.
 
 Tables: cases, case_events, case_iocs
 ENUMs: case_status_enum, case_severity_enum (created in migration 032_cases)

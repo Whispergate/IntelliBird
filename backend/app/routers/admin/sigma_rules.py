@@ -1,5 +1,5 @@
 """
-Sigma rule admin CRUD — Phase 29 SIGMA-01/SIGMA-03.
+Sigma rule admin CRUD — SIGMA-01/SIGMA-03.
 POST /api/admin/sigma-rules       — parse and store a Sigma YAML rule (Admin only)
 GET  /api/admin/sigma-rules       — list rules (optional ?project_id, ?enabled filters)
 PATCH /api/admin/sigma-rules/{id} — update name/enabled; re-parse if content changed

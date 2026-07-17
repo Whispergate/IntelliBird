@@ -2,7 +2,7 @@
 
 /**
  * PublishModal — Surface 9. Confirmation dialog before locking/publishing a report.
- * Phase 18 plan 18-06. UI-SPEC §Surface 9.
+ * UI-SPEC §Surface 9.
  *
  * Buttons:
  *   - "Lock and publish" (destructive) — calls publishReport, toasts success

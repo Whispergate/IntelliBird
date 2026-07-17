@@ -76,7 +76,7 @@ async def test_no_user_passes_none_dashboard_roles():
     captured: dict = {}
 
     async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
-        # Phase 10 adds project_id kwarg
+        # adds project_id kwarg
         captured["dashboard_roles"] = dashboard_roles
         return None
 
@@ -99,7 +99,7 @@ async def test_red_claim_passes_red_dashboard_roles():
     captured: dict = {}
 
     async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
-        # Phase 10 adds project_id kwarg
+        # adds project_id kwarg
         captured["dashboard_roles"] = dashboard_roles
         return None
 
@@ -123,7 +123,7 @@ async def test_blue_claim_passes_blue_dashboard_roles():
     captured: dict = {}
 
     async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
-        # Phase 10 adds project_id kwarg
+        # adds project_id kwarg
         captured["dashboard_roles"] = dashboard_roles
         return None
 
@@ -150,7 +150,7 @@ async def test_header_ignored_when_claim_is_blue():
     captured: dict = {}
 
     async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
-        # Phase 10 adds project_id kwarg
+        # adds project_id kwarg
         captured["dashboard_roles"] = dashboard_roles
         return None
 
@@ -181,7 +181,7 @@ async def test_both_roles_claim_passes_both():
     captured: dict = {}
 
     async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
-        # Phase 10 adds project_id kwarg
+        # adds project_id kwarg
         captured["dashboard_roles"] = dashboard_roles
         return None
 
@@ -206,7 +206,7 @@ async def test_header_ignored_when_no_user():
     captured: dict = {}
 
     async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
-        # Phase 10 adds project_id kwarg
+        # adds project_id kwarg
         captured["dashboard_roles"] = dashboard_roles
         return None
 

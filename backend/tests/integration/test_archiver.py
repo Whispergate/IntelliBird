@@ -269,9 +269,9 @@ def test_scheduler_preserves_phase1_and_phase2_jobs(live_db, monkeypatch):
     sched = build_scheduler()
     job_ids = {j.id for j in sched.get_jobs()}
 
-    assert "attack_weekly_refresh" in job_ids, "Phase 1 attack_weekly_refresh job missing"
-    assert "attack_first_boot" in job_ids, "Phase 1 attack_first_boot job missing"
-    assert "archiver_nightly" in job_ids, "Phase 3 archiver_nightly job missing"
+    assert "attack_weekly_refresh" in job_ids, " attack_weekly_refresh job missing"
+    assert "attack_first_boot" in job_ids, " attack_first_boot job missing"
+    assert "archiver_nightly" in job_ids, " archiver_nightly job missing"
 
     if sched.state:
         sched.shutdown(wait=False)

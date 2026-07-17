@@ -1,4 +1,4 @@
-"""Tor-HTML scraping actor — Phase 24 / DARK-02.
+"""Tor-HTML scraping actor — DARK-02.
 
 Structural clone of html_scrape.py with:
   - httpx.AsyncClient through socks5h://tor:9050 (remote DNS — required for .onion)

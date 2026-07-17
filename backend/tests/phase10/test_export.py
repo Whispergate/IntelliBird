@@ -1,4 +1,4 @@
-"""PRJ-07 per-project export integration tests — Phase 10 / plan 10-14.
+"""PRJ-07 per-project export integration tests — plan 10-14.
 
 Covers:
   * test_stix_bundle_parseable: STIX 2.1 bundle is parseable; Identity "IntelliBird" + Note present

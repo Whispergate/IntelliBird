@@ -8,13 +8,13 @@ from typing import Any
 import pytest
 
 
-# --- Phase 19 hermetic per-test isolation (TEST-01 / TEST-02) --------------
+# --- hermetic per-test isolation (TEST-01 / TEST-02) --------------
 
 @pytest.fixture(autouse=True)
 def _isolate_global_state() -> Generator[None, None, None]:
     """Hermetic per-test reset of Settings singleton + app.state module + FastAPI app.state.
 
-    Phase 19 / TEST-01 / TEST-02. Single autouse fixture covers the three
+    TEST-01 / TEST-02. Single autouse fixture covers the three
     non-Redis pollution surfaces. Redis FLUSHDB + DB TRUNCATE live in
     tests/integration/conftest.py because they require session-scoped containers.
 
@@ -49,7 +49,7 @@ def _isolate_global_state() -> Generator[None, None, None]:
     _fastapi_app.state.ollama_health = original_ollama_health
 
 
-# --- Phase 9 shared fixtures (AUTH-01..04) ---------------------------------
+# --- shared fixtures (AUTH-01..04) ---------------------------------
 
 @pytest.fixture(scope="session")
 def jwt_test_signing_key() -> str:

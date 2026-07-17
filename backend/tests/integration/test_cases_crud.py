@@ -1,4 +1,4 @@
-"""Integration tests for Phase 31 Case Management — CASE-01, CASE-02, CASE-03."""
+"""Integration tests for Case Management — CASE-01, CASE-02, CASE-03."""
 from __future__ import annotations
 
 import os

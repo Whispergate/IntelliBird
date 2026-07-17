@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * useNoteAutosave — Phase 12.1 plan 12.1-05b (UI-SPEC §Surface 6, Note section).
+ * useNoteAutosave — (UI-SPEC §Surface 6, Note section).
  *
  * Debounced client-side autosave for the asset-detail note editor.
  *

@@ -4,7 +4,7 @@ Revision ID: 019_iocs
 Revises: 018_ai_auto_summary_toggle
 Create Date: 2026-05-03
 
-Phase 22 / IOC-01, IOC-08.
+IOC-01, IOC-08.
 
 Schema-only migration. Backfill of `iocs` from existing events is a separate
 concern — handled by the admin endpoint POST /api/admin/iocs/backfill which

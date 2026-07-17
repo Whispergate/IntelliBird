@@ -1,5 +1,5 @@
 """
-Phase 27 — YARA engine: in-memory sample scan and STIX pattern extraction scan.
+— YARA engine: in-memory sample scan and STIX pattern extraction scan.
 SECURITY: No temp files written. All YARA scanning is in-process bytes matching.
 """
 from __future__ import annotations

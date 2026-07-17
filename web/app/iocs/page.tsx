@@ -1,5 +1,5 @@
 /**
- * /iocs — Global IOC search page (Phase 34 Plan 03).
+ * /iocs — Global IOC search page.
  *
  * RSC wrapper: reads ?q from searchParams, fetches initial results server-side
  * via _apiFetch (per CLAUDE.md SSR convention), hands them to IOCsGlobalClient.

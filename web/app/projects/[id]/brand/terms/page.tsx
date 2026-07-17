@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/brand/terms — async server component (Phase 12 plan 12-09).
+ * /projects/[id]/brand/terms — async server component.
  *
  * Surface 5 entry point — delegates the interactive list + dialog to
  * `TermsClient`. No data fetch at the server level; the client owns the

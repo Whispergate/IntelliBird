@@ -1,8 +1,8 @@
-"""BrandTerm + BrandMatch ORM — Phase 12 / BRP-01..BRP-05.
+"""BrandTerm + BrandMatch ORM — BRP-01..BRP-05.
 
 Maps to brand_terms and brand_matches tables created in migration 011.
 
-Enum fields are typed as `str` on the ORM side (Phase 11 / easm.py precedent) —
+Enum fields are typed as `str` on the ORM side (easm.py precedent)
 Pydantic Literal types in `app.schemas.brand` provide compile-time + API-layer
 validation; the PG enum enforces the storage invariant.
 
@@ -118,7 +118,7 @@ class BrandMatch(Base):
 
 
 class BrandStoplistTerm(Base):
-    """Per-project stoplist term — Phase 21 / BRAND-01.
+    """Per-project stoplist term — BRAND-01.
 
     Operator-managed additive union with global DEFAULT_STOPLIST + env extras.
     Uniqueness enforced case-insensitively via DB index on lower(term).

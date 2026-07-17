@@ -1,4 +1,4 @@
-"""Phase 29 Sigma Rule Engine — integration tests (SIGMA-01, SIGMA-02, SIGMA-03)."""
+"""Sigma Rule Engine — integration tests (SIGMA-01, SIGMA-02, SIGMA-03)."""
 import inspect
 import pytest
 
@@ -18,7 +18,7 @@ def test_ingest_hook_calls_evaluate_sigma_rules():
 
     source = inspect.getsource(normalise._persist_event)
     assert "evaluate_sigma_rules" in source, (
-        "_persist_event must call evaluate_sigma_rules (Phase 29 hook missing)"
+        "_persist_event must call evaluate_sigma_rules (hook missing)"
     )
     assert "sigma_eval_failed" in source, (
         "_persist_event must have sigma_eval_failed warning (hook not wrapped in try/except)"

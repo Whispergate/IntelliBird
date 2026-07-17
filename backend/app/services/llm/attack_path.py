@@ -1,4 +1,4 @@
-"""AI attack path analysis service — Phase 35 / ATK-01..ATK-05.
+"""AI attack path analysis service — ATK-01..ATK-05.
 
 Public surface:
   parse_attack_path_response(text: str) -> AttackPathResponse

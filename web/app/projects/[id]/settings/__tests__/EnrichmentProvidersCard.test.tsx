@@ -1,5 +1,5 @@
 /**
- * EnrichmentProvidersCard test stubs — Phase 23 Wave 0
+ * EnrichmentProvidersCard test stubs — Wave 0
  * Component does not exist yet; tests are todos until plan 23-06.
  */
 import { describe, test } from "vitest";

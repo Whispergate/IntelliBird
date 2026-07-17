@@ -1,6 +1,6 @@
 """
 YARA-01 — POST /api/admin/yara-rules compiles rule, stores compiled_cache; invalid rule returns 422.
-Implemented in: backend/app/routers/admin/yara_rules.py (Phase 27 Plan 04)
+Implemented in: backend/app/routers/admin/yara_rules.py
 """
 import io
 import uuid

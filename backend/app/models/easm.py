@@ -1,10 +1,10 @@
 """EASM ORM models — mirrors migration 010_easm.py exactly.
 
-Phase 11 / EASM-01, EASM-02, EASM-04, EASM-06, EASM-10.
+EASM-01, EASM-02, EASM-04, EASM-06, EASM-10.
 
 EASMScan — one row per scan launch, FK → projects (CASCADE)
 EASMFinding — deduped across scans via UNIQUE(project_id, bbot_event_type, canonical_target) (M-4)
-EASMCredential — per-project provider credentials (encrypted, Phase 8 key-rotation pattern)
+EASMCredential — per-project provider credentials (encrypted, key-rotation pattern)
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from app.models.base import Base
 
 # ---------------------------------------------------------------------------
 # Enum type objects — create_type=False because enums are pre-created by the
-# migration 010 DO-block pattern (Phase 3/009 precedent). SA must not emit
+# migration 010 DO-block pattern (009 precedent). SA must not emit
 # CREATE TYPE; postgresql.ENUM with create_type=False is the correct SA2 pattern.
 # ---------------------------------------------------------------------------
 EASM_SCAN_STATUS = PgEnum(
@@ -124,7 +124,7 @@ class EASMFinding(Base):
 
 
 class EASMCredential(Base):
-    """Per-project provider credentials (encrypted with Phase 8 key-rotation pattern)."""
+    """Per-project provider credentials (encrypted with key-rotation pattern)."""
 
     __tablename__ = "project_easm_credentials"
     __table_args__ = (

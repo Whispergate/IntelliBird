@@ -56,7 +56,7 @@ async def sources_client(live_db_sources):
 
     # Patch settings to point at the test DB. Env must be set BEFORE the first
     # import of app.config so module-level `settings = Settings()` sees the
-    # required SECRET_KEY + JWT_SIGNING_KEY (Phase 10 / Phase 9 respectively).
+    # required SECRET_KEY + JWT_SIGNING_KEY (respectively).
     for k, v in env.items():
         os.environ[k] = v
     import importlib
@@ -80,7 +80,7 @@ async def sources_client(live_db_sources):
             yield session
 
     def _fake_admin() -> AuthUser:
-        # Phase 9 AUTH-02 guards admin routes. Bypass the middleware chain
+        # AUTH-02 guards admin routes. Bypass the middleware chain
         # (not mounted on this minimal test app) by overriding the dependency
         # so the CRUD test exercises the business logic, not auth plumbing.
         return AuthUser(

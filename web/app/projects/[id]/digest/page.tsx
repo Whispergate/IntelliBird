@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/digest — Daily Digest viewer page (Phase 17 plan 17-09).
+ * /projects/[id]/digest — Daily Digest viewer page.
  *
  * Server Component. Fetches latest digest + project AI settings from backend,
  * then hands result to DigestView (client component) which owns the

@@ -1,6 +1,6 @@
-"""029 — passive_dns_records, whois_cache, AGE graph labels for Phase 28.
+"""029 — passive_dns_records, whois_cache, AGE graph labels for.
 
-Phase 28 / ENRICH-06, ENRICH-07, ENRICH-08, GRAPH-01.
+ENRICH-06, ENRICH-07, ENRICH-08, GRAPH-01.
 
 passive_dns_records: per-IOC passive DNS lookup results from external providers
   (SecurityTrails, Mnemonic, RiskIQ Community). Linked to iocs via FK ON DELETE

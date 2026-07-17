@@ -1,4 +1,4 @@
-"""Integration tests for TAXII 2.1 outbound server — Phase 26 / TAXII-02..05.
+"""Integration tests for TAXII 2.1 outbound server — TAXII-02..05.
 
 Uses a real PostgreSQL testcontainer. Mirrors test_prod01_cross_project_leakage.py
 fixture pattern. Each test seeds its own TaxiiClient row and Event rows.

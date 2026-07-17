@@ -1,6 +1,6 @@
 """AuthMiddleware + role gate dependencies — AUTH-02, AUTH-03.
 
-Replaces the Phase 8 stub. Validation chain per CONTEXT.md:
+Replaces the stub. Validation chain per CONTEXT.md:
   1. Bearer token extracted from Authorization header.
   2. PyJWT signature + exp validated via app.security.jwt.decode_token.
   3. claim 'type' must be 'access' (refresh tokens are not valid on protected endpoints).
@@ -11,19 +11,19 @@ Replaces the Phase 8 stub. Validation chain per CONTEXT.md:
 EXEMPT_PATHS (pre-auth surface — must not require a token):
   /healthz                       Docker healthcheck
   /api/system/status             NoAuthBanner fetch (must render pre-login)
-  /api/admin/rekey-credentials   pre-auth setup-token-gated recovery (Phase 8)
+  /api/admin/rekey-credentials pre-auth setup-token-gated recovery
   /api/admin/setup               pre-auth SETUP_TOKEN-gated first-admin bootstrap
   /api/auth/login                local credentials login
   /api/auth/refresh              refresh token rotation (cookie-authenticated, not bearer)
   /api/auth/oidc/login           redirect to Authentik
   /api/auth/oidc/callback        Authentik redirect target
 
-TAXII 2.1 exemption (Phase 26):
+TAXII 2.1 exemption:
   /taxii2 (all sub-paths, checked via startswith) — TAXII 2.1 outbound server uses its
   own partner-key authentication (require_taxii_client Depends), not JWT bearer tokens.
   The startswith check is used (not a frozenset entry) to cover all TAXII sub-paths.
 
-ASGI order (lock from Phase 8 — preserved):
+ASGI order (lock from — preserved):
   outermost -> innermost = RequestLogMiddleware -> AuthMiddleware -> CORSMiddleware -> route
 """
 from __future__ import annotations
@@ -113,11 +113,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if request.url.path in EXEMPT_PATHS or request.url.path.startswith("/taxii2"):
             return await call_next(request)
         if not settings.AUTH_ENABLED:
-            # AUTH_ENABLED=false dev mode: inject a stub Admin user so Phase 9+ routers
+            # AUTH_ENABLED=false dev mode: inject a stub Admin user so + routers
             # (which depend on require_auth / require_analyst_or_above / require_admin)
             # function without a real JWT. The NoAuthBanner surface already warns the
             # operator that auth is disabled. Loopback-bind + docs/ops runbook are the
-            # compensating controls until PROD-07 (Phase 13) removes the loopback prefix.
+            # compensating controls until PROD-07 removes the loopback prefix.
             request.state.user = AuthUser(
                 id="dev-admin",
                 role="Admin",
@@ -165,9 +165,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if revoked:
             return JSONResponse({"detail": "revoked_token"}, status_code=401)
 
-        # 6. Populate request.state.user (Phase 10: includes project_memberships +
+        # 6. Populate request.state.user (includes project_memberships
         #    pm_truncated — claim keys default to [] and False for tokens minted
-        #    pre-Phase-10.)
+        # legacy.)
         # PROD-03: role MUST derive from JWT claim only; never read X-Dashboard-Role from the request.
         pm_raw = claims.get("pm", [])
         project_memberships: dict[str, int] = {}

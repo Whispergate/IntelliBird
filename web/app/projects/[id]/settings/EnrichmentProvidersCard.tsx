@@ -2,7 +2,7 @@
 
 /**
  * EnrichmentProvidersCard — per-provider reputation API key config.
- * Phase 23 / ENRICH-01, ENRICH-04.
+ * ENRICH-01, ENRICH-04.
  *
  * Mirrors AIProviderCard.tsx structure.
  * Lead+ role required to edit; all roles can read.

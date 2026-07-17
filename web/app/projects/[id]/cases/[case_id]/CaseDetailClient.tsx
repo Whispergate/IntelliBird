@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * CaseDetailClient — Phase 31 Plan 07 (CASE-04, CASE-05).
+ * CaseDetailClient — (CASE-04, CASE-05).
  *
  * Full-page 4-tab case detail:
  *   Overview  — summary_md as Markdown (pre fallback), AI Summarise polling

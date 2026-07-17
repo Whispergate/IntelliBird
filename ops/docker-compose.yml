@@ -1,6 +1,6 @@
 # IntelliBird v2.0 — Docker Compose stack
 #
-# Phase 13 / PROD-07: public exposure is now fronted by Caddy. The api and
+# PROD-07: public exposure is now fronted by Caddy. The api and
 # web services are compose-network-internal (no host-port publish). Caddy
 # terminates TLS on 80/443 and reverse-proxies to api:8000 / web:3000. The
 # api container refuses to start unless AUTH_ENABLED=true (enforced by
@@ -62,7 +62,7 @@ services:
       AUTH_ENABLED: ${AUTH_ENABLED:-false}
       SETUP_TOKEN: ${SETUP_TOKEN:-}
       REKEY_FROM_SECRET: ${REKEY_FROM_SECRET:-}
-      # Phase 9 / AUTH-03
+      # AUTH-03
       JWT_SIGNING_KEY: ${JWT_SIGNING_KEY:?JWT_SIGNING_KEY required when AUTH_ENABLED=true}
       SSO_ISSUER_URL: ${SSO_ISSUER_URL:-}
       SSO_CLIENT_ID: ${SSO_CLIENT_ID:-}
@@ -88,8 +88,8 @@ services:
     image: intellibird-api:m1
     # Explicitly scope to non-easm queues. easm-worker owns the easm queue
     # (only that container has /var/run/docker.sock mounted).
-    # brand-monitor queue (Phase 12 / BRP-02) co-located here — dnstwist runs in-process,
-    # no docker.sock needed (contrast Phase 11 BBOT).
+    # brand-monitor queue (BRP-02) co-located here — dnstwist runs in-process
+    # no docker.sock needed (contrast BBOT).
     command: dramatiq app.workers.broker --queues ingest maintenance webhooks brand-monitor --processes 1 --threads 4
     env_file: .env
     environment:
@@ -119,7 +119,7 @@ services:
       api:
         condition: service_healthy
 
-  # --- CertStream realtime CT log consumer (Phase 32 / CERT-01..03) ---
+  # --- CertStream realtime CT log consumer (CERT-01..03) ---
   # Long-lived asyncio WebSocket consumer; NOT a Dramatiq actor.
   # Connects to wss://certstream.calidog.io (or CERTSTREAM_URL env override for
   # operators running a self-hosted CertStream instance). Pattern set is reloaded
@@ -141,7 +141,7 @@ services:
     restart: unless-stopped
 
   # --- Tor SOCKS5 proxy (dark-web collection — opt-in via `docker compose --profile darkweb up`) ---
-  # Phase 24 / DARK-01: isolated on darkweb_net (internal: true).
+  # DARK-01: isolated on darkweb_net (internal: true).
   # No clearnet egress from darkweb_net; tor daemon is the sole Tor egress point.
   # Image default: osminogin/tor-simple — binds SOCKS5 to 0.0.0.0:9050 out of the box.
   # Override: set TOR_IMAGE env var (e.g. torproject/tor requires custom torrc for SOCKS).
@@ -154,7 +154,7 @@ services:
     # No host-port published — tor-worker reaches via compose DNS tor:9050
 
   # --- Dark-web ingest worker (darkweb Dramatiq queue) ---
-  # Phase 24 / DARK-01..04: processes tor_html, paste, telegram actors.
+  # DARK-01..04: processes tor_html, paste, telegram actors.
   # Attached to BOTH networks:
   #   - default compose network → db:5432 + redis:6379 access (paste clearnet HTTP also exits here)
   #   - darkweb_net → tor:9050 access for .onion routing
@@ -224,7 +224,7 @@ services:
   # --- Authentik (optional SSO — opt-in via `docker compose --profile sso up -d`) ---
   # Runs its own Postgres (authentik-db) per Authentik best practice (isolation from
   # IntelliBird's primary DB). Shares the redis container (AUTHENTIK_REDIS__HOST=redis).
-  # Phase 9 / AUTH-01.
+  # AUTH-01.
   authentik-db:
     image: postgres:16-alpine
     profiles: ["sso"]

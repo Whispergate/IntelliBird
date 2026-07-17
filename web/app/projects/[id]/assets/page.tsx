@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/assets — Assets Dashboard page (Phase 12.1 plan 12.1-05a).
+ * /projects/[id]/assets — Assets Dashboard page.
  *
  * Server component shell: hands project ID to the client component.
  * Layout.tsx already renders the breadcrumb + ProjectTabs strip.

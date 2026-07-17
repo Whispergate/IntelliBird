@@ -1,5 +1,5 @@
 /**
- * IOCsGlobalClient tests — Phase 34 Plan 01 (Wave 0 RED).
+ * IOCsGlobalClient tests — (Wave 0 RED).
  *
  * Covers:
  *   - EXT-02a: Component mounts with initialQ pre-filled in the search input

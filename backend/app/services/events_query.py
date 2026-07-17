@@ -150,7 +150,7 @@ def build_events_query(
 ) -> Select:
     """Compose a Select of Event rows honouring dashboard_roles + project filters.
 
-    Phase 10 kwargs (all default None — unchanged when omitted, preserving Phase 9
+    kwargs (all default None — unchanged when omitted, preserving
     dashboard contract):
       project_id: when set, filters events.project_id = project_id
       scope_predicate: when set, applies the scope-intersection predicate
@@ -223,7 +223,7 @@ def build_events_query(
             allowed.append("blue_only")
         stmt = stmt.where(Event.visibility.in_(allowed))
 
-    # Phase 10 / PRJ-03: project_id narrowing + bound-sources + scope-intersection
+    # PRJ-03: project_id narrowing + bound-sources + scope-intersection
     # Applied AFTER role gating so cross-cutting filters compose correctly.
     if project_id is not None:
         stmt = stmt.where(Event.project_id == project_id)
@@ -274,7 +274,7 @@ def build_fts_query(
  ORDER BY ts_rank_cd DESC, observed_at DESC, id DESC.
  The select projects (Event, rank) so routers can read rank off rows for cursor.
 
- Phase 10 kwargs (all default None): see build_events_query for semantics.
+ kwargs (all default None): see build_events_query for semantics.
 """
     if not q or not q.strip():
         raise ValueError("free_text query cannot be empty")
@@ -338,7 +338,7 @@ def build_fts_query(
             allowed.append("blue_only")
         stmt = stmt.where(Event.visibility.in_(allowed))
 
-    # Phase 10 / PRJ-03: project_id narrowing + bound-sources + scope-intersection
+    # PRJ-03: project_id narrowing + bound-sources + scope-intersection
     if project_id is not None:
         stmt = stmt.where(Event.project_id == project_id)
         if bound_sources:

@@ -302,10 +302,10 @@ export function EventDetailDrawer({
               )}
             </section>
 
-            {/* Section 3b2 — IOCs (Phase 22 Plan 06 §Surface 5) */}
+            {/* Section 3b2 — IOCs (§Surface 5) */}
             <IOCsSection eventId={event.id} />
 
-            {/* Section 3b3 — Sandbox Report (Phase 27 SANDBOX-04) */}
+            {/* Section 3b3 — Sandbox Report (SANDBOX-04) */}
             {drawerProjectId && (
               <SandboxReportSection eventId={event.id} projectId={drawerProjectId} />
             )}

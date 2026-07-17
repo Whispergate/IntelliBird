@@ -1,4 +1,4 @@
-"""Asset note ORM — phase 12.1 / project asset surface.
+"""Asset note ORM — project asset surface.
 
 The only write-state on the asset inventory surface. Assets themselves are a
 query-time aggregation over `easm_findings`; notes are the one stored artefact

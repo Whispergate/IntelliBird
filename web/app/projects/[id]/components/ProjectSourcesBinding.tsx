@@ -2,7 +2,7 @@
 
 /**
  * ProjectSourcesBinding — multi-select source checkbox list for /projects/[id]
- * Sources tab (Phase 10 Plan 11, PRJ-05).
+ * Sources tab (PRJ-05).
  *
  * UI-SPEC §/projects/[id] detail §Sources tab locks:
  *   - List all globally configured sources (from /api/sources via fetchSources)

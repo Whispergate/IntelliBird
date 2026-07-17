@@ -1,4 +1,4 @@
-"""Unit tests for brand_monitor orchestrator (Phase 12 Plan 04 / BRP-02 + BRP-03).
+"""Unit tests for brand_monitor orchestrator (BRP-02 + BRP-03).
 
 Covers:
 - active + non-archived + non-watch-only term filtering

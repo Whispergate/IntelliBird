@@ -1,4 +1,4 @@
-"""MispConfig ORM model — Phase 32 MISP bidirectional sync.
+"""MispConfig ORM model — MISP bidirectional sync.
 
 One row per project. API key stored AES-256-GCM via app.crypto.encrypt_credentials.
 """

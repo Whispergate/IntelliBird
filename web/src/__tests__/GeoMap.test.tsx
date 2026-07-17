@@ -28,9 +28,9 @@ describe("GeoMap", () => {
   });
 
   it("renders overlay text when provided", () => {
-    render(<GeoMapImpl overlayText="Geo layer loads in Phase 6." />);
+    render(<GeoMapImpl overlayText="Geo layer loads in." />);
     expect(
-      screen.getByText("Geo layer loads in Phase 6."),
+      screen.getByText("Geo layer loads in."),
     ).toBeInTheDocument();
   });
 

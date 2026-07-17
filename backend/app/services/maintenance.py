@@ -1,4 +1,4 @@
-"""Maintenance window helper (Phase 16 H-7).
+"""Maintenance window helper (H-7).
 
 Single source of truth: monitoring dispatchers call is_maintenance_active(session)
 BEFORE emitting any canonical event. No daemon — past windows auto-expire because

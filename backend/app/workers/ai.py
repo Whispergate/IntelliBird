@@ -1,4 +1,4 @@
-"""Dramatiq AI actors — Phase 17 / AI-06, AI-07, SCR-04.
+"""Dramatiq AI actors — AI-06, AI-07, SCR-04.
 
 Three actors all on ``queue_name="ai"`` (isolated from ingest / scoring queues):
 
@@ -916,7 +916,7 @@ async def _async_draft_scenario_narrative(
             # 4. Build structural prompt (C-3 compliant — no f-string of raw user content).
             messages = tiber_scenario_narrative_messages(scenario, actor, report)
 
-            # 5. Token budget pre-flight check (Phase 17 / AI-06 token budget gate).
+            # 5. Token budget pre-flight check (AI-06 token budget gate).
             estimated = estimate_input_tokens(model_str, messages)
             estimated_with_buffer = int(estimated * 1.2)
             cap = getattr(project_row, "ai_daily_token_cap", None) or 100_000
@@ -1012,7 +1012,7 @@ def ai_draft_scenario_narrative(
     """AI-drafted TIBER scenario narrative actor (AI-08).
 
     On-demand narrative generation with SSE Redis-buffer protocol.
-    Runs on the existing ``ai`` queue (NOT ``reports``) so that the Phase 17
+    Runs on the existing ``ai`` queue (NOT ``reports``) so that the
     token budget tracking (ai:budget:project:{id}:day:{date}) applies.
 
     Args:
@@ -1040,7 +1040,7 @@ def ai_draft_scenario_narrative(
 
 
 # ---------------------------------------------------------------------------
-# _async_summarise_case — ai_summarise_case implementation (Phase 31 / CASE-05)
+# _async_summarise_case — ai_summarise_case implementation (CASE-05)
 # ---------------------------------------------------------------------------
 
 
@@ -1268,7 +1268,7 @@ def ai_summarise_case(case_id: str, project_id: str) -> None:
         project_id: UUID string of the owning project.
 
     Frontend polls: GET /api/projects/{id}/cases/{id} every 3s until summary_md != null.
-    No SSE keys — poll-based per Phase 31 CONTEXT.md decision.
+    No SSE keys — poll-based per CONTEXT.md decision.
     """
     try:
         asyncio.run(_async_summarise_case(case_id, project_id))

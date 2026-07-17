@@ -1,5 +1,5 @@
 /**
- * StoplistClient.test.tsx — Phase 21 Plan 02 (BRAND-01 frontend).
+ * StoplistClient.test.tsx — (BRAND-01 frontend).
  *
  * Coverage:
  *   - Table renders with term/created_by/created_at columns (Lead role)

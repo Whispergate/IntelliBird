@@ -1,4 +1,4 @@
-"""Unit tests for TAXII 2.1 router — Phase 26 / TAXII-01, TAXII-05."""
+"""Unit tests for TAXII 2.1 router — TAXII-01, TAXII-05."""
 from __future__ import annotations
 
 import inspect

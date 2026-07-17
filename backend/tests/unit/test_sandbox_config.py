@@ -1,6 +1,6 @@
 """
 SANDBOX-01 — per-project sandbox config: encrypted API key storage, OPSEC gate.
-Implemented in: backend/app/routers/projects/sandbox.py (Phase 27 Plan 04)
+Implemented in: backend/app/routers/projects/sandbox.py
 """
 import pytest
 from fastapi import HTTPException

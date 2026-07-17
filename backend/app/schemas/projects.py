@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for projects, scope rows, memberships, source-binding — Phase 10.
+"""Pydantic v2 schemas for projects, scope rows, memberships, source-binding.
 
 Exports request/response models consumed by the upcoming project CRUD router
 (plan 10-03), scope router (plan 10-04), memberships router (plan 10-02/10-03),

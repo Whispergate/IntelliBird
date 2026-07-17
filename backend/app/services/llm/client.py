@@ -1,4 +1,4 @@
-"""LiteLLM async wrapper — Phase 17 / AI-04.
+"""LiteLLM async wrapper — AI-04.
 
 Public surface:
   resolve_provider(db, project_id) -> (model_str, api_base, api_key)

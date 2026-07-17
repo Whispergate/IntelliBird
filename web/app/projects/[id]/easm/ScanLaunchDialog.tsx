@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScanLaunchDialog — Phase 11 plan 11-09 (UI-SPEC §Surface 4).
+ * ScanLaunchDialog — (UI-SPEC §Surface 4).
  *
  * Shadcn Dialog with:
  *   - Mode RadioGroup (Passive default / Active gated)

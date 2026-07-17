@@ -1,7 +1,7 @@
 """Brand Protection migration 011 integration test — brand_terms + brand_matches +
 projects.gdpr_person_match_retention_days column.
 
-Phase 12 / BRP-01..BRP-05.
+BRP-01..BRP-05.
 
 Pattern follows test_easm_migration_010.py: spin up intellibird-db:m1, migrate to
 010, upgrade to 011 and assert schema; downgrade back and assert clean teardown.

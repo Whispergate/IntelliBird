@@ -7,7 +7,7 @@ Verifies GRAPH-01 / GRAPH-02 contract:
   - truncated=True when caps are hit (via low max_nodes/max_edges args to traverse_project)
   - leakage assertion: traverse_project scoped to Project A returns no Project B nodes
 
-Phase 20 plan 20-02.
+
 """
 from __future__ import annotations
 

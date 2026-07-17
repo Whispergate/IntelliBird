@@ -1,4 +1,4 @@
-"""Phase 12 Plan 05 — dismiss expiry sweep integration tests (BRP-04).
+"""— dismiss expiry sweep integration tests (BRP-04).
 
 Covers the must-have truth: `brand_dismiss_expiry_sweep` flips
 lifecycle_status='dismissed' → 'new' + clears dismiss_until on expired rows,

@@ -1,4 +1,4 @@
-"""Admin Monitoring Dashboard API — MON-04, Phase 16.
+"""Admin Monitoring Dashboard API — MON-04.
 
 Endpoints:
   GET  /api/admin/monitoring/sources  — Dashboard table data: per-source health

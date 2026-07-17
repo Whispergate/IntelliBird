@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ExportDialog — PRJ-07 per-project export surface (Phase 10 Plan 11).
+ * ExportDialog — PRJ-07 per-project export surface.
  *
  * UI-SPEC §Export flow PRJ-07 locks:
  *   - RadioGroup: "STIX 2.1 Bundle (.stix.json)" / "CSV (.csv)"
@@ -27,7 +27,7 @@
  *   Content-Disposition parser (handles RFC 5987 + quoted + bare forms).
  *
  * Observer role gating (UI-SPEC §Export flow + plan context):
- *   Phase 10 simplification: the Export button in OverviewClient is shown
+ * simplification: the Export button in OverviewClient is shown
  *   regardless of project role; backend returns 403 if the caller lacks
  *   export permission. Dialog surfaces the 403 as a toast. Full client-side
  *   hide-for-Observer behaviour is a v2.1 follow-up once the frontend has a
@@ -36,7 +36,7 @@
  *
  * Date range is currently advisory — plan 10-07 shipped the export endpoint
  * with a 50k event hard cap and no per-range narrowing. The date inputs are
- * included to lock the UI shape for Phase 11 when the cap becomes tighter;
+ * included to lock the UI shape for when the cap becomes tighter
  * for now the dialog prints a small note explaining this.
  */
 
@@ -200,7 +200,7 @@ export function ExportDialog({
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Date-range filtering is advisory in Phase 10 — the export endpoint
+            Date-range filtering is advisory in — the export endpoint
             currently returns all in-scope events up to the 50,000-event cap.
             If the cap is reached, narrow the project scope and retry. Async
             large-export jobs are a v2.1 candidate.

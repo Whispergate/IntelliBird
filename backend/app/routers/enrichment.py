@@ -1,4 +1,4 @@
-"""Enrichment provider settings + IOC enrichment read/trigger — Phase 23 / ENRICH-01, ENRICH-04.
+"""Enrichment provider settings + IOC enrichment read/trigger — ENRICH-01, ENRICH-04.
 
 Endpoints:
   GET  /api/projects/{project_id}/enrichment-providers          Lead+

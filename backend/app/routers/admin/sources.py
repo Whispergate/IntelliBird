@@ -1,8 +1,8 @@
 """Admin Source Registry CRUD — SRC-01, SRC-02, SRC-04, SRC-05, STO-01, STO-02.
 
-AUTH-02 (Phase 9): every endpoint guarded by Depends(require_admin).
+AUTH-02: every endpoint guarded by Depends(require_admin).
 Test Connection endpoint (SRC-03) added by Plan 03.
-Phase 24 (DARK-06, DARK-07): OPSEC gate for dark-web source types.
+(DARK-06, DARK-07): OPSEC gate for dark-web source types.
 """
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ FeedType = Literal["rss", "taxii", "nvd", "custom", "tor_html", "paste", "telegr
 ArchivePolicy = Literal["keep", "drop", "move-to-cold"]
 _SILENT_THRESHOLD_DEFAULT = 5
 
-# Phase 24 / DARK-06, DARK-07: dark-web feed types requiring OPSEC authorisation.
+# DARK-06, DARK-07: dark-web feed types requiring OPSEC authorisation.
 _DARK_WEB_FEED_TYPES: frozenset[str] = frozenset({"tor_html", "paste", "telegram"})
 _PASTE_MIN_INTERVAL_SEC = 300
 
@@ -62,7 +62,7 @@ def _validate_dark_web_source(
 ) -> None:
     """Raise HTTP 422 for any dark-web source that fails OPSEC or format validation.
 
-    Phase 24 / DARK-06, DARK-07.
+    DARK-06, DARK-07.
     """
     if feed_type not in _DARK_WEB_FEED_TYPES:
         return  # clearnet types — no OPSEC gate
@@ -117,7 +117,7 @@ class SourceResponse(BaseModel):
     # Quick task 260425-ovt: HTML-scrape selector config. Populated only when
     # feed_type='custom'. Safe to expose — not credentials.
     scrape_config: dict | None = None
-    # Phase 24 / DARK-07: whether operator has acknowledged OPSEC risks for this source.
+    # DARK-07: whether operator has acknowledged OPSEC risks for this source.
     opsec_authorised: bool = False
 
     @classmethod
@@ -153,9 +153,9 @@ class SourceCreate(BaseModel):
     enabled: bool = True
     # Quick task 260425-ovt: required when feed_type='custom'.
     scrape_config: dict | None = None
-    # Phase 24 / DARK-07: operator must acknowledge OPSEC risks for dark-web sources.
+    # DARK-07: operator must acknowledge OPSEC risks for dark-web sources.
     opsec_authorised: bool = False
-    # Phase 24 / DARK-04: Telethon StringSession for telegram sources (write-only).
+    # DARK-04: Telethon StringSession for telegram sources (write-only).
     # Stored encrypted in sources.session_enc — never returned in responses.
     session: str | None = None
 
@@ -172,7 +172,7 @@ class SourceUpdate(BaseModel):
     # Quick task 260425-ovt: HTML-scrape selector config. None/absent → keep;
     # non-None → validated when feed_type='custom'.
     scrape_config: dict | None = None
-    # Phase 24 / DARK-07: allow operator to update OPSEC acknowledgement.
+    # DARK-07: allow operator to update OPSEC acknowledgement.
     opsec_authorised: bool | None = None
 
 
@@ -259,7 +259,7 @@ async def create_source(
     db: AsyncSession = Depends(get_session),
     _admin: AuthUser = Depends(require_admin),
 ) -> SourceResponse:
-    # Phase 24 / DARK-06, DARK-07: OPSEC gate must run before any DB operation.
+    # DARK-06, DARK-07: OPSEC gate must run before any DB operation.
     _validate_dark_web_source(
         payload.feed_type,
         payload.url,
@@ -287,10 +287,10 @@ async def create_source(
         created_at=datetime.now(timezone.utc),
         scrape_config=payload.scrape_config if payload.feed_type == "custom" else None,
         opsec_authorised=payload.opsec_authorised,
-        # Phase 24 / DARK-06: dark-web sources default to confidence=0.4 server-side.
+        # DARK-06: dark-web sources default to confidence=0.4 server-side.
         confidence=Decimal("0.4") if payload.feed_type in _DARK_WEB_FEED_TYPES else None,
     )
-    # Phase 24 / DARK-04: encrypt Telethon session string for telegram sources.
+    # DARK-04: encrypt Telethon session string for telegram sources.
     if payload.feed_type == "telegram" and payload.session:
         src.session_enc = encrypt_credentials(settings.SECRET_KEY, {"session": payload.session})
     db.add(src)
@@ -316,7 +316,7 @@ async def update_source(
     data = payload.model_dump(exclude_unset=True)
     data.pop("feed_type", None)  # belt-and-braces — SourceUpdate has no feed_type field
 
-    # Phase 24 / DARK-06, DARK-07: re-validate OPSEC gate on update using current
+    # DARK-06, DARK-07: re-validate OPSEC gate on update using current
     # stored values merged with incoming payload values.
     effective_opsec = data.get("opsec_authorised", getattr(src, "opsec_authorised", False))
     effective_url = data.get("url", src.url)

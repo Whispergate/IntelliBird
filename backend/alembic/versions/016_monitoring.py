@@ -1,11 +1,11 @@
-"""Phase 16 monitoring infrastructure — hypertable + CA + maintenance windows + sources columns
+"""monitoring infrastructure — hypertable + CA + maintenance windows + sources columns
 + webhook_alert_type_enum + sentinel project.
 
 Revision ID: 016_monitoring
 Revises: 013_scoring
 Create Date: 2026-04-25
 
-Phase 16 / MON-01, MON-02, MON-03, MON-05.
+MON-01, MON-02, MON-03, MON-05.
 
 Schema foundation for the continuous monitoring subsystem:
 

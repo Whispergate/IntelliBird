@@ -4,7 +4,7 @@ Revision ID: 011
 Revises: 010_easm
 Create Date: 2026-04-22
 
-Phase 12 / BRP-01..BRP-05.
+BRP-01..BRP-05.
 
 Creates Brand Protection schema foundation:
   - 5 ENUMs: brand_term_type, brand_term_mode, brand_match_source,

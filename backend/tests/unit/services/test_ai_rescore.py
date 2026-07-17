@@ -1,4 +1,4 @@
-"""Unit tests for ai_rescore_project ±15 clamp — Phase 17 / SCR-04.
+"""Unit tests for ai_rescore_project ±15 clamp — SCR-04.
 
 Covers:
   - test_clamp: AI adjustment clamped to ±15 before adding to rule_score

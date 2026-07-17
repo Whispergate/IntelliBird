@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for actor, campaign, and audit log endpoints — Phase 25 / ACTOR-05, ACTOR-06, AUDIT-03."""
+"""Pydantic v2 schemas for actor, campaign, and audit log endpoints — ACTOR-05, ACTOR-06, AUDIT-03."""
 from __future__ import annotations
 
 import uuid

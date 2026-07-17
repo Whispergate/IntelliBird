@@ -16,7 +16,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[3]
 COMPOSE_PATH = REPO_ROOT / "ops" / "docker-compose.yml"
 
-# Core services required for the M1/M2 stack. Phase 9 added Authentik
+# Core services required for the M1/M2 stack. added Authentik
 # (authentik-db/server/worker) + GeoIP auto-update (geoip-update). This assertion
 # requires the core set be present; additional services are tolerated.
 REQUIRED_SERVICES = {"db", "redis", "api", "worker", "scheduler", "web"}

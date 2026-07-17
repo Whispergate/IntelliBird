@@ -8,7 +8,7 @@ Covers:
   - Observer blocked from PATCH (authority matrix)
 
 Uses testcontainers-backed db_session + _migrations_applied from conftest.py.
-Auth is bypassed via app.dependency_overrides (same pattern as Phase 10).
+Auth is bypassed via app.dependency_overrides (same pattern as).
 """
 from __future__ import annotations
 

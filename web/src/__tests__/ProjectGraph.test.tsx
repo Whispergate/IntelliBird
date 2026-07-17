@@ -1,5 +1,5 @@
 /**
- * ProjectGraph.test.tsx — Phase 20-03 (GRAPH-01 frontend)
+ * ProjectGraph.test.tsx — -03 (GRAPH-01 frontend)
  *
  * Tests that ProjectGraph renders:
  * 1. Empty state when zero events (no nodes, no edges)

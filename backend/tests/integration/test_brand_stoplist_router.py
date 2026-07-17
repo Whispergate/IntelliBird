@@ -1,9 +1,9 @@
-"""Integration tests for brand stoplist CRUD routes — Phase 21 / BRAND-01.
+"""Integration tests for brand stoplist CRUD routes — BRAND-01.
 
 Tests the per-project brand stoplist: GET (Observer+), POST (Lead+), DELETE (Lead+).
 
 Auth fixture pattern mirrors test_brand_router_terms.py (_make_auth_user + stoplist_app).
-Phase 19 hermetic fixtures (_truncate_and_flush autouse) provide DB isolation.
+hermetic fixtures (_truncate_and_flush autouse) provide DB isolation.
 
 NOTE: brand_stoplist_terms.created_by_user_id is an FK to users.id. Tests that
 call POST routes must seed the auth user's UUID in the users table to avoid FK

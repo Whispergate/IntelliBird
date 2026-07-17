@@ -1,4 +1,4 @@
-"""Unit tests for the SSE Redis cancel-flag protocol — Phase 17 / AI-06.
+"""Unit tests for the SSE Redis cancel-flag protocol — AI-06.
 
 Covers:
   - test_disconnect_sets_cancel_flag: Redis SET ai:job:{id}:cancelled with EX=300

@@ -1,7 +1,7 @@
-"""ORM model for Phase 29: SigmaRule (stored Sigma detection rules).
+"""ORM model for SigmaRule (stored Sigma detection rules).
 
 Design notes:
-  * Mirrors YaraRule shape from Phase 27 with two key differences:
+  * Mirrors YaraRule shape from with two key differences:
     - No family field (Sigma rules do not have a family taxonomy)
     - compiled_cache is JSONB (not LargeBinary) — Sigma compilation produces
       a Python dict (field mappings, detection conditions) rather than binary
@@ -12,7 +12,7 @@ Design notes:
   * tags (ARRAY of TEXT, nullable) stores raw Sigma rule tags such as
     attack.t1566 — written to attack_technique_tags on event matches.
   * No SigmaMatch join table — Sigma writes directly to attack_technique_tags
-    on the matched event rows (see Phase 29 scanner design in 29-CONTEXT.md).
+    on the matched event rows (see scanner design in 29-CONTEXT.md).
 """
 from __future__ import annotations
 

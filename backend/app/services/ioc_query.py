@@ -1,4 +1,4 @@
-"""IOC cross-project scope chokepoint — Phase 22 / IOC-03 + IOC-08.
+"""IOC cross-project scope chokepoint — IOC-03 + IOC-08.
 
 Mirrors the role of `app.services.project_scope.build_scope_predicate` for the
 events table. Every SELECT against `iocs` MUST go through

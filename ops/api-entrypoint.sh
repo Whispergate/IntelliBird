@@ -31,7 +31,7 @@ fi
 cd /app
 alembic upgrade head
 
-# --- Phase 22 IOC seed: idempotent backfill at migration apply ------------
+# --- IOC seed: idempotent backfill at migration apply ------------
 # Runs once after `alembic upgrade head`. Idempotent via ON CONFLICT — safe
 # on every container start (~29k events, ~30s p95 cold; sub-second warm).
 # Best-effort: failure does not abort container start. Operator can re-run

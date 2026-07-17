@@ -2,7 +2,7 @@
 
 /**
  * CreateWindowForm — react-hook-form + zod form to POST /api/admin/maintenance-window.
- * Phase 16 plan 16-07. H-7 maintenance window management.
+ * H-7 maintenance window management.
  *
  * Fields:
  *   start_at  — datetime-local (required)

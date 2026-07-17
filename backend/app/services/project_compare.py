@@ -1,4 +1,4 @@
-"""Cross-project compare service — Phase 10 / PRJ-06.
+"""Cross-project compare service — PRJ-06.
 
 Two-project comparison only (not N-project Venn — deferred to v2.1 per CONTEXT.md).
 Returns three independent shared-entity lists capped at 500 rows each. Every
@@ -104,7 +104,7 @@ async def shared_techniques(
     Uses a cross-table JOIN: attack_technique_tags -> events (via event_id) so
     per-project scope predicates apply. attack_technique_tags.event_id has NO
     foreign key to events (TimescaleDB hypertable limitation) so the JOIN is
-    app-level — same pattern as Phase 2 cve_details.
+    app-level — same pattern as cve_details.
     """
     pred_a = build_scope_predicate(await fetch_scope_rows_intel(session, project_a))
     pred_b = build_scope_predicate(await fetch_scope_rows_intel(session, project_b))
@@ -144,10 +144,10 @@ async def shared_techniques(
 #   [domain-name:value = 'evil.example.com']
 #   [file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']
 #
-# Phase 2 enrichment does NOT denormalise indicators into a dedicated column or
+# enrichment does NOT denormalise indicators into a dedicated column or
 # flat array — extraction is via jsonb_path_query_array + regex substring at
 # query time. Same MEDIUM-confidence tradeoff as project_scope._clause_domain
-# / _clause_ip_range; Phase 11 enrichment may refactor.
+# / _clause_ip_range; enrichment may refactor.
 #
 # Scope-intersection: each kind runs a full pred_a / pred_b guarded subquery
 # pair so the semantics match shared_actors + shared_techniques — iter-1 revision
@@ -197,7 +197,7 @@ def _extract_iocs(
 
     raw_stix may be shaped either as a single STIX object (has 'pattern' directly)
     or a bundle-style ({"objects": [{"pattern": "..."}, ...]}). We handle both —
-    the real data Phase 2 ingests is a mix.
+    the real data ingests is a mix.
     """
     seen: set[str] = set()
     for doc in raw_stix_docs:

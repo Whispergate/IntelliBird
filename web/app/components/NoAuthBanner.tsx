@@ -3,7 +3,7 @@ import type { SystemStatus } from "../api-client";
 type Props = { status: SystemStatus | null };
 
 /**
- * Pre-auth + credentials-health indicator banner — Phase 8 / INFRA-03 + INFRA-04.
+ * Pre-auth + credentials-health indicator banner — INFRA-03 + INFRA-04.
  *
  * Three mutually-exclusive visible states (plus null when everything is green):
  *   1. Decrypt failure  — critical red #b00020, takes precedence over auth warning.
@@ -104,7 +104,7 @@ export function NoAuthBanner({ status }: Props) {
               {host}
             </code>{" "}
             &mdash; exposed beyond loopback. For trusted internal networks
-            only. Auth lands in Phase 9.
+            only. Auth lands in.
           </span>
         ) : (
           <span style={{ marginLeft: "0.5rem" }}>
@@ -115,6 +115,6 @@ export function NoAuthBanner({ status }: Props) {
     );
   }
 
-  // 4. Auth enabled and no decrypt failure — render nothing. Phase 9 steady state.
+  // 4. Auth enabled and no decrypt failure — render nothing. steady state.
   return null;
 }

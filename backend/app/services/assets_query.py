@@ -1,4 +1,4 @@
-"""Asset aggregation query builder — phase 12.1.
+"""Asset aggregation query builder.
 
 Single-source-of-truth for:
   * build_assets_aggregation_select — GROUP BY on easm_findings

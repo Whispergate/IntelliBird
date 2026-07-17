@@ -1,4 +1,4 @@
-"""Paste-site polling actor — Phase 24 / DARK-03.
+"""Paste-site polling actor — DARK-03.
 
 RSS-first polling for paste.ee, ghostbin, dpaste.com, rentry.co, controld,
 paste.rs. Falls back to trafilatura auto-mode HTML scraping when feedparser

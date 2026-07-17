@@ -1,4 +1,4 @@
-"""Shodan enrichment provider — Phase 23 / ENRICH-02.
+"""Shodan enrichment provider — ENRICH-02.
 
 Supports: ip, ipv6
 

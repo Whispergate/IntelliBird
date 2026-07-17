@@ -1,4 +1,4 @@
-"""Hatching Triage sandbox provider — Phase 27."""
+"""Hatching Triage sandbox provider."""
 from __future__ import annotations
 import logging
 import httpx

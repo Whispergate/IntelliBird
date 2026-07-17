@@ -2,7 +2,7 @@
 
 /**
  * ActorProfilesSection — Section 3d: Threat Actor Profiles.
- * Phase 18 plan 18-06. UI-SPEC §3d.
+ * UI-SPEC §3d.
  *
  * Auto-populated + manual. Card grid with ActorProfileCard per actor.
  * Counter "{N} of 3 required actors" colours at ≥3.

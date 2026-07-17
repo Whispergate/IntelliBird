@@ -1,4 +1,4 @@
-"""TaxiiClient ORM model — Phase 26 / TAXII-03.
+"""TaxiiClient ORM model — TAXII-03.
 
 Stores per-partner API keys for the TAXII 2.1 outbound server.
 Raw API keys are NEVER stored — only SHA-256 hex digest.

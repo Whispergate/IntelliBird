@@ -1,6 +1,6 @@
 """Integration test stubs — migration 026 threat_actors / campaigns / audit_log schema.
 
-Phase 25 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 25-02 ships migration 026 and the TimescaleDB audit_log hypertable.
 
 Coverage:
@@ -14,7 +14,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-02")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_threat_actors_table_exists():
     """After alembic upgrade head, threat_actors has all required columns.
 
@@ -25,7 +25,7 @@ async def test_threat_actors_table_exists():
     assert False, "stub — implement after migration 026 ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-02")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_campaigns_table_exists():
     """After alembic upgrade head, campaigns has all required columns.
 
@@ -35,7 +35,7 @@ async def test_campaigns_table_exists():
     assert False, "stub — implement after migration 026 ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-02")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_campaign_events_table_exists():
     """After alembic upgrade head, campaign_events M2M table has all required columns.
 
@@ -45,7 +45,7 @@ async def test_campaign_events_table_exists():
     assert False, "stub — implement after migration 026 ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-02")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_actor_event_links_table_exists():
     """After alembic upgrade head, actor_event_links has all required columns.
 
@@ -55,7 +55,7 @@ async def test_actor_event_links_table_exists():
     assert False, "stub — implement after migration 026 ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-02")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_audit_log_hypertable():
     """After alembic upgrade head, audit_log is a TimescaleDB hypertable with 365-day retention.
 

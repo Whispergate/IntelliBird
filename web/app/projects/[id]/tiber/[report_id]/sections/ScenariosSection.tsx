@@ -2,7 +2,7 @@
 
 /**
  * ScenariosSection — Section 3e: Threat Scenarios.
- * Phase 18 plan 18-06/07. UI-SPEC §3e.
+ * /07. UI-SPEC §3e.
  *
  * Auto-populated + manual. Scenario selection indicator + ScenarioCard grid.
  * Stepper Sheet (Surface 4) wired via ScenarioCard.

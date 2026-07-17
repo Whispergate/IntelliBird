@@ -221,7 +221,7 @@ def poll_taxii_impl(source_id_str: str) -> None:
                         mod_field = row["raw_stix"].get("modified") or row["raw_stix"].get("created")
                         if mod_field and (latest_modified_str is None or str(mod_field) > latest_modified_str):
                             latest_modified_str = str(mod_field)
-                        # Phase 27 YARA-03: scan STIX pattern string against yara rules with stix_pattern_scan metadata
+                        # YARA-03: scan STIX pattern string against yara rules with stix_pattern_scan metadata
                         _raw = row.get("raw_stix") or {}
                         _stix_pattern = _raw.get("pattern", "") if isinstance(_raw, dict) else ""
                         if _stix_pattern:

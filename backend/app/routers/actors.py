@@ -1,4 +1,4 @@
-"""Threat actors REST API — Phase 25 / ACTOR-05, ACTOR-06.
+"""Threat actors REST API — ACTOR-05, ACTOR-06.
 
 Endpoints:
   GET  /api/actors                    paginated actor list

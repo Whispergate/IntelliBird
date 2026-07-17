@@ -60,7 +60,7 @@ def _mk_event_row(source_id: uuid.UUID, content_hash: str, observed_at: datetime
     return {
         "stix_type": "x-intellibird-rss",
         "source_id": source_id,
-        # Phase 10: events.project_id NOT NULL — seed against legacy sentinel.
+        # events.project_id NOT NULL — seed against legacy sentinel.
         "project_id": LEGACY_PROJECT_ID,
         "observed_at": observed_at or datetime.now(timezone.utc),
         "content_hash": content_hash,
@@ -72,7 +72,7 @@ def _mk_event_row(source_id: uuid.UUID, content_hash: str, observed_at: datetime
 def test_alembic_head_is_0002(migrated_engine) -> None:
     with migrated_engine.connect() as conn:
         row = conn.execute(text("SELECT version_num FROM alembic_version")).one()
-    # Phase 10 renamed alembic head; migration 002's unique-index invariant is
+    # renamed alembic head; migration 002's unique-index invariant is
     # still covered by head==009 (see migration 009's test coverage for new
     # project_id column; this file just pins that migrations advanced past 002).
     assert row[0] == "009_projects_and_memberships", f"expected 009 head, got {row[0]}"

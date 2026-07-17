@@ -2,7 +2,7 @@
 
 /**
  * /admin/monitoring — Source Health Dashboard.
- * Phase 16 plan 16-07. MON-04 dashboard requirement.
+ * MON-04 dashboard requirement.
  *
  * Admin-only page. SWR-style refresh every 30s (CONTEXT.md "Claude's Discretion").
  * Shows SourceHealthTable + MonitoringConfigDrawer (per-source config editor).

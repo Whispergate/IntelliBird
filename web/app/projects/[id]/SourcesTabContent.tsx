@@ -2,7 +2,7 @@
 
 /**
  * SourcesTabContent — Sources tab orchestrator for /projects/[id]
- * (Phase 10 Plan 11, PRJ-05).
+ * (PRJ-05).
  *
  * Thin wrapper over ProjectSourcesBinding. Kept as a separate named export so
  * ProjectDetailClient / page.tsx has a single "content per tab" symbol to

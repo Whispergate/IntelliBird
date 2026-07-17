@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * OverviewClient — Overview tab content for /projects/[id] (Phase 10 Plan 09,
+ * OverviewClient — Overview tab content for /projects/[id] (
  * extended by Plan 11).
  *
  * Plan 10-09 shipped the skeleton: project name heading + EngagementTypeBadge

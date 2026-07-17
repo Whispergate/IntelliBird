@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for TIBER report editor API — Phase 18 / TIBER-01..03, AI-08.
+"""Pydantic v2 schemas for TIBER report editor API — TIBER-01..03, AI-08.
 
 Exports:
   ReportState          — str Enum: draft | published | archived

@@ -2,7 +2,7 @@
 
 /**
  * CompletionBadge — per-section completeness badge for the TIBER left sidebar.
- * Phase 18 plan 18-06. UI-SPEC §"Section Completeness Badge Colour Map".
+ * UI-SPEC §"Section Completeness Badge Colour Map".
  *
  * States:
  *   complete   — green CheckCircle2, bg-green-500/15 text-green-300

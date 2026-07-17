@@ -1,12 +1,12 @@
 # IntelliBird Brand Protection Operator Runbook
 
-**Applies to:** IntelliBird v2.0+ (Phase 12 shipped)
+**Applies to:** IntelliBird v2.0+ (shipped)
 **dnstwist version pinned:** `dnstwist>=20240219` (verified shape against `dnstwist 20250130`, see `docs/research/dnstwist-key-verification.md`)
 
 **Related:**
 - `ops/.env.example` — all `BRAND_*` keys
 - `ops/docker-compose.yml` — `worker` service `--queues` list (brand-monitor co-located)
-- `docs/ops/easm.md` — Phase 11 EASM runbook (sibling subsystem — contrast docker.sock model)
+- `docs/ops/easm.md` — EASM runbook (sibling subsystem — contrast docker.sock model)
 - `docs/ops/projects.md` — project authority matrix (brand terms CRUD follow same rules)
 - `docs/ops/auth-setup.md` — Authentik setup (Lead/Admin roles gate term CRUD)
 - `backend/app/services/brand_stoplist.py` — DEFAULT_STOPLIST constant (sole source of truth)
@@ -47,9 +47,9 @@ Per-project brand-term monitoring. Operators register brand terms (keyword, doma
 
 The scheduler fires `brand_monitor_tick` on an APScheduler IntervalTrigger (default 15 min) which enqueues one `brand_monitor_scan_project.send(project_id)` call per non-archived project on the dedicated `brand-monitor` Dramatiq queue.
 
-**HIGH-severity matches synthesise a canonical event** via `backend/app/services/brand_synth.py` with `source_type='brand-monitor'` and tags `['brand-match', 'brand-match:high', 'brand-match:{source}', 'project:{id}']`. The **existing M1 `webhook_dispatch_tick`** from Phase 7 picks these up through tag-based preset subscriptions — **zero new webhook code was added in Phase 12** (BRP-05 closure).
+**HIGH-severity matches synthesise a canonical event** via `backend/app/services/brand_synth.py` with `source_type='brand-monitor'` and tags `['brand-match', 'brand-match:high', 'brand-match:{source}', 'project:{id}']`. The **existing M1 `webhook_dispatch_tick`** from picks these up through tag-based preset subscriptions — **zero new webhook code was added in ** (BRP-05 closure).
 
-Architectural contrast with Phase 11 EASM: Brand Protection runs entirely **in-process** (pure-Python `dnstwist` + `httpx`). No docker.sock mount, no ephemeral container lifecycle, no elevated privileges. The `brand-monitor` queue is co-located on the shared `worker` container alongside `ingest`, `maintenance`, and `webhooks`.
+Architectural contrast with EASM: Brand Protection runs entirely **in-process** (pure-Python `dnstwist` + `httpx`). No docker.sock mount, no ephemeral container lifecycle, no elevated privileges. The `brand-monitor` queue is co-located on the shared `worker` container alongside `ingest`, `maintenance`, and `webhooks`.
 
 ---
 
@@ -71,7 +71,7 @@ To apply a change:
 docker compose up -d --force-recreate worker scheduler
 ```
 
-> **Note:** The `worker` container consumes the `brand-monitor` queue. The `scheduler` container fires `brand_monitor_tick`. Both need a restart to pick up env changes. The `api` container does not need restart unless env keys are read in request paths (they are not in Phase 12).
+> **Note:** The `worker` container consumes the `brand-monitor` queue. The `scheduler` container fires `brand_monitor_tick`. Both need a restart to pick up env changes. The `api` container does not need restart unless env keys are read in request paths (they are not in).
 
 ---
 
@@ -102,7 +102,7 @@ The extra set is unioned with `DEFAULT_STOPLIST` at every `load_runtime_stoplist
 
 ## 4. GDPR Retention (L-3 closure)
 
-Person-type brand matches carry GDPR data-subject implications and are purged after a configurable retention window. Non-person matches (keyword, domain, product) follow the Phase 3 events-table TimescaleDB archiver rules instead.
+Person-type brand matches carry GDPR data-subject implications and are purged after a configurable retention window. Non-person matches (keyword, domain, product) follow the events-table TimescaleDB archiver rules instead.
 
 **Retention knob:** `projects.gdpr_person_match_retention_days` (default `90`).
 
@@ -284,13 +284,13 @@ WHERE lifecycle_status = 'dismissed'
 
 **Watchlist lifecycle:** matches set to `lifecycle_status='watchlist'` are never auto-dismissed and never auto-reactivated. They are operator-pinned and persist until manually changed. Useful for long-running engagements where a suspicious lookalike domain is being monitored for activation.
 
-Mirrors the Phase 11 `easm_dismiss_expiry_sweep_job` 1:1 in SQL shape, cadence, and semantics — separate tables only because `brand_matches` and `easm_findings` cascade differently.
+Mirrors the `easm_dismiss_expiry_sweep_job` 1:1 in SQL shape, cadence, and semantics — separate tables only because `brand_matches` and `easm_findings` cascade differently.
 
 ---
 
 ## 9. Webhook Reuse (BRP-05)
 
-**Zero new webhook code was written in Phase 12.** HIGH-severity brand matches synthesise canonical events that the existing M1 `webhook_dispatch_tick` picks up via tag-based preset subscriptions. This is the load-bearing design decision of BRP-05.
+**Zero new webhook code was written in.** HIGH-severity brand matches synthesise canonical events that the existing M1 `webhook_dispatch_tick` picks up via tag-based preset subscriptions. This is the load-bearing design decision of BRP-05.
 
 **Flow:**
 
@@ -305,7 +305,7 @@ Mirrors the Phase 11 `easm_dismiss_expiry_sweep_job` 1:1 in SQL shape, cadence, 
    - `description` carrying the term value + source-specific detail
 3. `brand_matches.event_id` is set to the new event's UUID (soft reference; no FK because `events` is a TimescaleDB hypertable).
 4. `brand_matches.webhook_fired_at` is set to `NOW()` to prevent re-fire when the match is re-opened from a dismissal.
-5. The existing **Phase 7 `webhook_dispatch_tick`** scans the events table on its normal cadence, matches the new row against preset subscription filters, and delivers to configured webhook endpoints. No Phase 12 code executes in the delivery path.
+5. The existing ** `webhook_dispatch_tick`** scans the events table on its normal cadence, matches the new row against preset subscription filters, and delivers to configured webhook endpoints. No code executes in the delivery path.
 
 **Configuring a brand-protection webhook preset:**
 
@@ -361,7 +361,7 @@ brand_monitor_tick (scheduler)
                               brand_synth.synthesise_event  (HIGH matches only)
 ```
 
-The scheduler uses a **sync `psycopg2`** connection for project discovery (APScheduler is sync; attempting async I/O here would spawn an event loop per tick). The actor body uses an **async** engine created inside `_async_scan` and disposed in `finally` — per-loop engine pattern mandated by the Phase 11 BBOT lesson (module-global engines leak event-loop affinity across Dramatiq worker threads).
+The scheduler uses a **sync `psycopg2`** connection for project discovery (APScheduler is sync; attempting async I/O here would spawn an event loop per tick). The actor body uses an **async** engine created inside `_async_scan` and disposed in `finally` — per-loop engine pattern mandated by the BBOT lesson (module-global engines leak event-loop affinity across Dramatiq worker threads).
 
 ---
 
@@ -389,12 +389,12 @@ worker:
   command: dramatiq app.workers.broker --queues ingest maintenance webhooks brand-monitor --processes 1 --threads 4
 ```
 
-**Why co-located (contrast Phase 11 EASM):**
+**Why co-located (contrast EASM):**
 
 - `dnstwist` is a pure-Python package + optional GeoIP mmdb — **no docker.sock mount needed**.
 - `crt.sh` is an HTTPS call — no elevated privileges.
 - FTS is a DB query — no elevated privileges.
-- Keeping `brand-monitor` off `easm-worker` preserves the docker.sock blast-radius discipline from Phase 11 (see `docs/ops/easm.md §1`). The regression test `backend/tests/integration/test_compose_brand_queue.py::test_brand_monitor_queue_not_on_easm_worker` enforces this as a negative invariant.
+- Keeping `brand-monitor` off `easm-worker` preserves the docker.sock blast-radius discipline (see `docs/ops/easm.md §1`). The regression test `backend/tests/integration/test_compose_brand_queue.py::test_brand_monitor_queue_not_on_easm_worker` enforces this as a negative invariant.
 
 **CPU isolation (M-8):** enforced at the **queue** level, not the container level. If dnstwist subprocess CPU becomes a noisy neighbour to `ingest` (NVD, RSS, TAXII) or `webhooks`, the next escalation is to split the `worker` container into two copies of the same image with disjoint `--queues` lists — no code change required, just Compose wiring.
 
@@ -410,7 +410,7 @@ Both test helpers tokenise `--queues` tolerantly of both shell-string and YAML-l
 
 ## 12. Upgrade Procedure
 
-See §6.1 for `dnstwist` upgrades specifically. General Phase 12 upgrade flow:
+See §6.1 for `dnstwist` upgrades specifically. General upgrade flow:
 
 1. **Pull new backend code**: `git pull` (upstream or feature branch merge).
 2. **Refresh deps**: `cd backend && uv lock && cd ..`.
@@ -422,7 +422,7 @@ See §6.1 for `dnstwist` upgrades specifically. General Phase 12 upgrade flow:
    - Create a throwaway brand term on a test project, wait one tick (15 min by default; or set `BRAND_MONITOR_INTERVAL_SECONDS=60` on the test host), confirm `brand_matches` rows appear.
    - Confirm a webhook preset subscribed to `brand-match:high` fires when a HIGH match is synthesised.
 
-**Rollback:** `alembic downgrade` to the previous migration revision, then redeploy the previous image tag. The brand-protection schema is disjoint from EASM (different tables, different enums), so rollback is independent of Phase 11.
+**Rollback:** `alembic downgrade` to the previous migration revision, then redeploy the previous image tag. The brand-protection schema is disjoint from EASM (different tables, different enums), so rollback is independent of.
 
 ---
 
@@ -464,7 +464,7 @@ See §6.1 for `dnstwist` upgrades specifically. General Phase 12 upgrade flow:
 2. **Event synthesis:** `SELECT id, title, tags FROM events WHERE source_type='brand-monitor' ORDER BY observed_at DESC LIMIT 5;` — confirm canonical events are being written.
 3. **webhook_fired_at:** `SELECT id, severity, webhook_fired_at FROM brand_matches WHERE severity='high' ORDER BY first_seen DESC LIMIT 5;` — confirm the column is being set by `brand_synth.synthesise_event`.
 4. **Preset subscription:** open the Webhooks UI, verify the preset tag filter includes `brand-match:high` (or `brand-match` as a parent tag). Missing subscription = no delivery.
-5. **webhook_dispatch_tick status:** `docker compose logs scheduler | grep webhook_dispatch_tick` — confirm the Phase 7 tick is running on its normal cadence.
+5. **webhook_dispatch_tick status:** `docker compose logs scheduler | grep webhook_dispatch_tick` — confirm the tick is running on its normal cadence.
 6. **Endpoint reachability:** `docker compose logs worker | grep webhook_delivery` — confirm deliveries are being attempted and surfacing any HTTP errors from the endpoint.
 
 ### 13.4 Term auto-downgraded unexpectedly to watch_only
@@ -493,7 +493,7 @@ WHERE bt.value = 'ib'
 
 **Symptom:** `docker compose logs scheduler` at container boot shows no `brand_monitor_tick` / `brand_gdpr_purge` / etc. registration lines.
 
-**Cause:** `register_brand_jobs(scheduler, settings)` may have failed silently during `build_scheduler()`. Phase 12 follows the Phase 2 precedent of wrapping job registration in try/except to survive transient Postgres unavailability at scheduler startup.
+**Cause:** `register_brand_jobs(scheduler, settings)` may have failed silently during `build_scheduler`. follows the precedent of wrapping job registration in try/except to survive transient Postgres unavailability at scheduler startup.
 
 **Diagnosis:**
 
@@ -526,7 +526,7 @@ Look for `scheduler_brand_registration_failed` warnings. Typically indicates a D
 
 ## 14. Deferred Items
 
-The following capabilities are scoped to v2.1 and are not present in Phase 12 (v2.0):
+The following capabilities are scoped to v2.1 and are not present in (v2.0):
 
 | Item | Reason deferred |
 |---|---|
@@ -551,7 +551,7 @@ The following capabilities are scoped to v2.1 and are not present in Phase 12 (v
 | PITFALLS §L-3 | GDPR person-match retention — daily purge job (§4) |
 | BRP-02 | Per-project brand-term monitoring (§1, §10, §11) |
 | BRP-05 | Webhook reuse — zero new webhook code, tag-based subscription (§9) |
-| Phase 13 | Production Readiness Hardening — brand-protection surfaces folded into the integration test bundle |
+| | Production Readiness Hardening — brand-protection surfaces folded into the integration test bundle |
 | `backend/app/services/brand_stoplist.py` | `DEFAULT_STOPLIST`, `is_stoplisted`, `is_short`, `load_runtime_stoplist` |
 | `backend/app/services/brand_severity.py` | Pure-function severity truth table |
 | `backend/app/services/crtsh_client.py` | Async CT log client — 429 backoff + precert/cert dedup |
@@ -561,7 +561,7 @@ The following capabilities are scoped to v2.1 and are not present in Phase 12 (v
 | `backend/app/scheduler/jobs.py` | `register_brand_jobs()` + four `brand_*` jobs |
 | `backend/tests/integration/test_compose_brand_queue.py` | Compose regression — worker queue + dnstwist dep |
 | `docs/research/dnstwist-key-verification.md` | dnstwist 20250130 JSON key shape evidence |
-| `docs/ops/easm.md` | Phase 11 EASM runbook — docker.sock contrast (§11) |
+| `docs/ops/easm.md` | EASM runbook — docker.sock contrast (§11) |
 | `docs/ops/projects.md` | Project authority matrix (term CRUD gates) |
 | `docs/ops/secret-rotation.md` | `SECRET_KEY` rotation (does not touch brand_matches; pure-metadata) |
 | `ops/.env.example` | All four `BRAND_*` keys |
@@ -569,5 +569,5 @@ The following capabilities are scoped to v2.1 and are not present in Phase 12 (v
 
 ---
 
-Last updated: 2026-04-23 (Phase 12 shipped).
+Last updated: 2026-04-23 (shipped).
 Related: [easm.md](easm.md), [projects.md](projects.md), [auth-setup.md](auth-setup.md), [../../ops/.env.example](../../ops/.env.example).

@@ -1,4 +1,4 @@
-"""Integration: telegram source lifecycle — Phase 24 / DARK-04."""
+"""Integration: telegram source lifecycle — DARK-04."""
 import pytest
 
 

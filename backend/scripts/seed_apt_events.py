@@ -1,4 +1,4 @@
-"""Seed APT attack chain events into a project for testing Phase 35 attack path analysis.
+"""Seed APT attack chain events into a project for testing attack path analysis.
 
 Usage:
     uv run python backend/scripts/seed_apt_events.py <project_id>

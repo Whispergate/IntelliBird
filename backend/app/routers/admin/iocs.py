@@ -1,4 +1,4 @@
-"""POST /api/admin/iocs/backfill — Phase 22 / IOC-07.
+"""POST /api/admin/iocs/backfill — IOC-07.
 
 Admin-only async backfill trigger. Returns 202 + {job_id} immediately and
 enqueues `backfill_iocs_actor` on the `ingest` queue (per RESEARCH Pitfall 6

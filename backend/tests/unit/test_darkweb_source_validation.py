@@ -1,4 +1,4 @@
-"""Unit tests for dark-web source OPSEC gate and input validation — Phase 24 / DARK-07."""
+"""Unit tests for dark-web source OPSEC gate and input validation — DARK-07."""
 import os
 
 import pytest

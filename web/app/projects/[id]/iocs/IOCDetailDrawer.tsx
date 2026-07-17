@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * IOCDetailDrawer — Phase 22 Plan 06 (UI-SPEC §Surface 4 a/b/c/d/e + §Surface 7).
+ * IOCDetailDrawer — (UI-SPEC §Surface 4 a/b/c/d/e + §Surface 7).
  *
  * shadcn Sheet (right side, sm:max-w-xl) with:
  *   - 4a Header: Type/Status/Confidence pills + value + normalised
@@ -333,7 +333,7 @@ export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) 
                 )}
               </div>
 
-              {/* Enrichment section — Phase 23 ENRICH-01 */}
+              {/* Enrichment section — ENRICH-01 */}
               <div
                 className="px-6 py-4 border-b border-border"
                 data-testid="drawer-section-enrichment"

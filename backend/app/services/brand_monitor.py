@@ -1,4 +1,4 @@
-"""Per-project brand monitor orchestrator (Phase 12 Plan 04 / BRP-02 + BRP-03).
+"""Per-project brand monitor orchestrator (BRP-02 + BRP-03).
 
 Composes the Wave 2 primitives into a single async `scan_project(session, project_id)`
 entry point. Three source branches run per term:
@@ -313,7 +313,7 @@ async def _maybe_synth(
         term={"id": term["id"], "value": term["value"], "term_type": term["term_type"]},
     )
 
-    # Phase 15 / SCR-01: compute score at INSERT time.
+    # SCR-01: compute score at INSERT time.
     # brand_synth path uses brand_severity (low/medium/high) as the CVSS proxy.
     from app.services.scoring import score_event, ScoringWeights  # noqa: PLC0415
     from app.services.scoring.defaults import DEFAULT_SOURCE_CONFIDENCE  # noqa: PLC0415
@@ -349,9 +349,9 @@ async def _maybe_synth(
         row = result.first()
         if row is not None:
             event_id = row[0]
-            # Phase 16 MON-01: bump last_event_at after successful insert
+            # MON-01: bump last_event_at after successful insert
             # Brand synthetic events have source_id=NULL so no sources row to update;
-            # call is a deliberate no-op guard for when a synth source is wired (Phase 17).
+            # call is a deliberate no-op guard for when a synth source is wired.
             synth_source_id = event_dict.get("source_id")
             if synth_source_id is not None:
                 await async_bump_last_event_at(session, synth_source_id)
@@ -394,11 +394,11 @@ async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int
 
     Returns a stats dict: {"fts": n, "ct_log": n, "dnstwist": n, "synthesised": n}.
 
-    Phase 21 / BRAND-01: loads per-project stoplist ONCE at scan entry and threads
+    BRAND-01: loads per-project stoplist ONCE at scan entry and threads
     the frozenset through to _fts_sql_for_term so FTS branch reflects project-level
     suppression terms alongside the global DEFAULT_STOPLIST + env extras.
 
-    Phase 32 / CERT-03: fetches certstream_enabled flag to skip CT log branch when
+    CERT-03: fetches certstream_enabled flag to skip CT log branch when
     CertStream WebSocket worker is active for this project. dnstwist and FTS still
     run regardless of certstream_enabled.
     """
@@ -408,7 +408,7 @@ async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int
     terms_result = await session.execute(_TERMS_SQL, {"project_id": str(project_id)})
     terms = [dict(r) for r in terms_result.mappings().all()]
 
-    # Phase 32 / CERT-03: fetch certstream_enabled toggle (added by migration 033)
+    # CERT-03: fetch certstream_enabled toggle (added by migration 033)
     _cert_row = await session.execute(
         _CERTSTREAM_ENABLED_SQL, {"project_id": str(project_id)}
     )

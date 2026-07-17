@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * CTLogModeCard — Phase 32 / CERT-03.
+ * CTLogModeCard — CERT-03.
  *
  * CT Log Mode selector for the Brand tab. Lead+ gated.
  * Three modes map to certstream_enabled boolean on the project:

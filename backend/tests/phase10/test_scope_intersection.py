@@ -146,7 +146,7 @@ async def test_cidr_contains(db_session):
 
 @pytest.mark.asyncio
 async def test_keyword_fts(db_session):
-    """keyword scope row uses Phase 4 FTS via events.search_tsv."""
+    """keyword scope row uses FTS via events.search_tsv."""
     p = await _make_project(db_session, "kw")
     db_session.add(ProjectScopeRow(
         project_id=p.id, scope_type="keyword",

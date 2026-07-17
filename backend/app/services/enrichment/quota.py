@@ -1,4 +1,4 @@
-"""Atomic Redis quota gate for enrichment providers — Phase 23 / ENRICH-03.
+"""Atomic Redis quota gate for enrichment providers — ENRICH-03.
 
 Implements per-minute and per-day quota enforcement using Lua scripts
 executed atomically in Redis. The dual-gate approach ensures that
@@ -29,7 +29,7 @@ PROVIDER_MINUTE_CAPS: dict[str, int] = {
     "otx": 60,
     "shodan": 1,
     "urlhaus": 60,
-    # Passive DNS providers (Phase 28 / ENRICH-06)
+    # Passive DNS providers (ENRICH-06)
     "securitytrails": 2,
     "mnemonic": 10,
     "riskiq_community": 12,
@@ -42,7 +42,7 @@ PROVIDER_DEFAULT_DAILY_CAPS: dict[str, int | None] = {
     "otx": None,
     "shodan": None,
     "urlhaus": None,
-    # Passive DNS providers (Phase 28 / ENRICH-06)
+    # Passive DNS providers (ENRICH-06)
     "securitytrails": 50,
     "mnemonic": 1000,
     "riskiq_community": 1000,

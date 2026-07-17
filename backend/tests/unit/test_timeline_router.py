@@ -3,7 +3,7 @@ TIMELINE-01..03 — Pattern-of-life timeline router returns bucketed series
                   data and heatmap cells with correct structure and project
                   isolation.
 
-Implemented in: backend/app/routers/timeline.py (Phase 33 Plan 05)
+Implemented in: backend/app/routers/timeline.py
 """
 import os
 import pytest

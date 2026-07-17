@@ -200,7 +200,7 @@ settings as needed.
 **Credential storage:** API keys are encrypted with AES-256-GCM before storage
 in the `ai_providers.credentials_enc` column. The encryption key is derived from
 the `CREDENTIALS_KEY` environment variable (same mechanism as `sources.credentials_enc`
-from Phase 03). Credentials are never stored in plaintext.
+). Credentials are never stored in plaintext.
 
 **Credential isolation:** Each project has its own `ai_providers` row. Per-call
 LLM requests pass `api_key` and `api_base` as parameters — there is no global

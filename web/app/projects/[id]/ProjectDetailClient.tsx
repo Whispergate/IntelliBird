@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectDetailClient — Phase 10 Plan 10-10.
+ * ProjectDetailClient
  *
  * Thin client dispatcher that reads `?tab=` via useSearchParams and renders
  * the matching tab pane. Keeps page.tsx a server component (fetches project

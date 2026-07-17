@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScopeRowDialog — Phase 10 Plan 10-10.
+ * ScopeRowDialog
  *
  * Add a scope row for one scope_type. Fields:
  *   - value   (required; dispatched to per-type validator on submit)

@@ -59,7 +59,7 @@ def get_status() -> SystemStatusResponse:
         warning = (
             "This IntelliBird instance is exposed beyond loopback and has "
             "NO AUTHENTICATION — for trusted internal networks only. "
-            "Auth lands in Phase 9."
+            "Auth lands in."
         )
     else:
         warning = None

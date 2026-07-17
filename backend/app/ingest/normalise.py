@@ -25,7 +25,7 @@ from app.services.source_health import bump_last_event_at
 
 
 def _inject_score_into_row(session: Session, row: dict) -> None:
-    """Phase 15 / SCR-01: populate score, scored_at, score_version before INSERT.
+    """SCR-01: populate score, scored_at, score_version before INSERT.
 
     Looks up feed_type + confidence from sources using the source_id already in
     the row. Falls back to DEFAULT_SOURCE_CONFIDENCE[feed_type] when the source
@@ -140,7 +140,7 @@ def _persist_event(session: Session, row: dict) -> int:
  Project routing is handled by ``_persist_event_for_bindings``; this
  helper keeps the LEGACY fallback as a safety net for any direct caller.
 """
-    # Phase 10: ensure every row carries a project_id. Default to the LEGACY
+    # ensure every row carries a project_id. Default to the LEGACY
     # sentinel when unset so feed workers (rss/nvd/taxii) that haven't been
     # updated yet don't blow up against the NOT NULL constraint.
     if row.get("project_id") is None:
@@ -169,7 +169,7 @@ def _persist_event(session: Session, row: dict) -> int:
     enrichment = enrich_event(row.get("title"), row.get("description"))
     merge_enrichment_into_event_row(row, enrichment)
 
-    # Phase 15 / SCR-01: populate score, scored_at, score_version at INSERT time.
+    # SCR-01: populate score, scored_at, score_version at INSERT time.
     # Pure scoring function — no additional DB writes. One SELECT on sources.
     _inject_score_into_row(session, row)
 
@@ -186,7 +186,7 @@ def _persist_event(session: Session, row: dict) -> int:
     if inserted is None:
         return 0
 
-    # Phase 16 MON-01: bump last_event_at after successful insert
+    # MON-01: bump last_event_at after successful insert
     source_id_val = row.get("source_id")
     if source_id_val is not None:
         bump_last_event_at(session, source_id_val)
@@ -207,7 +207,7 @@ def _persist_event(session: Session, row: dict) -> int:
             # Unknown technique ID → skip. Caller transaction continues.
             pass
 
-    # Phase 22 / IOC-08: write IOC rows + ioc_event_links for indicators
+    # IOC-08: write IOC rows + ioc_event_links for indicators
     # discovered in title+description. Best-effort — must NEVER raise into the
     # ingest hot path (a single malformed indicator should not break the event
     # INSERT). The enrichment object was built above; reuse it directly so
@@ -231,7 +231,7 @@ def _persist_event(session: Session, row: dict) -> int:
             exc_info=True,
         )
 
-    # Phase 29 / SIGMA-02: evaluate active Sigma rules against this event.
+    # SIGMA-02: evaluate active Sigma rules against this event.
     # Best-effort — must NEVER raise into the ingest hot path.
     try:
         from app.services.sigma_engine import evaluate_sigma_rules  # noqa: PLC0415

@@ -1,4 +1,4 @@
-"""Unit tests for load_runtime_stoplist_for_project — Phase 21 / BRAND-01.
+"""Unit tests for load_runtime_stoplist_for_project — BRAND-01.
 
 Tests the additive union behaviour of the new async per-project stoplist loader.
 All three tests should FAIL at RED phase (function does not exist yet).

@@ -1,8 +1,8 @@
-"""STIX 2.1 bundle → (ioc_type, raw_value) iterator (Phase 22 / IOC-02).
+"""STIX 2.1 bundle → (ioc_type, raw_value) iterator (IOC-02).
 
 Maps the eight atomic indicator/observed-data shapes documented in CONTEXT.md
 §"STIX SDO mapping". Compound patterns (AND/OR/FOLLOWEDBY) are skipped — they
-are rare in indicator feeds and outside Phase 22's scope (per RESEARCH.md).
+are rare in indicator feeds and outside 's scope (per RESEARCH.md).
 
 Try a normal parse first; on any parse error we retry with `allow_custom=True`
 so malformed bundles from third-party feeds still yield whatever we recognise.

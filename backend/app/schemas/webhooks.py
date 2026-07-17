@@ -89,7 +89,7 @@ class WebhookUpdate(BaseModel):
     batching_window_sec: int | None = None
     enabled: bool | None = None
     bound_preset_names: list[str] | None = None
-    project_id: uuid.UUID | None = None  # Phase 10 — optional move between projects
+    project_id: uuid.UUID | None = None # optional move between projects
 
 
 # ---------------------------------------------------------------------------
@@ -109,7 +109,7 @@ class WebhookResponse(BaseModel):
 
     id: uuid.UUID
     name: str
-    project_id: uuid.UUID  # Phase 10 — included in responses
+    project_id: uuid.UUID # included in responses
     destination_type: DestinationType
     url: str
     # auth_enc DELIBERATELY ABSENT — SRC-04 parallel

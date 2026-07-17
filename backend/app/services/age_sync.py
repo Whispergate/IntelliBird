@@ -1,4 +1,4 @@
-"""AGE graph sync service — Phase 28 / ENRICH-08.
+"""AGE graph sync service — ENRICH-08.
 
 Merges :DomainPivot vertices and :SHARES_INFRA edges into intellibird_graph
 after WHOIS + passive DNS enrichment completes for a domain IOC.

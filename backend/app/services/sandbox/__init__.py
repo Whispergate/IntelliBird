@@ -1,5 +1,5 @@
 """
-Phase 27 — Sandbox provider abstraction.
+— Sandbox provider abstraction.
 SandboxReport: common normalised result schema.
 get_provider_module(): dispatch to provider module by name.
 """

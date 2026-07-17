@@ -4,7 +4,7 @@ Revision ID: 033_certstream_misp
 Revises: 032_cases
 Create Date: 2026-05-05
 
-Phase 32 schema:
+schema:
   - brand_match_source ENUM: +certstream
   - ioc_source_enum: +misp
   - projects: +certstream_enabled BOOL DEFAULT FALSE

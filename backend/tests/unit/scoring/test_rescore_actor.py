@@ -1,4 +1,4 @@
-"""Unit tests for the rescore_project Dramatiq actor — Phase 15 / SCR-02.
+"""Unit tests for the rescore_project Dramatiq actor — SCR-02.
 
 These tests verify:
   1. The actor is registered on the ``scoring`` queue with the correct options.

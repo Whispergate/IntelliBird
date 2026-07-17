@@ -1,4 +1,4 @@
-"""Unit tests for token budget Lua counter — Phase 17 / AI-06.
+"""Unit tests for token budget Lua counter — AI-06.
 
 Tests use mock Redis clients to verify:
   - Budget exhaustion correctly blocks at cap

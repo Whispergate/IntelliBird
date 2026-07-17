@@ -1,4 +1,4 @@
-"""Unit tests for register_ai_jobs APScheduler wiring — Phase 17 / AI-06, AI-07, SCR-04.
+"""Unit tests for register_ai_jobs APScheduler wiring — AI-06, AI-07, SCR-04.
 
 Covers:
   - test_register_ai_jobs_adds_three_jobs: exactly 3 add_job calls with correct ids

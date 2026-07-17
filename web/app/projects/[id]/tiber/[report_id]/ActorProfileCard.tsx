@@ -2,7 +2,7 @@
 
 /**
  * ActorProfileCard — individual actor profile card with inline editing.
- * Phase 18 plan 18-06. UI-SPEC §3d.
+ * UI-SPEC §3d.
  *
  * View mode: displays name / motivation / capability / relevance.
  * Edit mode: inline form on Pencil click; auto-save on blur or explicit Save.

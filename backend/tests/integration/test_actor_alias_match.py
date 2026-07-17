@@ -1,6 +1,6 @@
 """Integration test stubs — actor alias fuzzy matching thresholds.
 
-Phase 25 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 25-04 ships the match_actor_name() service using rapidfuzz.
 
 Coverage:
@@ -17,7 +17,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-04")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_auto_link_at_85():
     """match_actor_name() returns ('auto_link', actor) when fuzz score >= 85.
 
@@ -27,7 +27,7 @@ async def test_auto_link_at_85():
     assert False, "stub — implement after match_actor_name ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-04")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_stage_at_65():
     """match_actor_name() returns ('stage', actor) when fuzz score is in 60–84.
 
@@ -37,7 +37,7 @@ async def test_stage_at_65():
     assert False, "stub — implement after match_actor_name ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-04")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_discard_below_60():
     """match_actor_name() returns ('discard', None) when fuzz score < 60.
 
@@ -47,7 +47,7 @@ async def test_discard_below_60():
     assert False, "stub — implement after match_actor_name ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-04")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_case_insensitive_match():
     """match_actor_name() matches 'apt29' to 'APT29' with score >= 85.
 

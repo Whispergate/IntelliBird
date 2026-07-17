@@ -37,7 +37,7 @@ def test_refresh_endpoint_returns_202(monkeypatch):
     app = FastAPI()
     app.include_router(router)
 
-    # Phase 9 AUTH-02: the endpoint is guarded by Depends(require_admin).
+    # AUTH-02: the endpoint is guarded by Depends(require_admin).
     # This unit-ish integration test doesn't exercise the middleware chain —
     # inject a fake admin principal via dependency_overrides so the 202-path
     # under test (actor.send) runs.

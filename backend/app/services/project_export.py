@@ -1,4 +1,4 @@
-"""Project export service — Phase 10 / PRJ-07.
+"""Project export service — PRJ-07.
 
 Produces STIX 2.1 Bundle (via stix2 3.0.2) or CSV (via stdlib csv) for a project scope.
 Both formats are capped at 50k events; above the cap, the router returns 413.

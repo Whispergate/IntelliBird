@@ -8,7 +8,7 @@ import os
 
 # Pydantic-settings singleton is loaded at import time; inject required env vars
 # before any app.* import to prevent ValidationError at collection time.
-# Pattern from STATE.md Phase 03 / Phase 09 notes.
+# Pattern from STATE.md notes.
 os.environ.setdefault("SECRET_KEY", "x" * 64)
 os.environ.setdefault("JWT_SIGNING_KEY", "y" * 64)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")

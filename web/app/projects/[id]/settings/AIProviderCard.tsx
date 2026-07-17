@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AIProviderCard — Project AI Provider settings form (Phase 17 plan 17-09 / AI-01).
+ * AIProviderCard — Project AI Provider settings form (AI-01).
  * Surface 4 per 17-UI-SPEC.md.
  *
  * Form fields: provider Select, model_name Input, API key Input (hidden for Ollama),

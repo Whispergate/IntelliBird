@@ -1,6 +1,6 @@
 """028 — sandbox_configs, sandbox_reports hypertable, yara_rules, yara_matches.
 
-Phase 27 / SANDBOX-01, SANDBOX-03, SANDBOX-04, YARA-01, YARA-02.
+SANDBOX-01, SANDBOX-03, SANDBOX-04, YARA-01, YARA-02.
 
 Creates four tables that form the foundation for the sandbox detonation and YARA
 scanning subsystems.

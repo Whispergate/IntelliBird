@@ -1,4 +1,4 @@
-"""TIBER report generation schema — Phase 18 / TIBER-01..03, AI-08.
+"""TIBER report generation schema — TIBER-01..03, AI-08.
 
 Revision ID: 015_tiber
 Revises: 014_ai
@@ -7,7 +7,7 @@ Create Date: 2026-04-25
 (Filename 019_tiber.py reflects insertion order; revision id is "015_tiber"
 because models/tests reference that id. Follows linear chain after 014_ai.)
 
-Phase 18 / TIBER-01, TIBER-02, TIBER-03, AI-08.
+TIBER-01, TIBER-02, TIBER-03, AI-08.
 
 Schema foundation for the TIBER report editor + exporter + history:
 

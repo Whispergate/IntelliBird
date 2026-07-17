@@ -1,5 +1,5 @@
 /**
- * ScopeRowTooltip.test.tsx — Phase 20-03 (UX-03 display)
+ * ScopeRowTooltip.test.tsx — -03 (UX-03 display)
  *
  * Tests that ScopeRowTable wraps punycode domain values in a shadcn Tooltip
  * showing the decoded unicode form, while plain ASCII values and non-FQDN

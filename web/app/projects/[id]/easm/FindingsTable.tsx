@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * FindingsTable — Phase 11 plan 11-08 (UI-SPEC §Surface 3 §Findings table).
+ * FindingsTable — (UI-SPEC §Surface 3 §Findings table).
  *
  * 8-column findings table per UI-SPEC:
  *   Type (160px) | Target (flex-1, font-mono, truncate@48) | Module (140px) |

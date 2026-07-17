@@ -1,4 +1,4 @@
-"""Service-layer audit log helper — Phase 25 / AUDIT-01.
+"""Service-layer audit log helper — AUDIT-01.
 
 Called inline from service functions — NOT from middleware.
 Caller is responsible for committing the session after calling log_audit().

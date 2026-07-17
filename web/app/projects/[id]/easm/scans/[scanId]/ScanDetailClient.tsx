@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScanDetailClient — Phase 11 plan 11-09 (UI-SPEC §Surface 6).
+ * ScanDetailClient — (UI-SPEC §Surface 6).
  *
  * Renders:
  *   - Breadcrumb: EASM / Scan History / <scan_id short>

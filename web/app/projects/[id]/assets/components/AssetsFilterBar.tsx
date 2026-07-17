@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetsFilterBar — Phase 12.1 plan 12.1-05a (UI-SPEC §Surface 4).
+ * AssetsFilterBar — (UI-SPEC §Surface 4).
  *
  * 9 controls: Type multi-select, Scope multi-select, Stale single-select,
  * Module multi-select, First-seen + Last-seen date ranges, Scan select,

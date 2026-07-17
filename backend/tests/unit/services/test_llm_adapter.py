@@ -1,4 +1,4 @@
-"""Unit tests for LiteLLM adapter — Phase 17 / AI-04.
+"""Unit tests for LiteLLM adapter — AI-04.
 
 Covers:
   - call_llm_streaming yields token strings from streamed acompletion

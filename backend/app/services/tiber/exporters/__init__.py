@@ -1,4 +1,4 @@
-"""TIBER report exporters package — Phase 18 / TIBER-03.
+"""TIBER report exporters package — TIBER-03.
 
 Three export formats:
   markdown  — Jinja2 + mistune, secure HTML rendering pipeline (H-6 XSS mitigation)

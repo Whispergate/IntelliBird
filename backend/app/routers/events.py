@@ -143,7 +143,7 @@ async def list_events(
     include_brand_match: bool = Query(
         default=False,
         description=(
-            "Include brand-monitor (Phase 12) events in results. "
+            "Include brand-monitor events in results. "
             "Default (false) excludes events tagged 'brand-match' so the main "
             "events feed is not polluted by brand alerts. Set true to show them."
         ),
@@ -204,7 +204,7 @@ async def list_events(
             detail="project_id query parameter required for non-admin callers",
         )
 
-    # Phase 10 / PRJ-03: pre-compute scope predicate + bound sources when project-scoped.
+    # PRJ-03: pre-compute scope predicate + bound sources when project-scoped.
     # build_events_query + build_fts_query stay sync — routers fetch the DB-dependent
     # pieces up-front and pass them in as kwargs.
     scope_predicate = None
@@ -242,13 +242,13 @@ async def list_events(
             scope_predicate=scope_predicate,
             bound_sources=bound_sources,
         )
-        # H-4 feed contamination prevention (Phase 11): exclude BBOT-promoted events
+        # H-4 feed contamination prevention: exclude BBOT-promoted events
         # by default. BBOT provenance is signalled by easm_scan_id IS NOT NULL.
         # (events table has no source_type column — easm_scan_id is the sole indicator.)
         if not include_bbot:
             fts_stmt = fts_stmt.where(Event.easm_scan_id == None)  # noqa: E711
 
-        # Phase 12 / BRP-04: exclude brand-monitor events unless explicitly
+        # BRP-04: exclude brand-monitor events unless explicitly
         # requested. Brand events are tagged 'brand-match' by brand_synth
         # (no source_type column exists on events; tag is the canonical marker).
         if not include_brand_match:
@@ -334,20 +334,20 @@ async def list_events(
         scope_predicate=scope_predicate,
         bound_sources=bound_sources,
     )
-    # H-4 feed contamination prevention (Phase 11): exclude BBOT-promoted events
+    # H-4 feed contamination prevention: exclude BBOT-promoted events
     # by default. BBOT provenance is signalled by easm_scan_id IS NOT NULL.
     # (events table has no source_type column — easm_scan_id is the sole indicator.)
     if not include_bbot:
         stmt = stmt.where(Event.easm_scan_id == None)  # noqa: E711
 
-    # Phase 12 / BRP-04: exclude brand-monitor events unless requested.
+    # BRP-04: exclude brand-monitor events unless requested.
     if not include_brand_match:
         stmt = stmt.where(
             ~func.coalesce(Event.tags, sa.cast(sa.literal("{}"), ARRAY(sa.Text)))
             .op("@>")(sa.cast(["brand-match"], ARRAY(sa.Text)))
         )
 
-    # Phase 16: exclude synthesised source-monitoring alerts from main feed
+    # exclude synthesised source-monitoring alerts from main feed
     # unless explicitly requested. Admin/lead view uses include_monitoring=true.
     if not include_monitoring:
         stmt = stmt.where(Event.stix_type != "x-monitoring-alert")
@@ -439,7 +439,7 @@ async def get_event(
 
 
 # ---------------------------------------------------------------------------
-# Phase 22 / IOC-08 — event-side IOC pivot.
+# IOC-08 — event-side IOC pivot.
 # Concrete API for EventDetailDrawer §Surface 5 (Plan 22-06). Replaces the
 # earlier hedge of "embed iocs[] in event payload OR fetch via query param".
 # ---------------------------------------------------------------------------

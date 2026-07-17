@@ -1,4 +1,4 @@
-"""URLhaus enrichment provider — Phase 23 / ENRICH-02.
+"""URLhaus enrichment provider — ENRICH-02.
 
 Supports: domain, url
 

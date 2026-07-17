@@ -1,4 +1,4 @@
-"""Enrichment ORM models — Phase 23 / ENRICH-01, ENRICH-04.
+"""Enrichment ORM models — ENRICH-01, ENRICH-04.
 
 EnrichmentProvider: per-project (project_id NOT NULL) or global
   (project_id IS NULL) API key config. Mirrors AIProvider shape from

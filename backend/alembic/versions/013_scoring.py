@@ -4,7 +4,7 @@ Revision ID: 013_scoring
 Revises: 012_asset_notes
 Create Date: 2026-04-25
 
-Phase 15 / SCR-01, SCR-03.
+SCR-01, SCR-03.
 
 Schema foundation for the scoring engine:
   - events hypertable gains score numeric(5,2), scored_at timestamptz, score_version int (all nullable)

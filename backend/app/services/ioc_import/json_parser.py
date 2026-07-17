@@ -1,4 +1,4 @@
-"""JSON → IOCImportRow parser (Phase 22 / IOC-02).
+"""JSON → IOCImportRow parser (IOC-02).
 
 Accepts a top-level JSON array of objects; each object has the same shape as
 the CSV row (incl. optional `project_id` + `source`).

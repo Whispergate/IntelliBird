@@ -1,4 +1,4 @@
-"""Cases REST API — Phase 31 Case Management — CASE-01, CASE-02, CASE-03, CASE-05.
+"""Cases REST API — Case Management — CASE-01, CASE-02, CASE-03, CASE-05.
 
 Endpoints:
   GET    /api/projects/{project_id}/cases                         paginated list

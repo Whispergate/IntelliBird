@@ -2,7 +2,7 @@
 
 /**
  * ScenarioCard — summary card for a scenario in ScenariosSection (Surface 3e).
- * Phase 18 plan 18-07. UI-SPEC §3e verbatim.
+ * UI-SPEC §3e verbatim.
  *
  * Renders: actor name + technique ID, completeness badge, selection checkbox,
  * Edit button (opens ScenarioStepperSheet), "Draft narrative with AI" (mounts AIScenarioNarrative).

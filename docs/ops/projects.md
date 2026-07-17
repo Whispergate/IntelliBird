@@ -1,29 +1,29 @@
-# IntelliBird Phase 10 — Projects Operator Runbook
+# IntelliBird — Projects Operator Runbook
 
-Operator procedure for Phase 10 (Projects Foundation) — PRJ-01 through PRJ-07.
+Operator procedure for (Projects Foundation) — PRJ-01 through PRJ-07.
 Covers the migration 009 three-step backfill, the `_legacy` sentinel project,
 the Lead / Contributor / Observer authority matrix, last-Lead protection, the
 JWT `pm` claim + 50-membership cutoff, 50k export cap semantics, and
 query-time scope intersection.
 
-- **Landed:** v2.0 Phase 10 (Projects Foundation)
+- **Landed:** v2.0 (Projects Foundation)
 - **Migration:** `backend/alembic/versions/009_projects_and_memberships.py`
 - **Sentinel project UUID:** `LEGACY_PROJECT_ID = 00000000-0000-0000-0000-000000000001`
-- **Related runbooks:** `docs/ops/secret-rotation.md` (Phase 8),
-  `docs/ops/auth-setup.md` (Phase 9)
+- **Related runbooks:** `docs/ops/secret-rotation.md`,
+  `docs/ops/auth-setup.md`
 
 ## 1. Overview
 
-Phase 10 introduces per-engagement scope separation via **projects**. Every
+introduces per-engagement scope separation via **projects**. Every
 `event`, `filter_preset`, and `webhook` now carries a mandatory
-`project_id UUID NOT NULL` FK. Legacy (pre-Phase-10) rows are backfilled onto
+`project_id UUID NOT NULL` FK. Legacy (legacy) rows are backfilled onto
 a fixed sentinel project (`_legacy`, UUID `…000001`) so the NOT NULL
 constraint lands without orphaning any historical data.
 
 New tables:
 
 - `projects` — engagement containers (name, engagement_type, description,
-  archived, created_by, EASM pre-columns for Phase 11)
+  archived, created_by, EASM pre-columns for)
 - `project_scope_rows` — 7-type scope definitions
   (`keyword / service / domain / certificate / whois / as_number / ip_range`)
   with `exclude` and `intel_scope` + `active_test_scope` flags
@@ -133,7 +133,7 @@ the sentinel, which the downgrade scrubs) are lost. Back up before running.
 
 ## 3. The `_legacy` Sentinel Project
 
-All pre-Phase-10 events, presets, and webhooks point at the `_legacy` sentinel
+All legacy events, presets, and webhooks point at the `_legacy` sentinel
 project (UUID `00000000-0000-0000-0000-000000000001`). The sentinel:
 
 - Is **archived=true by default** — hidden from `/projects` default list;
@@ -187,7 +187,7 @@ that project's intel + graph.
 | Bind sources to project                 | ✗        | ✓           | ✓    | ✓            |
 | Rename / archive project                | ✗        | ✗           | ✓    | ✓            |
 | Add / remove / re-role members          | ✗        | ✗           | ✓    | ✓            |
-| Edit EASM gate (Phase 11 read-only now) | ✗        | ✗           | ✓    | ✓            |
+| Edit EASM gate (read-only now) | ✗ | ✗ | ✓ | ✓ |
 
 Notes:
 
@@ -263,8 +263,8 @@ back to fetching `/api/auth/memberships` (paginated 100/page) for the full
 list on demand. Under this design a 50-membership access token measured
 ~3225 bytes (well under the 8KB header limit; see plan 10-02 SUMMARY.md).
 
-**Phase 9 token compatibility:** neither `pm` nor `pm_truncated` is in the
-`decode_token` required-claims list — Phase 9-minted tokens still in the
+** token compatibility:** neither `pm` nor `pm_truncated` is in the
+`decode_token` required-claims list — -minted tokens still in the
 7-day refresh TTL circulation continue to decode cleanly; AuthMiddleware
 defaults `pm=[]` when the claim is absent.
 
@@ -299,7 +299,7 @@ Workarounds:
   the cap is counted
 - **Narrow the project scope** — reducing the scope-row include set
   shrinks the query result symmetrically
-- **Archive old events** — Phase 3 archiver + TimescaleDB retention policies
+- **Archive old events** — archiver + TimescaleDB retention policies
   already tier events by age; archived events drop out of exports unless the
   operator explicitly unarchives
 
@@ -328,7 +328,7 @@ Predicate composition (canonical rules):
 - **Exclude rows (`exclude=true`):** subtract — event matches an include row
   AND does NOT match any exclude row → in scope
 - **`intel_scope=false`** rows are skipped for the intel query lens (they
-  exist only to reserve authorisation for Phase 11 active scans)
+  exist only to reserve authorisation for active scans)
 - **Empty scope (`intel_scope=true` rows = 0)** → the predicate returns
   `sa.text("false")`, so zero events match — **not** "all events". This is
   an **invariant** (CONTEXT.md §Scope-intersection locked) and is enforced
@@ -343,7 +343,7 @@ Per scope_type:
   `event_domain = row_value OR event_domain LIKE '%.' || row_value`
 - `keyword` / `service` / `whois` / `certificate` / `as_number` → FTS match
   on `events.search_tsv @@ plainto_tsquery('english', row_value)` (MEDIUM
-  confidence; Phase 11 enrichment may denormalise some of these to dedicated
+  confidence; enrichment may denormalise some of these to dedicated
   columns for precision — see CONTEXT.md §Claude's Discretion)
 
 ## 9. Graph Scoping (PRJ-04, H-3 closure)
@@ -356,7 +356,7 @@ closure — documented and test-covered in `backend/tests/phase10/test_graph_sco
 
 ## 10. Route Protection + Frontend Middleware
 
-Phase 10 extends `web/middleware.ts` to protect all `/projects/*` routes:
+extends `web/middleware.ts` to protect all `/projects/*` routes:
 
 ```ts
 export const config = {
@@ -367,7 +367,7 @@ export const config = {
     "/sources/:path*",
     "/webhooks/:path*",
     "/admin/:path*",
-    "/projects/:path*",  // Phase 10
+    "/projects/:path*",
   ],
 };
 ```
@@ -392,5 +392,5 @@ client) gets the same gate as the UI. Defence-in-depth.
   + export + compare endpoints
 - `backend/app/security/project_membership.py` — `require_project_membership`,
   `check_project_membership`, `PM_CUTOFF`
-- `docs/ops/secret-rotation.md` — Phase 8 runbook (SECRET_KEY rotation)
-- `docs/ops/auth-setup.md` — Phase 9 runbook (Authentik + Auth.js)
+- `docs/ops/secret-rotation.md` — runbook (SECRET_KEY rotation)
+- `docs/ops/auth-setup.md` — runbook (Authentik + Auth.js)

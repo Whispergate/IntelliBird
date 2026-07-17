@@ -1,4 +1,4 @@
-"""Integration tests for TIBER report generation — Phase 18.
+"""Integration tests for TIBER report generation.
 
 Wave 0 stubs — skip-marked pending Wave 3+ service layer and migration 015.
 Each test documents exact integration behaviour; stubs flip green once the

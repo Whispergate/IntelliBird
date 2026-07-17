@@ -1,10 +1,10 @@
 """Brand Protection Pydantic v2 DTOs. Canonical field names locked per
 .planning/phases/12-brand-protection/12-CONTEXT.md and 12-UI-SPEC.md.
 
-Phase 12 / BRP-01..BRP-05.
+BRP-01..BRP-05.
 
 All enum fields use Literal types for compile-time safety + OpenAPI generation —
-mirrors the Phase 11 easm.py pattern.
+mirrors the easm.py pattern.
 
 BrandDashboardResponse carries the `has_expiring_dismissals` and
 `has_recent_auto_downgrade` banner flags required by the brand dashboard surface
@@ -131,7 +131,7 @@ class BrandSuppressionExtend(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Match history / details DTOs — Phase 21 / BRAND-02
+# Match history / details DTOs — BRAND-02
 # ---------------------------------------------------------------------------
 
 class HistoryEntry(BaseModel):
@@ -201,7 +201,7 @@ class BrandSuppressionRow(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Stoplist DTOs — Phase 21 / BRAND-01
+# Stoplist DTOs — BRAND-01
 # ---------------------------------------------------------------------------
 
 class BrandStoplistTermCreate(BaseModel):

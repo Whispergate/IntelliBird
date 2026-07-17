@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * SettingsTabContent — Phase 10 Plan 10-10 (UI-SPEC §/projects/[id] §Settings).
+ * SettingsTabContent — (UI-SPEC §/projects/[id] §Settings).
  *
  * Editable settings surface:
  *   - Name            (required; 1..200 chars)
@@ -12,7 +12,7 @@
  * Read-only footer:
  *   - TIBER banner (conditional on engagement_type === 'tiber') — signal-amber
  *     left-border strip per UI-SPEC §Color §Semantic surfaces
- *   - EASMGatePreview — 3 Phase-11 gate fields with "Phase 11 wires this form
+ * - EASMGatePreview — 3 gate fields with " wires this form
  *     live" caption
  *   - Hard-delete informational copy (archive is the only deletion path)
  *
@@ -269,7 +269,7 @@ export function SettingsTabContent({
         >
           <p className="text-foreground">
             <strong>TIBER engagement</strong> — scope-acknowledgement gate
-            (Phase 11) governs active scans.
+            governs active scans.
           </p>
         </div>
       )}

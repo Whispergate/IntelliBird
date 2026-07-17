@@ -1,4 +1,4 @@
-"""Phase 29 — Sigma rule evaluation engine.
+"""— Sigma rule evaluation engine.
 
 All functions are synchronous — called from _persist_event (sync Session path).
 SECURITY: evaluate_sigma_rules wraps all eval in try/except so a bad rule

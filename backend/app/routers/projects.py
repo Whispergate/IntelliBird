@@ -143,7 +143,7 @@ async def create_project(
     transaction rolls back — prevents orphaned projects without a Lead.
     """
     # Python-side UUID generation for SQLite test compatibility (CONTEXT.md
-    # §Established Patterns carry-over from Phase 3 source registry pattern).
+    # §Established Patterns carry-over from source registry pattern).
     project = Project(
         id=uuid.uuid4(),
         name=body.name,
@@ -1182,7 +1182,7 @@ async def get_rescore_status(
 
 
 # ---------------------------------------------------------------------------
-# AI provider routes — Phase 17 / AI-04, AI-05, SCR-04
+# AI provider routes — AI-04, AI-05, SCR-04
 # GET  /{project_id}/ai-provider          → Observer+ (read config, no key)
 # PUT  /{project_id}/ai-provider          → Admin only (upsert config + encrypt key)
 # POST /{project_id}/ai-provider/test     → Admin only (ping LLM provider)
@@ -1483,7 +1483,7 @@ async def get_ai_rerank_status(
 
 
 # ---------------------------------------------------------------------------
-# Attack path analysis — Phase 35 / ATK-01..ATK-05
+# Attack path analysis — ATK-01..ATK-05
 # ---------------------------------------------------------------------------
 
 from app.services.llm.attack_path import analyse_attack_path  # noqa: E402

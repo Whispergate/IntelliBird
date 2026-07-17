@@ -43,7 +43,7 @@
  *   - Fade indicators: two absolute-positioned gradient strips driven by an
  *     onScroll + ResizeObserver state machine. scrollLeft > 4 → show left
  *     fade; scrollLeft < scrollWidth - clientWidth - 4 → show right fade.
- *     Chose onScroll + resize (NOT IntersectionObserver): STATE.md Phase 5
+ * Chose onScroll + resize (NOT IntersectionObserver): STATE.md
  *     precedent (DashboardShell onScroll in plan 05-02). IntersectionObserver
  *     would need sentinel elements at both ends and fires only on threshold
  *     crossings, not on every pixel of scroll — less precise for fade
@@ -132,7 +132,7 @@ export function ProjectTabs({
   })();
 
   // Fade-edge overflow indicators.
-  // Pattern: onScroll + window resize listener (STATE.md Phase 5 Plan 02
+  // Pattern: onScroll + window resize listener (STATE.md
   // precedent). Threshold of 4px absorbs sub-pixel scroll jitter on trackpads.
   useEffect(() => {
     const el = scrollRef.current;

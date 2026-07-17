@@ -31,7 +31,7 @@ function getTabLabels(): string[] {
     .map((el) => (el.textContent ?? "").trim());
 }
 
-describe("ProjectTabs (Phase 12.1-06)", () => {
+describe("ProjectTabs (-06)", => {
   it("renders 16 tabs with Assets at position 15, between EASM (14) and Brand (16)", () => {
     render(<ProjectTabs projectId="abc" projectName="Acme" />);
     const labels = getTabLabels();

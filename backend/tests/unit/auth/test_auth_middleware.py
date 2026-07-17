@@ -144,7 +144,7 @@ async def test_expired_token_has_refresh_required_header(app_with_auth, monkeypa
 
 
 def test_exempt_paths_contents():
-    """EXEMPT_PATHS MUST include exactly the 9 pre-auth paths (8 Phase 9 + setup-status)."""
+    """EXEMPT_PATHS MUST include exactly the 9 pre-auth paths (8 + setup-status)."""
     from app.middleware.auth import EXEMPT_PATHS
     assert EXEMPT_PATHS == frozenset({
         "/healthz",

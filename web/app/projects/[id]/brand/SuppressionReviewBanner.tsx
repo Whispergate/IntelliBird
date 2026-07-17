@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * SuppressionReviewBanner — Phase 12 plan 12-08 (UI-SPEC §Surface 3 + §Surface 4).
+ * SuppressionReviewBanner — (UI-SPEC §Surface 3 + §Surface 4).
  *
  * Exports BOTH the amber banner and the review Dialog (single file).
  *
  * Banner: `border-l-4 border-[var(--brand-signal)] bg-accent/10` — identical
- * CSS to Phase 11 24h-warning banner. Entire banner is clickable (role="button")
+ * CSS to 24h-warning banner. Entire banner is clickable (role="button")
  * and opens the Dismissed-matches-expiring-soon Dialog.
  *
  * Dialog: shadcn <Dialog> with a ScrollArea of expiring dismissals. Each row

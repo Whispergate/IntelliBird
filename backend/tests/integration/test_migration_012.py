@@ -1,7 +1,7 @@
 """Migration 012 integration test — asset_notes table.
 
 Owned by: 12.1-01-PLAN.
-Phase 12.1 / ASSET-NOTE.
+ASSET-NOTE.
 
 Pattern follows test_brand_migration_011.py: spin up intellibird-db:m1,
 migrate to 011, upgrade to 012 and assert schema; downgrade back and assert

@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for timeline API — Phase 33 / TIMELINE-01, TIMELINE-02."""
+"""Pydantic v2 schemas for timeline API — TIMELINE-01, TIMELINE-02."""
 from __future__ import annotations
 
 from datetime import datetime

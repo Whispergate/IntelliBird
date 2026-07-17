@@ -1,4 +1,4 @@
-# Sigma Field Mapping — IntelliBird Phase 29
+# Sigma Field Mapping — IntelliBird
 
 IntelliBird evaluates Sigma rules against a flat event dict built at ingest time.
 This document lists every Sigma field IntelliBird maps, how it is sourced,
@@ -19,7 +19,7 @@ and known limitations.
 
 ### threat_actor Is Not Available at Ingest Time
 
-The `threat_actor` field is extracted by the AI summariser (Phase 17) **after** ingest
+The `threat_actor` field is extracted by the AI summariser **after** ingest
 and stored in `ai_suggestions` — it is NOT written back to the `events` row.
 
 At ingest-time evaluation, `threat_actor` always resolves to `None`.

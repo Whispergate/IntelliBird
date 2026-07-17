@@ -2,7 +2,7 @@
 
 /**
  * ActiveWindowBanner — polls GET /api/admin/maintenance-window/active every 60s.
- * Phase 16 plan 16-07. H-7 maintenance window suppression.
+ * H-7 maintenance window suppression.
  *
  * When 200: shows yellow alert "Maintenance window active until {end_at}".
  * When 404 (no active window): renders nothing.

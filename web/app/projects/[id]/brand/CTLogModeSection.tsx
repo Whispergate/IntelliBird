@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * CTLogModeSection — Phase 32 / CERT-03.
+ * CTLogModeSection — CERT-03.
  *
  * Wrapper rendered by brand/page.tsx. Determines lead authority client-side
  * (mirrors SettingsTabContent authority computation) and renders CTLogModeCard

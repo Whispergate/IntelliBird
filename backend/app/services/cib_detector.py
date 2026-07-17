@@ -1,4 +1,4 @@
-"""CIB (Coordinated Inauthentic Behaviour) detector — Phase 33 / DISINFO-02.
+"""CIB (Coordinated Inauthentic Behaviour) detector — DISINFO-02.
 
 Uses MinHashLSH (datasketch) to detect clusters of near-identical social media
 posts ingested by the social listening workers. Clusters of >= 5 similar posts

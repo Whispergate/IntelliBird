@@ -1,5 +1,5 @@
 /**
- * /actors — Phase 25 Plan 05 (Threat Actors UI).
+ * /actors — (Threat Actors UI).
  *
  * RSC wrapper that fetches the first page of actors server-side via
  * `_apiFetch` (per CLAUDE.md SSR-fetch convention) and hands them to the

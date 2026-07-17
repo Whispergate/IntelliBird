@@ -1,6 +1,6 @@
 """027 — taxii_clients table.
 
-Phase 26 / TAXII-03, TAXII-04: Per-partner API key store for TAXII 2.1 outbound server.
+TAXII-03, TAXII-04: Per-partner API key store for TAXII 2.1 outbound server.
 
 Stores one row per external partner. The raw API key is NEVER stored — only its
 SHA-256 hex digest (api_key_hash). TLP enforcement is at query time using tlp_max_level.

@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * StoplistClient — Phase 21 Plan 02 (BRAND-01 frontend).
+ * StoplistClient — (BRAND-01 frontend).
  *
  * UI-SPEC §Surface 1 — Stoplist Tab.
  *
- * Role gating via Phase 20 useProjectRole():
+ * Role gating via useProjectRole:
  *   - Lead+ (isLead): sees Add form (Input + Button) + per-row Delete button
  *   - Observer/Contributor: read-only table
  *

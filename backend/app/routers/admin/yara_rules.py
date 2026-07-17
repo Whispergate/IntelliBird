@@ -1,5 +1,5 @@
 """
-YARA rule admin CRUD — Phase 27 YARA-01.
+YARA rule admin CRUD — YARA-01.
 POST /api/admin/yara-rules     — upload and compile a YARA rule (Admin only)
 GET  /api/admin/yara-rules     — list rules (with optional ?project_id, ?enabled filters)
 PATCH /api/admin/yara-rules/{id} — update name/family/enabled; recompiles if content changed

@@ -1,4 +1,4 @@
-"""Cuckoo / CAPEv2 sandbox provider — Phase 27."""
+"""Cuckoo / CAPEv2 sandbox provider."""
 from __future__ import annotations
 import logging
 import httpx

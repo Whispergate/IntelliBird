@@ -1,4 +1,4 @@
-"""Enrichment service package — Phase 23 / ENRICH-01..05.
+"""Enrichment service package — ENRICH-01..05.
 
 Provides quota, circuit breaker, cache, provider resolver, and unified
 verdict aggregation for IOC enrichment. All external provider modules
@@ -9,7 +9,7 @@ previously in services/enrichment.py (now shadowed by this package).
 """
 # Re-export everything from the text-extraction module so that
 # `from app.services.enrichment import enrich_event` keeps working
-# after the package was introduced in Phase 23.
+# after the package was introduced in.
 from app.services.enrichment._text_extraction import (  # noqa: F401
     Enrichment,
     enrich_event,

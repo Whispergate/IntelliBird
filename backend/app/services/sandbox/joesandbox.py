@@ -1,4 +1,4 @@
-"""Joe Sandbox provider — Phase 27."""
+"""Joe Sandbox provider."""
 from __future__ import annotations
 import logging
 import httpx
@@ -18,7 +18,7 @@ async def submit(
     resp = await client.post(
         f"{_BASE}/analysis/submit",
         headers={"ApiKey": api_key},
-        json={"sample_hash": sha256, "comments": "IntelliBird Phase 27"},
+        json={"sample_hash": sha256, "comments": "IntelliBird"},
         timeout=15.0,
     )
     resp.raise_for_status()

@@ -2,12 +2,12 @@
 
 Spins a Caddy container that reverse-proxies to an upstream (test api host/port)
 with the PROD-03 `request_header -X-Dashboard-Role` strip applied. Used by
-Phase 13 plan 03 to assert Caddy strips the spoofed header before it reaches
+to assert Caddy strips the spoofed header before it reaches
 the FastAPI app.
 
 Important:
 - No ACME / Let's Encrypt. Uses `auto_https off` + plain `http://` site address
-  so the harness works in CI (per Phase 13 RESEARCH §Pitfall 3).
+  so the harness works in CI (per RESEARCH §Pitfall 3).
 - No top-level I/O — the Caddyfile is only written when the context manager is
   entered, so merely importing this module has zero side effects.
 - Idempotent: multiple enters create fresh Caddyfile tempfiles.

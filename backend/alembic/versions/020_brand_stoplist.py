@@ -1,4 +1,4 @@
-"""Per-project brand stoplist terms table — Phase 21 / BRAND-01.
+"""Per-project brand stoplist terms table — BRAND-01.
 
 Revision ID: 016_brand_stoplist
 Revises: 015_tiber

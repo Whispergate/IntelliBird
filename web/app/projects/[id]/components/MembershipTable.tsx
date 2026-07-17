@@ -2,7 +2,7 @@
 
 /**
  * MembershipTable — per-project member roster with in-row role dropdown +
- * destructive-confirm remove dialog (Phase 10 Plan 11, PRJ-05).
+ * destructive-confirm remove dialog (PRJ-05).
  *
  * UI-SPEC §/projects/[id] detail §Memberships tab locks:
  *   - columns: user_sub (mono truncated), role badge, added_by (mono), added at, actions

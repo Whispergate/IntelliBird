@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AISummarySection — Phase 17 plan 17-08.
+ * AISummarySection
  * UI-SPEC §Surface 1 — EventDetailDrawer AI Summary section.
  *
  * Responsibilities:

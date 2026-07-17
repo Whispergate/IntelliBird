@@ -1,4 +1,4 @@
-"""Admin audit log REST API — Phase 25 / AUDIT-03.
+"""Admin audit log REST API — AUDIT-03.
 
 Endpoints:
   GET /api/admin/audit   cursor-based paginated audit log (Admin only)

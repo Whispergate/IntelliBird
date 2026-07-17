@@ -1,4 +1,4 @@
-"""Integration test: Phase 15 burst suppression — SCR-05 / Roadmap H-1.
+"""Integration test: burst suppression — SCR-05 / Roadmap H-1.
 
 Verifies that when 50 CVE events all scoring 95.0 (S-tier) are seeded and the
 webhook dispatcher tick runs, at most BURST_HIGH_CAP (5) webhook POSTs fire and
@@ -13,7 +13,7 @@ Design decisions:
   - Seeds a filter_preset + webhook + webhook_preset_binding so the dispatcher
     has something to dispatch.
   - Seeds a project_scope_row (keyword='cve') so build_scope_predicate doesn't
-    short-circuit to ``false`` (Phase 10 scope-intersection contract).
+    short-circuit to ``false`` (scope-intersection contract).
 """
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""OTX (AlienVault Open Threat Exchange) enrichment provider — Phase 23 / ENRICH-02.
+"""OTX (AlienVault Open Threat Exchange) enrichment provider — ENRICH-02.
 
 Supports: domain, sha256, sha1, md5
 (ip/ipv6 intentionally not included — see PROVIDER_IOC_ROUTING in resolver.py)

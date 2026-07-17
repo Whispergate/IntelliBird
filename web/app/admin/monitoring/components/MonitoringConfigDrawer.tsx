@@ -2,7 +2,7 @@
 
 /**
  * MonitoringConfigDrawer — per-source monitoring config slide-out panel.
- * Phase 16 plan 16-07. MON-04 dashboard requirement.
+ * MON-04 dashboard requirement.
  *
  * Fields: last_event_sla_seconds, drift_z_high, drift_z_medium
  * Save → PATCH /api/admin/monitoring/sources/{id}

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MembershipDialog — Add-member modal for Memberships tab (Phase 10 Plan 11,
+ * MembershipDialog — Add-member modal for Memberships tab (
  * PRJ-05).
  *
  * UI-SPEC §/projects/[id] detail §Memberships tab locks:

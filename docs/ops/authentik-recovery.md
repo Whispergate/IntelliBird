@@ -47,7 +47,7 @@ Verify non-empty:
 tar -tzf backups/authentik-media-*.tgz | head
 ```
 
-> **Pitfall 4 (Phase 13 RESEARCH.md):** Backing up `/media` instead of `/data/media` on 2025.10+ produces a tarball with no useful content — Authentik boots after restore but uploaded certs/icons 404.
+> **Pitfall 4 (RESEARCH.md):** Backing up `/media` instead of `/data/media` on 2025.10+ produces a tarball with no useful content — Authentik boots after restore but uploaded certs/icons 404.
 
 ### 1.3 Sealed secrets
 

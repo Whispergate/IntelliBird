@@ -1,6 +1,6 @@
 """UX-01 backend coverage: PATCH /api/projects/{project_id}/scope/{row_id} merged-state validation.
 
-Phase 20-01 — Wave 1 test scaffolding.
+-01 — Wave 1 test scaffolding.
 
 Three tests covering the merged-state invariant at projects.py:798-801:
   1. all-flags-false rejection: PATCH that would leave both intel_scope=false AND
@@ -10,7 +10,7 @@ Three tests covering the merged-state invariant at projects.py:798-801:
   3. exclude-toggle independence: PATCH {"exclude": true} is accepted regardless of
      intel/active state.
 
-Fixture: two_project_fixture (Phase 13 Wave-0 seed) provides project_a + jwt_a (Lead rank
+Fixture: two_project_fixture (Wave-0 seed) provides project_a + jwt_a (Lead rank
 on project_a — Lead satisfies Contributor+ requirement for PATCH).
 
 Auth harness: mirrors test_prod01_cross_project_leakage._patch_auth verbatim.

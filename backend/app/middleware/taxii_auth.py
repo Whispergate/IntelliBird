@@ -1,4 +1,4 @@
-"""TAXII 2.1 partner-key authentication dependency — Phase 26 / TAXII-03.
+"""TAXII 2.1 partner-key authentication dependency — TAXII-03.
 
 IMPORTANT: This is NOT an ASGI middleware — it is a FastAPI Depends() dependency.
 It does NOT extend AuthMiddleware or touch JWTs. The TAXII router prefix (/taxii2)

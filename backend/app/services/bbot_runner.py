@@ -271,7 +271,7 @@ async def reap_orphan_scans(db: AsyncSession) -> int:
     This is the DB-side complement to reap_orphan_containers().
 
     Uses CAST(:grace AS INTEGER) not ::type shorthand — asyncpg rejects the
-    PostgreSQL ::type syntax in parameterised queries (Phase 4 Pitfall established
+    PostgreSQL ::type syntax in parameterised queries (Pitfall established
     pattern from STATE.md).
 
     Returns count of rows updated.
@@ -311,7 +311,7 @@ async def persist_finding(
     str for DNS_NAME/IP_ADDRESS/URL. isinstance(data, dict) guard applied before any key access.
 
     CAST(:severity AS easm_severity) and CAST(:raw_bbot AS jsonb) required because asyncpg
-    rejects ::type shorthand in parameterised queries (STATE.md Phase 4 established pattern).
+    rejects ::type shorthand in parameterised queries (STATE.md established pattern).
 
     Returns (content_hash, was_insert):
     - was_insert=True  when this is the first time this (project, type, target) was seen

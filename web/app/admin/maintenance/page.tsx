@@ -2,7 +2,7 @@
 
 /**
  * /admin/maintenance — Maintenance Window management page.
- * Phase 16 plan 16-07. H-7 maintenance window suppression.
+ * H-7 maintenance window suppression.
  *
  * Sections:
  *   - ActiveWindowBanner (top — also shown on /admin/monitoring)

@@ -2,13 +2,13 @@
 
 /**
  * IngestSparkline — 120×32 Recharts BarChart sparkline for source ingest volume.
- * Phase 16 plan 16-07. MON-04 dashboard requirement.
+ * MON-04 dashboard requirement.
  *
  * Props:
  *   data — up to 168 hourly buckets ({ bucket: string; total: number }[])
  *          Renders blue bars; empty/zero data shows a faint placeholder.
  *
- * Mirrors Phase 15 ScoreHistogram pattern (ResponsiveContainer + BarChart).
+ * Mirrors ScoreHistogram pattern (ResponsiveContainer + BarChart).
  * Width 120, height 32 per plan spec.
  */
 

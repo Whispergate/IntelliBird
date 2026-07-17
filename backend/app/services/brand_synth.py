@@ -1,9 +1,9 @@
 """Brand match → canonical event + STIX 2.1 Indicator SDO construction.
 
-Phase 12 / BRP-05.
+BRP-05.
 
 HIGH-severity brand matches are synthesised into canonical events written to the
-`events` table (observed_at + content_hash dedup pattern reused from Phase 2).
+`events` table (observed_at + content_hash dedup pattern reused).
 This module is pure: it constructs the dict; persistence is orchestrator-owned.
 
 STIX 2.1 Indicator SDO is emitted with `allow_custom=True` so x_intellibird_*

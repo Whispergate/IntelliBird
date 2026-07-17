@@ -1,5 +1,5 @@
 # Owned by: 15-07-PLAN (SCR-02, SCR-03)
-"""Integration tests for scoring routes — Phase 15.
+"""Integration tests for scoring routes.
 
 Covers:
   GET  /api/projects/{id}/scoring  — returns default or persisted rules
@@ -337,7 +337,7 @@ async def test_unmembered_user_gets_403(db_session, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Phase 15-10 gap closure: score fields surfaced through GET /api/events
+# -10 gap closure: score fields surfaced through GET /api/events
 # ---------------------------------------------------------------------------
 
 from datetime import UTC, datetime as _datetime
@@ -413,7 +413,7 @@ async def test_events_list_returns_score_fields(db_session, monkeypatch):
     """GET /api/events returns score/scored_at/score_version for scored events
     and null for unscored events.
 
-    Gap closure: Phase 15-10 SC-1 BLOCKER — EventItem schema previously omitted
+    Gap closure: -10 SC-1 BLOCKER — EventItem schema previously omitted
     these fields; _hydrate_item did not pass them. This test would FAIL if Task 1
     changes (schema + hydration) were reverted.
     """
@@ -474,7 +474,7 @@ async def test_events_list_returns_score_fields(db_session, monkeypatch):
 async def test_event_detail_returns_score_fields(db_session, monkeypatch):
     """GET /api/events/{id} returns score/scored_at/score_version for a scored event.
 
-    Gap closure: Phase 15-10 SC-5 PARTIAL → VERIFIED — EventDetail inherits from
+    Gap closure: -10 SC-5 PARTIAL → VERIFIED — EventDetail inherits from
     EventItem and model_dump() propagates the new fields through the detail route.
     This test would FAIL if Task 1 changes were reverted.
     """

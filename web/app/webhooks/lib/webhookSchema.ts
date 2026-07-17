@@ -132,7 +132,7 @@ function _authFromValues(v: WebhookFormValues): WebhookAuth | null {
   }
 }
 
-// Phase 10: webhooks.project_id NOT NULL. Legacy sentinel bound by default
+// webhooks.project_id NOT NULL. Legacy sentinel bound by default
 // until a project-picker lands on the webhooks UI.
 const LEGACY_PROJECT_ID = "00000000-0000-0000-0000-000000000001";
 

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MatchDetailDrawer — Phase 21 Plan 04 (BRAND-02).
+ * MatchDetailDrawer — (BRAND-02).
  *
  * shadcn Sheet (right side, sm:max-w-xl) with three sections:
  *   1. Provenance  — 4-row dl (Detector badge / Raw input / Matched value / Similarity)

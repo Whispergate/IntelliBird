@@ -1,6 +1,6 @@
 /**
  * /projects/[id]/tiber/[report_id] — TIBER Report Editor page.
- * Phase 18 plan 18-06. UI-SPEC §Surface 2.
+ * UI-SPEC §Surface 2.
  *
  * Server component: fetches report + actors + scenarios, passes to TIBERReportEditor.
  */

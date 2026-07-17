@@ -1,4 +1,4 @@
-"""FastAPI router for the TIBER report generation surface — Phase 18 / TIBER-01..03, AI-08.
+"""FastAPI router for the TIBER report generation surface — TIBER-01..03, AI-08.
 
 All endpoints are under prefix /api/projects/{project_id}/tiber.
 
@@ -911,7 +911,7 @@ async def draft_narrative(
 ) -> dict:
     """Enqueue AI narrative draft for a scenario.
 
-    Enqueues ai_draft_scenario_narrative on the `ai` queue (Phase 17).
+    Enqueues ai_draft_scenario_narrative on the `ai` queue.
     Returns {job_id} 202 — SSE consumer at existing /api/ai/jobs/{job_id}/stream.
 
     Also stores the job:project association in Redis for stream auth.
@@ -960,7 +960,7 @@ async def create_export(
     """Enqueue a report export.
 
     Runs completeness_check + scenario_gate_check — rejects with 422 if gates fail.
-    Enqueues generate_report_actor on the `reports` queue (Phase 18).
+    Enqueues generate_report_actor on the `reports` queue.
     Returns {export_id, status: 'queued', format} 202.
     """
     from app.workers.reports import generate_report_actor  # noqa: PLC0415

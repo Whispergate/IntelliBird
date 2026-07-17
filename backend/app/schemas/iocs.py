@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for IOC API surface — Phase 22 / IOC-01..08.
+"""Pydantic v2 schemas for IOC API surface — IOC-01..08.
 
 Exports:
   * IOCRead — GET /api/iocs response row

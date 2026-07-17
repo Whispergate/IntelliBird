@@ -1,4 +1,4 @@
-"""rescore_project Dramatiq actor — Phase 15 / SCR-02.
+"""rescore_project Dramatiq actor — SCR-02.
 
 Runs on the dedicated ``scoring`` queue (H-3 isolation: score recomputes never
 block RSS/NVD/TAXII/EASM/brand ingest workers on the default ``ingest`` or

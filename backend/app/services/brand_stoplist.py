@@ -4,10 +4,10 @@ DEFAULT_STOPLIST is a code constant — frozen in v2.0. Operators extend it via 
 BRAND_STOPLIST_EXTRA environment variable (comma-separated, case-insensitive),
 which is unioned into the runtime set by load_runtime_stoplist().
 
-Phase 21 / BRAND-01: per-project additive union via load_runtime_stoplist_for_project().
+BRAND-01: per-project additive union via load_runtime_stoplist_for_project.
 Existing zero-arg load_runtime_stoplist() (sync) is UNCHANGED — back-compat preserved.
 
-Pattern mirrors app.services.bbot_safelist (Phase 11) — frozenset + env-extra union
+Pattern mirrors app.services.bbot_safelist — frozenset + env-extra union
 + lazy settings read so tests can monkeypatch the settings singleton.
 """
 from __future__ import annotations
@@ -96,7 +96,7 @@ async def load_runtime_stoplist_for_project(
 ) -> frozenset[str]:
     """Return DEFAULT_STOPLIST ∪ env extras ∪ project-specific stoplist terms.
 
-    Phase 21 / BRAND-01. Additive union: per-project terms ADD to the global set;
+    BRAND-01. Additive union: per-project terms ADD to the global set;
     operators can never weaken DEFAULT_STOPLIST or env-set BRAND_STOPLIST_EXTRA.
 
     All project terms are lowercased to match the lookup convention used by

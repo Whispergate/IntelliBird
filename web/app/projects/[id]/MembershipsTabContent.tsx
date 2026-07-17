@@ -2,7 +2,7 @@
 
 /**
  * MembershipsTabContent — Memberships tab orchestrator for /projects/[id]
- * (Phase 10 Plan 11, PRJ-05).
+ * (PRJ-05).
  *
  * Owns:
  *   - fetch + refresh cycle for the membership list

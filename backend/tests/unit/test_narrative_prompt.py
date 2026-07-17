@@ -2,7 +2,7 @@
 DISINFO-03 — Narrative operation prompt constant and validator are present.
 
 These tests directly import existing modules that will be MODIFIED in
-Phase 33 Plan 04 to add narrative_op support.  Tests will FAIL (NameError /
+to add narrative_op support. Tests will FAIL (NameError /
 KeyError) until those modifications land — this is intentional RED state.
 
 Targets:

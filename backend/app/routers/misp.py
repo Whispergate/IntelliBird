@@ -1,4 +1,4 @@
-"""MISP config CRUD router — Phase 32 MISP-01.
+"""MISP config CRUD router — MISP-01.
 
 Endpoints at /api/projects/{project_id}/misp (Lead+ role required):
   GET    /                → MispConfigRead | 404

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * FindingsFilterBar — Phase 11 plan 11-08 (UI-SPEC §Surface 3 §Filter bar).
+ * FindingsFilterBar — (UI-SPEC §Surface 3 §Filter bar).
  *
  * Four shadcn Select dropdowns inline:
  *   Type | Module | Severity | Lifecycle

@@ -14,7 +14,7 @@ always check LLEN > 0 before drain; missing key is not an error.
 : dashboard_roles=None for all build_events_query calls — dispatcher is
 an admin operation, not dashboard-scoped. All visibility classes delivered.
 
-Burst suppression (Phase 15 / SCR-05 — Roadmap pitfall H-1):
+Burst suppression (SCR-05 — Roadmap pitfall H-1):
   HIGH-tier (S+A) events are subject to a per-project rolling-window cap of
   BURST_HIGH_CAP fires per BURST_WINDOW_SEC. Excess HIGH-tier events are:
     - tagged burst_cluster=true on the event row (still visible in /events list)
@@ -143,7 +143,7 @@ def _process_webhook(
 
     # Collect matching events across all bound presets, dedup by event.id
     # all_matched: event_id str -> (event dict, first-matching FilterPreset)
-    # Phase 10: pre-compute scope predicate + bound sources once per webhook
+    # pre-compute scope predicate + bound sources once per webhook
     # (webhook.project_id is NOT NULL post-migration 009 — every webhook pins
     # to exactly one project).
     scope_predicate, bound_sources = _fetch_project_scope_sync(
@@ -167,7 +167,7 @@ def _process_webhook(
     if not all_matched:
         return
 
-    # --- Burst suppression (Phase 15 / SCR-05, Roadmap H-1) -----------------
+    # --- Burst suppression (SCR-05, Roadmap H-1) -----------------
     # For HIGH-tier events (S or A), check the per-project rolling window cap.
     # Suppressed events are tagged burst_cluster=true in the DB and excluded from
     # the fan-out batch. Non-HIGH-tier and unscored events pass through unchanged.
@@ -270,7 +270,7 @@ def _fetch_project_scope_sync(
     The dispatcher runs against a sync Session (APScheduler + Dramatiq worker);
     project_scope's async helpers would need an event loop. Inline sync SELECT
     returns (scope_predicate, bound_sources) ready to pass into build_events_query.
-    Pre-Phase-10 webhooks point at LEGACY_PROJECT_ID sentinel — with zero scope
+    legacy webhooks point at LEGACY_PROJECT_ID sentinel — with zero scope
     rows the predicate is sa.text('false'), so those dispatches correctly match
     zero events going forward (M-6 enforcement).
     """
@@ -302,7 +302,7 @@ def _fetch_matching_events(
 
 : NULL cursor -> scan last 24h only.
 : dashboard_roles=None (admin operation, no dashboard-scope gating).
-Phase 10: project_id + scope_predicate + bound_sources threaded through so
+project_id + scope_predicate + bound_sources threaded through so
 per-webhook dispatch only surfaces events inside the webhook's project and
 scope. project_id is mandatory — post-migration-009 webhooks.project_id is
 NOT NULL.
@@ -379,7 +379,7 @@ def _hydrate_event_dict(event: Event, session: SyncSession) -> dict:
         "visibility": event.visibility,
         "geo_lat": event.geo_lat,
         "geo_lon": event.geo_lon,
-        # Phase 15 / SCR-05: score included so burst suppression can classify tier
+        # SCR-05: score included so burst suppression can classify tier
         # in _process_webhook before fan-out. None for pre-migration rows.
         "score": float(event.score) if event.score is not None else None,
         # _project_id used for burst_cluster tagging — private field, stripped before
@@ -394,7 +394,7 @@ def _iso(v: Any) -> Any:
 
 
 def _tag_burst_cluster(session: SyncSession, event_id: uuid.UUID) -> None:
-    """Append 'burst_cluster' to an event's tags array (Phase 15 / SCR-05).
+    """Append 'burst_cluster' to an event's tags array (SCR-05).
 
     Uses PostgreSQL array_append so the update is idempotent-safe even if
     burst_cluster is already present. The tags column is TEXT[] so duplicates
@@ -489,7 +489,7 @@ def _drain_and_dispatch(
 ) -> None:
     """Drain Redis list, build payload, POST with retry, update cursor.
 
-    Phase 15 / SCR-05: Burst suppression is enforced upstream in _process_webhook
+    SCR-05: Burst suppression is enforced upstream in _process_webhook
     before events reach the Redis batch. By this point, the batch already contains
     only non-suppressed events (≤ BURST_HIGH_CAP per high-tier project window).
     Window recording (record_high_tier_dispatch) was also already done inline.

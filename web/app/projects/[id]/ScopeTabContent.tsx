@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScopeTabContent — Phase 10 Plan 10-10.
+ * ScopeTabContent
  *
  * Renders one of the 7 scope_type panes for /projects/[id]. Tab-key dispatch
  * maps `?tab=scope-<type>` to a (scope_type, label, addLabel) bundle.

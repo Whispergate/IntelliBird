@@ -39,7 +39,7 @@ def live_db_007():
         env = os.environ | {
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
-            "JWT_SIGNING_KEY": "y" * 48,  # Phase 9 required field
+            "JWT_SIGNING_KEY": "y" * 48, # required field
             "REDIS_URL": "redis://localhost:1",
         }
         # Migrate to 007 (one step below 008)

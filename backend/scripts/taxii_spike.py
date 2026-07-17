@@ -370,7 +370,7 @@ def _render_markdown_section(key: str, f: dict[str, Any]) -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="TAXII compatibility spike for IntelliBird Phase 2."
+        description="TAXII compatibility spike for IntelliBird."
     )
     parser.add_argument("--mitre", action="store_true", help="Test MITRE CTI server")
     parser.add_argument("--otx", action="store_true", help="Test AlienVault OTX server")

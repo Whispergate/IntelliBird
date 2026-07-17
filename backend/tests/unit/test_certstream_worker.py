@@ -4,7 +4,7 @@ CERT-01 — certstream_worker connects to wss://certstream.calidog.io and filter
 CERT-02 — Matching CT log entries persist as brand-monitor events with
           match_source='certstream' tag.
 
-Implemented in: backend/app/workers/certstream_worker.py (Phase 32 Plan 03)
+Implemented in: backend/app/workers/certstream_worker.py
 """
 import os
 

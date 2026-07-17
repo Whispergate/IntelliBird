@@ -1,11 +1,11 @@
 /**
- * /projects/[id]/brand — Brand Protection Dashboard page (Phase 12 plan 12-08).
+ * /projects/[id]/brand — Brand Protection Dashboard page.
  *
  * Server component wrapper — hands project id to BrandDashboardClient which
  * owns filter state, data fetching, banner gating, and table rendering.
- * Mirrors Phase 11 EASM page.tsx shape exactly.
+ * Mirrors EASM page.tsx shape exactly.
  *
- * Phase 32 / CERT-03: also fetches project certstream_enabled flag and renders
+ * CERT-03: also fetches project certstream_enabled flag and renders
  * CTLogModeSection (Lead+ gated) below the dashboard.
  */
 

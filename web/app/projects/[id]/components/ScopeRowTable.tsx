@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * ScopeRowTable — Phase 10 Plan 10-10 with inline-PATCH toggle edit (post-ship fix).
+ * ScopeRowTable — with inline-PATCH toggle edit (post-ship fix).
  *
  * Per-scope-type row listing. Columns:
  *   - Value (monospace for ip_range / certificate, default text otherwise)
  *     Punycode domain/cert values (xn-- prefix) are wrapped in a shadcn Tooltip
- *     showing the decoded unicode form (Phase 20-03 UX-03).
+ * showing the decoded unicode form (-03 UX-03).
  *   - Contact (optional contact string or em-dash)
  *   - Exclude   (Switch — inline PATCH on change)
  *   - Active test scope (Switch — inline PATCH on change)

@@ -2,7 +2,7 @@
 MISP-02 — System pulls MISP attributes by tag/galaxy; attributes persist as
           rows in the iocs table with source='misp'.
 
-Implemented in: backend/app/workers/misp_pull.py (Phase 32 Plan 04)
+Implemented in: backend/app/workers/misp_pull.py
 """
 import os
 

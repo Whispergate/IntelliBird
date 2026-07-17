@@ -3,7 +3,7 @@
 Covers UX-03 requirement: backend Pydantic validator transparently encodes
 unicode FQDN values to punycode for domain and certificate scope types.
 
-Phase 20 plan 20-02.
+
 """
 from __future__ import annotations
 

@@ -2,7 +2,7 @@
 
 /**
  * RefreshDiffModal — Surface 5: Refresh from project data diff modal.
- * Phase 18 plan 18-07. UI-SPEC §Surface 5 verbatim.
+ * UI-SPEC §Surface 5 verbatim.
  *
  * Opens when "Refresh from project data" is clicked on a section.
  * Fetches diff rows, shows 2-column accept/reject grid.

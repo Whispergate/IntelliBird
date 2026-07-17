@@ -1,6 +1,6 @@
 """Integration tests for BRAND-02 — PATCH history append + match details endpoint.
 
-Phase 21 / BRAND-02. TDD Wave 1 (RED baseline before implementation).
+BRAND-02. TDD Wave 1 (RED baseline before implementation).
 
 Tests:
   - test_patch_appends_history             — PATCH with note + status creates history[0]

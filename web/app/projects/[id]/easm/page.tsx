@@ -1,8 +1,8 @@
 /**
- * /projects/[id]/easm — EASM Dashboard page (Phase 11 plan 11-08).
+ * /projects/[id]/easm — EASM Dashboard page.
  *
  * Server component: minimal wrapper that hands project ID to the client shell.
- * Layout.tsx (Phase 10) already fetches project detail and renders the
+ * Layout.tsx already fetches project detail and renders the
  * breadcrumb + ProjectTabs strip — no duplicate fetch needed here.
  *
  * EASMDashboardClient owns all state: filter state, findings list,

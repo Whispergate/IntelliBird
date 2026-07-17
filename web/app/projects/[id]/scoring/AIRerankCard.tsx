@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * AIRerankCard — AI Re-ranking card for /projects/[id]/scoring (Phase 17 plan 17-09 / SCR-04).
+ * AIRerankCard — AI Re-ranking card for /projects/[id]/scoring (SCR-04).
  * Surface 5 per 17-UI-SPEC.md.
  *
  * Only rendered when aiRerankEnabled === true.
- * Mirrors Phase 15 Card 4 Rescore Status polling pattern exactly:
+ * Mirrors Card 4 Rescore Status polling pattern exactly:
  *   - POST /api/projects/{id}/ai/rerank → queue toast → start 3s polling
  *   - GET  /api/projects/{id}/ai/rerank/status → in_progress_count > 0 → show progress
  *   - Transition to 0: clearInterval → complete toast → update last_rerank_at

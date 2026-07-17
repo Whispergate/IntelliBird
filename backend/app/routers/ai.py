@@ -1,4 +1,4 @@
-"""/api AI router — Phase 17 / AI-02, AI-03, AI-06, AI-07.
+"""/api AI router — AI-02, AI-03, AI-06, AI-07.
 
 Endpoints:
   POST   /api/events/{event_id}/ai/summarise       — enqueue AI summary job (Analyst+)

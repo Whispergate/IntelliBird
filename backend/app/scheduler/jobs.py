@@ -49,10 +49,10 @@ _ACTOR_MAP: dict[str, object] = {
     "taxii": poll_taxii,
     "nvd": poll_nvd,
     "custom": poll_html_scrape,
-    "tor_html": poll_tor_html,  # Phase 24 / DARK-02
-    "paste": poll_paste,  # Phase 24 / DARK-03
-    "telegram": poll_telegram,  # Phase 24 / DARK-04
-    "social_listening": poll_social,  # Phase 33 / DISINFO-01
+    "tor_html": poll_tor_html, # DARK-02
+    "paste": poll_paste, # DARK-03
+    "telegram": poll_telegram, # DARK-04
+    "social_listening": poll_social, # DISINFO-01
 }
 
 
@@ -203,14 +203,14 @@ def _start_reload_listener(scheduler: BlockingScheduler) -> threading.Thread:
 
 
 # ---------------------------------------------------------------------------
-# Phase 11: EASM scheduler jobs
+# EASM scheduler jobs
 # ---------------------------------------------------------------------------
 
 
 def scan_history_cleanup_job() -> None:
     """Daily 04:00 UTC — keep the BBOT_SCAN_HISTORY_LIMIT most recent scans per project.
 
-    Uses sync psycopg2 connection (APScheduler is sync; matches Phase 2 Plan 07 precedent).
+    Uses sync psycopg2 connection (APScheduler is sync; matches precedent).
     CASCADE on easm_findings.scan_id removes orphaned findings automatically.
     events.easm_scan_id SET NULL preserves promoted events (L-4 survival contract).
     """
@@ -305,7 +305,7 @@ def orphan_reaper_job() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Phase 12: Brand Protection scheduler jobs (BRP-02 / BRP-04 / H-5 / L-3)
+# Brand Protection scheduler jobs (BRP-02 / BRP-04 / H-5 / L-3)
 # ---------------------------------------------------------------------------
 
 
@@ -426,7 +426,7 @@ def brand_dismiss_expiry_sweep_job() -> None:
     """Hourly — flip lifecycle_status back to 'new' for dismissed brand_matches
     whose dismiss_until has passed (BRP-04).
 
-    Mirrors Phase 11 easm_findings dismiss_expiry_sweep_job 1:1.
+    Mirrors easm_findings dismiss_expiry_sweep_job 1:1.
     """
     import psycopg2  # noqa: PLC0415
 
@@ -452,7 +452,7 @@ def brand_dismiss_expiry_sweep_job() -> None:
 
 
 def register_brand_jobs(scheduler: BlockingScheduler, settings_obj) -> None:  # type: ignore[no-untyped-def]
-    """Wire the 4 Phase 12 Brand Protection jobs onto the given scheduler.
+    """Wire the 4 Brand Protection jobs onto the given scheduler.
 
     Job IDs (stable — used by tests + ops):
       - brand_monitor_tick               : IntervalTrigger(BRAND_MONITOR_INTERVAL_SECONDS, default 900s)
@@ -534,7 +534,7 @@ def register_misp_jobs(scheduler: BlockingScheduler) -> None:  # type: ignore[no
 def register_social_jobs(scheduler: BlockingScheduler) -> None:  # type: ignore[no-untyped-def]
     """Register per-source social listening poll jobs.
 
-    Phase 33 / DISINFO-01 — mirrors register_source_poll_jobs but filtered
+    DISINFO-01 — mirrors register_source_poll_jobs but filtered
     to social_listening feed_type only.  Social sources use
     source_config.poll_interval_seconds if present, otherwise default 300 s.
     Minimum effective interval is 60 s.
@@ -628,7 +628,7 @@ def build_scheduler() -> BlockingScheduler:
         _start_reload_listener(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_reload_listener_start_failed error=%s", e)
-    # Phase 11: EASM retention + dismiss expiry + orphan reaper
+    # EASM retention + dismiss expiry + orphan reaper
     try:
         scheduler.add_job(
             scan_history_cleanup_job,
@@ -659,45 +659,45 @@ def build_scheduler() -> BlockingScheduler:
         logger.info("scheduler_registered easm_orphan_reaper")
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_easm_orphan_reaper_register_failed error=%s", e)
-    # Phase 12: Brand Protection monitor tick + GDPR + noise downgrade + dismiss expiry
+    # Brand Protection monitor tick + GDPR + noise downgrade + dismiss expiry
     try:
         from app.config import settings as _brand_settings  # noqa: PLC0415
 
         register_brand_jobs(scheduler, _brand_settings)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_brand_jobs_register_failed error=%s", e)
-    # Phase 16: Continuous monitoring — silence / drift / parse_error checks
+    # Continuous monitoring — silence / drift / parse_error checks
     try:
         from app.scheduler.monitoring_jobs import register_monitoring_jobs  # noqa: PLC0415
 
         register_monitoring_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_monitoring_jobs_register_failed error=%s", e)
-    # Phase 17: AI digest / suggestion expiry / nightly rerank
+    # AI digest / suggestion expiry / nightly rerank
     try:
         from app.scheduler.ai_jobs import register_ai_jobs  # noqa: PLC0415
     except Exception:  # pragma: no cover
         register_ai_jobs = None
     if register_ai_jobs is not None:
         register_ai_jobs(scheduler)
-    # Phase 22: IOC TTL expiry sweep (IOC-05)
+    # IOC TTL expiry sweep (IOC-05)
     try:
         from app.scheduler.ioc_jobs import register_ioc_jobs  # noqa: PLC0415
 
         register_ioc_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_ioc_jobs_register_failed error=%s", e)
-    # Phase 32: MISP pull jobs (MISP-02, MISP-04)
+    # MISP pull jobs (MISP-02, MISP-04)
     try:
         register_misp_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_misp_jobs_register_failed error=%s", e)
-    # Phase 33: social listening poll jobs (DISINFO-01)
+    # social listening poll jobs (DISINFO-01)
     try:
         register_social_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_social_jobs_register_failed error=%s", e)
-    # Phase 33: CIB detection sweep (DISINFO-02) — global, every 300s
+    # CIB detection sweep (DISINFO-02) — global, every 300s
     try:
         from app.services.cib_detector import run_cib_sweep  # noqa: PLC0415
         scheduler.add_job(

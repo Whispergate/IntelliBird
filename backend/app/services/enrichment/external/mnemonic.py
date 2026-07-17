@@ -1,4 +1,4 @@
-"""Mnemonic PassiveDNS provider — Phase 28 / ENRICH-06.
+"""Mnemonic PassiveDNS provider — ENRICH-06.
 
 Supports: domain
 

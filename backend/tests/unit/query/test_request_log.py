@@ -64,7 +64,7 @@ async def test_middleware_generates_request_id_when_absent(app_with_middleware):
 def _render_caplog(caplog) -> str:
     """Join all caplog records into a single string for substring assertions.
 
-    Phase 10 note: middleware log records (structlog → stdlib bridge) flow
+    note: middleware log records (structlog → stdlib bridge) flow
     through the Python logging system and are captured by caplog regardless of
     where StreamHandler's stored sys.stdout reference points. Using caplog is
     resilient to the app.main pre-import that captures stdout before pytest's

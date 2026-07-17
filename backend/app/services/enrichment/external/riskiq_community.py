@@ -1,4 +1,4 @@
-"""RiskIQ Community / PassiveTotal passive DNS provider — Phase 28 / ENRICH-06.
+"""RiskIQ Community / PassiveTotal passive DNS provider — ENRICH-06.
 
 Supports: domain
 

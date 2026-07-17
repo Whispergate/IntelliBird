@@ -2,7 +2,7 @@
 
 /**
  * ScenarioStepperSheet — Surface 4: 5-step scenario builder Sheet.
- * Phase 18 plan 18-07. UI-SPEC §Surface 4 verbatim.
+ * UI-SPEC §Surface 4 verbatim.
  *
  * Steps: Actor → CIF/CBS → Objective → Technique → Procedure
  * Auto-save per step (silent). Toast only on final "Save scenario".
@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import { patchScenario, type ActorProfile, type ObjectiveType, type TiberScenario } from "../lib/api";
 
 // ---------------------------------------------------------------------------
-// TECH_CHIP_STYLE from EventDetailDrawer.tsx (Phase 02) — verbatim
+// TECH_CHIP_STYLE from EventDetailDrawer.tsx — verbatim
 // ---------------------------------------------------------------------------
 
 const TECH_CHIP_STYLE = {

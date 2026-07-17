@@ -2,7 +2,7 @@
 
 /**
  * SectionSidebar — left 240px nav for TIBER report editor.
- * Phase 18 plan 18-06. UI-SPEC §2b.
+ * UI-SPEC §2b.
  *
  * Six section items in fixed ECB order with CompletionBadge per item.
  * Active section: border-l-2 border-[var(--brand-signal)] bg-background/80.

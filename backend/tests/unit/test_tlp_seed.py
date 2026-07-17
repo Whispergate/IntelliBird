@@ -1,4 +1,4 @@
-"""tests/unit/test_tlp_seed.py — stub. Implemented by in phase 01-foundation."""
+"""tests/unit/test_tlp_seed.py — stub. Implemented by in -foundation."""
 import pytest
 
 

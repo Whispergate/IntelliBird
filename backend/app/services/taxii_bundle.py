@@ -1,4 +1,4 @@
-"""TAXII bundle builder — Phase 26 / TAXII-02, TAXII-04.
+"""TAXII bundle builder — TAXII-02, TAXII-04.
 
 Converts Event ORM rows to STIX 2.1 SDO dicts for outbound TAXII responses.
 TLP filtering happens at the SQL predicate layer (build_tlp_predicate), not here.

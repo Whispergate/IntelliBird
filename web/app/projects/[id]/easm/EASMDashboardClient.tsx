@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * EASMDashboardClient — Phase 11 plan 11-08 (UI-SPEC §Surface 3).
+ * EASMDashboardClient — (UI-SPEC §Surface 3).
  *
  * Owns:
  *   - Filter state (type, module, severity, lifecycle, include_dismissed)

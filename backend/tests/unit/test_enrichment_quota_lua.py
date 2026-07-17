@@ -1,6 +1,6 @@
 """Unit test stubs — Redis Lua quota script for enrichment providers.
 
-Phase 23 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 23-02 ships the quota module.
 
 Redis key shapes:
@@ -23,35 +23,35 @@ import pytest
 
 fakeredis = pytest.importorskip("fakeredis", reason="fakeredis not installed — skip Lua quota tests")
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-02")
+@pytest.mark.xfail(reason="not yet implemented —")
 def test_quota_allows_under_cap():
     """INCR returns 1 (allowed) when counter is 0 and cap is not reached."""
     mod = pytest.importorskip("app.services.ioc_enrichment.quota")
     assert False, "stub — implement after 23-02 ships quota module"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-02")
+@pytest.mark.xfail(reason="not yet implemented —")
 def test_quota_blocks_at_cap():
     """Lua script returns 0 (blocked) when counter already >= cap."""
     mod = pytest.importorskip("app.services.ioc_enrichment.quota")
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-02")
+@pytest.mark.xfail(reason="not yet implemented —")
 def test_quota_atomic_no_race():
     """Two concurrent calls both see correct result — Lua atomicity is preserved."""
     mod = pytest.importorskip("app.services.ioc_enrichment.quota")
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-02")
+@pytest.mark.xfail(reason="not yet implemented —")
 def test_daily_quota_blocks_when_exceeded():
     """Daily cap exceeded (enrich:daily key) → Lua returns 0 (blocked)."""
     mod = pytest.importorskip("app.services.ioc_enrichment.quota")
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-02")
+@pytest.mark.xfail(reason="not yet implemented —")
 def test_cache_hit_does_not_bump_quota():
     """Cache-before-quota ordering contract.
 

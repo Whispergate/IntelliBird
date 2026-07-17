@@ -1,6 +1,6 @@
 """GET /api/events/{id}/graph — Cytoscape-ready graph response.
 GET /api/projects/{id}/graph — project-aggregate multi-seed graph.
-GET /api/projects/{id}/graph/traverse — multi-hop AGE Cypher traversal (Phase 28).
+GET /api/projects/{id}/graph/traverse — multi-hop AGE Cypher traversal.
 """
 from __future__ import annotations
 
@@ -64,7 +64,7 @@ async def get_event_graph(
             detail="project_id query parameter required for non-admin callers",
         )
 
-    # Phase 10 / PRJ-04: project_id query param narrows BFS to events in the
+    # PRJ-04: project_id query param narrows BFS to events in the
     # given project. traverse_graph re-applies project_id at every cross-event
     # expansion hop (H-3 enforcement).
     try:

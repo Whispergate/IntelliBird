@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * BrandTermDialog — Phase 12 plan 12-09 (UI-SPEC §Surface 6).
+ * BrandTermDialog — (UI-SPEC §Surface 6).
  *
  * Single dialog with conditional GDPR block for all 4 term types:
  *   keyword | domain | product | person
@@ -14,7 +14,7 @@
  * is present without any labelled dismiss button. NO labelled close/dismiss
  * button is rendered anywhere in this file.
  *
- * Error channels (mirrors Phase 10 ScopeRowDialog):
+ * Error channels (mirrors ScopeRowDialog):
  *   1) zod inline errors under each field
  *   2) `valueError` useState → red alert block above submit button for API errors
  */

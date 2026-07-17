@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * IOCBulkImportDialog — Phase 22 Plan 06 (UI-SPEC §Surface 3).
+ * IOCBulkImportDialog — (UI-SPEC §Surface 3).
  *
  * 4-step stepper: Upload → Configure → Preview (dry-run) → Import (async polling).
  *

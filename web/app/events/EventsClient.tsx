@@ -55,7 +55,7 @@ import { AttachToCaseModal } from "./components/AttachToCaseModal";
 //
 // Co-located here (not in EventsTable.tsx) to keep Surface 7 logic adjacent to
 // the include_brand_match toggle state — mirrors the BBOT precedent where all
-// Phase-11 provenance logic lives near the feed-level Switch owner.
+// provenance logic lives near the feed-level Switch owner.
 // ---------------------------------------------------------------------------
 export function BrandProvenanceBadge({ event }: { event: EventItem }) {
   // Guard: only render for source_type === 'brand-monitor'.
@@ -202,7 +202,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
   const [sortValue, setSortValue] = useState<SortValue>("observed_desc");
   const [selectedTiers, setSelectedTiers] = useState<Set<Tier>>(new Set());
   const [includeBbot, setIncludeBbot] = useState(false);
-  // Phase 12 / BRP-05: off-by-default toggle that unhides source_type='brand-monitor'
+  // BRP-05: off-by-default toggle that unhides source_type='brand-monitor'
   // events in the main feed. Mirrors includeBbot placement / query-append pattern.
   const [includeBrandMatch, setIncludeBrandMatch] = useState(false);
   // Source-monitoring synthesised alerts (source_silence, volume_drift,
@@ -648,7 +648,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
       </div>
 
       {/* include_brand_match toggle — off by default; hides brand-monitor events
-          from the main feed until user opts in (Phase 12 / BRP-05, 12-UI-SPEC §Surface 7). */}
+          from the main feed until user opts in (BRP-05, 12-UI-SPEC §Surface 7). */}
       <div className="flex items-center justify-end gap-2 mb-4">
         <Label
           htmlFor="include-brand-match"

@@ -1,6 +1,6 @@
 """Shared process-level state for app.main <-> app.routers.system.
 
-Phase 8 / INFRA-03: `decrypt_check` is set by the FastAPI lifespan hook
+INFRA-03: `decrypt_check` is set by the FastAPI lifespan hook
 (app.main) on startup and read by GET /api/system/status (app.routers.system).
 Breaks the circular import between main.py and system.py.
 

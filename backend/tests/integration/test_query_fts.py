@@ -154,7 +154,7 @@ async def test_fts_cursor_paginates_without_duplicates(fts_client):
 async def test_fts_visibility_header_has_no_effect(fts_client):
     """AUTH_ENABLED=false + no JWT → X-Dashboard-Role header has no filtering effect.
 
-    Phase 9 / plan 09-05: dashboard role header trust removed; visibility is
+    plan 09-05: dashboard role header trust removed; visibility is
     sourced from the JWT claim (request.state.user). With no auth middleware
     and no JWT, dashboard_roles=None so FTS returns every matching row.
     """

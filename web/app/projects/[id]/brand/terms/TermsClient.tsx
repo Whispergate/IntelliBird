@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * TermsClient — Phase 12 plan 12-09 (UI-SPEC §Surface 5).
+ * TermsClient — (UI-SPEC §Surface 5).
  *
  * Owns:
  *   - Fetch of /brand/terms (with optional include_archived)

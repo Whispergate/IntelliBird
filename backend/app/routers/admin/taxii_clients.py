@@ -1,4 +1,4 @@
-"""Admin TAXII partner key management — Phase 26 / TAXII-03.
+"""Admin TAXII partner key management — TAXII-03.
 
 Endpoints:
   GET    /api/admin/taxii-clients/       — list all partner keys (no raw key exposed)

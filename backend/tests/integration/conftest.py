@@ -13,12 +13,12 @@ from sqlalchemy import text
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
-# --- Phase 19 audit (2026-04-27) -----------------------------------------------
+# --- audit (2026-04-27) -----------------------------------------------
 # db_engine + db_session are already function-scoped with engine.dispose()
 # in the finally block. No changes required to those fixtures (RESEARCH §
 # "SQLAlchemy Async Engine Teardown Pattern" verbatim confirms this matches
 # the per-loop pattern used in app/workers/brand.py + scoring.py).
-# The only Phase 19 addition here is the _truncate_and_flush autouse
+# The only addition here is the _truncate_and_flush autouse
 # fixture (Task 2) — Redis FLUSHDB + DB TRUNCATE per test.
 # -------------------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ _TRUNCATE_TABLES: tuple[str, ...] = (
 
 @pytest_asyncio.fixture(autouse=True)
 async def _truncate_and_flush(redis_url: str, db_engine):
-    """Per-test data isolation. Phase 19 / TEST-02 + TEST-03.
+    """Per-test data isolation. TEST-02 + TEST-03.
 
     - FLUSHDB on test Redis container (wipes JTI blocklist, lockout,
       burst counters, AI buffers, monitoring sentinels — single call).
@@ -133,7 +133,7 @@ def fixtures_dir() -> Path:
 # ---------------------------------------------------------------------------
 # DB bootstrap: derive pg_url, run alembic to head once per session, yield a
 # fresh async session per test. Mirrors the phase10 conftest pattern so the
-# handful of Phase 9 integration tests that reference `db_session` can run.
+# handful of integration tests that reference `db_session` can run.
 # ---------------------------------------------------------------------------
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -236,7 +236,7 @@ async def db_engine(pg_url: str, _migrations_applied: None):
 
 @pytest_asyncio.fixture
 async def db_session(db_engine) -> AsyncIterator[Any]:
-    """Fresh test-scoped session with best-effort cleanup of Phase-9/10 data
+    """Fresh test-scoped session with best-effort cleanup of 10 data
     tables. Preserves sentinel LEGACY_PROJECT_ID row (FK'd by events /
     filter_presets / webhooks). TRUNCATE is broad enough that fixtures inside
     individual tests can seed fresh rows without colliding on PK."""
@@ -282,7 +282,7 @@ async def db_session(db_engine) -> AsyncIterator[Any]:
 
 
 # ---------------------------------------------------------------------------
-# Phase 13 PROD fixtures — two-project seed with shared AGE Actor + JWTs.
+# PROD fixtures — two-project seed with shared AGE Actor + JWTs.
 # ---------------------------------------------------------------------------
 
 @pytest_asyncio.fixture

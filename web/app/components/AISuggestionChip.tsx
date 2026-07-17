@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AISuggestionChip — Phase 17 plan 17-08.
+ * AISuggestionChip
  * UI-SPEC §Surface 1c — pending/confirmed/discarded suggestion chip.
  *
  * Optimistic confirm/discard: chip visual state updates immediately.

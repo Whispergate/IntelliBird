@@ -1,4 +1,4 @@
-"""Enrichment provider resolver — Phase 23 / ENRICH-01.
+"""Enrichment provider resolver — ENRICH-01.
 
 Resolves the active set of enrichment providers for a given project.
 Priority: per-project row (project_id=<uuid>) > global row (project_id IS NULL).
@@ -41,7 +41,7 @@ PROVIDER_IOC_ROUTING: dict[str, set[str]] = {
     "shodan":          {"ip", "ipv6"},
     "otx":             {"domain", "sha256", "sha1", "md5"},
     "urlhaus":         {"domain", "url"},
-    # Passive DNS providers (Phase 28 / ENRICH-06) — domain only
+    # Passive DNS providers (ENRICH-06) — domain only
     "securitytrails":  {"domain"},
     "mnemonic":        {"domain"},
     "riskiq_community": {"domain"},

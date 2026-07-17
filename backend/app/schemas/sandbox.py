@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for Phase 27 sandbox detonation and YARA rule endpoints.
+"""Pydantic v2 schemas for sandbox detonation and YARA rule endpoints.
 
 Design notes:
   * SUPPORTED_PROVIDERS is a Literal type used in SandboxConfigCreate to restrict

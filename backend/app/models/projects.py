@@ -1,4 +1,4 @@
-"""Project + ProjectScopeRow + ProjectSource + ProjectMembership ORM — Phase 10 / PRJ-01, PRJ-02, PRJ-05.
+"""Project + ProjectScopeRow + ProjectSource + ProjectMembership ORM — PRJ-01, PRJ-02, PRJ-05.
 
 Exports the LEGACY_PROJECT_ID constant used by migration 009 and every downstream
 test/router that needs to reference the sentinel row.
@@ -24,7 +24,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 
-#: Sentinel project row id used for pre-Phase-10 data backfill.
+# Sentinel project row id used for legacy data backfill.
 #: All events/filter_presets/webhooks that existed before migration 009 point at
 #: this project forever. Must match the literal in migration 009 byte-for-byte.
 LEGACY_PROJECT_ID: uuid.UUID = uuid.UUID("00000000-0000-0000-0000-000000000001")
@@ -88,7 +88,7 @@ class Project(Base):
         Boolean, nullable=False, server_default=text("false"),
     )
 
-    # EASM pre-columns (Phase 11 wires live; Phase 10 ships read-only)
+    # EASM pre-columns (wires live; ships read-only)
     active_scans_authorised: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false"),
     )
@@ -96,16 +96,16 @@ class Project(Base):
     active_auth_confirmed_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True), nullable=True,
     )
-    # Phase 11 / EASM-04: gate-audit column — records Authentik sub who confirmed auth
+    # EASM-04: gate-audit column — records Authentik sub who confirmed auth
     active_auth_confirmed_by: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    # Phase 12 / BRP-04: GDPR per-project retention for person-type brand matches.
+    # BRP-04: GDPR per-project retention for person-type brand matches.
     # Migration 011 adds the column with server_default '90'.
     gdpr_person_match_retention_days: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default=text("90"), default=90,
     )
 
-    # Phase 17 / AI-01: AI feature flags + token budget + digest schedule.
+    # AI-01: AI feature flags + token budget + digest schedule.
     # Migration 014_ai adds these columns. All have server-side defaults.
     ai_digest_enabled: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false"), default=False,
@@ -126,13 +126,13 @@ class Project(Base):
         Text, nullable=False, server_default=text("'0 6 * * *'"), default="0 6 * * *",
     )
 
-    # Phase 32 / CERT-02: certstream monitoring toggle per project.
+    # CERT-02: certstream monitoring toggle per project.
     # Migration 033 adds this column with server_default false.
     certstream_enabled: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false"), default=False,
     )
 
-    # Phase 11 EASM relationship
+    # EASM relationship
     easm_scans = relationship(
         "EASMScan",
         cascade="all, delete-orphan",

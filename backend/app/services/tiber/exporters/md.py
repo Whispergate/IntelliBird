@@ -1,4 +1,4 @@
-"""TIBER Markdown/HTML exporter — Phase 18 / TIBER-03.
+"""TIBER Markdown/HTML exporter — TIBER-03.
 
 Security invariants (enforced here + via Semgrep .semgrep.yml rules):
   1. Jinja2 Environment autoescape=select_autoescape(['html', 'xml']) — MANDATORY

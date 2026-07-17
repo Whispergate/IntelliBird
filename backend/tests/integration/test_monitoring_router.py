@@ -4,7 +4,7 @@ Integration tests for the /api/admin/monitoring/sources REST endpoints:
 list shape, per-source monitoring_config PATCH, and the Admin-only 403 gate
 (Observer JWT must be rejected).
 
-Mirrors the Phase 9 / Phase 13 admin test harness pattern (test_admin_users.py).
+Mirrors the admin test harness pattern (test_admin_users.py).
 """
 from __future__ import annotations
 

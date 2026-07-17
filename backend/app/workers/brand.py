@@ -4,7 +4,7 @@ Wraps `app.services.brand_monitor.scan_project` on queue='brand-monitor' (M-8 CP
 isolation lock — keeps scan cycles off the default queue so NVD/RSS/TAXII/EASM
 throughput is unaffected by dnstwist subprocess CPU).
 
-Per-loop async engine pattern (Phase 11 easm.py lesson):
+Per-loop async engine pattern (easm.py lesson):
     Dramatiq worker threads run each actor invocation in its own asyncio event
     loop. A module-global `async_engine` binds its asyncpg connection pool to
     the FIRST event loop it touches; reuse on a later loop raises

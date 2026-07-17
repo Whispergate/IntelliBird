@@ -1,5 +1,5 @@
 /**
- * IOCDetailDrawer enrichment section stubs — Phase 23 Wave 0
+ * IOCDetailDrawer enrichment section stubs — Wave 0
  * Enrichment section does not exist yet; tests are todos until plan 23-06.
  */
 import { describe, test } from "vitest";

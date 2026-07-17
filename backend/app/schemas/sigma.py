@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for Phase 29 Sigma Rule Engine endpoints.
+"""Pydantic v2 schemas for Sigma Rule Engine endpoints.
 
 compiled_cache is intentionally absent from SigmaRuleRead — it is an internal
 JSONB blob (compiled rule representation) that is never returned to API clients.

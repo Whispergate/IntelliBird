@@ -1,5 +1,5 @@
 /**
- * ScanLaunchDialog tests — Phase 11 plan 11-09
+ * ScanLaunchDialog tests
  *
  * Activates the Wave 0 stub from plan 11-00 / 11-08.
  * Covers UI-SPEC §Surface 4 + authority matrix + copywriting contract.

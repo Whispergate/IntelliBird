@@ -1,4 +1,4 @@
-"""AuditLog ORM model — Phase 25 / AUDIT-01, AUDIT-02.
+"""AuditLog ORM model — AUDIT-01, AUDIT-02.
 
 Schema mirrors alembic 026_threat_actors_campaigns_audit.
 

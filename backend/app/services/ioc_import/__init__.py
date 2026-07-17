@@ -1,4 +1,4 @@
-"""Bulk-import parsers for IOC ingestion (Phase 22 / IOC-02).
+"""Bulk-import parsers for IOC ingestion (IOC-02).
 
 Three formats supported per CONTEXT.md §"Bulk import + STIX mapping":
   * CSV  — `parse_csv_rows(bytes)` (Content-Type: text/csv)

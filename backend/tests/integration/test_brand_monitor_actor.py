@@ -1,4 +1,4 @@
-"""Phase 12 Plan 05 — Dramatiq actor integration tests.
+"""— Dramatiq actor integration tests.
 
 Covers the must-have truths from 12-05-PLAN.md:
   - Actor decorated with queue_name="brand-monitor"
@@ -134,7 +134,7 @@ async def test_actor_invokes_scan_project_and_disposes_engine(seed_project):
 
 async def test_actor_disposes_engine_on_exception(seed_project):
     """Failure path — scan_project raises, actor re-raises, but engine.dispose
-    MUST still run (finally block). This is the Phase 11 lesson's teeth."""
+    MUST still run (finally block). This is the lesson's teeth."""
     from app.workers import brand as brand_mod
 
     pid = seed_project
@@ -177,7 +177,7 @@ async def test_actor_disposes_engine_on_exception(seed_project):
     proxy = captured["engines"][0]
     assert proxy.dispose_calls == 1, (
         "engine.dispose() MUST run in finally even when scan_project raises "
-        "(Phase 11 per-loop engine lesson)"
+        "(per-loop engine lesson)"
     )
 
 

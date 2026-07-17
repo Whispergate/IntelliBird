@@ -1,11 +1,11 @@
-"""APScheduler AI jobs — Phase 17 / AI-06, AI-07, SCR-04.
+"""APScheduler AI jobs — AI-06, AI-07, SCR-04.
 
 Registers three CronTrigger jobs:
   ai_digest_all      — 06:00 UTC daily, dispatches ai_digest_project for opted-in projects
   ai_suggestion_expiry — 01:00 UTC daily, marks pending suggestions > 30 days as discarded
   ai_nightly_rerank  — 02:00 UTC daily, dispatches ai_rescore_project for opted-in projects
 
-Pattern mirrors monitoring_jobs.py (Phase 16) exactly — see scheduler/jobs.py bootstrap.
+Pattern mirrors monitoring_jobs.py exactly — see scheduler/jobs.py bootstrap.
 
 Nightly rerank: only projects WHERE ai_rerank_enabled=True (Pitfall 8 — must not rerank
 all projects, only those that have opted in). Same guard for digest.
@@ -120,7 +120,7 @@ def ai_suggestion_expiry_job() -> None:
 
 
 def register_ai_jobs(scheduler) -> None:
-    """Register all Phase 17 AI CronTrigger jobs onto the given APScheduler instance.
+    """Register all AI CronTrigger jobs onto the given APScheduler instance.
 
     Job IDs (stable — used by tests + ops):
       - ai_digest_all         : CronTrigger(hour=6, minute=0, UTC)

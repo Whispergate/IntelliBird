@@ -1,4 +1,4 @@
-"""CIB cluster detection result — Phase 33 / DISINFO-02."""
+"""CIB cluster detection result — DISINFO-02."""
 from __future__ import annotations
 
 import uuid

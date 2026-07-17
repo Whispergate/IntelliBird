@@ -1,5 +1,5 @@
 /**
- * /projects/compare — two-project comparison surface (Phase 10 Plan 13, PRJ-06).
+ * /projects/compare — two-project comparison surface (PRJ-06).
  *
  * Server component: server-fetches the non-archived project list so the
  * client-side picker Selects have their options populated on first paint

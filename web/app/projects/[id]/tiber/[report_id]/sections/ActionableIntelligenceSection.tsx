@@ -2,7 +2,7 @@
 
 /**
  * ActionableIntelligenceSection — Section 3b: Actionable Intelligence Assessment.
- * Phase 18 plan 18-06. UI-SPEC §3b.
+ * UI-SPEC §3b.
  *
  * Auto-populated + manual. Refresh button opens RefreshDiffModal (wired in 18-07).
  * readOnly: fields disabled, save + refresh buttons unmounted.

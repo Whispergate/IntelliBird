@@ -12,7 +12,7 @@ to parse the normalised config, plus a direct raw YAML text check for the
 GPU block (which is commented-out by default).
 
 Skips cleanly when `docker compose` is unavailable on the runner (mirrors the
-test_compose_public_binding.py pattern from Phase 13).
+test_compose_public_binding.py pattern).
 """
 from __future__ import annotations
 

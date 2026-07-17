@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /admin/yara-rules — Phase 27 YARA-01.
+ * /admin/yara-rules — YARA-01.
  * Admin CRUD for YARA rules: list, upload .yar content, toggle enabled, delete.
  * Access: Admin only (enforced server-side; page shows 403 toast on API error).
  */

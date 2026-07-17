@@ -1,6 +1,6 @@
 """Scoring engine ORM models.
 
-Phase 15 / SCR-01, SCR-03.
+SCR-01, SCR-03.
 
 EventScoreOverride — per-project admin score overrides keyed on (event_id, score_version).
   event_id is a soft UUID (no FK to events.id) because events is a TimescaleDB hypertable and
@@ -69,7 +69,7 @@ class ProjectScoringRules(Base):
 
     One row per project enforced by UNIQUE constraint on project_id.
     Absence of a row means the project inherits DEFAULT_SCORING_CONFIG from
-    app.services.scoring.defaults (phase 15 / SCR-02).
+    app.services.scoring.defaults (SCR-02).
 
     version is monotonically incremented each time an admin saves new rules;
     the rescore_project Dramatiq actor uses this version as score_version when

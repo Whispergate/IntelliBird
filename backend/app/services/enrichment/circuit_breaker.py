@@ -1,4 +1,4 @@
-"""Enrichment provider circuit breaker — Phase 23 / ENRICH-03.
+"""Enrichment provider circuit breaker — ENRICH-03.
 
 Tracks consecutive 429 (quota-exceeded) responses from external providers.
 After CB_THRESHOLD failures within CB_WINDOW_TTL seconds, the breaker

@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/graph — Project-aggregate attack graph (Phase 20 Plan 20-03).
+ * /projects/[id]/graph — Project-aggregate attack graph.
  *
  * Server Component. Fetches the project graph from
  * GET /api/projects/{id}/graph via _apiFetch (CLAUDE.md convention — server-side

@@ -1,5 +1,5 @@
 /**
- * AISummarySection tests — Phase 17 plan 17-08.
+ * AISummarySection tests
  *
  * Covers:
  *   - "Summarise" button when no summary present

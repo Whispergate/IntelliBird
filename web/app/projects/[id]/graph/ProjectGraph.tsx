@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectGraph — Phase 20-03 (GRAPH-01 frontend), extended Phase 35-04 (ATK-02..05).
+ * ProjectGraph — -03 (GRAPH-01 frontend), extended -04 (ATK-02..05).
  *
  * Client component that renders a Cytoscape force-layout graph for a project's
  * aggregate threat intelligence. Handles three UI states:
@@ -10,7 +10,7 @@
  *   2. Events but zero graph edges: "no relationships yet" card with CTA to /events
  *   3. Populated graph: Cytoscape with built-in `cose` layout + truncate banner
  *
- * Phase 35-04 adds:
+ * -04 adds:
  *   - Attack path state machine (infra | loading | attack-path | error)
  *   - "Analyse Attack Path" / "Re-analyse" / "← Back to infrastructure" toolbar
  *   - Pentagon attack-step nodes colored by MITRE tactic
@@ -172,7 +172,7 @@ const NODE_STYLES = [
     selector: "node[tag_source='auto']",
     style: { "border-style": "dashed", "border-width": 2, "border-opacity": 0.5 },
   },
-  // ── DomainPivot node (Phase 28) ─────────────────────────────────
+  // ── DomainPivot node ─────────────────────────────────
   {
     selector: "node[type='domain_pivot']",
     style: {
@@ -189,7 +189,7 @@ const NODE_STYLES = [
       height: 28,
     },
   },
-  // ── Shares-infra edge (Phase 28) ─────────────────────────────────
+  // ── Shares-infra edge ─────────────────────────────────
   {
     selector: "edge[relation='shares_infra']",
     style: {
@@ -201,7 +201,7 @@ const NODE_STYLES = [
       width: 1,
     },
   },
-  // ── Attack path nodes (Phase 35) ─────────────────────────────────────────
+  // ── Attack path nodes ─────────────────────────────────────────
   {
     selector: "node[type='attack-step']",
     style: {

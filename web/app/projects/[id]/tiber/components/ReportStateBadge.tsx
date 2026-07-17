@@ -2,7 +2,7 @@
 
 /**
  * ReportStateBadge — displays TIBER report state (draft / published / archived).
- * Phase 18 plan 18-06. UI-SPEC §"Report State Colour Map".
+ * UI-SPEC §"Report State Colour Map".
  */
 
 import type { ReportState } from "../lib/api";

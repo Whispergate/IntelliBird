@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * DigestView — Daily Digest page client component (Phase 17 plan 17-09 / AI-07).
+ * DigestView — Daily Digest page client component (AI-07).
  * Surface 3 per 17-UI-SPEC.md.
  *
  * - Fetches latest ai_summaries digest row from GET /api/projects/{id}/ai/digest.

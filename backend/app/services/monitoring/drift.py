@@ -1,4 +1,4 @@
-"""Volume-drift detection for Phase 16 (MON-02).
+"""Volume-drift detection for (MON-02).
 
 Pure Python — no pandas dependency. EWMA over 168 hourly buckets (7 days)
 using alpha = 2/(N+1) (standard EMA span formula). Z-score via stdlib statistics.

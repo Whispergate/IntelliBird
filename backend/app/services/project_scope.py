@@ -1,4 +1,4 @@
-"""Project scope intersection SQL builder — Phase 10 / PRJ-03 + PRJ-05.
+"""Project scope intersection SQL builder — PRJ-03 + PRJ-05.
 
 Single reusable helper used by:
   - events_query.build_events_query (intel view — /projects/[id]/intel)
@@ -11,13 +11,13 @@ JSONB indicator path policy
 --------------------------
 STIX indicators live inside `events.raw_stix -> objects[*].pattern` as text patterns
 matching the STIX 2.1 pattern grammar (examples: `[ipv4-addr:value = '1.2.3.4']`,
-`[domain-name:value = 'evil.example.com']`). Phase 2 enrichment (backend/app/services/
+`[domain-name:value = 'evil.example.com']`). enrichment (backend/app/services/
 enrichment.py) populates `events.tags` (flat text array) + `events.country_code` +
 geo — but does NOT denormalise indicators into a dedicated JSONB column or top-level
 array. Scope-intersection therefore extracts indicators from the STIX pattern strings
 using PostgreSQL `jsonb_path_query_array` + regex substring extraction.
 
-This path is MEDIUM confidence per 10-RESEARCH.md §Pattern 2. Phase 11 enrichment
+This path is MEDIUM confidence per 10-RESEARCH.md §Pattern 2. enrichment
 refactor may denormalise indicators to a dedicated path (e.g. `raw_stix->'indicators'
 ->'ip'`); when that happens, update the three extraction clauses here and re-audit
 these tests.
@@ -25,9 +25,9 @@ these tests.
 Per CONTEXT.md §Scope-intersection query semantics:
   ip_range  -> PostgreSQL inet `<<` containment against extracted IPv4 indicators
   domain    -> exact OR subdomain-suffix LIKE match
-  keyword   -> events.search_tsv @@ plainto_tsquery('english', value)  (Phase 4 FTS reuse)
+  keyword -> events.search_tsv @@ plainto_tsquery('english', value) (FTS reuse)
   as_number -> JSONB path to enrichment.asn + FTS fallback on "ASnnnnn"
-  service / whois / certificate -> FTS fallback (Claude's Discretion; Phase 2
+  service / whois / certificate -> FTS fallback (Claude's Discretion;
     enrichment does not yet expose these as dedicated columns)
 
 Empty-set invariants:
@@ -77,7 +77,7 @@ async def fetch_bound_sources(
 # ---------------------------------------------------------------------------
 
 def _clause_keyword(value: str) -> sa.sql.ColumnElement[bool]:
-    """keyword scope -> Phase 4 FTS via events.search_tsv generated column."""
+    """keyword scope -> FTS via events.search_tsv generated column."""
     return sa.column("search_tsv").op("@@")(
         sa.func.plainto_tsquery("english", value)
     )
@@ -138,7 +138,7 @@ def _clause_service_whois_cert(value: str) -> sa.sql.ColumnElement[bool]:
     """service / whois / certificate scope -> FTS fallback.
 
     Claude's Discretion per CONTEXT.md §Claude's Discretion §Scope-intersection SQL —
-    Phase 2 enrichment does not expose dedicated columns for these types. Phase 11
+    enrichment does not expose dedicated columns for these types.
     enrichment refactor may add them; update this clause when that happens.
     """
     return sa.column("search_tsv").op("@@")(
@@ -245,7 +245,7 @@ async def apply_project_filter_to_stmt(
 
     Used by routers + compare/export helpers that want all three filters composed
     onto an existing Select. Routers typically pre-fetch + compose manually so that
-    build_events_query (sync, Phase 9 contract) stays sync — apply_project_filter_
+    build_events_query (sync, contract) stays sync — apply_project_filter_
     to_stmt is an async alternative for callers that have an AsyncSession handy.
     """
     stmt = stmt.where(Event.project_id == project_id)

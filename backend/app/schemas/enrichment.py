@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for enrichment endpoints — Phase 23 / ENRICH-01, ENRICH-04."""
+"""Pydantic v2 schemas for enrichment endpoints — ENRICH-01, ENRICH-04."""
 from __future__ import annotations
 
 import uuid

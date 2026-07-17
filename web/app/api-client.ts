@@ -7,9 +7,9 @@ import type { components } from "./api-client.generated";
 // (These types are inlined in schema objects — no standalone OpenAPI schemas for them)
 // ============================================================
 
-// FeedType: "bbot" added locally (Phase 11 plan 11-05); "brand-monitor" added
-// locally (Phase 12 plan 12-10) — both pending api-client.generated.ts regen.
-// Phase 24 / DARK-07: "tor_html", "paste", "telegram" added for dark-web collection.
+// FeedType: "bbot" added locally; "brand-monitor" added
+// locally — both pending api-client.generated.ts regen.
+// DARK-07: "tor_html", "paste", "telegram" added for dark-web collection.
 export type FeedType =
   | components["schemas"]["SourceResponse"]["feed_type"]
   | "bbot"
@@ -17,7 +17,7 @@ export type FeedType =
   // Quick task 260425-ovt: HTML-scrape source type. Backend FeedType already
   // accepts "custom"; widening here keeps types in sync until openapi regen.
   | "custom"
-  // Phase 24 / DARK-07: dark-web source types.
+  // DARK-07: dark-web source types.
   | "tor_html"
   | "paste"
   | "telegram";
@@ -65,7 +65,7 @@ export type SystemStatus = components["schemas"]["SystemStatusResponse"];
 export type Source = Omit<components["schemas"]["SourceResponse"], "feed_type"> & {
   feed_type: FeedType;
   scrape_config?: ScrapeConfig | null;
-  // Phase 24 / DARK-07: operator OPSEC acknowledgement flag stored on the source row.
+  // DARK-07: operator OPSEC acknowledgement flag stored on the source row.
   opsec_authorised?: boolean;
 };
 export type CreateSourcePayload = Omit<components["schemas"]["SourceCreate"], "feed_type"> & {
@@ -88,9 +88,9 @@ export type SourceTemplate = components["schemas"]["SourceTemplate"];
 
 // EventItem: override optional fields to required (callers depend on required shapes;
 // generated schema marks source_name, source_type, tlp, tags, attack_techniques as optional)
-// easm_scan_id: added by Phase 11 migration 010 (plan 11-01); not yet in generated schema
+// easm_scan_id: added by migration 010 (plan 11-01); not yet in generated schema
 // (pending pnpm gen:api regen when backend is reachable). Typed locally as string|null.
-// score / scored_at / score_version: added by Phase 15 migration 013 (plan 15-01).
+// score / scored_at / score_version: added by migration 013 (plan 15-01).
 // Typed locally until generated schema is regenerated from the new backend.
 export type EventItem = Omit<
   components["schemas"]["EventItem"],
@@ -108,7 +108,7 @@ export type EventItem = Omit<
 };
 
 // EventDetail: same field overrides as EventItem plus raw_stix
-// score / scored_at / score_version: Phase 15 migration 013 local extensions.
+// score / scored_at / score_version: migration 013 local extensions.
 export type EventDetail = Omit<
   components["schemas"]["EventDetail"],
   "tlp" | "attack_techniques" | "tags" | "source_name" | "source_type"
@@ -152,7 +152,7 @@ export type TestWebhookResult = components["schemas"]["TestSendResponse"];
 export type RekeyResponse = components["schemas"]["RekeyResponse"];
 export type EventCount = components["schemas"]["EventCountResponse"];
 
-// AI suggestion row (Phase 17 / AI-08). Mirrors backend
+// AI suggestion row (AI-08). Mirrors backend
 // app/schemas/ai.py::AISuggestionRead. Inlined here pending
 // api-client.generated.ts regen.
 export type AISuggestionRead = {
@@ -401,7 +401,7 @@ export async function getEventGraph(
   return _handle<GraphResponse>(res);
 }
 
-// Phase 28 — extended GraphResponse with centrality fields
+// extended GraphResponse with centrality fields
 export type TraverseGraphResponse = GraphResponse & {
   per_node_centrality?: Record<string, number> | null;
   centrality_truncated?: boolean;
@@ -539,7 +539,7 @@ export async function testWebhook(
 }
 
 // ============================================================
-// Monitoring sources — MON-04, Phase 16 plan 16-07
+// Monitoring sources — MON-04
 // (Types locally defined — api-client.generated.ts pending regen when
 //  backend openapi endpoint is accessible without auth.)
 // ============================================================
@@ -585,7 +585,7 @@ export async function patchMonitoringConfig(
 }
 
 // ============================================================
-// Maintenance windows — H-7, Phase 16 plan 16-07
+// Maintenance windows — H-7
 // ============================================================
 
 export type MaintenanceWindowItem = {
@@ -642,7 +642,7 @@ export async function deleteMaintenanceWindow(id: string): Promise<void> {
 }
 
 // ============================================================
-// IOCs — Phase 22 (IOC-02..08). Shapes mirror backend
+// IOCs — (IOC-02..08). Shapes mirror backend
 // app/schemas/iocs.py::IOCRead + IOCPatch. Inlined pending
 // api-client.generated.ts regen.
 // ============================================================
@@ -880,7 +880,7 @@ export async function triggerBackfill(projectId?: string): Promise<IOCBackfillEn
 }
 
 // ============================================================
-// Enrichment types — Phase 23 / ENRICH-01, ENRICH-04
+// Enrichment types — ENRICH-01, ENRICH-04
 // ============================================================
 
 export type EnrichmentProviderName =
@@ -1176,7 +1176,7 @@ export async function unlinkEventFromCampaign(campaignId: string, eventId: strin
 }
 
 // ---------------------------------------------------------------------------
-// TAXII Partner Key Admin — Phase 26 / TAXII-03
+// TAXII Partner Key Admin — TAXII-03
 // ---------------------------------------------------------------------------
 
 export interface TaxiiClientRead {
@@ -1222,7 +1222,7 @@ export async function revokeTaxiiClient(id: string): Promise<void> {
   if (!res.ok && res.status !== 204) throw new Error(`revokeTaxiiClient: ${res.status}`);
 }
 
-// === Phase 27: Sandbox + YARA ===
+// === Sandbox + YARA ===
 
 export interface SandboxReportRead {
   id: string;
@@ -1330,7 +1330,7 @@ export async function upsertSandboxConfig(
   if (!res.ok) throw new Error(await res.text());
 }
 
-// === Phase 29: Sigma Rule Engine ===
+// === Sigma Rule Engine ===
 
 export interface SigmaRuleRead {
   id: string;
@@ -1412,7 +1412,7 @@ export async function testSigmaRule(body: {
 }
 
 // ---------------------------------------------------------------------------
-// Cases (Phase 31 — CASE-01..05)
+// Cases (— CASE-01..05)
 // ---------------------------------------------------------------------------
 
 export interface CaseRow {
@@ -1598,7 +1598,7 @@ export async function regenerateCaseSummary(
 }
 
 // ── MISP types ─────────────────────────────────────────────────────────────
-// Phase 32 / MISP-01: MISP config CRUD + test-connection helpers.
+// MISP-01: MISP config CRUD + test-connection helpers.
 // Types inlined pending api-client.generated.ts regen.
 
 export interface MispConfigRead {
@@ -1694,7 +1694,7 @@ export async function testMispConnection(
   return res.json();
 }
 
-// ── Phase 33: Timeline + CIB Clusters ─────────────────────────────────────
+// ── Timeline + CIB Clusters ─────────────────────────────────────
 
 export interface BucketRow {
   ts: string; // ISO-8601

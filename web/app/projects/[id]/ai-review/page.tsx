@@ -1,6 +1,6 @@
 /**
  * /projects/[id]/ai-review — AI Suggestion Queue page.
- * Phase 17 plan 17-08 / UI-SPEC §Surface 2.
+ * / UI-SPEC §Surface 2.
  *
  * Server component shell that hydrates the client AIReviewTable component.
  * Tab registered at position 18 in ProjectTabs.tsx.

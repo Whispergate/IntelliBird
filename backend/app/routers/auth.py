@@ -96,7 +96,7 @@ class UserPublic(BaseModel):
     role: str
     dashboard_roles: list[str]
     must_change_password: bool
-    # Phase 10 additions — populated by /api/auth/me; defaults keep other
+    # additions — populated by /api/auth/me; defaults keep other
     # /auth/* endpoints (login, refresh, change-password, oidc-callback) that
     # serialize UserPublic in their TokenResponse compatible without touching
     # the DB for membership hydration.
@@ -161,7 +161,7 @@ def _build_user_public(u: User) -> UserPublic:
 async def _issue_tokens_and_cookie(
     u: User, request: Request, response: Response, db: AsyncSession,
 ) -> TokenResponse:
-    """Mint access + refresh tokens carrying the pm membership claim (Phase 10).
+    """Mint access + refresh tokens carrying the pm membership claim.
 
     The membership claim is rebuilt fresh on every mint so that additions /
     removals propagate within the access-TTL window (15 min). See RESEARCH.md
@@ -373,7 +373,7 @@ async def me(
         raise HTTPException(status_code=404, detail="user_not_found")
 
     base = _build_user_public(row)
-    # Phase 10: hydrate project_memberships list with project_name + archived
+    # hydrate project_memberships list with project_name + archived
     # flag when the pm claim is not truncated. Truncated users must fetch
     # /api/auth/memberships for the full paginated list.
     if not user.pm_truncated:

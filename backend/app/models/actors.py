@@ -1,4 +1,4 @@
-"""ORM models for the threat-actor / campaign subsystem — Phase 25 / ACTOR-01, ACTOR-03.
+"""ORM models for the threat-actor / campaign subsystem — ACTOR-01, ACTOR-03.
 
 Schema mirrors alembic 026_threat_actors_campaigns_audit.
 

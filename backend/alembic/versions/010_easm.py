@@ -4,7 +4,7 @@ Revision ID: 010_easm
 Revises: 009_projects_and_memberships
 Create Date: 2026-04-21
 
-Phase 11 / EASM-01, EASM-02, EASM-04, EASM-06, EASM-10.
+EASM-01, EASM-02, EASM-04, EASM-06, EASM-10.
 
 Creates EASM data foundation:
   - 5 ENUMs: easm_scan_status, easm_scan_mode, easm_severity, easm_lifecycle,

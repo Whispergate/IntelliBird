@@ -2,7 +2,7 @@
 
 /**
  * ScoreHistogram — Recharts BarChart wrapper for the Score Distribution card.
- * Phase 15 plan 15-09. UI-SPEC §Surface 4 Card 3.
+ * UI-SPEC §Surface 4 Card 3.
  *
  * Props:
  *   data — 10 pre-bucketed HistogramBucket entries (built by ScoringTabContent)

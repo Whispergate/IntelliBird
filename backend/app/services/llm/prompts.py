@@ -1,4 +1,4 @@
-"""Prompt constants for the LiteLLM adapter — Phase 17 / AI-04.
+"""Prompt constants for the LiteLLM adapter — AI-04.
 
 Prompt templates are stored as code constants (NOT in DB) to minimise C-3
 prompt-injection surface.  Admin UI editing of prompts is explicitly out of
@@ -121,7 +121,7 @@ def build_suggestion_messages(event_payload: dict) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# TIBER scenario narrative prompt — Phase 18 / AI-08
+# TIBER scenario narrative prompt — AI-08
 # ---------------------------------------------------------------------------
 
 SCENARIO_NARRATIVE_PROMPT_V1: str = "scenario_narrative_v1"
@@ -141,7 +141,7 @@ SYSTEM_PROMPT_SCENARIO_NARRATIVE_V1: str = (
 
 
 # ---------------------------------------------------------------------------
-# Narrative operation classification prompt — Phase 33 / DISINFO-03
+# Narrative operation classification prompt — DISINFO-03
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT_NARRATIVE_OP_V1: str = (
@@ -159,7 +159,7 @@ SYSTEM_PROMPT_NARRATIVE_OP_V1: str = (
 
 
 # ---------------------------------------------------------------------------
-# Attack path analysis prompt — Phase 35 / ATK-01
+# Attack path analysis prompt — ATK-01
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT_ATTACK_PATH_V1: str = (

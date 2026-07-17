@@ -1,4 +1,4 @@
-"""Per-project async rescore helper — Phase 15 / SCR-02, SCR-03.
+"""Per-project async rescore helper — SCR-02, SCR-03.
 
 rescore_project_events(session, project_id) is the async workhorse called by
 the ``rescore_project`` Dramatiq actor (app.workers.scoring).

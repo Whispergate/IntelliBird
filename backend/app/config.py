@@ -45,7 +45,7 @@ class Settings(BaseSettings):
                       description="API bind address; non-loopback triggers banner")
     PORT: int = Field(default=8000)
 
-    # pre-auth infra (Phase 8 / INFRA-02, INFRA-04)
+    # pre-auth infra (INFRA-02, INFRA-04)
     REKEY_FROM_SECRET: str | None = Field(
         default=None,
         description=(
@@ -67,12 +67,12 @@ class Settings(BaseSettings):
         default=False,
         description=(
             "Feature flag. False = AuthMiddleware is pass-through and "
-            "Next.js proxy preserves X-Dashboard-Role. True = Phase 9 JWT auth. "
-            "Flip once Phase 9 ships."
+            "Next.js proxy preserves X-Dashboard-Role. True = JWT auth. "
+            "Flip once ships."
         ),
     )
 
-    # jwt signing key — Phase 9 / AUTH-03. Separate from SECRET_KEY so rotating one
+    # jwt signing key — AUTH-03. Separate from SECRET_KEY so rotating one
     # does not invalidate the other. Validated by reject_placeholders below.
     JWT_SIGNING_KEY: str = Field(
         ...,
@@ -83,7 +83,7 @@ class Settings(BaseSettings):
         ),
     )
 
-    # Authentik OIDC — Phase 9 / AUTH-01. All fields optional; presence of SSO_ISSUER_URL
+    # Authentik OIDC — AUTH-01. All fields optional; presence of SSO_ISSUER_URL
     # enables the OIDC login button on /login and registers /api/auth/oidc/* routes.
     SSO_ISSUER_URL: str | None = Field(
         default=None,
@@ -145,7 +145,7 @@ class Settings(BaseSettings):
         ),
     )
 
-    # Phase 11 — EASM / BBOT
+    # EASM / BBOT
     BBOT_PASSIVE_MAX_SECONDS: int = Field(
         default=7200,
         description="Wallclock cap (seconds) on passive BBOT scans. Default 2h.",
@@ -189,7 +189,7 @@ class Settings(BaseSettings):
         ),
     )
 
-    # Phase 12 — Brand Protection
+    # Brand Protection
     BRAND_STOPLIST_EXTRA: str | None = Field(
         default=None,
         description=(
@@ -221,11 +221,11 @@ class Settings(BaseSettings):
         default="http://127.0.0.1:3000",
         description=(
             "Base URL for deep-links embedded in webhook payloads "
-            "(e.g. {DASHBOARD_URL}/events?event={id}). Phase 7 D-34."
+            "(e.g. {DASHBOARD_URL}/events?event={id}). D-34."
         ),
     )
 
-    # TAXII 2.1 outbound server — Phase 26
+    # TAXII 2.1 outbound server
     TAXII_BASE_URL: str = Field(
         default="",
         description=(

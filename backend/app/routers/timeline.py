@@ -1,4 +1,4 @@
-"""Timeline API — Phase 33 / TIMELINE-01, TIMELINE-02, TIMELINE-03.
+"""Timeline API — TIMELINE-01, TIMELINE-02, TIMELINE-03.
 
 Endpoints:
   GET /api/projects/{project_id}/timeline/series   — adaptive-bucket stacked area chart

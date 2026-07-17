@@ -1,5 +1,5 @@
 /**
- * MatchDetailDrawer.test.tsx — Phase 21 Plan 04 (BRAND-02 frontend).
+ * MatchDetailDrawer.test.tsx — (BRAND-02 frontend).
  *
  * Coverage:
  *   - Provenance renders all 3 detector tiers (fts, ct_log, dnstwist) with correct badges

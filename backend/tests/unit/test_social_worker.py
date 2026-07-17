@@ -2,7 +2,7 @@
 DISINFO-01 — Social listening worker dispatches polls by platform and
              persists events via _persist_event_for_bindings.
 
-Implemented in: backend/app/workers/social_worker.py (Phase 33 Plan 03)
+Implemented in: backend/app/workers/social_worker.py
 """
 import os
 import pytest

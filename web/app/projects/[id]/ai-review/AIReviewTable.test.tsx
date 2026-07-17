@@ -1,5 +1,5 @@
 /**
- * AIReviewTable tests — Phase 17 plan 17-08.
+ * AIReviewTable tests
  *
  * Covers:
  *   - Tab registration: TABS array contains ai-review at position 18 (index 17)

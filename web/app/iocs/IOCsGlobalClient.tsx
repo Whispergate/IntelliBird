@@ -1,5 +1,5 @@
 /**
- * IOCsGlobalClient — cross-project IOC search client component (Phase 34 Plan 03).
+ * IOCsGlobalClient — cross-project IOC search client component.
  * Adapted from web/app/projects/[id]/iocs/IOCsClient.tsx.
  * Key difference: no projectId prop; buildParams() omits projectId entirely.
  * Backend ACL (build_ioc_scope_predicate) handles cross-project scope.

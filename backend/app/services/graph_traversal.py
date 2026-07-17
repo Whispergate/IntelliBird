@@ -111,7 +111,7 @@ async def traverse_graph(
     """BFS graph traversal from a seed event. Returns None if seed not found
  or visibility-excluded for the given dashboard_roles.
 
- Phase 10 kwarg (default None): project_id narrows traversal to events in the
+ kwarg (default None): project_id narrows traversal to events in the
  given project. When set:
    - Seed event must have seed.project_id == project_id (else return None)
    - Layer 3 cross-event expansion JOINs events with .where(project_id == X)
@@ -132,7 +132,7 @@ async def traverse_graph(
     if seed is None or not _visibility_ok(seed.visibility, dashboard_roles):
         return None
 
-    # Phase 10 / PRJ-04 / H-3: seed must belong to the project when project_id
+    # PRJ-04 / H-3: seed must belong to the project when project_id
     # is set. Return None (indistinguishable from 'not found') to avoid
     # information disclosure across project boundaries.
     if project_id is not None and seed.project_id != project_id:
@@ -248,7 +248,7 @@ async def traverse_graph(
         if cross_rows:
             other_event_ids = list({r[0] for r in cross_rows})
             other_q = select(Event).where(Event.id.in_(other_event_ids))
-            # Phase 10 / PRJ-04 / H-3: every cross-event expansion hop must
+            # PRJ-04 / H-3: every cross-event expansion hop must
             # re-apply the project filter via JOIN-to-events. This is the
             # enforcement point — seed-match at layer 0 is not sufficient.
             if project_id is not None:

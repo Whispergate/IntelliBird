@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * SandboxReportSection — Phase 27 Plan 07 (SANDBOX-04).
+ * SandboxReportSection — (SANDBOX-04).
  * Collapsible section in EventDetailDrawer showing sandbox analysis results.
  * Renders: verdict badge, score bar, MITRE techniques list, network IOCs, process tree.
  * Fetches GET /api/projects/{projectId}/events/{eventId}/sandbox-report on mount.

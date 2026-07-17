@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for scoring rules API — Phase 15 / SCR-02, SCR-03.
+"""Pydantic v2 schemas for scoring rules API — SCR-02, SCR-03.
 
 Exports:
   ScoringWeightsPayload   — four-component weights block, validated sum=100

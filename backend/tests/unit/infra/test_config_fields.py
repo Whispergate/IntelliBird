@@ -14,7 +14,7 @@ def _spawn(env_overrides: dict[str, str]) -> subprocess.CompletedProcess[str]:
     child_env = {
         "PATH": os.environ.get("PATH", ""),
         "SECRET_KEY": VALID_KEY,
-        "JWT_SIGNING_KEY": VALID_KEY,  # Phase 9 required field; must be present in all spawns
+        "JWT_SIGNING_KEY": VALID_KEY, # required field; must be present in all spawns
         "DATABASE_URL": "postgresql+asyncpg://u:p@h:5432/d",
         "REDIS_URL": "redis://r:6379/0",
         "PYTHONPATH": str(BACKEND_ROOT),
@@ -68,8 +68,8 @@ def test_auth_enabled_reads_env_true() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Phase 9 / AUTH-03: JWT_SIGNING_KEY + SSO_* settings tests
-# Uses subprocess pattern (same as Phase 8 tests above) to avoid singleton
+# AUTH-03: JWT_SIGNING_KEY + SSO_* settings tests
+# Uses subprocess pattern (same as tests above) to avoid singleton
 # collision with module-level `settings = Settings()` in app.config.
 # ---------------------------------------------------------------------------
 

@@ -12,7 +12,7 @@ Plan 02's _effective_status reads INGEST_SILENT_FAILURE_THRESHOLD and
 surfaces 'silent' in SourceResponse when the counter crosses the threshold
 AND last_status == 'ok'.
 
-Phase 16 MON-01 / MON-03 extensions:
+MON-01 / MON-03 extensions:
  record_ingest_stats() — writes one row to source_ingest_stats hypertable per poll
  bump_last_event_at() — sync UPDATE for sources.last_event_at (sync workers)
  async_bump_last_event_at() — async UPDATE for sources.last_event_at (async workers)
@@ -62,7 +62,7 @@ def bump_last_event_at(session: Session, source_id: uuid.UUID) -> None:
     Called at ingest INSERT sites (sync workers / normalise.py / nvd.py).
     Caller MUST commit. Never decreases last_event_at.
     """
-    # Phase 16 MON-01: bump last_event_at after successful insert
+    # MON-01: bump last_event_at after successful insert
     session.execute(
         text(
             "UPDATE sources "
@@ -81,7 +81,7 @@ async def async_bump_last_event_at(session: object, source_id: uuid.UUID) -> Non
     Session is typed as ``object`` to avoid a hard import of AsyncSession here;
     callers import AsyncSession themselves and pass the session directly.
     """
-    # Phase 16 MON-01: bump last_event_at after successful insert
+    # MON-01: bump last_event_at after successful insert
     await session.execute(
         text(
             "UPDATE sources "

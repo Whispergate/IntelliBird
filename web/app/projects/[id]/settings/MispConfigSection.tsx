@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MispConfigSection — Phase 32 / MISP-01.
+ * MispConfigSection — MISP-01.
  *
  * MISP integration configuration card for Project Settings.
  * Lead+ gated (caller passes isLead prop).

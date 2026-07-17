@@ -1,4 +1,4 @@
-"""Shared fixtures for Phase 10 project scoping tests.
+"""Shared fixtures for project scoping tests.
 
 Wave 1 plan 10-02 activates:
   - monkeypatch_module (session-scoped monkeypatch shim)
@@ -147,7 +147,7 @@ async def db_engine(pg_url, _migrations_applied):
 async def db_session(db_engine) -> AsyncIterator[Any]:
     """Fresh test-scoped session.
 
-    TRUNCATEs the Phase-10 test tables (users, projects + cascades to memberships,
+    TRUNCATEs the test tables (users, projects + cascades to memberships,
     scope_rows, sources) before yielding so each test starts clean — fixtures
     commit real rows, and a rolling tx rollback at teardown does not undo them.
     Preserves sentinel LEGACY_PROJECT_ID row (required by FK back-reference from

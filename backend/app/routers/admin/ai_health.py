@@ -1,4 +1,4 @@
-"""GET /api/admin/ai-health — Phase 17 / AI-05.
+"""GET /api/admin/ai-health — AI-05.
 
 Returns current Ollama health state (set by startup probe) and count of
 configured AI providers across all projects.

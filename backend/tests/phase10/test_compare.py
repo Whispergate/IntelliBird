@@ -1,4 +1,4 @@
-"""PRJ-06 cross-project compare integration tests — Phase 10 / plan 10-14.
+"""PRJ-06 cross-project compare integration tests — plan 10-14.
 
 Covers:
   * test_shared_actors: actor name intersection across two projects

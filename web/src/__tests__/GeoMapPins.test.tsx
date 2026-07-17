@@ -234,7 +234,7 @@ describe("GeoMap pins (plan 06-04, MAP-01)", () => {
     expect(feature1.properties?.event_id).toBe(twoGeoEvents[1].id);
   });
 
-  it("test_phase5_placeholder_overlay_absent — Phase 5 overlay text must not appear in DOM", async () => {
+  it("test_phase5_placeholder_overlay_absent — overlay text must not appear in DOM", async => {
     vi.mocked(apiClient.listEvents).mockResolvedValue({
       items: [],
       next_cursor: null,
@@ -252,7 +252,7 @@ describe("GeoMap pins (plan 06-04, MAP-01)", () => {
     });
 
     expect(
-      screen.queryByText("Geo layer loads in Phase 6."),
+      screen.queryByText("Geo layer loads in."),
     ).not.toBeInTheDocument();
   });
 });

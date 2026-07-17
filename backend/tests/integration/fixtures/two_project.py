@@ -5,7 +5,7 @@ shared Actor vertex and technique id in Apache AGE. Overlap is intentional so
 that any leak (SQL filter missing, AGE BFS crossing project boundary) surfaces
 as a detectable cross-project path.
 
-AGE graph name: `intellibird_graph` (matches Phase 13 RESEARCH §Pattern 2).
+AGE graph name: `intellibird_graph` (matches RESEARCH §Pattern 2).
 
 Layout seeded per invocation:
   Postgres rows:

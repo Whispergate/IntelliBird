@@ -1,4 +1,4 @@
-"""IOC + IOCEventLink ORM models — Phase 22 / IOC-01, IOC-08.
+"""IOC + IOCEventLink ORM models — IOC-01, IOC-08.
 
 Schema mirrors alembic 023 (revision id `019_iocs`). All ENUM columns use
 `create_type=False` so SQLAlchemy never attempts CREATE TYPE — the migration

@@ -1,4 +1,4 @@
-"""WHOIS enrichment service — Phase 28 / ENRICH-07.
+"""WHOIS enrichment service — ENRICH-07.
 
 Fetches WHOIS registration data for a domain and caches it in whois_cache
 with a 7-day refetch suppression gate. Uses asyncwhois for native async

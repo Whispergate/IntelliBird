@@ -1,4 +1,4 @@
-"""ai infrastructure tables (Phase 17 / AI-01..03, SCR-04)
+"""ai infrastructure tables (AI-01..03, SCR-04)
 
 Revision ID: 014_ai
 Revises: 017_html_scrape
@@ -8,7 +8,7 @@ Create Date: 2026-04-25
 because models/tests reference that id. Originally branched off 013_scoring,
 re-parented to 017_html_scrape after rebase to keep alembic head linear.)
 
-Phase 17 / AI-01, AI-02, AI-03, SCR-04.
+AI-01, AI-02, AI-03, SCR-04.
 
 Schema foundation for the AI subsystem:
 

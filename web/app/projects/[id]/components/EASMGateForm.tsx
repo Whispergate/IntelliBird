@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * EASMGateForm — Phase 11 Plan 11-10 (UI-SPEC §Surface 2).
+ * EASMGateForm — (UI-SPEC §Surface 2).
  *
- * Live two-factor active-scan gate form replacing Phase 10's read-only
+ * Live two-factor active-scan gate form replacing 's read-only
  * EASMGatePreview scaffold. Rendered on the Settings tab.
  *
  * Two states:

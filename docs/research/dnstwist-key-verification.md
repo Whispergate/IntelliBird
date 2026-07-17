@@ -35,7 +35,7 @@ Exhaustive key enumeration across all 2965 rows:
 ['dns_a', 'dns_aaaa', 'dns_mx', 'dns_ns', 'domain', 'fuzzer']
 ```
 
-No other keys appear in this version. No `whois_created`, no `whois_registrar`, no `geoip`, no `ssdeep_score` — those require `--whois` / `--geoip` / `--ssdeep` flags which Phase 12 does not pass.
+No other keys appear in this version. No `whois_created`, no `whois_registrar`, no `geoip`, no `ssdeep_score` — those require `--whois` / `--geoip` / `--ssdeep` flags which does not pass.
 
 ## Resolution
 

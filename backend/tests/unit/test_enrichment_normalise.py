@@ -1,6 +1,6 @@
 """Unit test stubs — IOC enrichment normalization.
 
-Phase 23 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 23-02 ships the enrichment service layer.
 
 Requirement coverage: ENRICH-02 (normalized indicator as cache key).
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-02")
+@pytest.mark.xfail(reason="not yet implemented —")
 def test_ip_normalised_key():
     """normalized_indicator for IOC type=ip uses ioc.normalized_value as cache key suffix."""
     mod = pytest.importorskip("app.services.ioc_enrichment.normalise")
@@ -17,14 +17,14 @@ def test_ip_normalised_key():
     assert False, "stub — implement after 23-02 ships normalise module"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-02")
+@pytest.mark.xfail(reason="not yet implemented —")
 def test_domain_normalised_key():
     """normalized_indicator for IOC type=domain uses ioc.normalized_value as cache key suffix."""
     mod = pytest.importorskip("app.services.ioc_enrichment.normalise")
     assert False, "stub — implement after 23-02 ships normalise module"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-02")
+@pytest.mark.xfail(reason="not yet implemented —")
 def test_hash_normalised_key():
     """sha256/sha1/md5 IOC types all produce unique, non-colliding cache key suffixes."""
     mod = pytest.importorskip("app.services.ioc_enrichment.normalise")

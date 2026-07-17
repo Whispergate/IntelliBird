@@ -1,5 +1,5 @@
 /**
- * AISuggestionChip tests — Phase 17 plan 17-08.
+ * AISuggestionChip tests
  *
  * Covers:
  *   - Pending chip renders yellow variant + Check + X buttons

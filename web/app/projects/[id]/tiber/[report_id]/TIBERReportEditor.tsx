@@ -2,7 +2,7 @@
 
 /**
  * TIBERReportEditor — Surface 2 three-column report editor shell.
- * Phase 18 plan 18-06. UI-SPEC §Surface 2.
+ * UI-SPEC §Surface 2.
  *
  * Layout:
  *   [Left 240px section sidebar] | [flex-1 main section editor] | [Right 280px history placeholder]

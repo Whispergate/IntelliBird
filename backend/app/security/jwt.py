@@ -9,7 +9,7 @@ Claim shape (access + refresh share structure except 'type'):
     "dashboard_roles": ["red","blue"], "jti": "<UUID>",
     "iat": <unix>, "exp": <unix>, "type": "access"|"refresh",
     "token_version": <int>,
-    # Phase 10 optional additions (omitted when caller uses legacy mint helpers):
+    # optional additions (omitted when caller uses legacy mint helpers):
     "pm": [[project_id_str, role_rank_int], ...],
     "pm_truncated": <bool> }
 
@@ -59,7 +59,7 @@ class AuthUser:
     dashboard_roles: list[str]
     jti: str
     token_version: int
-    # Phase 10 additions — default to empty dict / False for tokens minted pre-Phase-10.
+    # additions — default to empty dict / False for tokens minted legacy.
     project_memberships: dict[str, int] = field(default_factory=dict)
     pm_truncated: bool = False
 
@@ -78,8 +78,8 @@ def _mint(
 ) -> tuple[str, str]:
     """Return (encoded_token, jti). Caller stores jti for potential blocklisting.
 
-    pm: optional list of [project_id_str, role_rank_int] pairs (Phase 10).
-        When None, claim is omitted (preserves Phase 9 token shape for callers that
+    pm: optional list of [project_id_str, role_rank_int] pairs.
+        When None, claim is omitted (preserves token shape for callers that
         do not opt into membership claims).
     pm_truncated: True when the user has >PM_CUTOFF memberships; client must
         fetch paginated /api/auth/memberships.
@@ -109,7 +109,7 @@ def mint_access_token(
     token_version: int,
     signing_key: str,
 ) -> tuple[str, str]:
-    """Return (access_token, jti). 15-minute TTL. Phase 9 shape — no pm claim."""
+    """Return (access_token, jti). 15-minute TTL. shape — no pm claim."""
     return _mint(
         user_id,
         role,
@@ -128,7 +128,7 @@ def mint_refresh_token(
     token_version: int,
     signing_key: str,
 ) -> tuple[str, str]:
-    """Return (refresh_token, jti). 7-day TTL. Phase 9 shape — no pm claim."""
+    """Return (refresh_token, jti). 7-day TTL. shape — no pm claim."""
     return _mint(
         user_id,
         role,
@@ -149,7 +149,7 @@ def mint_access_token_with_pm(
     pm: list[list[Any]],
     pm_truncated: bool,
 ) -> tuple[str, str]:
-    """Same as mint_access_token but includes project_memberships claim (Phase 10)."""
+    """Same as mint_access_token but includes project_memberships claim."""
     return _mint(
         user_id,
         role,
@@ -172,7 +172,7 @@ def mint_refresh_token_with_pm(
     pm: list[list[Any]],
     pm_truncated: bool,
 ) -> tuple[str, str]:
-    """Same as mint_refresh_token but includes project_memberships claim (Phase 10)."""
+    """Same as mint_refresh_token but includes project_memberships claim."""
     return _mint(
         user_id,
         role,
@@ -190,7 +190,7 @@ def decode_token(token: str, signing_key: str) -> dict[str, Any]:
     """Decode + verify signature + require canonical claims.
 
     NOTE: "pm" + "pm_truncated" are NOT in the required-claims list — they are
-    optional Phase 10 additions; tokens minted pre-Phase-10 remain valid.
+    optional additions; tokens minted legacy remain valid.
 
     Raises:
       pyjwt.ExpiredSignatureError — exp in the past.

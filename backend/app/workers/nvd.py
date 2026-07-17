@@ -229,7 +229,7 @@ def poll_nvd_impl(source_id_str: str) -> None:
                         continue
                     event_row, cve_details_row, attack_links = result
 
-                    # Phase 15 / SCR-01: inject score ONCE per CVE (pure function —
+                    # SCR-01: inject score ONCE per CVE (pure function
                     # does not depend on project_id). Result is reused across
                     # per-project event rows in the inner fan-out loop.
                     if event_row.get("score") is None:
@@ -275,7 +275,7 @@ def poll_nvd_impl(source_id_str: str) -> None:
                             continue
                         event_id = result_row[0]
                         inserted += 1
-                        # Phase 16 MON-01: bump last_event_at after successful insert
+                        # MON-01: bump last_event_at after successful insert
                         bump_last_event_at(session, source_id)
 
                         _write_cve_details(session, event_id, cve_details_row)

@@ -1,4 +1,4 @@
-"""Hybrid Analysis sandbox provider — Phase 27."""
+"""Hybrid Analysis sandbox provider."""
 from __future__ import annotations
 import logging
 import httpx

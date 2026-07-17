@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetsClient — Phase 12.1 plans 12.1-05a (shell) + 12.1-05b (table+drawer wire-in).
+ * AssetsClient — plans 12.1-05a (shell) + 12.1-05b (table+drawer wire-in).
  *
  * Client component owning:
  *   - Filter state parsed from useSearchParams (URL-as-single-source-of-truth)

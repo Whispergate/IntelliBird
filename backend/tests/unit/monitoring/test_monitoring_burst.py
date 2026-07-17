@@ -4,7 +4,7 @@ Tests the burst suppression key shape generalisation for monitoring alerts:
 cap=5 alerts/source/hour using Redis ZSET sliding window with key
 'burst:source:{source_id}:hour', isolated from project-scoped scoring keys.
 
-Uses a ZSET-capable in-process stub (mirrors Phase 15 dispatcher test pattern
+Uses a ZSET-capable in-process stub (mirrors dispatcher test pattern
 of using a FakeRedis stub rather than requiring a running Redis server).
 """
 from __future__ import annotations

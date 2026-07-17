@@ -1,4 +1,4 @@
-"""TIBER report generation ORM models — Phase 18 / TIBER-01..03, AI-08.
+"""TIBER report generation ORM models — TIBER-01..03, AI-08.
 
 Five models for the TIBER report editor and export subsystem:
 
@@ -71,7 +71,7 @@ _scenario_objective = PgEnum(
 class TiberReport(Base):
     """Core TTIR document row.
 
-    Phase 18 / TIBER-01. Stores all 6-section TIBER-EU / CBEST fields.
+    TIBER-01. Stores all 6-section TIBER-EU / CBEST fields.
     state machine: draft (default) → published → archived.
     project_id FK CASCADE is the hard PROD-01 scope boundary.
 
@@ -161,7 +161,7 @@ class TiberReport(Base):
 class TiberActorProfile(Base):
     """Named threat actor profile row.
 
-    Phase 18 / TIBER-01. Belongs to one TiberReport; carries a denormalised
+    TIBER-01. Belongs to one TiberReport; carries a denormalised
     project_id FK CASCADE for direct project-scope queries without joining
     through tiber_reports (PROD-01 / H-4 mitigation; mirrors ai_suggestions
     dual-FK pattern from migration 014).
@@ -209,7 +209,7 @@ class TiberActorProfile(Base):
 class TiberScenario(Base):
     """Threat scenario chain row.
 
-    Phase 18 / TIBER-02. Represents one scenario in the longlist:
+    TIBER-02. Represents one scenario in the longlist:
       actor (FK) → CIF/CBS label → objective type → ATT&CK technique → procedure prose.
 
     actor_id FK (SET NULL): actor profile deletion does not cascade-delete
@@ -276,7 +276,7 @@ class TiberScenario(Base):
 class ProjectTiberState(Base):
     """Per-project TIBER configuration singleton.
 
-    Phase 18 / TIBER-01. PK is project_id (one row per project).
+    TIBER-01. PK is project_id (one row per project).
     default_top_events_n — project-level default for Threat Landscape auto-populate N.
     Individual reports can override via tiber_reports.tl_top_events_count.
     tiber_phase — free-text engagement phase label (e.g. 'Preparation', 'Testing');
@@ -305,7 +305,7 @@ class ProjectTiberState(Base):
 class ReportExport(Base):
     """Binary export store row (__tablename__ = 'reports').
 
-    Phase 18 / TIBER-03. One row per export action per format.
+    TIBER-03. One row per export action per format.
     version_number is monotonic per (tiber_report_id, format) — application layer
     assigns next version = MAX(version_number) + 1 for the (report_id, format) pair
     before INSERT.

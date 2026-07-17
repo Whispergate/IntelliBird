@@ -1,4 +1,4 @@
-"""IOC services: per-type normalisation + TTL defaults — Phase 22 / IOC-01.
+"""IOC services: per-type normalisation + TTL defaults — IOC-01.
 
 Single source of truth for canonical-value transforms. Reused by:
   * ingest hook (Plan 22-04) — auto-IOC writes from event extraction
@@ -278,7 +278,7 @@ def upsert_ioc_for_event_sync(
                 "enrich_ioc_enqueue_failed ioc_id=%s error=%r", ioc_id, _enq_exc
             )
 
-        # Phase 27: Trigger sandbox analysis for SHA256 IOCs (SANDBOX-02).
+        # Trigger sandbox analysis for SHA256 IOCs (SANDBOX-02).
         # trigger_sandbox_if_sha256 checks ioc_type internally; safe to call on all types.
         try:
             from app.workers.iocs import trigger_sandbox_if_sha256 as _trigger_sandbox  # noqa: PLC0415
@@ -538,7 +538,7 @@ async def upsert_ioc_row(
     against the same predicate as the UNIQUE NULLS NOT DISTINCT index, then
     perform the upsert. The pre-SELECT shares the actor's transaction so it
     sees prior batch writes — no system-column introspection needed (per
-    IntelliBird Phase 22 revision; checker warning #7).
+    IntelliBird revision; checker warning #7).
 
     Re-sighting semantics preserved: confidence + ttl_days are NEVER in the
     ON CONFLICT SET clause (CONTEXT.md §"Re-sighting upsert").

@@ -138,7 +138,7 @@ async def _run_bbot_scan_inner(scan_id: uuid.UUID) -> None:
                         # summary -> description column mapping
                         summary = kwargs.pop("summary", None)
                         kwargs["description"] = summary
-                        # Phase 15 / SCR-01: inject score at EASM event promotion.
+                        # SCR-01: inject score at EASM event promotion.
                         # No CVSS or brand_severity for BBOT events; feed_type='easm'.
                         if kwargs.get("score") is None:
                             from app.services.scoring import score_event, ScoringWeights  # noqa: PLC0415
@@ -160,9 +160,9 @@ async def _run_bbot_scan_inner(scan_id: uuid.UUID) -> None:
                             kwargs["scored_at"] = _easm_scored_at
                             kwargs["score_version"] = _easm_score_ver
                         db.add(Event(**kwargs))
-                        # Phase 16 MON-01: bump last_event_at after successful insert
+                        # MON-01: bump last_event_at after successful insert
                         # EASM events have source_id=NULL so no sources row to update;
-                        # call is a deliberate no-op guard for when a synth source is wired (Phase 17).
+                        # call is a deliberate no-op guard for when a synth source is wired.
                         easm_source_id = kwargs.get("source_id")
                         if easm_source_id is not None:
                             await async_bump_last_event_at(db, easm_source_id)

@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/iocs — Phase 22 Plan 06 (IOC Foundation UI).
+ * /projects/[id]/iocs — (IOC Foundation UI).
  *
  * RSC wrapper that fetches the first page of active IOCs server-side via
  * `_apiFetch` (per CLAUDE.md SSR-fetch convention) and hands them to the

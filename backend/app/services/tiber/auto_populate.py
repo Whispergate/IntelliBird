@@ -1,4 +1,4 @@
-"""TIBER report auto-populate functions — Phase 18 / TIBER-04.
+"""TIBER report auto-populate functions — TIBER-04.
 
 Four section fillers for the TIBER TTIR auto-populate flow:
   populate_threat_landscape      — top-N scored events from project scope

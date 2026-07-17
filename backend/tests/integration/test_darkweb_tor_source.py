@@ -1,4 +1,4 @@
-"""Integration: tor_html source lifecycle — Phase 24 / DARK-02.
+"""Integration: tor_html source lifecycle — DARK-02.
 
 Uses a mock SOCKS5 responder (httpx mock transport) so tests run without
 a real Tor daemon. Verifies actor wiring, event persistence, source_health

@@ -1,4 +1,4 @@
-"""TIBER report completeness validators — Phase 18 / TIBER-01/02.
+"""TIBER report completeness validators — TIBER-01/02.
 
 Two validation functions:
   completeness_check(report) -> dict[str, list[str]]

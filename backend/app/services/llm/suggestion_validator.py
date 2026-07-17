@@ -1,4 +1,4 @@
-"""Suggestion validator gate — Phase 17 / AI-03, updated Phase 25 / ACTOR-04.
+"""Suggestion validator gate — AI-03, updated ACTOR-04.
 
 Every LLM-extracted CVE / ATT&CK technique / actor name passes validation:
   - CVE / ATT&CK: format regex + catalog presence check (bool path)
@@ -185,7 +185,7 @@ async def validate_and_stage_suggestions(
     staged: list[AISuggestion] = []
 
     for stype, value in candidates:
-        # ── Actor branch: fuzzy alias matching (Phase 25 / ACTOR-04) ──────────
+        # ── Actor branch: fuzzy alias matching (ACTOR-04) ──────────
         if stype == "actor":
             decision, matched_actor = await match_actor_name(db, value)
             if decision == "auto_link" and matched_actor is not None:

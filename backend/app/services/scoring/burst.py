@@ -1,4 +1,4 @@
-"""Burst suppression helpers for webhook_dispatcher.py — Phase 15 / SCR-05.
+"""Burst suppression helpers for webhook_dispatcher.py — SCR-05.
 
 Implements a Redis sliding-window cap: at most BURST_HIGH_CAP HIGH-tier (S+A)
 webhook fires per project per BURST_WINDOW_SEC rolling window.
@@ -96,7 +96,7 @@ def record_high_tier_dispatch(r: redis_lib.Redis, project_id: str) -> None:
     pipe.execute()
 
 
-# --- Generic key-based API (Phase 16 / MON-05) --------------------------------
+# --- Generic key-based API (MON-05) --------------------------------
 #
 # Parallel API to is_burst_suppressed / record_high_tier_dispatch but accepts
 # an explicit Redis key instead of deriving it from a project_id.
@@ -107,7 +107,7 @@ def record_high_tier_dispatch(r: redis_lib.Redis, project_id: str) -> None:
 #       record_dispatch_key(r, key)
 #       ... dispatch alert ...
 #
-# The project-scoped functions above are NOT modified — Phase 15 callers are
+# The project-scoped functions above are NOT modified — callers are
 # unaffected.
 
 def is_burst_suppressed_key(r: redis_lib.Redis, key: str, cap: int) -> bool:

@@ -1,24 +1,24 @@
-# Authentication Setup (Phase 9)
+# Authentication Setup
 
 > **Disaster recovery:** If you need to restore a lost Authentik IdP (DB + media volume,
 > re-issue OIDC client, verify SSO), see [authentik-recovery.md](authentik-recovery.md).
 
-Bring a Phase-8 IntelliBird deployment from unauthenticated-loopback-only to full JWT +
+Bring a IntelliBird deployment from unauthenticated-loopback-only to full JWT +
 optional Authentik SSO auth.
 
-This runbook assumes Phase 8 is complete: `AUTH_ENABLED` flag is wired, `SECRET_KEY` rotation
+This runbook assumes is complete: `AUTH_ENABLED` flag is wired, `SECRET_KEY` rotation
 has been exercised at least once (see [secret-rotation.md](secret-rotation.md)), and the
 OpenAPI codegen + NoAuthBanner three-state wiring are live.
 
 ## When you need this runbook
 
-- First-time Phase 9 bring-up — you have no users and `AUTH_ENABLED=false`.
+- First-time bring-up — you have no users and `AUTH_ENABLED=false`.
 - Adding Authentik SSO to an already-authenticated deployment.
 - Rotating `JWT_SIGNING_KEY` (see "Rotating JWT_SIGNING_KEY" below).
 
 ## Prerequisites
 
-- Phase 8 shipped — confirm `curl -s http://127.0.0.1:8000/api/system/status | jq .auth_enabled` returns `false` or `true`.
+- shipped — confirm `curl -s http://127.0.0.1:8000/api/system/status | jq.auth_enabled` returns `false` or `true`.
 - `docker compose` v2 installed (`docker compose version` reports v2+).
 - `openssl` on the operator shell (for key generation).
 - Edit access to `ops/.env`.
@@ -45,7 +45,7 @@ no auth without a signing key.
 ## 2. Set SETUP_TOKEN for the first admin
 
 The `/api/admin/setup` endpoint creates the first Admin user. It is gated by the same
-`X-Setup-Token` header pattern as the Phase 8 rekey endpoint.
+`X-Setup-Token` header pattern as the rekey endpoint.
 
 ```bash
 echo "SETUP_TOKEN=$(openssl rand -hex 16)" >> ops/.env
@@ -68,7 +68,7 @@ docker compose logs api | grep -E "startup_auth_status|startup_bind_loopback"
 ```
 
 Expected:
-- `startup_bind_loopback` line (inherited Phase 1 invariant).
+- `startup_bind_loopback` line (inherited invariant).
 - `startup_auth_status` line with `auth_enabled=True`, `jwt_signing_key_len=64`,
   `sso_configured=False` (unless Authentik is configured — Section 7).
 
@@ -275,7 +275,7 @@ key expire naturally (15-min access TTL, 7-day refresh TTL).
 
 ## 10. Rollback (emergency auth disable)
 
-If Phase 9 breaks and you need to revert to pre-auth behaviour for triage:
+If breaks and you need to revert to pre-auth behaviour for triage:
 
 ```bash
 sed -i 's/^AUTH_ENABLED=.*/AUTH_ENABLED=false/' ops/.env
@@ -284,7 +284,7 @@ docker compose restart api web
 ```
 
 Effect:
-- `AuthMiddleware` becomes a pass-through; every route responds as pre-Phase-9.
+- `AuthMiddleware` becomes a pass-through; every route responds as legacy.
 - Next.js proxy no longer strips `x-dashboard-role` nor injects `Authorization: Bearer`.
 - `NoAuthBanner` renders the amber/red "NO AUTHENTICATION CONFIGURED" banner.
 
@@ -327,5 +327,5 @@ Local-account users are unaffected.
 
 ---
 
-Last updated: 2026-04-18 (Phase 9 shipped).
+Last updated: 2026-04-18 (shipped).
 Related: [secret-rotation.md](secret-rotation.md), [../../ops/.env.example](../../ops/.env.example).

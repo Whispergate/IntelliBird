@@ -5,7 +5,7 @@ import os
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://u:p@h:5432/d")
 os.environ.setdefault("SECRET_KEY", "a" * 64)
-os.environ.setdefault("JWT_SIGNING_KEY", "a" * 64)  # Phase 9 required field
+os.environ.setdefault("JWT_SIGNING_KEY", "a" * 64) # required field
 os.environ.setdefault("REDIS_URL", "redis://r:6379/0")
 
 import pytest  # noqa: E402
@@ -42,7 +42,7 @@ def _make_app() -> FastAPI:
 
 @pytest.mark.asyncio
 async def test_exempt_paths_contents() -> None:
-    # Phase 9 extended EXEMPT_PATHS from 3 to 8 entries (auth endpoints + setup).
+    # extended EXEMPT_PATHS from 3 to 8 entries (auth endpoints + setup).
     # Added /api/system/setup-status for the pre-auth /setup UI probe.
     assert EXEMPT_PATHS == frozenset({
         "/healthz",
@@ -69,7 +69,7 @@ async def test_auth_disabled_passthrough_returns_200(monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_auth_enabled_blocks_with_401(monkeypatch) -> None:
-    # Phase 9: real JWT middleware returns "invalid_token" (no bearer header provided)
+    # real JWT middleware returns "invalid_token" (no bearer header provided)
     monkeypatch.setattr(settings, "AUTH_ENABLED", True)
     app = _make_app()
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://t") as c:

@@ -1,4 +1,4 @@
-"""APScheduler IOC jobs — Phase 22 / IOC-05.
+"""APScheduler IOC jobs — IOC-05.
 
 Registers one CronTrigger job:
   ioc_expiry — 03:00 UTC daily, flips status='active' → 'expired'

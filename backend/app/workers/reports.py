@@ -1,11 +1,11 @@
-"""Dramatiq reports actors — Phase 18 / TIBER-03.
+"""Dramatiq reports actors — TIBER-03.
 
 One actor on ``queue_name="reports"`` (isolated from ai / scoring / ingest queues):
 
   generate_report_actor  — async export engine: MD / PDF / STIX dispatch,
                            BYTEA persistence, monotonic version_number.
 
-Per-loop async engine pattern (mandatory — see Phase 17 RESEARCH.md §"Pitfall 2"):
+Per-loop async engine pattern (mandatory — see RESEARCH.md §"Pitfall 2"):
     Each Dramatiq worker thread has its own asyncio event loop.  A module-global
     create_async_engine would bind to the FIRST loop it touches; subsequent calls
     from a different thread raise "Future attached to a different loop".

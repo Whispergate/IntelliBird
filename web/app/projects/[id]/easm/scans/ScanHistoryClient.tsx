@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScanHistoryClient — Phase 11 plan 11-09 (UI-SPEC §Surface 5).
+ * ScanHistoryClient — (UI-SPEC §Surface 5).
  *
  * Scan history table at /projects/[id]/easm/scans.
  * Columns: Mode (100px) | Status (120px) | Started (140px) | Finished (140px) |

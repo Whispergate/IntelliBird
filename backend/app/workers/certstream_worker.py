@@ -1,4 +1,4 @@
-"""CertStream WebSocket consumer — Phase 32 CERT-01/02.
+"""CertStream WebSocket consumer — CERT-01/02.
 
 Long-lived asyncio process. Entry point: python -m app.workers.certstream_worker
 Connects to wss://certstream.calidog.io (or CERTSTREAM_URL env override).
@@ -163,7 +163,7 @@ async def _upsert_match(session: AsyncSession, domain: str, pattern: _ProjectPat
     }
     event_dict = build_event_dict(match=match_dict, term=term_dict)
 
-    # Phase 15 / SCR-01: compute score at INSERT time (mirrors brand_monitor._maybe_synth)
+    # SCR-01: compute score at INSERT time (mirrors brand_monitor._maybe_synth)
     from app.services.scoring import score_event, ScoringWeights  # noqa: PLC0415
     from app.services.scoring.defaults import DEFAULT_SOURCE_CONFIDENCE  # noqa: PLC0415
 

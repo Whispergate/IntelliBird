@@ -4,7 +4,7 @@ Integration tests for the maintenance window REST endpoints:
 Admin-only POST/GET/DELETE CRUD, the is_maintenance_active() service helper,
 and the 403 gate for non-admin callers.
 
-Mirrors the Phase 9 / Phase 13 admin test harness (test_admin_users.py).
+Mirrors the admin test harness (test_admin_users.py).
 """
 from __future__ import annotations
 

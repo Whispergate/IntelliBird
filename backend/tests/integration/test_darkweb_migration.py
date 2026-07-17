@@ -1,4 +1,4 @@
-"""Integration: migration 025_darkweb_sources round-trip — Phase 24 / DARK-01..07.
+"""Integration: migration 025_darkweb_sources round-trip — DARK-01..07.
 
 Verifies:
   - feed_type_enum gains 'tor_html', 'paste', 'telegram' values

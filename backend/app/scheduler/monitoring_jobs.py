@@ -1,4 +1,4 @@
-"""Phase 16 monitoring scheduler jobs.
+"""monitoring scheduler jobs.
 
 Three global jobs (CONTEXT.md locked decision — NOT per-source):
   - silence_check_all       IntervalTrigger(minutes=15)
@@ -108,7 +108,7 @@ def _persist_canonical_event(session: SyncSession, event_dict: dict) -> None:
 
     Delegates to app.ingest.normalise._persist_event which handles:
     - ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING (dedup)
-    - Score injection (Phase 15 SCR-01)
+    - Score injection (SCR-01)
     - ATT&CK tag rows
     - geo resolution
 
@@ -345,7 +345,7 @@ def parse_error_check_all_job() -> None:
 # ---------------------------------------------------------------------------
 
 def register_monitoring_jobs(scheduler: BlockingScheduler) -> None:
-    """Wire the 3 Phase 16 monitoring jobs onto the given scheduler.
+    """Wire the 3 monitoring jobs onto the given scheduler.
 
     Job IDs (stable — used by tests + ops):
       - monitoring_silence_check_all    : IntervalTrigger(minutes=15)

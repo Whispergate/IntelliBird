@@ -1,4 +1,4 @@
-"""Unit tests for the suggestion validator gate — Phase 17 / AI-03.
+"""Unit tests for the suggestion validator gate — AI-03.
 
 Covers:
   test_cve_validation     — CVE-ID regex + cve_details cache lookup

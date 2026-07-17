@@ -4,7 +4,7 @@ Revision ID: 009_projects_and_memberships
 Revises: 008_users_and_auth
 Create Date: 2026-04-19
 
-Phase 10 / PRJ-01, PRJ-02, PRJ-05.
+PRJ-01, PRJ-02, PRJ-05.
 
 Creates project scoping foundation:
   - 3 ENUMs: engagement_type, scope_type, project_role (DO $$ EXCEPTION pattern per migration 003 precedent)
@@ -12,7 +12,7 @@ Creates project scoping foundation:
   - project_id FK added to events, filter_presets, webhooks via three-step sentinel backfill (C-4 mitigation)
   - Composite index events_project_observed_idx for PROD-05 load-test gate
   - EASM pre-columns on projects (active_scans_authorised, scope_acknowledgement_text, active_auth_confirmed_at)
-    - Phase 11 wires live
+    - wires live
 
 CONTEXT.md §Migration 007 shape locks the following:
   LEGACY_PROJECT_ID = '00000000-0000-0000-0000-000000000001'
@@ -33,10 +33,10 @@ works with columnstore-enabled hypertables:
        "ADD COLUMN ... REFERENCES" as a single statement on a hypertable whose
        columnstore is enabled — spike finding from plan 10-01 live dry-run)
   3. ALTER COLUMN project_id DROP DEFAULT
-     (every new row from Phase 10 onward must pass project_id explicitly - M-6)
+     (every new row onward must pass project_id explicitly - M-6)
 
 No concurrent index creation here (TimescaleDB hypertables reject that form in a txn
-per STATE.md Phase 5+6 lock) — standard CREATE INDEX propagates to all chunks.
+per STATE.md lock) — standard CREATE INDEX propagates to all chunks.
 """
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ down_revision: Union[str, None] = "008_users_and_auth"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-#: Sentinel project row id used for pre-Phase-10 data backfill. Must match the
+# Sentinel project row id used for legacy data backfill. Must match the
 #: LEGACY_PROJECT_ID constant exported from app.models.projects byte-for-byte.
 LEGACY_PROJECT_ID = "00000000-0000-0000-0000-000000000001"
 
@@ -108,7 +108,7 @@ def upgrade() -> None:
             "archived", sa.Boolean(), nullable=False,
             server_default=sa.text("false"),
         ),
-        # EASM pre-columns (Phase 11 wires live; Phase 10 ships read-only)
+        # EASM pre-columns (wires live; ships read-only)
         sa.Column(
             "active_scans_authorised", sa.Boolean(), nullable=False,
             server_default=sa.text("false"),
@@ -299,7 +299,7 @@ def upgrade() -> None:
         FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE RESTRICT;
         """
     )
-    # Step C: DROP DEFAULT. Every new event from Phase 10 onward must pass
+    # Step C: DROP DEFAULT. Every new event onward must pass
     # project_id explicitly (M-6).
     op.execute("ALTER TABLE events ALTER COLUMN project_id DROP DEFAULT;")
 

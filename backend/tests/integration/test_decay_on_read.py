@@ -1,4 +1,4 @@
-"""Integration test: Phase 15 decay-on-read observable — SCR-05.
+"""Integration test: decay-on-read observable — SCR-05.
 
 Verifies that the on-read decay formula in ``events_query.build_events_query``
 (via ``_build_score_expressions``) produces measurably lower scores for events

@@ -1,4 +1,4 @@
-"""Unit tests for dark-web IOC extraction patterns — Phase 24 / DARK-05.
+"""Unit tests for dark-web IOC extraction patterns — DARK-05.
 
 Tests the credential pair regex, .onion domain pass-through, and BTC/ETH
 patterns applied to dark-web event content via Enrichment.iocs().

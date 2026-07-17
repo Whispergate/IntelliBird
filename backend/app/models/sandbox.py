@@ -1,4 +1,4 @@
-"""ORM models for Phase 27: SandboxConfig (per-project provider config) and SandboxReport (hypertable).
+"""ORM models for SandboxConfig (per-project provider config) and SandboxReport (hypertable).
 
 Design notes:
   * SandboxReport uses a composite PRIMARY KEY (id, submitted_at) as required by

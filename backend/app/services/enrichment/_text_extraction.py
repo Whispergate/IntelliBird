@@ -49,7 +49,7 @@ _ETH_PATTERN = re.compile(r"\b0x[a-fA-F0-9]{40}\b")
 _EMAIL_PATTERN = re.compile(
     r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,24}\b"
 )
-# Phase 24 / DARK-05: Credential pair pattern for dark-web breach dumps.
+# DARK-05: Credential pair pattern for dark-web breach dumps.
 # Matches "email:hash" or "email:plaintext" patterns. Only the email portion
 # (group 1) is stored as an IOC value — the password/hash after ':' is
 # intentionally discarded to avoid storing cleartext credentials in the
@@ -244,7 +244,7 @@ def _extract_domains(text: str, ignore_ips: Iterable[str]) -> set[str]:
         if len(parts) < 2:
             continue
         # Exclude common filename noise (".md", ".tar")
-        # Phase 24 / DARK-05 note: "onion" is intentionally absent from this set.
+        # DARK-05 note: "onion" is intentionally absent from this set.
         # .onion TLD passes the 2-24 char length check and is extracted as a domain IOC.
         if parts[-1] in {"md", "py", "ts", "tsx", "js", "html", "txt", "log", "tar", "gz", "zip"}:
             continue
@@ -330,7 +330,7 @@ def enrich_event(title: str | None, description: str | None) -> Enrichment:
     emails = set(_EMAIL_PATTERN.findall(text))
     e.iocs["email"].update(e.lower() for e in emails)
 
-    # Phase 24 / DARK-05: Credential pair extraction.
+    # DARK-05: Credential pair extraction.
     # Email portion only → iocs["email"]. Password/hash → discarded (never stored as IOC).
     cred_pairs = _CRED_PAIR_PATTERN.findall(text)
     if cred_pairs:

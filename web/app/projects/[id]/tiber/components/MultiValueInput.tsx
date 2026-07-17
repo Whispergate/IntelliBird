@@ -2,7 +2,7 @@
 
 /**
  * MultiValueInput — tag-style input for adding/removing string values.
- * Phase 18 plan 18-06. UI-SPEC §3a chip style.
+ * UI-SPEC §3a chip style.
  *
  * Usage:
  *   <MultiValueInput
@@ -13,7 +13,7 @@
  *   />
  *
  * Chip style: inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs
- *   bg-card border-border — matches AISuggestionChip pattern from Phase 17.
+ * bg-card border-border — matches AISuggestionChip pattern.
  */
 
 import { useState } from "react";

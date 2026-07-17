@@ -2,7 +2,7 @@
 MISP-03 — Validated AI suggestions pushed to MISP as proposals via Dramatiq actor
           misp_push_suggestion. Only fires on 'confirmed' status + opt-in push_types.
 
-Implemented in: backend/app/workers/misp_push.py (Phase 32 Plan 04)
+Implemented in: backend/app/workers/misp_push.py
 """
 import os
 

@@ -91,7 +91,7 @@ def _startup_bind_banner() -> None:
             host=settings.HOST, port=settings.PORT,
             warning=(
                 "IntelliBird exposed beyond loopback and has NO AUTHENTICATION. "
-                "For trusted internal networks only. Auth lands in Phase 9."
+                "For trusted internal networks only. Auth lands in."
             ),
         )
 
@@ -220,7 +220,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(admin_taxii_clients_router, prefix="/api")
     fastapi_app.include_router(admin_yara_rules_router, prefix="/api")
     fastapi_app.include_router(admin_sigma_rules_router, prefix="/api")
-    # Sandbox config router — absolute prefix /api/projects/{id}/sandbox-config (Phase 27)
+    # Sandbox config router — absolute prefix /api/projects/{id}/sandbox-config
     fastapi_app.include_router(sandbox_router)
     fastapi_app.include_router(admin_monitoring_router, prefix="/api")
     fastapi_app.include_router(admin_maintenance_router, prefix="/api")
@@ -239,7 +239,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(projects_compare_router, prefix="/api")
     fastapi_app.include_router(projects_router, prefix="/api")
     # EASM: safelist_router before easm_router — /api/easm/safelist must not collide
-    # with /api/projects/.../easm/... path (no collision, but consistent with Phase 10
+    # with /api/projects/.../easm/... path (no collision, but consistent with
     # compare_router-before-projects_router ordering for sibling routers).
     fastapi_app.include_router(easm_safelist_router, prefix="/api")
     fastapi_app.include_router(easm_router, prefix="/api")
@@ -262,7 +262,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(assets_router)
     # TIBER report generation router — absolute prefix /api/projects/{id}/tiber
     fastapi_app.include_router(tiber_router)
-    # TAXII 2.1 outbound server — Phase 26. No /api prefix; TAXII uses its own /taxii2 prefix.
+    # TAXII 2.1 outbound server. No /api prefix; TAXII uses its own /taxii2 prefix.
     fastapi_app.include_router(taxii_router, prefix="/taxii2")
 
     return fastapi_app

@@ -1,4 +1,4 @@
-"""Integration tests for SCR-04 ai_rescore_project routes — Phase 17 / Plan 17-07.
+"""Integration tests for SCR-04 ai_rescore_project routes — Plan 17-07.
 
 Covers:
   - POST /api/projects/{id}/ai-rescore returns 202 + ai_rescore_project.send invoked

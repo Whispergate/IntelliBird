@@ -1,11 +1,11 @@
 /**
- * /projects/[id] — project detail layout (Phase 10 Plan 09 + Phase 20 Plan 04).
+ * /projects/[id] — project detail layout.
  *
  * Server component. Fetches the project detail once via `fetchProjectDetail`
  * and wraps every nested route (Overview via page.tsx, Intel via ./intel/,
  * Graph via ./graph/) with the breadcrumb + sub-tab strip.
  *
- * Phase 20 Plan 04 (UX-02): derives the current user's per-project role via
+ * (UX-02): derives the current user's per-project role via
  * `listMemberships` and passes it to `<ProjectRoleProvider>` so all descendant
  * client components can call `useProjectRole()` without individual API calls.
  *

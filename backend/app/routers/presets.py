@@ -1,4 +1,4 @@
-"""Filter preset CRUD — FIL-04 / Phase 10 PRJ-01 M-6 enforcement.
+"""Filter preset CRUD — FIL-04 / PRJ-01 M-6 enforcement.
 
 Endpoints:
  GET /api/presets → list[FilterPresetResponse]  (membership-filtered)
@@ -7,11 +7,11 @@ Endpoints:
  PUT /api/presets/{name} → FilterPresetResponse (upsert; Contributor+ on project)
  DELETE /api/presets/{name} → 204 (404 if absent; Contributor+ on project)
 
-Phase 10 changes:
+changes:
 - POST requires project_id in body; 422 on absence (PRJ-01 / M-6 enforcement)
 - GET list filters by user project memberships + LEGACY_PROJECT_ID visibility
 - PUT/DELETE require Contributor+ on the preset's project
-- require_auth added to all endpoints (was unguarded pre-Phase-10)
+- require_auth added to all endpoints (was unguarded legacy)
 
 Note: asyncpg rejects :param::type cast syntax — CAST(:param AS jsonb) used throughout
 (deviation discovered in-01, applied here proactively).
@@ -98,7 +98,7 @@ async def create_preset(
 
  Returns 409 Conflict if the name already exists.
  Name must match ^[a-z0-9_-]{1,64}$ (enforced by Pydantic; DB CHECK is defence-in-depth).
- Requires at least Contributor role on the target project (Phase 10 PRJ-01).
+ Requires at least Contributor role on the target project (PRJ-01).
 """
     # Contributor+ membership check on the target project
     await check_project_membership(user, db, payload.project_id, ProjectRole.Contributor)
@@ -168,7 +168,7 @@ async def upsert_preset(
 
  If the preset already exists: Contributor+ check on the existing row's project.
  If creating via upsert: payload.project_id is used (defaults to LEGACY_PROJECT_ID
- when absent — backward compat for Phase 4 integration tests).
+ when absent — backward compat for integration tests).
 
 : ON CONFLICT DO UPDATE must explicitly set updated_at = now
  because the column default only fires on INSERT, not on UPDATE.
@@ -225,7 +225,7 @@ async def delete_preset(
     """Delete a preset by name.
 
  Returns 204 on success, 404 if not found.
- Requires at least Contributor role on the preset's project (Phase 10 PRJ-01).
+ Requires at least Contributor role on the preset's project (PRJ-01).
  response_class=Response avoids FastAPI 204/None body serialisation bug.
 """
     row = (

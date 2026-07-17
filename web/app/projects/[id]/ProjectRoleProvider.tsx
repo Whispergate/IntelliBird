@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectRoleProvider — Phase 20 Plan 04 (UX-02).
+ * ProjectRoleProvider — (UX-02).
  *
  * Client context provider that exposes the current user's per-project role
  * to any descendant client component via `useProjectRole()`.

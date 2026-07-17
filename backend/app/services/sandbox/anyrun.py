@@ -1,4 +1,4 @@
-"""ANY.RUN sandbox provider — Phase 27."""
+"""ANY.RUN sandbox provider."""
 from __future__ import annotations
 import logging
 import httpx

@@ -1,4 +1,4 @@
-"""ORM models for Phase 27: YaraRule (stored rules) and YaraMatch (hit join table).
+"""ORM models for YaraRule (stored rules) and YaraMatch (hit join table).
 
 Design notes:
   * YaraRule.project_id is nullable — NULL = global rule visible to all projects

@@ -1,6 +1,6 @@
 """Admin Webhook Registry CRUD — HOOK-01, HOOK-02, HOOK-09.
 
-AUTH-02 (Phase 9): every endpoint guarded by Depends(require_admin).
+AUTH-02: every endpoint guarded by Depends(require_admin).
 Test-send endpoint registered BEFORE /{id} routes (FastAPI path order).
 auth_enc encrypted on save; NEVER appears in any response body (SRC-04 parallel).
 """
@@ -175,7 +175,7 @@ async def _hydrate(db: AsyncSession, wh: Webhook) -> WebhookResponse:
     return WebhookResponse(
         id=wh.id,
         name=wh.name,
-        project_id=wh.project_id,  # Phase 10 — included in responses
+        project_id=wh.project_id, # included in responses
         destination_type=wh.destination_type,  # type: ignore[arg-type]
         url=wh.url,
         batching_window_sec=wh.batching_window_sec,
@@ -238,7 +238,7 @@ async def create_webhook(
     db: AsyncSession = Depends(get_session),
     current_user: AuthUser = Depends(require_admin),
 ) -> WebhookResponse:
-    # Contributor+ membership check on the target project (Phase 10 PRJ-01)
+    # Contributor+ membership check on the target project (PRJ-01)
     await check_project_membership(current_user, db, payload.project_id, ProjectRole.Contributor)
 
     if payload.batching_window_sec not in _BATCHING_ALLOWED:
@@ -315,7 +315,7 @@ async def update_webhook(
     if wh is None:
         raise HTTPException(status_code=404, detail="webhook not found")
 
-    # Contributor+ check on the current project (Phase 10 PRJ-01)
+    # Contributor+ check on the current project (PRJ-01)
     await check_project_membership(current_user, db, wh.project_id, ProjectRole.Contributor)
     # If moving to a different project, also check membership on target
     if payload.project_id is not None and payload.project_id != wh.project_id:
@@ -375,7 +375,7 @@ async def delete_webhook(
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
         raise HTTPException(status_code=404, detail="webhook not found")
-    # Contributor+ check on the webhook's project (Phase 10 PRJ-01)
+    # Contributor+ check on the webhook's project (PRJ-01)
     await check_project_membership(current_user, db, wh.project_id, ProjectRole.Contributor)
     await db.delete(wh)
     await db.commit()
@@ -393,7 +393,7 @@ async def reset_cursor(
     wh = await db.get(Webhook, webhook_id)
     if wh is None:
         raise HTTPException(status_code=404, detail="webhook not found")
-    # Contributor+ check on the webhook's project (Phase 10 PRJ-01)
+    # Contributor+ check on the webhook's project (PRJ-01)
     await check_project_membership(current_user, db, wh.project_id, ProjectRole.Contributor)
     wh.last_dispatch_at = None
     await db.commit()

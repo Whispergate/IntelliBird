@@ -1,4 +1,4 @@
-"""Per-scope-type value validators for PRJ-02 scope rows — Phase 10.
+"""Per-scope-type value validators for PRJ-02 scope rows.
 
 validate_scope_row_value() is the single entrypoint; it dispatches to per-type helpers.
 Each helper raises ValueError on invalid input and returns a canonicalised string.

@@ -1,4 +1,4 @@
-"""Campaigns REST API — Phase 25 / ACTOR-03.
+"""Campaigns REST API — ACTOR-03.
 
 Endpoints:
   GET    /api/campaigns                          list campaigns (project-scoped; Lead+ sees global too)

@@ -1,6 +1,6 @@
 """Defense-in-depth test: export endpoint returns 403 for Observer JWT.
 
-Phase 20 Plan 04 (UX-02): The frontend hides the Export button for Observers
+(UX-02): The frontend hides the Export button for Observers
 (UX polish). The backend enforces the gate independently — a direct API call
 with an Observer JWT must receive 403 regardless of frontend state.
 

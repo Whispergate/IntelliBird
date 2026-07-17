@@ -1,6 +1,6 @@
 """Integration test stubs — IOC type-to-provider routing.
 
-Phase 23 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 23-04 ships the enrichment worker and routing logic.
 
 PROVIDER_IOC_ROUTING (from CONTEXT.md):
@@ -27,31 +27,31 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-04")
+@pytest.mark.xfail(reason="not yet implemented —")
 async def test_ip_routes_to_4_providers(two_project_fixture, db_session, monkeypatch):
     """IP IOC → vt, abuseipdb, greynoise, shodan all consulted (4 providers)."""
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-04")
+@pytest.mark.xfail(reason="not yet implemented —")
 async def test_hash_routes_to_2_providers(two_project_fixture, db_session, monkeypatch):
     """SHA-256 IOC → vt, otx consulted (2 providers)."""
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-04")
+@pytest.mark.xfail(reason="not yet implemented —")
 async def test_domain_routes_to_3_providers(two_project_fixture, db_session, monkeypatch):
     """Domain IOC → vt, otx, urlhaus consulted (3 providers)."""
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-04")
+@pytest.mark.xfail(reason="not yet implemented —")
 async def test_email_routes_to_0_providers(two_project_fixture, db_session, monkeypatch):
     """Email IOC type → 0 providers consulted (silent skip, not an error)."""
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 plan 23-04")
+@pytest.mark.xfail(reason="not yet implemented —")
 async def test_url_routes_to_2_providers(two_project_fixture, db_session, monkeypatch):
     """URL IOC → vt, urlhaus consulted (2 providers)."""
     assert False, "stub"

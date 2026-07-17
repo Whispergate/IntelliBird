@@ -2,7 +2,7 @@
 MISP-04 — MISP galaxy clusters of type 'threat-actor' map to threat_actors rows.
           Dedup on mitre_group_id first, then primary_name fallback.
 
-Implemented in: backend/app/workers/misp_pull.py (Phase 32 Plan 04)
+Implemented in: backend/app/workers/misp_pull.py
 """
 import os
 

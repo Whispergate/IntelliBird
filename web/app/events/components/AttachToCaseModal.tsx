@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AttachToCaseModal — Phase 31 Plan 07 (CASE-05).
+ * AttachToCaseModal — (CASE-05).
  *
  * Reusable modal for attaching events or IOCs to an open case.
  *

@@ -1,4 +1,4 @@
-"""ORM models for passive DNS and WHOIS data — Phase 28 / ENRICH-06..07."""
+"""ORM models for passive DNS and WHOIS data — ENRICH-06..07."""
 from __future__ import annotations
 
 import uuid

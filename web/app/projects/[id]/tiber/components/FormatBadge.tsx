@@ -2,7 +2,7 @@
 
 /**
  * FormatBadge — inline export format badge.
- * Phase 18 plan 18-07. UI-SPEC §Surface 8 colour map verbatim.
+ * UI-SPEC §Surface 8 colour map verbatim.
  */
 
 import type { ReportFormat } from "../lib/api";

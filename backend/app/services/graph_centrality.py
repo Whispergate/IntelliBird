@@ -1,4 +1,4 @@
-"""Server-side graph centrality computation — Phase 28 / GRAPH-03.
+"""Server-side graph centrality computation — GRAPH-03.
 
 Computes PageRank + betweenness centrality via networkx for graphs returned
 by the traverse endpoint. Results are cached in Redis for 10 minutes keyed

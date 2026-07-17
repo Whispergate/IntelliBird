@@ -1,6 +1,6 @@
 """Add social_listening feed type, source_config column, cib_clusters table.
 
-Phase 33 — DISINFO-01, DISINFO-02.
+— DISINFO-01, DISINFO-02.
 Also extends ai_suggestion_type_enum with 'narrative_op' (DISINFO-03).
 
 Revision ID: 034_social_listening

@@ -2,7 +2,7 @@
 
 /**
  * ScoringTabContent — Admin scoring config page for /projects/[id]/scoring.
- * Phase 15 plan 15-09. UI-SPEC §Surface 4.
+ * UI-SPEC §Surface 4.
  *
  * Four cards:
  *   Card 1 — Score Weights (4 number inputs + decay half-life + Save weights button)

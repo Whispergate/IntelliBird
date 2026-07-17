@@ -1,4 +1,4 @@
-"""Phase 29 Sigma Rule Engine — unit tests (SIGMA-01, SIGMA-02, SIGMA-04)."""
+"""Sigma Rule Engine — unit tests (SIGMA-01, SIGMA-02, SIGMA-04)."""
 from __future__ import annotations
 
 import os

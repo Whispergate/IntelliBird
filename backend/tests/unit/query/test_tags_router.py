@@ -49,7 +49,7 @@ async def app_with_session():
                 "stix_id TEXT, "
                 "stix_type TEXT NOT NULL DEFAULT 'indicator', "
                 "source_id TEXT, "
-                # Phase 10: events.project_id NOT NULL — defaulting to
+                # events.project_id NOT NULL — defaulting to
                 # LEGACY_PROJECT_ID sentinel for SQLite test rows.
                 "project_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001', "
                 "fetched_at TEXT NOT NULL DEFAULT '2025-01-01T00:00:00+00:00', "

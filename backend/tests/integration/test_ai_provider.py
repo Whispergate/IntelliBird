@@ -8,7 +8,7 @@ Covers:
     same transaction.
   - AIProvider with credentials_enc=NULL is skipped without error.
 
-Phase 17 / AI-01: task 1 (migration + ORM) and task 2 (rekey sweep).
+AI-01: task 1 (migration + ORM) and task 2 (rekey sweep).
 """
 from __future__ import annotations
 

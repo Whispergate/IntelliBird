@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for AI surfaces — Phase 17 / AI-01..07, SCR-04.
+"""Pydantic v2 schemas for AI surfaces — AI-01..07, SCR-04.
 
 Exports:
   AISummariseRequest      — body for POST /api/events/{id}/ai/summarise
@@ -183,7 +183,7 @@ class AIDigestResponse(BaseModel):
 class AIRerankStatus(BaseModel):
     """GET /api/projects/{id}/ai/rerank/status.
 
-    Mirrors Phase 15 RescoreStatusResponse shape so the frontend polling
+    Mirrors RescoreStatusResponse shape so the frontend polling
     pattern is identical (last_rerank_at advances = done signal).
     """
 
@@ -209,7 +209,7 @@ class AIHealthResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Attack path analysis — Phase 35 / ATK-01..ATK-05
+# Attack path analysis — ATK-01..ATK-05
 # ---------------------------------------------------------------------------
 
 import re as _re  # noqa: E402

@@ -1,4 +1,4 @@
-"""Integration: paste source lifecycle — Phase 24 / DARK-03."""
+"""Integration: paste source lifecycle — DARK-03."""
 import pytest
 
 

@@ -1,6 +1,6 @@
 """Pydantic v2 request + response schemas for /api/projects/{id}/assets.
 
-Phase 12.1 / Project Asset Surface.
+Project Asset Surface.
 
 Shape invariants (locked by CONTEXT.md + UI-SPEC.md):
 - asset_id = sha256(bbot_event_type || canonical_target).hexdigest() — 64 hex chars

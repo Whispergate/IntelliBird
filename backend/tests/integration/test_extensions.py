@@ -1,4 +1,4 @@
-"""tests/integration/test_extensions.py — stub. Implemented by in phase 01-foundation."""
+"""tests/integration/test_extensions.py — stub. Implemented by in -foundation."""
 import pytest
 
 pytestmark = pytest.mark.integration

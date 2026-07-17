@@ -1,5 +1,5 @@
 /**
- * DiffView tests — Phase 11 plan 11-09
+ * DiffView tests
  *
  * Activates the Wave 0 stub from plan 11-00.
  * Covers UI-SPEC §Surface 6 §"Diff vs previous" (EASM-08).

@@ -1,4 +1,4 @@
-"""Atomic Redis token budget counter — Phase 17 / AI-06.
+"""Atomic Redis token budget counter — AI-06.
 
 Implements a per-project, per-UTC-day token budget with Lua-based atomic
 check-and-increment to prevent the GET + INCRBY race condition that would

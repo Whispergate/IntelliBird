@@ -83,7 +83,7 @@ def test_update_source_health_failure_uses_increment(monkeypatch: pytest.MonkeyP
 def test_persist_event_returns_rowcount(monkeypatch: pytest.MonkeyPatch) -> None:
     """_persist_event returns 1 for insert, 0 for conflict-skipped.
 
-    Phase 10: internal impl uses RETURNING + fetchone(); row is None on conflict.
+    internal impl uses RETURNING + fetchone; row is None on conflict.
     We simulate fetchone() per-call so the two _persist_event invocations see
     insert-then-skip. side_effect is a function so arbitrary extra execute
     calls (e.g. attack_technique_tag_rows inserts) receive a fresh MagicMock

@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for TAXII 2.1 outbound server — Phase 26 / TAXII-01..05.
+"""Pydantic v2 schemas for TAXII 2.1 outbound server — TAXII-01..05.
 
 Naming follows OASIS TAXII 2.1 spec §4-§6 resource names exactly.
 """

@@ -1,4 +1,4 @@
-"""TAXII 2.1 outbound server router — Phase 26 / TAXII-01..05.
+"""TAXII 2.1 outbound server router — TAXII-01..05.
 
 All endpoints require a valid partner key via require_taxii_client Depends().
 The JWT AuthMiddleware is bypassed for /taxii2 paths (see middleware/auth.py).

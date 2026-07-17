@@ -174,7 +174,7 @@ export function TopNav() {
         Events
       </Link>
 
-      {/* IOCs nav link — global cross-project IOC search (Phase 34) */}
+      {/* IOCs nav link — global cross-project IOC search */}
       <Link
         href="/iocs"
         className={`${linkBase} ${pathname?.startsWith("/iocs") ? linkActiveClass : linkInactive}`}

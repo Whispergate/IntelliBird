@@ -1,4 +1,4 @@
-"""030 — sigma_rules table for Phase 29 Sigma Rule Engine.
+"""030 — sigma_rules table for Sigma Rule Engine.
 
 Revision ID: 030_sigma_rules
 Revises: 029_passive_dns_whois_age

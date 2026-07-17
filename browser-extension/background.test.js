@@ -1,5 +1,5 @@
 // browser-extension/background.test.js
-// Node built-in test runner (Node 18+) — Phase 34 Plan 02 (Wave 1 GREEN)
+// Node built-in test runner (Node 18+) — (Wave 1 GREEN)
 //
 // Tests for the buildLookupUrl utility exported from background.js.
 // Uses require() / CJS style to match the module.exports guard in background.js.

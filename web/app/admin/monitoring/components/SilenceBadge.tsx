@@ -2,7 +2,7 @@
 
 /**
  * SilenceBadge — SLA breach badge for source health monitoring.
- * Phase 16 plan 16-07. MON-04 dashboard requirement.
+ * MON-04 dashboard requirement.
  *
  * Colours match brand severity palette (CONTEXT.md "Claude's Discretion"):
  *   - Red    — SLA fully breached (now - last_event_at > sla_seconds)

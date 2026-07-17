@@ -1,5 +1,5 @@
 """
-Phase 27 — Sandbox submission and poll actors.
+— Sandbox submission and poll actors.
 submit_sandbox_report: fetch sample, YARA scan, submit to provider, create pending report row.
 poll_sandbox_report:   self-rescheduling poll with exponential backoff; writes result on completion.
 
@@ -379,7 +379,7 @@ def _classify_ioc(value: str) -> str | None:
 
 
 def _decrypt_api_key(credentials_enc: str | None) -> str | None:
-    """Decrypt stored API key — same pattern as Phase 23 enrichment workers."""
+    """Decrypt stored API key — same pattern as enrichment workers."""
     if not credentials_enc:
         return None
     try:

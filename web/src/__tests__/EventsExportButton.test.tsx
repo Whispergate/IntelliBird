@@ -1,5 +1,5 @@
 /**
- * EventsExportButton.test.tsx — Phase 20 Plan 04 (UX-02)
+ * EventsExportButton.test.tsx — (UX-02)
  *
  * Tests that the Export button in OverviewClient is hidden for Observer role
  * and visible for non-Observer roles (Lead, Contributor, Admin).

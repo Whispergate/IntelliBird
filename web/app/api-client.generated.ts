@@ -3917,7 +3917,7 @@ export interface operations {
                 project_id?: string | null;
                 /** @description Include BBOT-promoted events in results. Default (false) excludes events where easm_scan_id IS NOT NULL (H-4 feed contamination prevention). Set true to show BBOT provenance events. */
                 include_bbot?: boolean;
-                /** @description Include brand-monitor (Phase 12) events in results. Default (false) excludes events tagged 'brand-match' so the main events feed is not polluted by brand alerts. Set true to show them. */
+                /** @description Include brand-monitor events in results. Default (false) excludes events tagged 'brand-match' so the main events feed is not polluted by brand alerts. Set true to show them. */
                 include_brand_match?: boolean;
             };
             header?: never;

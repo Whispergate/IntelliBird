@@ -1,6 +1,6 @@
 /**
  * Tests for OPSEC warning banner and checkbox in SourceDialog for dark-web source types.
- * Phase 24 / DARK-07.
+ * DARK-07.
  */
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";

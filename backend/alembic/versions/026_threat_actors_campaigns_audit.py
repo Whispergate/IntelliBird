@@ -1,6 +1,6 @@
 """026 — threat_actors, campaigns, campaign_events, actor_event_links, audit_log hypertable.
 
-Phase 25 / ACTOR-01, ACTOR-03, AUDIT-01, AUDIT-02.
+ACTOR-01, ACTOR-03, AUDIT-01, AUDIT-02.
 
 Creates five new tables that form the foundation for the threat-actor/campaign
 management subsystem and the audit log.

@@ -1,6 +1,6 @@
 """Integration test stubs — MITRE ATT&CK actor bootstrap ingest.
 
-Phase 25 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 25-03 ships the bootstrap_attack() service and threat_actors table.
 
 Coverage:
@@ -14,7 +14,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-03")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_bootstrap_ingests_intrusion_sets():
     """After bootstrap_attack() runs, at least 100 threat_actors rows exist.
 
@@ -24,7 +24,7 @@ async def test_bootstrap_ingests_intrusion_sets():
     assert False, "stub — implement after bootstrap service ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-03")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_upsert_preserves_profile_md():
     """bootstrap_attack() does NOT overwrite existing profile_md analyst notes.
 
@@ -35,7 +35,7 @@ async def test_upsert_preserves_profile_md():
     assert False, "stub — implement after bootstrap service ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-03")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_bootstrap_actor_has_aliases():
     """After bootstrap_attack(), at least one threat_actors row has len(aliases) > 0.
 

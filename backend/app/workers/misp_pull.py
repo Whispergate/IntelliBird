@@ -1,4 +1,4 @@
-"""MISP pull worker — Phase 32 MISP-02, MISP-04.
+"""MISP pull worker — MISP-02, MISP-04.
 
 Sync module (PyMISP uses requests, not httpx).
 Called by misp_pull_job_wrapper() from scheduler/jobs.py.

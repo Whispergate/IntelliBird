@@ -1,6 +1,6 @@
 # IntelliBird EASM (BBOT) Operations Runbook
 
-**Applies to:** IntelliBird v2.0+ (Phase 11 shipped)
+**Applies to:** IntelliBird v2.0+ (shipped)
 **BBOT version pinned:** `blacklanternsecurity/bbot:stable` (2.8.4 as of 2026-04-20)
 **BBOT image digest:** `sha256:ae34a24ee3f30eb334466450303dc2df739b5505aa0c248fa0f603b167f0fc69`
 
@@ -10,7 +10,7 @@
 - `docs/ops/secret-rotation.md` — `SECRET_KEY` rotation (affects `project_easm_credentials`)
 - `docs/ops/auth-setup.md` — Authentik setup (Lead/Admin roles gate the active-scan flip)
 - `docs/ops/projects.md` — project authority matrix and scope row semantics
-- `ROADMAP.md §Phase 13` — PROD-02 active-scan gate penetration test
+- `ROADMAP.md §` — PROD-02 active-scan gate penetration test
 
 ---
 
@@ -59,7 +59,7 @@ Host hardening recommendations (operator-owned):
 - Monitor `docker events --filter label=intellibird.easm=true` for unexpected container launches.
 - Network-level: confirm scan containers cannot reach the Compose internal bridge by inspecting the default bridge settings (`docker network inspect bridge`).
 
-> **Note:** The `loopback-only` host-port binding requirement (PROD-07) documented in Phase 8 applies to the `easm-worker` service as well — it publishes no ports and relies entirely on the shared Redis and Postgres containers via the internal network.
+> **Note:** The `loopback-only` host-port binding requirement (PROD-07) documented in applies to the `easm-worker` service as well — it publishes no ports and relies entirely on the shared Redis and Postgres containers via the internal network.
 
 ---
 
@@ -96,7 +96,7 @@ Feed contamination prevention (PITFALLS §H-4):
 
 ## 3. Migrations
 
-**Migration 010** (`backend/alembic/versions/010_easm.py`) adds all Phase 11 EASM schema. The ROADMAP originally named this "Migration 008" but the actual chain is 008 (users/auth, Phase 9) → 009 (projects/memberships, Phase 10) → **010 (easm, Phase 11)**.
+**Migration 010** (`backend/alembic/versions/010_easm.py`) adds all EASM schema. The ROADMAP originally named this "Migration 008" but the actual chain is 008 (users/auth) → 009 (projects/memberships) → **010 (easm)**.
 
 New tables:
 
@@ -258,7 +258,7 @@ The `/projects/[id]/easm` dashboard shows an amber warning banner when `NOW() - 
 
 Every gate flip and scan launch is captured in structured logs with `user_sub`, `project_id`, `scan_id`, `mode`, `timestamp`, and `reason`. The `active_auth_confirmed_by` column records the Authentik sub of the authorising Lead. A dedicated `easm_scan_audit` table is deferred to v2.1.
 
-> **Phase 13 PROD-02:** Integration test that direct curl to `POST /api/projects/<id>/easm/scans` with `mode='active'` and all three gate fields absent returns 403. This test is the canonical regression guard for C-3 closure.
+> ** PROD-02:** Integration test that direct curl to `POST /api/projects/<id>/easm/scans` with `mode='active'` and all three gate fields absent returns 403. This test is the canonical regression guard for C-3 closure.
 
 ---
 
@@ -492,7 +492,7 @@ All EASM tables are dropped. Promoted events in `events` lose `easm_scan_id` (co
 
 ## 10. Post-Deploy Checklist
 
-After bringing up the Phase 11 stack for the first time:
+After bringing up the stack for the first time:
 
 - [ ] **Run migration 010:** `docker compose exec api alembic upgrade head` — confirm log line `migration_010 easm tables created`.
 - [ ] **Start easm-worker:** `docker compose up -d easm-worker` — confirm it is running via `docker compose ps easm-worker`.
@@ -510,7 +510,7 @@ After bringing up the Phase 11 stack for the first time:
 
 Six modules in the safelist accept optional API keys: `otx`, `shodan_dns`, `github_codesearch`, `bevigil`, `chaos`, and `securitytrails`. Without credentials these modules are silently skipped; scans still run using the remaining key-free modules.
 
-API keys are stored per-project in `project_easm_credentials` via `app.crypto.encrypt_credentials()` with `credentials_key_version` tracking — the same Phase 8 rotation discipline used for `sources.credentials_enc`.
+API keys are stored per-project in `project_easm_credentials` via `app.crypto.encrypt_credentials` with `credentials_key_version` tracking — the same rotation discipline used for `sources.credentials_enc`.
 
 **The v2.0 UI does not surface a credentials entry form** (deferred to v2.1). Operators who need credentialed modules have two options:
 
@@ -554,7 +554,7 @@ VALUES (gen_random_uuid(), '<project_uuid>'::uuid, 'shodan', '<encrypted_blob>',
 
 ## 12. Deferred Items
 
-The following capabilities are scoped to v2.1 and are not present in Phase 11 (v2.0):
+The following capabilities are scoped to v2.1 and are not present in (v2.0):
 
 | Item | Reason deferred |
 |---|---|
@@ -579,8 +579,8 @@ The following capabilities are scoped to v2.1 and are not present in Phase 11 (v
 | PITFALLS §L-4 | Scan cleanup orphaning promoted events — `ON DELETE SET NULL` (§7 Retention) |
 | PITFALLS §M-3 | Module safelist not backend-enforced — frozenset in `bbot_safelist.py` (§5 Module Safelist) |
 | PITFALLS §M-4 | Cross-scan duplicate events — content_hash without scan_id (§2 Architecture) |
-| Phase 13 PROD-01 | Cross-project leakage test covers EASM findings + promoted events |
-| Phase 13 PROD-02 | Integration test: curl to active-scan endpoint without gate fields → 403 (§6.6 + §6.3) |
+| PROD-01 | Cross-project leakage test covers EASM findings + promoted events |
+| PROD-02 | Integration test: curl to active-scan endpoint without gate fields → 403 (§6.6 + §6.3) |
 | `backend/app/services/bbot_safelist.py` | Frozenset definition + `get_effective_safelist()` + `validate_modules()` |
 | `backend/app/services/bbot_runner.py` | Subprocess launch, semaphore, cancellation, orphan reaper |
 | `backend/app/scheduler/jobs.py` | `easm_scan_history_cleanup`, `easm_dismiss_expiry_sweep`, `easm_orphan_reaper` |
@@ -591,5 +591,5 @@ The following capabilities are scoped to v2.1 and are not present in Phase 11 (v
 
 ---
 
-Last updated: 2026-04-20 (Phase 11 shipped).
+Last updated: 2026-04-20 (shipped).
 Related: [auth-setup.md](auth-setup.md), [projects.md](projects.md), [secret-rotation.md](secret-rotation.md), [../../ops/.env.example](../../ops/.env.example).

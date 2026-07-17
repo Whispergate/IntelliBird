@@ -1,6 +1,6 @@
 """EASM Pydantic v2 DTOs. Canonical field names locked per 11-UI-SPEC.md.
 
-Phase 11 / EASM-01..EASM-10.
+EASM-01..EASM-10.
 
 All enum fields use Literal types for compile-time safety — Wave 2 routers can
 validate request bodies and generate OpenAPI schemas without a separate enum registry.

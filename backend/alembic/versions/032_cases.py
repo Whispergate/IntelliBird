@@ -4,7 +4,7 @@ Revision ID: 032_cases
 Revises: a3f8b2c
 Create Date: 2026-05-04
 
-Phase 31 / CASE-01, CASE-02.
+CASE-01, CASE-02.
 
 Creates three tables that form the database foundation for case management:
 

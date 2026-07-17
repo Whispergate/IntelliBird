@@ -1,4 +1,4 @@
-"""IOC read-only API — Phase 22 / IOC-03, IOC-06, IOC-08.
+"""IOC read-only API — IOC-03, IOC-06, IOC-08.
 
 Endpoints:
   GET /api/iocs              list (paginated, filtered)

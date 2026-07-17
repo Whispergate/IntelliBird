@@ -1,4 +1,4 @@
-"""EASM routes (Phase 11).
+"""EASM routes.
 
 Mounted paths (registered in main.py):
   safelist_router prefix="/api":

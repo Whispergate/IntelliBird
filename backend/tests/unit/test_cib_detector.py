@@ -2,7 +2,7 @@
 DISINFO-02 — Coordinated Inauthentic Behaviour (CIB) detector identifies
              clusters of near-identical posts using MinHash similarity.
 
-Implemented in: backend/app/services/cib_detector.py (Phase 33 Plan 03)
+Implemented in: backend/app/services/cib_detector.py
 """
 import os
 import pytest

@@ -1,5 +1,5 @@
 /**
- * Scan History page — Phase 11 plan 11-09 (UI-SPEC §Surface 5).
+ * Scan History page — (UI-SPEC §Surface 5).
  *
  * Server component rendering ScanHistoryClient.
  */

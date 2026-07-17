@@ -1,4 +1,4 @@
-"""Unit tests for Ollama startup health probe — Phase 17 / AI-05.
+"""Unit tests for Ollama startup health probe — AI-05.
 
 Covers:
   - probe_ollama returns "healthy" when /api/tags responds 200 in < 5s

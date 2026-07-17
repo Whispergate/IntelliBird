@@ -1,4 +1,4 @@
-"""GreyNoise enrichment provider — Phase 23 / ENRICH-02.
+"""GreyNoise enrichment provider — ENRICH-02.
 
 Supports: ip, ipv6
 

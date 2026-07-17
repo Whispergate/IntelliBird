@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for MISP config — Phase 32 MISP-01."""
+"""Pydantic v2 schemas for MISP config — MISP-01."""
 from __future__ import annotations
 
 import uuid

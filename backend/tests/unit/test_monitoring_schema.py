@@ -1,6 +1,6 @@
 """Unit tests for MonitoringConfig Pydantic schema and resolve_sla helper.
 
-Phase 16 / MON-01, MON-02.
+MON-01, MON-02.
 
 Tests verify:
   - MonitoringConfig.model_validate({}) returns expected defaults

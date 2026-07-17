@@ -1,4 +1,4 @@
-"""CBEST mode relabel helper — Phase 18 / TIBER-01.
+"""CBEST mode relabel helper — TIBER-01.
 
 Replaces TIBER-EU "Critical Infrastructure Function" (CIF) terminology with
 CBEST "Critical Business Service" (CBS) in report output when cbest_mode=True.

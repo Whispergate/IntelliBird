@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetDetailDrawer — Phase 12.1 plan 12.1-05b (UI-SPEC §Surface 6).
+ * AssetDetailDrawer — (UI-SPEC §Surface 6).
  *
  * Right-side shadcn Sheet drawer. Mounts when `assetId` is non-null.
  *

@@ -1,4 +1,4 @@
-"""Brand Protection router (Phase 12 + Phase 21).
+"""Brand Protection router.
 
 Endpoints (all mounted at /api prefix in main.py):
 
@@ -8,7 +8,7 @@ Endpoints (all mounted at /api prefix in main.py):
   GET    /api/projects/{project_id}/brand/matches
   PATCH  /api/projects/{project_id}/brand/matches/{match_id}
   POST   /api/projects/{project_id}/brand/matches/{match_id}/extend
-  GET    /api/projects/{project_id}/brand/matches/{match_id}/details  (Phase 21 BRAND-02)
+  GET /api/projects/{project_id}/brand/matches/{match_id}/details (BRAND-02)
   GET    /api/projects/{project_id}/brand/suppression-review
   GET    /api/projects/{project_id}/brand/preview
 
@@ -417,7 +417,7 @@ async def patch_match(
     ``dismissed`` sets dismiss_until = NOW() + dismiss_days (default 30 days).
     ``new`` clears dismiss_until. Other states leave dismiss_until untouched.
 
-    Phase 21 BRAND-02: optional ``note`` (max 500 chars) is embedded in the
+    BRAND-02: optional ``note`` (max 500 chars) is embedded in the
     history entry appended to match_metadata.history[]. Uses jsonb_set so
     existing detector provenance keys (event_id, issuer, fuzzer, etc.) are
     never clobbered.
@@ -531,7 +531,7 @@ async def patch_match(
 
 
 # ---------------------------------------------------------------------------
-# GET /matches/{match_id}/details — Phase 21 / BRAND-02
+# GET /matches/{match_id}/details — BRAND-02
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -791,7 +791,7 @@ async def preview(
 
 
 # ---------------------------------------------------------------------------
-# GET /stoplist — Phase 21 / BRAND-01
+# GET /stoplist — BRAND-01
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -815,7 +815,7 @@ async def list_stoplist(
 
 
 # ---------------------------------------------------------------------------
-# POST /stoplist — Phase 21 / BRAND-01
+# POST /stoplist — BRAND-01
 # ---------------------------------------------------------------------------
 
 @router.post(
@@ -853,7 +853,7 @@ async def add_stoplist_term(
 
 
 # ---------------------------------------------------------------------------
-# DELETE /stoplist/{term_id} — Phase 21 / BRAND-01
+# DELETE /stoplist/{term_id} — BRAND-01
 # ---------------------------------------------------------------------------
 
 @router.delete(

@@ -6,7 +6,7 @@
  * full React component. This shim exports the TABS array as a plain TypeScript
  * export so test files can assert on tab order without needing to render.
  *
- * Phase 17 plan 17-08.
+ *
  */
 
 export type TabDef = {

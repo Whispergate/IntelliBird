@@ -1,5 +1,5 @@
 /**
- * IOCBulkImportDialog tests — Phase 22 Plan 06.
+ * IOCBulkImportDialog tests
  *
  * Covers UI-SPEC §Surface 3:
  *   1. 4-step stepper advances Upload → Configure → Preview → Import.

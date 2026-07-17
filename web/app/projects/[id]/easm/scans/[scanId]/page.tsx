@@ -1,5 +1,5 @@
 /**
- * Scan Detail page — Phase 11 plan 11-09 (UI-SPEC §Surface 6).
+ * Scan Detail page — (UI-SPEC §Surface 6).
  *
  * Server component rendering ScanDetailClient.
  */

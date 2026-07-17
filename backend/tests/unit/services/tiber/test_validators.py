@@ -205,7 +205,7 @@ def test_narrative_actor_queue(monkeypatch) -> None:
     """ai_draft_scenario_narrative Dramatiq actor must be declared on queue_name='ai'.
 
     Per CONTEXT.md AI-08 decision + Pitfall 7: the narrative actor belongs on the
-    existing 'ai' queue (Phase 17 token budget tracking is queue-co-located) NOT
+    existing 'ai' queue (token budget tracking is queue-co-located) NOT
     on the 'reports' queue (which is for PDF/MD/STIX generation).
 
     Test strategy:

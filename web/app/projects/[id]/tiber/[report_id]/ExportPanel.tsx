@@ -2,7 +2,7 @@
 
 /**
  * ExportPanel — Surface 7: export buttons with completeness gate + polling.
- * Phase 18 plan 18-07. UI-SPEC §Surface 7 verbatim.
+ * UI-SPEC §Surface 7 verbatim.
  *
  * 3 buttons: Markdown / PDF / STIX.
  * Disabled when sections incomplete OR selectedScenarioCount < 3.

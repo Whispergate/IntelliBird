@@ -160,7 +160,7 @@ This only works if you did NOT complete step 4 successfully. Once rekey has
 run, stored blobs are re-encrypted under the new key and the old key can no
 longer decrypt them.
 
-## Phase 9 interaction
+## interaction
 
 The rekey endpoint is deliberately exempt from `AuthMiddleware` (see
 `backend/app/middleware/auth.py` — `EXEMPT_PATHS`). It remains callable when

@@ -2,7 +2,7 @@
  * DISINFO-04 — InfluenceOpsWidget renders null when no social sources exist,
  *              shows a heading when sources are present, and lists CIB clusters.
  *
- * Implemented in: web/app/projects/[id]/InfluenceOpsWidget.tsx (Phase 33 Plan 06)
+ * Implemented in: web/app/projects/[id]/InfluenceOpsWidget.tsx
  *
  * Will fail with "Cannot find module './InfluenceOpsWidget'" until Plan 06 ships.
  */

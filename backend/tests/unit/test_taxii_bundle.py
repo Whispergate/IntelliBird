@@ -1,4 +1,4 @@
-"""Unit tests for TAXII bundle builder — Phase 26 / TAXII-02, TAXII-04."""
+"""Unit tests for TAXII bundle builder — TAXII-02, TAXII-04."""
 from __future__ import annotations
 
 import uuid

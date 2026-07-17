@@ -1,4 +1,4 @@
-"""Phase 12 Plan 05 — GDPR purge sweep integration tests (BRP-04 / L-3).
+"""— GDPR purge sweep integration tests (BRP-04 / L-3).
 
 Covers the must-have truth: `brand_gdpr_purge` DELETEs person-type brand_matches
 older than projects.gdpr_person_match_retention_days and leaves non-person

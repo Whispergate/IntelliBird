@@ -1,5 +1,5 @@
 /**
- * /actors/[id] — Phase 25 Plan 05 (Threat Actors UI).
+ * /actors/[id] — (Threat Actors UI).
  *
  * RSC wrapper that fetches the actor server-side via `_apiFetch` and hands
  * it to the client component.

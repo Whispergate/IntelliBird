@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/intel — per-project intel view (Phase 10 Plan 12).
+ * /projects/[id]/intel — per-project intel view.
  *
  * Server component. Fetches project detail (parent layout.tsx already
  * validated access and would have redirected on 403/404) and delegates
@@ -18,7 +18,7 @@
  *     drawer's closeDrawer() returns to /projects/[id]/intel via the
  *     `basePath` prop passed from EventsClient.
  *
- * Phase 10 scope: no project-specific filter widgets beyond the pinned badge;
+ * scope: no project-specific filter widgets beyond the pinned badge
  * full custom widget grid (event-count-by-day sparkline, top tags, source
  * breakdown) lands in v2.1 per CONTEXT.md §Per-project intel + graph views.
  *

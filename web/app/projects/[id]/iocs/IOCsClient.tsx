@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * IOCsClient — Phase 22 Plan 06 (UI-SPEC §Surface 2).
+ * IOCsClient — (UI-SPEC §Surface 2).
  *
  * Header + filter bar + IOC table + cursor pagination + drawer triggers
  * + Bulk Import dialog launch + Backfill widget.

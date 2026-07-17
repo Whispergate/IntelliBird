@@ -1,6 +1,6 @@
 # pmtiles tileset
 
-Phase 5 GeoMap (`web/app/components/GeoMap.tsx`) reads `world.pmtiles` from this directory unless `NEXT_PUBLIC_MAP_TILES_URL` overrides the path.
+GeoMap (`web/app/components/GeoMap.tsx`) reads `world.pmtiles` from this directory unless `NEXT_PUBLIC_MAP_TILES_URL` overrides the path.
 
 Expected: small Protomaps world (zoom 0-6, ~10MB, MIT).
 

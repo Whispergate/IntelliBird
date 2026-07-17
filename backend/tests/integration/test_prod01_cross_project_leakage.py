@@ -127,7 +127,7 @@ async def test_list_scoped(two_project_fixture, db_session, monkeypatch):
     comment). Asserts set equality of returned events' project_ids against
     {project_a.id}.
 
-    Seeds a permissive keyword scope row first — without it, the Phase 10
+    Seeds a permissive keyword scope row first — without it, the
     scope predicate shorts to `false` for projects lacking scope, producing
     an empty result set and a vacuous pass.
     """
@@ -169,7 +169,7 @@ async def test_list_scoped(two_project_fixture, db_session, monkeypatch):
 async def test_intel_scoped(two_project_fixture, monkeypatch):
     """Surface 2: project-scoped intel route refuses cross-project access.
 
-    /api/projects/{id}/assets is the Phase 11/12.1 intel surface over a
+    /api/projects/{id}/assets is the 12.1 intel surface over a
     project; it gates via require_project_membership(Observer). A JWT scoped
     to project_a must receive 403 when requesting project_b's assets.
     """
@@ -757,7 +757,7 @@ async def test_project_graph_returns_only_in_scope_events(two_project_fixture, d
 
 
 # ---------------------------------------------------------------------------
-# Phase 22 (IOC foundation) — Plan 22-03 wires the cross-project ACL chokepoint
+# (IOC foundation) — Plan 22-03 wires the cross-project ACL chokepoint
 # for the iocs table. This test covers BOTH directions of the IOC leakage
 # surface:
 #   1. GET /api/iocs scoped via build_ioc_scope_predicate
@@ -889,7 +889,7 @@ async def test_iocs_leakage(two_project_fixture, db_session, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Phase 23 (IOC Enrichment APIs) — Plan 23-01 Wave 0 stub
+# (IOC Enrichment APIs) — Plan 23-01 Wave 0 stub
 #
 # ENRICH-05: enrichment ACL chokepoint — ioc_enrichments rows for Project B
 # must not be visible to a Project A caller via GET /api/iocs/{id}/enrichments.
@@ -897,7 +897,7 @@ async def test_iocs_leakage(two_project_fixture, db_session, monkeypatch):
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="not yet implemented — Phase 23 enrichment ACL not shipped")
+@pytest.mark.xfail(reason="not yet implemented — enrichment ACL not shipped")
 async def test_enrichment_leakage(two_project_fixture):
     """PROD-01 extension: ioc_enrichments rows for Project B must not be
     visible to a Project A caller via GET /api/iocs/{id}/enrichments."""
@@ -906,14 +906,14 @@ async def test_enrichment_leakage(two_project_fixture):
 
 
 # ---------------------------------------------------------------------------
-# Phase 24 (Dark-Web Collection) — Plan 24-01 Wave 0 stub
+# (Dark-Web Collection) — Plan 24-01 Wave 0 stub
 #
 # DARK-01..07: dark-web events (tor_html/paste/telegram) bound to Project B
 # must not appear in Project A's /api/events response.
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="Phase 24 not yet implemented")
+@pytest.mark.skip(reason=" not yet implemented")
 async def test_darkweb_event_leakage(two_project_fixture):
     """Dark-web events (tor_html/paste/telegram) bound to Project B must not appear
     in Project A's /api/events response, even when Project A's JWT is used.
@@ -923,14 +923,14 @@ async def test_darkweb_event_leakage(two_project_fixture):
 
 
 # ---------------------------------------------------------------------------
-# Phase 25 (Threat Actors, Campaigns & Audit Log) — Plan 25-01 Wave 0 stub
+# (Threat Actors, Campaigns & Audit Log) — Plan 25-01 Wave 0 stub
 #
 # ACTOR-03 / ACTOR-05 / ACTOR-06: campaigns bound to Project B must not be
 # accessible via a Project A JWT through GET /api/campaigns.
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.xfail(strict=False, reason="actor/campaign routes pending Phase 25")
+@pytest.mark.xfail(strict=False, reason="actor/campaign routes pending")
 @pytest.mark.asyncio
 async def test_actor_campaign_leakage(two_project_fixture):
     """PROD-01 extension: campaigns scoped to Project B must not be visible to Project A JWT.
@@ -948,11 +948,11 @@ async def test_actor_campaign_leakage(two_project_fixture):
     This stub captures the leakage contract before campaign routes exist.
     It will be fleshed out in plan 25-05 after the campaign CRUD routes ship.
     """
-    assert False, "stub — implement after Phase 25 campaign routes ship"
+    assert False, "stub — implement after campaign routes ship"
 
 
 # ---------------------------------------------------------------------------
-# Phase 28 (GRAPH-04) — Multi-hop DomainPivot traverse isolation gates
+# (GRAPH-04) — Multi-hop DomainPivot traverse isolation gates
 #
 # These tests prove that 2-hop and 3-hop AGE Cypher traversals scoped to
 # Project A cannot reach DomainPivot nodes belonging to Project B, even when
@@ -1147,7 +1147,7 @@ async def test_traverse_2hop_positive_control(two_project_fixture, db_session):
 
 
 # ---------------------------------------------------------------------------
-# CASE-05: Cross-project case isolation (Phase 31)
+# CASE-05: Cross-project case isolation
 # Added by 31-01-PLAN. Implemented by 31-05-PLAN.
 # Verifies that a Project A JWT cannot read Project B's cases.
 # ---------------------------------------------------------------------------

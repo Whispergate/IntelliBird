@@ -1,5 +1,5 @@
 /**
- * Typed client helpers for /api/projects/* surface — Phase 10.
+ * Typed client helpers for /api/projects/* surface.
  *
  * These wrap fetch + JSON handling in the same pattern as web/app/api-client.ts
  * (browser uses relative URLs → Next.js Route Handler proxy; server uses
@@ -95,7 +95,7 @@ export interface ProjectResponse {
   updated_at: string;
   member_count: number;
   creator_is_current_user: boolean;
-  // Phase 32 / CERT-03: CertStream worker toggle
+  // CERT-03: CertStream worker toggle
   certstream_enabled?: boolean | null;
 }
 
@@ -110,7 +110,7 @@ export interface ProjectUpdateBody {
   engagement_type?: EngagementType | null;
   description?: string | null;
   archived?: boolean | null;
-  // Phase 32 / CERT-03: CertStream worker toggle
+  // CERT-03: CertStream worker toggle
   certstream_enabled?: boolean | null;
 }
 
@@ -467,7 +467,7 @@ export async function compareProjects(
 }
 
 // ---------------------------------------------------------------------------
-// Project graph (Phase 20-03)
+// Project graph (-03)
 // ---------------------------------------------------------------------------
 
 export interface ProjectGraphNode {
@@ -500,7 +500,7 @@ export async function fetchProjectGraph(
 }
 
 // ---------------------------------------------------------------------------
-// Per-project brand stoplist (Phase 21 / BRAND-01)
+// Per-project brand stoplist (BRAND-01)
 // Server-side only — uses _apiFetch so Auth.js bearer is injected.
 // Client components use the helpers in brand/lib/api.ts (browser relative URL).
 // ---------------------------------------------------------------------------
@@ -545,7 +545,7 @@ export async function deleteBrandStoplistTerm(
 }
 
 // ---------------------------------------------------------------------------
-// Attack Path Analysis — Phase 35 / ATK-01..ATK-04
+// Attack Path Analysis — ATK-01..ATK-04
 // ---------------------------------------------------------------------------
 
 export interface AttackPathNode {

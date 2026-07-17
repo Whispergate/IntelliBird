@@ -4,7 +4,7 @@ Revision ID: 008_users_and_auth
 Revises: 007_credentials_key_version
 Create Date: 2026-04-18
 
-Phase 9 / AUTH-01, AUTH-02, AUTH-03.
+AUTH-01, AUTH-02, AUTH-03.
 
 Creates the users table (local + OIDC accounts in a single table per CONTEXT.md):
   - password_hash NULL for OIDC-only users

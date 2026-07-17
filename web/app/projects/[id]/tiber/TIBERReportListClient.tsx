@@ -2,7 +2,7 @@
 
 /**
  * TIBERReportListClient — Surface 1 TIBER reports list.
- * Phase 18 plan 18-06. UI-SPEC §Surface 1.
+ * UI-SPEC §Surface 1.
  *
  * Renders:
  *   - Page header with "TIBER Reports" heading + live count subtitle + "New report" CTA

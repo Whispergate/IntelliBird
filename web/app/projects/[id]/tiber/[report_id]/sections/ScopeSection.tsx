@@ -2,7 +2,7 @@
 
 /**
  * ScopeSection — Section 3a: Scope of Intelligence Research.
- * Phase 18 plan 18-06. UI-SPEC §3a.
+ * UI-SPEC §3a.
  *
  * Manual entry only: engagement window dates + in/out-scope assets.
  * Save button fires PATCH on report.

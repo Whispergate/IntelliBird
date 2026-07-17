@@ -26,7 +26,7 @@ class Event(Base):
     source_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("sources.id", ondelete="SET NULL"), nullable=True
     )
-    # Phase 10 / PRJ-01 — every event carries a project_id. Pre-Phase-10 rows
+    # PRJ-01 — every event carries a project_id. legacy rows
     # point at LEGACY_PROJECT_ID (app.models.projects); new rows must pass
     # project_id explicitly (migration 009 dropped the DEFAULT).
     project_id: Mapped[uuid.UUID] = mapped_column(
@@ -60,20 +60,20 @@ class Event(Base):
     # H-7 soft-delete for retention with attack-graph reference preservation:
     archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    # Phase 11 / EASM-06: provenance FK — L-4: ON DELETE SET NULL so promoted events
+    # EASM-06: provenance FK — L-4: ON DELETE SET NULL so promoted events
     # survive scan cleanup (scan delete does NOT cascade to events).
     easm_scan_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("easm_scans.id", ondelete="SET NULL"),
         nullable=True,
     )
-    # Phase 15 / SCR-01: composite score columns added by migration 013.
+    # SCR-01: composite score columns added by migration 013.
     # Nullable: pre-migration rows have NULL until the rescore_project actor runs.
     # Read path: COALESCE(event_score_overrides.score, events.score) — NULL means
     # "not yet scored" and is handled gracefully by the scoring service.
     score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     scored_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)
     score_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    # Phase 17 / SCR-04: AI-adjusted score written by ai_rescore_project actor.
+    # SCR-04: AI-adjusted score written by ai_rescore_project actor.
     # NULL means "not yet AI-rescored". Read path: COALESCE(ai_score, score).
     ai_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)

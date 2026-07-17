@@ -28,7 +28,7 @@ audit-deps:
 	cd backend && uv export --no-dev --format requirements-txt > /tmp/intellibird-audit-reqs.txt && uv run pip-audit -r /tmp/intellibird-audit-reqs.txt --desc
 
 # ------------------------------------------------------------------------------
-# Semgrep template security audit — Phase 18 / TIBER-03
+# Semgrep template security audit — TIBER-03
 # ------------------------------------------------------------------------------
 # Scans TIBER service layer and templates for:
 #   - template-unescaped-with-safe: | safe filter banned in tiber/*.j2 templates
@@ -71,7 +71,7 @@ audit-all: audit-deps audit-templates test-pollution-check
 	@echo "==> audit-all: all security checks passed."
 
 # ------------------------------------------------------------------------------
-# Phase 19 — cross-file pollution regression gate
+# cross-file pollution regression gate
 # ------------------------------------------------------------------------------
 # Runs the @pytest.mark.cross_file_pollution marker bucket — tests that previously
 # failed only in combined runs due to fixture pollution.
@@ -83,11 +83,11 @@ audit-all: audit-deps audit-templates test-pollution-check
 #   make test-pollution-check
 #   (exit code non-zero on any failure → CI fails the job)
 
-test-pollution-check:  ## Phase 19: run cross-file pollution regression bucket
+test-pollution-check: ## run cross-file pollution regression bucket
 	cd backend && uv run pytest -m cross_file_pollution -v --tb=short
 
 # ------------------------------------------------------------------------------
-# OpenAPI codegen drift gate — Phase 8 / INFRA-05
+# OpenAPI codegen drift gate — INFRA-05
 # ------------------------------------------------------------------------------
 # Spins up api + db + redis, waits for healthz, regenerates the TypeScript client
 # from the live schema, and fails if the committed generated file differs.

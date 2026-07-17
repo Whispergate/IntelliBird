@@ -1,4 +1,4 @@
-"""CSV → IOCImportRow streaming parser (Phase 22 / IOC-02).
+"""CSV → IOCImportRow streaming parser (IOC-02).
 
 CONTEXT.md §"CSV columns":
   Required: type, value

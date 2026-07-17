@@ -1,4 +1,4 @@
-"""Telegram public-channel ingestion actor — Phase 24 / DARK-04.
+"""Telegram public-channel ingestion actor — DARK-04.
 
 Uses Telethon StringSession stored encrypted in sources.session_enc.
 api_id and api_hash are stored encrypted in sources.scrape_config as

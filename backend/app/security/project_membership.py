@@ -1,4 +1,4 @@
-"""require_project_membership FastAPI dependency — Phase 10 / PRJ-05.
+"""require_project_membership FastAPI dependency — PRJ-05.
 
 Three-path authorization:
   1. Global Admin (user.role == 'Admin')          -> ProjectRole.Lead  (bypass; no DB query)

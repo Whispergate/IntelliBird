@@ -1,6 +1,6 @@
 # Social Listening Sources
 
-Phase 33 / DISINFO-01.  IntelliBird ingests posts from Mastodon, 4chan, and Reddit via the `social_listening` feed type. Twitter/X is documented below as an opt-in path.
+DISINFO-01. IntelliBird ingests posts from Mastodon, 4chan, and Reddit via the `social_listening` feed type. Twitter/X is documented below as an opt-in path.
 
 ---
 
@@ -96,7 +96,7 @@ Keywords are matched case-insensitively against the decoded, plain-text post bod
 
 ## AI Narrative Classification
 
-Each persisted social event triggers `suggest_for_event.send(event_id, project_id)` automatically (Phase 33 / DISINFO-01).  AI classification runs asynchronously on the `ai` Dramatiq queue and does not block ingest.
+Each persisted social event triggers `suggest_for_event.send(event_id, project_id)` automatically (DISINFO-01). AI classification runs asynchronously on the `ai` Dramatiq queue and does not block ingest.
 
 ---
 

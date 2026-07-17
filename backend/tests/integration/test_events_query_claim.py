@@ -104,7 +104,7 @@ async def test_no_user_passes_none_dashboard_roles():
     from app.services.events_query import build_events_query as _real_build
 
     def spy_build(params, dashboard_roles, **kwargs):
-        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
+        # adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
         return _real_build(params, dashboard_roles, **kwargs)
 
@@ -125,7 +125,7 @@ async def test_red_claim_sets_dashboard_roles_red():
     from app.services.events_query import build_events_query as _real_build
 
     def spy_build(params, dashboard_roles, **kwargs):
-        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
+        # adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
         return _real_build(params, dashboard_roles, **kwargs)
 
@@ -147,7 +147,7 @@ async def test_blue_claim_sets_dashboard_roles_blue():
     from app.services.events_query import build_events_query as _real_build
 
     def spy_build(params, dashboard_roles, **kwargs):
-        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
+        # adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
         return _real_build(params, dashboard_roles, **kwargs)
 
@@ -172,7 +172,7 @@ async def test_header_ignored_when_claim_is_blue():
     from app.services.events_query import build_events_query as _real_build
 
     def spy_build(params, dashboard_roles, **kwargs):
-        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
+        # adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
         return _real_build(params, dashboard_roles, **kwargs)
 
@@ -199,7 +199,7 @@ async def test_header_ignored_when_no_user():
     from app.services.events_query import build_events_query as _real_build
 
     def spy_build(params, dashboard_roles, **kwargs):
-        # Phase 10 adds project_id/scope_predicate/bound_sources kwargs
+        # adds project_id/scope_predicate/bound_sources kwargs
         captured["dashboard_roles"] = dashboard_roles
         return _real_build(params, dashboard_roles, **kwargs)
 

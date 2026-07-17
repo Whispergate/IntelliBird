@@ -1,6 +1,6 @@
 """025 — dark-web source types: tor_html, paste, telegram.
 
-Phase 24 / DARK-01..07.
+DARK-01..07.
 
 Changes:
   1. Extend feed_type_enum with 'tor_html', 'paste', 'telegram'.

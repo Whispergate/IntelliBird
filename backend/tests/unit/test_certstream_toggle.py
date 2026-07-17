@@ -2,7 +2,7 @@
 CERT-03 — When certstream_enabled=True for a project, brand_monitor_tick_job
           skips the crt.sh CT-log branch for that project (dnstwist still runs).
 
-Implemented in: backend/app/services/brand_monitor.py (Phase 32 Plan 03)
+Implemented in: backend/app/services/brand_monitor.py
 """
 import os
 

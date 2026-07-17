@@ -175,7 +175,7 @@ const NODE_STYLES = [
     selector: "node[tag_source='auto']",
     style: { "border-style": "dashed", "border-width": 2, "border-opacity": 0.5 },
   },
-  // ── DomainPivot node (Phase 28) ─────────────────────────────────
+  // ── DomainPivot node ─────────────────────────────────
   {
     selector: "node[type='domain_pivot']",
     style: {
@@ -192,7 +192,7 @@ const NODE_STYLES = [
       height: 28,
     },
   },
-  // ── Shares-infra edge (Phase 28) ─────────────────────────────────
+  // ── Shares-infra edge ─────────────────────────────────
   {
     selector: "edge[relation='shares_infra']",
     style: {
@@ -245,7 +245,7 @@ export function AttackGraphImpl({
   }, [eventId, role]);
 
   /**
-   * Expand a node N hops via the AGE traverse endpoint (Phase 28 / GRAPH-02).
+   * Expand a node N hops via the AGE traverse endpoint (GRAPH-02).
    * Appends new nodes/edges without a full re-render.
    */
   const handleExpand = async (nodeId: string, hops: 1 | 2 | 3) => {
@@ -352,7 +352,7 @@ export function AttackGraphImpl({
         elements={elements}
         cy={(instance) => {
           cyRef.current = instance;
-          // Register right-click context menu (Phase 28 / GRAPH-02)
+          // Register right-click context menu (GRAPH-02)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (instance as any).contextMenus({
             menuItems: [
@@ -380,7 +380,7 @@ export function AttackGraphImpl({
                 selector: "node",
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onClickFunction: (event: any) => {
-                  // Phase 28 stub: log nodeId for future path-finding feature
+                  // stub: log nodeId for future path-finding feature
                   console.info("path-to requested for", event.target.id());
                 },
               },

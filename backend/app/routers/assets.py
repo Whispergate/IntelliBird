@@ -1,4 +1,4 @@
-"""/api/projects/{project_id}/assets — phase 12.1 / project asset surface.
+"""/api/projects/{project_id}/assets — project asset surface.
 
 Read endpoints (list/summary/detail) plus write (PATCH note) + export (CSV/JSON):
   GET    /                       — list (paginated, filterable)

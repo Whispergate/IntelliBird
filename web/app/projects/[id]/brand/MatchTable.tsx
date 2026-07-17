@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MatchTable — Phase 12 plan 12-08 (UI-SPEC §Surface 2 §Match table).
+ * MatchTable — (UI-SPEC §Surface 2 §Match table).
  *
  * 8-column brand-match table per UI-SPEC:
  *   Term (180px) | Matched value (flex-1, font-mono 12px, truncate@48) |
@@ -9,7 +9,7 @@
  *   First seen (120px) | Last seen (120px) |
  *   Status (140px pill + signal-amber dot on watchlist) | Actions (140px Select)
  *
- * Row height 44px (WCAG 2.5.5 — matches Phase 11 FindingsTable).
+ * Row height 44px (WCAG 2.5.5 — matches FindingsTable).
  * Dismissed rows: opacity-60 + text-muted-foreground.
  * Watchlist rows: signal-amber dot before lifecycle pill.
  * Observer role: Actions Select disabled with tooltip

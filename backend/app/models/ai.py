@@ -1,16 +1,16 @@
-"""AI infrastructure ORM models — Phase 17 / AI-01, AI-02, AI-03.
+"""AI infrastructure ORM models — AI-01, AI-02, AI-03.
 
 Three models for the LLM subsystem:
 
   AIProvider  — per-project LLM provider config with AES-256-GCM encrypted
                 credentials. Mirrors sources.credentials_enc + credentials_key_version
-                pattern exactly (Phase 03 / migration 007).
+                pattern exactly (migration 007).
 
   AISummary   — LLM-generated summaries for individual events (summary_type='event')
                 and daily project digests (summary_type='digest'). event_id is a soft
                 UUID (no FK to events hypertable — same constraint as
-                EventScoreOverride.event_id from Phase 15 / migration 013 and
-                BrandMatch.event_id from Phase 12 / migration 011).
+                EventScoreOverride.event_id from migration 013 and
+                BrandMatch.event_id from migration 011).
 
   AISuggestion — Analyst-gated entity extraction staging. LLM proposes CVE IDs,
                  ATT&CK technique IDs, or threat-actor names; analyst confirms or
@@ -33,7 +33,7 @@ from app.models.base import Base
 class AIProvider(Base):
     """Per-project LLM provider configuration.
 
-    Phase 17 / AI-01. One row per project (UNIQUE constraint on project_id).
+    AI-01. One row per project (UNIQUE constraint on project_id).
     credentials_enc + credentials_key_version mirror sources.credentials_enc
     exactly — AES-256-GCM encryption via app.crypto. Encrypted at write time,
     decrypted at read time inside the AI router.
@@ -84,7 +84,7 @@ class AIProvider(Base):
 class AISummary(Base):
     """LLM-generated summary record.
 
-    Phase 17 / AI-02. Created for individual event summarisation
+    AI-02. Created for individual event summarisation
     (summary_type='event', event_id=UUID) and daily project digests
     (summary_type='digest', event_id=NULL).
 
@@ -140,7 +140,7 @@ class AISummary(Base):
 class AISuggestion(Base):
     """Analyst-gated entity extraction staging row.
 
-    Phase 17 / AI-03. The LLM proposes CVE IDs, ATT&CK technique IDs, or
+    AI-03. The LLM proposes CVE IDs, ATT&CK technique IDs, or
     threat-actor names extracted from an event. Each suggestion requires explicit
     analyst confirmation (status='confirmed') or rejection (status='discarded')
     before any downstream action is taken. Auto-promote is NEVER allowed (C-2).

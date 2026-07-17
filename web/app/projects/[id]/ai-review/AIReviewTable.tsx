@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AIReviewTable — Phase 17 plan 17-08.
+ * AIReviewTable
  * UI-SPEC §Surface 2 — /projects/[id]/ai-review suggestion queue.
  *
  * Features:

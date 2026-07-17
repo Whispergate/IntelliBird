@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetSummaryCards — Phase 12.1 plan 12.1-05a (UI-SPEC §Surface 3).
+ * AssetSummaryCards — (UI-SPEC §Surface 3).
  *
  * Renders 7 bucket cards in stable order even when count=0.
  * Click fires onBucketClick(bucketKey); active bucket gets ring-2 focus ring.

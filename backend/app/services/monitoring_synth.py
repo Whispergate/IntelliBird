@@ -1,4 +1,4 @@
-"""Canonical event synthesis for Phase 16 monitoring alerts.
+"""Canonical event synthesis for monitoring alerts.
 
 Mirrors backend/app/services/brand_synth.py. Emits dict rows that the existing
 events INSERT path consumes; the existing webhook fan-out picks them up via

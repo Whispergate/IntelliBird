@@ -1,6 +1,6 @@
 """Integration test stubs — admin audit log REST API.
 
-Phase 25 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 25-08 ships the GET /api/admin/audit routes.
 
 Coverage:
@@ -14,7 +14,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-08")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_admin_can_list_audit_log():
     """Admin GET /api/admin/audit returns 200 with paginated result.
 
@@ -24,7 +24,7 @@ async def test_admin_can_list_audit_log():
     assert False, "stub — implement after admin audit routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-08")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_non_admin_gets_403():
     """Lead+ GET /api/admin/audit returns 403 Forbidden.
 
@@ -34,7 +34,7 @@ async def test_non_admin_gets_403():
     assert False, "stub — implement after admin audit routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-08")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_filter_by_action():
     """GET /api/admin/audit?action=create returns only rows with action='create'.
 
@@ -44,7 +44,7 @@ async def test_filter_by_action():
     assert False, "stub — implement after admin audit routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-08")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_filter_by_resource_type():
     """GET /api/admin/audit?resource_type=actor returns only actor rows.
 
@@ -54,7 +54,7 @@ async def test_filter_by_resource_type():
     assert False, "stub — implement after admin audit routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-08")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_filter_by_date_range():
     """GET /api/admin/audit?from_dt=...&to_dt=... returns only rows within the range.
 

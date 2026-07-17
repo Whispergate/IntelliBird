@@ -29,7 +29,7 @@ export function ArchivedBadge() {
  * LegacyBadge — caption-cased "Legacy data" pill pinned to the legacy
  * sentinel project row. Distinct from ArchivedBadge so operators can tell the
  * difference between "project was archived by an operator" and "sentinel row
- * holding pre-Phase-10 data that is read-only by design".
+ * holding legacy data that is read-only by design".
  */
 export function LegacyBadge() {
   return (

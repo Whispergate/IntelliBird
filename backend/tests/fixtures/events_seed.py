@@ -33,7 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 SOURCE_RSS   = uuid.UUID("00000000-0000-4000-8000-000000000001")
 SOURCE_TAXII = uuid.UUID("00000000-0000-4000-8000-000000000002")
 SOURCE_NVD   = uuid.UUID("00000000-0000-4000-8000-000000000003")
-# Phase 10: every event row must carry a project_id; pre-Phase-10 seeds map to
+# every event row must carry a project_id; legacy seeds map to
 # the LEGACY_PROJECT_ID sentinel row created by migration 009.
 LEGACY_PROJECT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 # TLP markings — STIX 2.1 TLP 2.0 canonical names + stable test UUIDs

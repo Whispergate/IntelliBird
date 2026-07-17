@@ -73,7 +73,7 @@ function defaultValuesFor(
       enabled: true,
       // Quick task 260426-aas: new custom sources default to auto-discovery.
       scrape_mode: "auto",
-      // Phase 24 / DARK-07: starts unchecked; operator must tick for dark-web types.
+      // DARK-07: starts unchecked; operator must tick for dark-web types.
       opsec_authorised: false,
     };
   }
@@ -144,7 +144,7 @@ function defaultValuesFor(
         : sc?.mode === "manual"
         ? "manual"
         : "manual",
-    // Phase 24 / DARK-07: pre-check if previously authorised on a dark-web source.
+    // DARK-07: pre-check if previously authorised on a dark-web source.
     opsec_authorised: src.opsec_authorised ?? false,
   };
 }
@@ -238,7 +238,7 @@ export function SourceDialog({
   const opsecAuthorised = watch("opsec_authorised");
   const isDarkWebType = DARK_WEB_FEED_TYPES.has(feedType as "tor_html" | "paste" | "telegram");
 
-  // Phase 24 / DARK-07: reset the OPSEC checkbox whenever feed_type changes
+  // DARK-07: reset the OPSEC checkbox whenever feed_type changes
   // away from a dark-web type so the operator cannot carry forward a stale ack.
   useEffect(() => {
     if (!DARK_WEB_FEED_TYPES.has(feedType as "tor_html" | "paste" | "telegram")) {
@@ -469,7 +469,7 @@ export function SourceDialog({
               </Alert>
             )}
 
-            {/* Phase 24 / DARK-07: OPSEC warning banner + checkbox for dark-web source types.
+            {/* DARK-07: OPSEC warning banner + checkbox for dark-web source types.
                 Renders only when feed_type is tor_html, paste, or telegram.
                 Save button is gated until the operator ticks the checkbox. */}
             {isDarkWebType && (

@@ -6,7 +6,7 @@ Covers:
   - summary_type='digest' insert with event_id=NULL (digest record pattern).
   - PROD-01 extension: ai_summaries rows are project-scoped — no cross-project leakage.
 
-Phase 17 / AI-01, AI-02: task 1 (migration) and task 3 (PROD-01 extension).
+AI-01, AI-02: task 1 (migration) and task 3 (PROD-01 extension).
 """
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Admin Maintenance Window CRUD — Phase 16 H-7.
+"""Admin Maintenance Window CRUD — H-7.
 
 Endpoints:
   POST   /api/admin/maintenance-window          — Create a new window (201)

@@ -1,6 +1,6 @@
 """Integration test stubs — threat actors REST routes + RBAC.
 
-Phase 25 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 25-06 ships the /api/actors routes.
 
 Coverage:
@@ -15,7 +15,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-06")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_list_actors_returns_paginated():
     """GET /api/actors returns a cursor-paginated response.
 
@@ -25,7 +25,7 @@ async def test_list_actors_returns_paginated():
     assert False, "stub — implement after actors routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-06")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_get_actor_profile():
     """GET /api/actors/{id} returns full actor profile with expected fields.
 
@@ -34,7 +34,7 @@ async def test_get_actor_profile():
     assert False, "stub — implement after actors routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-06")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_get_actor_graph():
     """GET /api/actors/{id}/graph returns graph nodes and edges.
 
@@ -44,7 +44,7 @@ async def test_get_actor_graph():
     assert False, "stub — implement after actors routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-06")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_actor_edit_rbac_lead_plus():
     """Lead+ PATCH /api/actors/{id} returns 200.
 
@@ -54,7 +54,7 @@ async def test_actor_edit_rbac_lead_plus():
     assert False, "stub — implement after actors routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-06")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_actor_edit_rbac_contributor_403():
     """Contributor PATCH /api/actors/{id} returns 403.
 
@@ -64,7 +64,7 @@ async def test_actor_edit_rbac_contributor_403():
     assert False, "stub — implement after actors routes ship"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-06")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_create_actor_lead_plus():
     """Lead+ POST /api/actors returns 201 Created.
 

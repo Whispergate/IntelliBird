@@ -2,7 +2,7 @@
 
 /**
  * ThreatLandscapeSection — Section 3c: Threat Landscape.
- * Phase 18 plan 18-06. UI-SPEC §3c.
+ * UI-SPEC §3c.
  *
  * Auto-populated + manual. Read-only top_events Table (max 20 rows) + analyst narrative.
  * readOnly: fields disabled, save + refresh buttons unmounted.

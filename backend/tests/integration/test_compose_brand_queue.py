@@ -3,11 +3,11 @@
 Static validation over ops/docker-compose.yml + ops/api.Dockerfile +
 backend/pyproject.toml. No containers are launched.
 
-Guards against future drift of the Phase 12 / BRP-02 ops wiring:
+Guards against future drift of the BRP-02 ops wiring:
 
 1. The `worker` service command must include the `brand-monitor` queue in its
    Dramatiq `--queues` list (co-located with ingest/maintenance/webhooks —
-   dnstwist runs in-process; no docker.sock mount contrast Phase 11 BBOT).
+   dnstwist runs in-process; no docker.sock mount contrast BBOT).
 
 2. `dnstwist` must be a declared dependency of the runtime image. The project
    uses `uv sync` against `backend/pyproject.toml` inside api.Dockerfile, so

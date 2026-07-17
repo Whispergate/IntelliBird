@@ -1,6 +1,6 @@
 """Integration test stubs — service-layer audit logging.
 
-Phase 25 Wave 0: all tests are xfail stubs. They will go GREEN when
+Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 25-07 ships the audit log middleware and service layer.
 
 Coverage:
@@ -15,7 +15,7 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-07")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_create_actor_writes_audit_row():
     """POST /api/actors produces one audit_log row with action='create'.
 
@@ -28,7 +28,7 @@ async def test_create_actor_writes_audit_row():
     assert False, "stub — implement after audit log service ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-07")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_update_actor_writes_before_after():
     """PATCH /api/actors/{id} produces an audit_log row with both before and after snapshots.
 
@@ -41,7 +41,7 @@ async def test_update_actor_writes_before_after():
     assert False, "stub — implement after audit log service ships"
 
 
-@pytest.mark.xfail(strict=False, reason="implementation pending — Phase 25 plan 25-07")
+@pytest.mark.xfail(strict=False, reason="implementation pending —")
 async def test_delete_campaign_writes_audit_row():
     """DELETE /api/campaigns/{id} produces an audit_log row with action='delete'.
 

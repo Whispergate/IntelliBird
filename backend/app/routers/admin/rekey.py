@@ -36,7 +36,7 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 class RekeyResponse(BaseModel):
     rekeyed: int
     skipped: int
-    # Phase 24 / DARK-04: count of sources.session_enc blobs re-encrypted.
+    # DARK-04: count of sources.session_enc blobs re-encrypted.
     sources_session_enc_swept: int = 0
 
 
@@ -103,7 +103,7 @@ async def rekey_credentials(
         new_blob = encrypt_credentials(settings.SECRET_KEY, creds)
         updates.append((row, new_blob))
 
-    # --- EnrichmentProvider sweep (Phase 23) ---
+    # --- EnrichmentProvider sweep ---
     ep_rows = (
         await session.execute(
             select(EnrichmentProvider).where(EnrichmentProvider.credentials_enc.isnot(None))
@@ -147,7 +147,7 @@ async def rekey_credentials(
         ep_row.credentials_enc = new_blob
         ep_row.credentials_key_version = (ep_row.credentials_key_version or 1) + 1
 
-    # --- sources.session_enc sweep (Phase 24 / DARK-04 — Telethon session strings) ---
+    # --- sources.session_enc sweep (DARK-04 — Telethon session strings) ---
     sources_session_swept = 0
     session_rows = (
         await session.execute(

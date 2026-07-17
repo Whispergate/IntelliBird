@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * BrandDashboardClient — Phase 12 plan 12-08 (UI-SPEC §Surface 2 + §Surface 3).
+ * BrandDashboardClient — (UI-SPEC §Surface 2 + §Surface 3).
  *
  * Owns:
  *   - Filter state (severity / source / lifecycle / include_dismissed)
@@ -92,7 +92,7 @@ function BrandTabStrip({ projectId }: { projectId: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton rows (loading state — mirrors Phase 11 FindingsSkeleton)
+// Skeleton rows (loading state — mirrors FindingsSkeleton)
 // ---------------------------------------------------------------------------
 function MatchesSkeleton() {
   return (

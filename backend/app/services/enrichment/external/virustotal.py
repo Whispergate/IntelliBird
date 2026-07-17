@@ -1,4 +1,4 @@
-"""VirusTotal enrichment provider — Phase 23 / ENRICH-02.
+"""VirusTotal enrichment provider — ENRICH-02.
 
 Supports: ip, ipv6, domain, url, sha256, sha1, md5
 

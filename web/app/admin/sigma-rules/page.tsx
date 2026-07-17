@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /admin/sigma-rules — Phase 29 SIGMA-03.
+ * /admin/sigma-rules — SIGMA-03.
  * Admin CRUD for Sigma rules: list, add rule YAML, toggle enabled, delete.
  * Includes Test button that shows match count against recent events.
  * Access: Admin only (enforced server-side; page shows error on API error).

@@ -1,4 +1,4 @@
-"""Integration tests for AI-06 summarise endpoint + SSE stream — Phase 17 / Plan 17-07.
+"""Integration tests for AI-06 summarise endpoint + SSE stream — Plan 17-07.
 
 Covers:
   - POST /api/events/{id}/ai/summarise returns 202 + {job_id}; ai_summarise_event.send invoked

@@ -1,4 +1,4 @@
-"""Unit tests for ai_digest_project top-N selection — Phase 17 / AI-07.
+"""Unit tests for ai_digest_project top-N selection — AI-07.
 
 Covers:
   - test_top_ten_by_coalesce: digest selects top 10 events ordered by COALESCE(ai_score, score) DESC

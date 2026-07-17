@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetsTable — Phase 12.1 plan 12.1-05b (UI-SPEC §Surface 5).
+ * AssetsTable — (UI-SPEC §Surface 5).
  *
  * 9-column locked layout:
  *   Type | Target | Scope | First seen | Last seen | Scans | Modules | Stale | Actions

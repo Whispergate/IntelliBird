@@ -1,4 +1,4 @@
-"""IOC Dramatiq actors — Phase 22.
+"""IOC Dramatiq actors.
 
 Section 1 (Plan 22-04): backfill_iocs_actor — async backfill driven by
   POST /api/admin/iocs/backfill so the HTTP request returns 202 + job_id
@@ -397,7 +397,7 @@ async def _async_enrich(ioc_id: str) -> None:
                 ioc_id, upserted, len(applicable),
             )
 
-            # Phase 28: passive DNS + WHOIS + AGE sync for domain IOCs.
+            # passive DNS + WHOIS + AGE sync for domain IOCs.
             # This block runs AFTER the standard reputation enrichment above so that
             # VT/AbuseIPDB/etc. are not affected. AGE sync errors are swallowed inside
             # sync_domain_pivot — they must never fail the enrichment worker.
@@ -514,7 +514,7 @@ def enrich_ioc(ioc_id: str) -> None:
     asyncio.run(_async_enrich(ioc_id))
 
 
-# ===== Section 4: sandbox trigger hook (Phase 27 / SANDBOX-02) =====
+# ===== Section 4: sandbox trigger hook (SANDBOX-02) =====
 
 
 def trigger_sandbox_if_sha256(ioc_id: str, ioc_type: str, project_id: str) -> None:

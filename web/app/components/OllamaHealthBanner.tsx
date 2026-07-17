@@ -1,5 +1,5 @@
 /**
- * OllamaHealthBanner — System-level Ollama health indicator (Phase 17 plan 17-09 / AI-05).
+ * OllamaHealthBanner — System-level Ollama health indicator (AI-05).
  * Surface 6 per 17-UI-SPEC.md.
  *
  * Uses inline styles (paint-before-CSS-bundle pattern), mirroring NoAuthBanner.tsx.

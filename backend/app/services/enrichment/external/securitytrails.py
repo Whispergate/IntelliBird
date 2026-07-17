@@ -1,4 +1,4 @@
-"""SecurityTrails passive DNS provider — Phase 28 / ENRICH-06.
+"""SecurityTrails passive DNS provider — ENRICH-06.
 
 Supports: domain
 

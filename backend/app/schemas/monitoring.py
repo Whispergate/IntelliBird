@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for monitoring configuration — Phase 16 / MON-01, MON-02, MON-03.
+"""Pydantic v2 schemas for monitoring configuration — MON-01, MON-02, MON-03.
 
 Exports:
   MonitoringConfig      — per-source monitoring threshold overrides; stored as JSONB in

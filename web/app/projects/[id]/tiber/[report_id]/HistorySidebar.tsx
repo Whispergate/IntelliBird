@@ -2,7 +2,7 @@
 
 /**
  * HistorySidebar — Surface 8: right 280px export history timeline.
- * Phase 18 plan 18-07. UI-SPEC §Surface 8 verbatim.
+ * UI-SPEC §Surface 8 verbatim.
  *
  * Reverse-chronological export history list with FormatBadge + version + download.
  * Format filter <Select> synced to ?history_format= URL param.

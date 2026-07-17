@@ -6,11 +6,11 @@
  * reads the env at REQUEST time and forwards. Works in Docker (BACKEND_URL
  * = http://api:8000) and local dev (fallback to http://127.0.0.1:8000).
  *
- * Phase 8 / INFRA-04 mitigation for pitfall H-1:
+ * INFRA-04 mitigation for pitfall H-1:
  *   When process.env.AUTH_ENABLED === "true", the proxy strips the spoofable
  *   X-Dashboard-Role request header before forwarding upstream. This prevents
  *   a browser-origin attacker from setting the header directly and reaching
- *   the backend with an elevated dashboard role. Phase 9 auth swaps the
+ * the backend with an elevated dashboard role. auth swaps the
  *   header-based dashboard-role derivation for a JWT-claim-based one; the
  *   strip is a defensive layer regardless.
  */
@@ -33,11 +33,11 @@ async function proxy(
   headers.delete("host");
   headers.delete("connection");
 
-  // Phase 9 / AUTH-02 + AUTH-04: inject Authorization: Bearer from the Auth.js
+  // AUTH-02 + AUTH-04: inject Authorization: Bearer from the Auth.js
   // v5 session when AUTH_ENABLED=true. This is the single source of truth for
   // auth on upstream calls — the client CANNOT set Authorization because the
   // incoming header is overwritten server-side here. X-Dashboard-Role is also
-  // stripped (Phase 8 INFRA-04 behaviour preserved).
+  // stripped (INFRA-04 behaviour preserved).
   if (process.env.AUTH_ENABLED === "true") {
     headers.delete("x-dashboard-role");
     // Defensive: strip any client-provided Authorization before re-adding from session.

@@ -1,6 +1,6 @@
 """POST /admin/attack/refresh — on-demand ATT&CK catalog refresh.
 
-AUTH-02 (Phase 9): endpoint guarded by Depends(require_admin).
+AUTH-02: endpoint guarded by Depends(require_admin).
 """
 from __future__ import annotations
 
