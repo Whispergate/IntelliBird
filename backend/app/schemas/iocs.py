@@ -1,17 +1,17 @@
-"""Pydantic v2 schemas for IOC API surface — IOC-01..08.
+"""Pydantic v2 schemas for IOC API surface - IOC-01..08.
 
 Exports:
-  * IOCRead — GET /api/iocs response row
-  * IOCCreate — POST /api/iocs body (server applies type-aware ttl_days /
+  * IOCRead - GET /api/iocs response row
+  * IOCCreate - POST /api/iocs body (server applies type-aware ttl_days /
     confidence defaults if not supplied)
-  * IOCPatch — PATCH /api/iocs/{id} (Lead+ on row's project; confidence + ttl_days only)
-  * IOCImportRow — per-row payload from csv_parser / json_parser / stix_parser;
+  * IOCPatch - PATCH /api/iocs/{id} (Lead+ on row's project; confidence + ttl_days only)
+  * IOCImportRow - per-row payload from csv_parser / json_parser / stix_parser;
     accepts optional `project_id` and `source` per 22-CONTEXT.md CSV columns spec
     (admin uploads may use project_id=None for global rows)
-  * IOCBulkImportDryRun — preview counts returned by ?dry_run=true
-  * IOCBulkImportEnqueued — {job_id, rows_accepted} returned by real run
-  * IOCType / IOCStatus / IOCSource — Literal aliases for OpenAPI clarity
-  * IOC_TYPE_ENUM_VALUES / IOC_TTL_DEFAULTS — re-exported for convenience
+  * IOCBulkImportDryRun - preview counts returned by ?dry_run=true
+  * IOCBulkImportEnqueued - {job_id, rows_accepted} returned by real run
+  * IOCType / IOCStatus / IOCSource - Literal aliases for OpenAPI clarity
+  * IOC_TYPE_ENUM_VALUES / IOC_TTL_DEFAULTS - re-exported for convenience
 """
 from __future__ import annotations
 
@@ -72,7 +72,7 @@ class IOCCreate(BaseModel):
 
 
 class IOCPatch(BaseModel):
-    """PATCH /api/iocs/{id} — partial update.
+    """PATCH /api/iocs/{id} - partial update.
 
     Lead+ on row's project required. Whitelist toggles + lifecycle status
     transitions go through dedicated endpoints (POST .../whitelist) to keep
@@ -84,14 +84,14 @@ class IOCPatch(BaseModel):
 
 
 class IOCImportRow(BaseModel):
-    """Per-row import payload — produced by csv_parser, json_parser, stix_parser.
+    """Per-row import payload - produced by csv_parser, json_parser, stix_parser.
 
     `project_id` and `source` accepted per 22-CONTEXT.md CSV columns spec.
 
     Authorisation rules (enforced server-side at the route level):
-      * Non-admin uploads — `project_id` MUST equal the route project_id
+      * Non-admin uploads - `project_id` MUST equal the route project_id
         (mismatch → 422). NULL allowed only for Admins.
-      * Admin uploads — `project_id` may be None or the literal string 'global'
+      * Admin uploads - `project_id` may be None or the literal string 'global'
         (parser converts 'global' → None) for global rows.
     """
 
@@ -105,7 +105,7 @@ class IOCImportRow(BaseModel):
     project_id: uuid.UUID | None = None
     first_seen: datetime | None = None
     last_seen: datetime | None = None
-    # Diagnostics — populated by parsers for error reporting in dry-run.
+    # Diagnostics - populated by parsers for error reporting in dry-run.
     line: int | None = None
     error: str | None = None
 
@@ -121,7 +121,7 @@ class IOCBulkImportDryRun(BaseModel):
 
 
 class IOCBulkImportEnqueued(BaseModel):
-    """Real-run response — UI polls Redis for job progress."""
+    """Real-run response - UI polls Redis for job progress."""
 
     job_id: str
     rows_accepted: int

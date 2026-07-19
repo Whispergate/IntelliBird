@@ -17,7 +17,7 @@ DISINFO-01. IntelliBird ingests posts from Mastodon, 4chan, and Reddit via the `
 
 | `source_config` key       | Type            | Default            | Description                                                   |
 |---------------------------|-----------------|--------------------|---------------------------------------------------------------|
-| `platform`                | string (const)  | —                  | Must be `"mastodon"`.                                         |
+| `platform`                | string (const)  | -                  | Must be `"mastodon"`.                                         |
 | `instance_url`            | string (URL)    | `https://mastodon.social` | Base URL of the Mastodon instance.                   |
 | `topic_keywords`          | list[string]    | `[]` (all posts)   | Case-insensitive keyword filter.  Empty = ingest all.         |
 | `poll_interval_seconds`   | int             | `300`              | Minimum `60`. Enforced by `register_social_jobs`.             |
@@ -40,7 +40,7 @@ DISINFO-01. IntelliBird ingests posts from Mastodon, 4chan, and Reddit via the `
 
 | `source_config` key       | Type            | Default | Description                                                           |
 |---------------------------|-----------------|---------|-----------------------------------------------------------------------|
-| `platform`                | string (const)  | —       | Must be `"4chan"`.                                                    |
+| `platform`                | string (const)  | -       | Must be `"4chan"`.                                                    |
 | `board`                   | string          | `"g"`   | Board identifier (e.g. `pol`, `g`, `biz`, `int`).                    |
 | `topic_keywords`          | list[string]    | `[]`    | Case-insensitive filter applied to decoded OP text.  Empty = all OPs.|
 | `poll_interval_seconds`   | int             | `300`   | Minimum `60`.                                                         |
@@ -65,14 +65,14 @@ DISINFO-01. IntelliBird ingests posts from Mastodon, 4chan, and Reddit via the `
 
 | `source_config` key       | Type            | Default     | Description                                                            |
 |---------------------------|-----------------|-------------|------------------------------------------------------------------------|
-| `platform`                | string (const)  | —           | Must be `"reddit"`.                                                    |
+| `platform`                | string (const)  | -           | Must be `"reddit"`.                                                    |
 | `subreddit`               | string          | `"netsec"`  | Subreddit name without `/r/` prefix.                                   |
 | `topic_keywords`          | list[string]    | `[]`        | Filtered across title + selftext.  Empty = ingest all.                 |
 | `poll_interval_seconds`   | int             | `300`       | Minimum `60`.                                                          |
 
 **User-Agent:** All Reddit requests use `IntelliBird/4.0 (self-hosted threat intelligence platform)`.  Reddit requires a descriptive User-Agent to avoid 429 / 403 responses.
 
-**Rate limits:** Reddit's public JSON API allows roughly 60 requests per minute per IP for unauthenticated clients.  At the default 300 s interval, a single source generates 12 requests per hour — well within limits.
+**Rate limits:** Reddit's public JSON API allows roughly 60 requests per minute per IP for unauthenticated clients.  At the default 300 s interval, a single source generates 12 requests per hour - well within limits.
 
 **Example `source_config`:**
 ```json
@@ -88,7 +88,7 @@ DISINFO-01. IntelliBird ingests posts from Mastodon, 4chan, and Reddit via the `
 
 ## topic_keywords Filter
 
-The `topic_keywords` list applies **before persistence** (no DB write occurs for non-matching posts). An empty or missing list disables filtering — all posts from the source are ingested.
+The `topic_keywords` list applies **before persistence** (no DB write occurs for non-matching posts). An empty or missing list disables filtering - all posts from the source are ingested.
 
 Keywords are matched case-insensitively against the decoded, plain-text post body.
 

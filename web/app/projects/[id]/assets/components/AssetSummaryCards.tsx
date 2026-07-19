@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetSummaryCards — (UI-SPEC §Surface 3).
+ * AssetSummaryCards - (UI-SPEC §Surface 3).
  *
  * Renders 7 bucket cards in stable order even when count=0.
  * Click fires onBucketClick(bucketKey); active bucket gets ring-2 focus ring.
@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { AssetSummaryMap } from "../AssetsClient";
 
-/** Bucket iteration order — UI-SPEC locked. */
+/** Bucket iteration order - UI-SPEC locked. */
 const BUCKET_ORDER = [
   "DOMAINS",
   "IPS",
@@ -50,7 +50,7 @@ export function AssetSummaryCards({
   activeBucket,
   onBucketClick,
 }: AssetSummaryCardsProps) {
-  // Loading skeleton — 7 pulse blocks with the same dimensions as real cards.
+  // Loading skeleton - 7 pulse blocks with the same dimensions as real cards.
   if (summary === null) {
     return (
       <div

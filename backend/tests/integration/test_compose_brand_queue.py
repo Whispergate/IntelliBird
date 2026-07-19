@@ -6,7 +6,7 @@ backend/pyproject.toml. No containers are launched.
 Guards against future drift of the BRP-02 ops wiring:
 
 1. The `worker` service command must include the `brand-monitor` queue in its
-   Dramatiq `--queues` list (co-located with ingest/maintenance/webhooks —
+   Dramatiq `--queues` list (co-located with ingest/maintenance/webhooks -
    dnstwist runs in-process; no docker.sock mount contrast BBOT).
 
 2. `dnstwist` must be a declared dependency of the runtime image. The project
@@ -68,7 +68,7 @@ def test_worker_queues_include_brand_monitor(compose: dict) -> None:
 
 
 def test_brand_monitor_queue_not_on_easm_worker(compose: dict) -> None:
-    """brand-monitor must NOT be on easm-worker — that service holds the
+    """brand-monitor must NOT be on easm-worker - that service holds the
     docker.sock mount and is scoped to the `easm` queue only."""
     easm = compose["services"].get("easm-worker")
     if easm is None:  # easm-worker may be behind a profile in some environments

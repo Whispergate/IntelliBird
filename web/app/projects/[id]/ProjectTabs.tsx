@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectTabs — 22-tab sub-navigation strip for /projects/[id]/*.
+ * ProjectTabs - 22-tab sub-navigation strip for /projects/[id]/*.
  *
  * Locked order (per 10-UI-SPEC §/projects/[id] detail §Tabs + 11-UI-SPEC §Surface 1):
  *   1. Overview
@@ -38,7 +38,7 @@
  *     plugin; the inline style covers Firefox; `::-webkit-scrollbar` is
  *     suppressed via the `scrollbar-none` ad-hoc class name used below with
  *     an inline `WebkitScrollbar` via a CSS rule injected in globals.css if
- *     needed — for M2 we rely on `style` + the fade overlays to communicate
+ *     needed - for M2 we rely on `style` + the fade overlays to communicate
  *     overflow; the scrollbar itself remains acceptable if visible).
  *   - Fade indicators: two absolute-positioned gradient strips driven by an
  *     onScroll + ResizeObserver state machine. scrollLeft > 4 → show left
@@ -46,7 +46,7 @@
  * Chose onScroll + resize (NOT IntersectionObserver): STATE.md
  *     precedent (DashboardShell onScroll in plan 05-02). IntersectionObserver
  *     would need sentinel elements at both ends and fires only on threshold
- *     crossings, not on every pixel of scroll — less precise for fade
+ *     crossings, not on every pixel of scroll - less precise for fade
  *     animation.
  *
  * Active tab detection:
@@ -182,7 +182,7 @@ export function ProjectTabs({
 
   return (
     <div className="relative border-b border-border w-full min-w-0 max-w-full">
-      {/* Left fade — signals more tabs scrollable to the left */}
+      {/* Left fade - signals more tabs scrollable to the left */}
       {showLeftFade && (
         <div
           aria-hidden="true"
@@ -193,7 +193,7 @@ export function ProjectTabs({
           }}
         />
       )}
-      {/* Right fade — signals more tabs scrollable to the right */}
+      {/* Right fade - signals more tabs scrollable to the right */}
       {showRightFade && (
         <div
           aria-hidden="true"
@@ -209,7 +209,7 @@ export function ProjectTabs({
         className="overflow-x-auto max-w-full min-w-0"
         style={{
           // Hide native scrollbar on Firefox; WebKit relies on the fade to
-          // communicate overflow (scrollbar may still show — acceptable for M2).
+          // communicate overflow (scrollbar may still show - acceptable for M2).
           scrollbarWidth: "none",
         }}
       >

@@ -1,15 +1,14 @@
 """/oidc/login redirect + /oidc/callback exchanges code + groups->role mapping
 
-Integration tests — AUTH-01. Activated by plan 09-03.
+Integration tests - AUTH-01. Activated by plan 09-03.
 
-Authentik upstream is mocked via monkeypatch — no live Authentik required.
+Authentik upstream is mocked via monkeypatch - no live Authentik required.
 Requires: testcontainers (Postgres) for the user upsert path.
 """
 from __future__ import annotations
 
 import os
 import uuid
-from typing import AsyncIterator
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -25,8 +24,6 @@ from tests.fixtures.authentik_mock import (  # noqa: E402
     AUTHENTIK_DISCOVERY,
     MOCK_ISSUER_URL,
     SAMPLE_ID_TOKEN_CLAIMS,
-    ADMIN_GROUPS_CLAIM,
-    ANALYST_GROUPS_CLAIM,
 )
 
 
@@ -330,7 +327,7 @@ async def test_callback_returning_user_updates_last_login_no_duplicate_row(oidc_
     client, factory = oidc_app
     from app.config import settings
     from app.models.users import User
-    from sqlalchemy import select, func
+    from sqlalchemy import select
 
     settings.SSO_ISSUER_URL = MOCK_ISSUER_URL
     settings.SSO_CLIENT_ID = "intellibird-client"
@@ -386,7 +383,7 @@ async def test_callback_landing_redirect_by_dashboard_role(oidc_app):
     settings.SSO_ADMIN_GROUPS = "intellibird-admins"
     settings.SSO_ANALYST_GROUPS = None
 
-    # Viewer — no dashboard_roles — lands at /
+    # Viewer - no dashboard_roles - lands at /
     viewer_sub = f"viewer-land-{uuid.uuid4().hex[:8]}"
     id_claims = {**SAMPLE_ID_TOKEN_CLAIMS, "sub": viewer_sub, "groups": [], "nonce": "land-nonce"}
 

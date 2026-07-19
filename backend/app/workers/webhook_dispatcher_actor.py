@@ -1,6 +1,6 @@
-"""webhook_dispatch_tick Dramatiq actor — HOOK-02, HOOK-07, HOOK-08.
+"""webhook_dispatch_tick Dramatiq actor - HOOK-02, HOOK-07, HOOK-08.
 
-: max_retries=0 — we own the retry policy inline (30/60/120s with
+: max_retries=0 - we own the retry policy inline (30/60/120s with
 cursor-advance semantics). Dramatiq middleware retry would re-queue the
 whole tick and potentially double-dispatch.
 

@@ -1,6 +1,6 @@
-"""Service-layer audit log helper — AUDIT-01.
+"""Service-layer audit log helper - AUDIT-01.
 
-Called inline from service functions — NOT from middleware.
+Called inline from service functions - NOT from middleware.
 Caller is responsible for committing the session after calling log_audit().
 
 Usage::
@@ -17,7 +17,7 @@ Usage::
     await session.commit()
 
 The function is synchronous (session.add is not a coroutine) but is designed to
-be called inside async service functions — session.add() enqueues the INSERT into
+be called inside async service functions - session.add() enqueues the INSERT into
 the unit-of-work; the caller's await session.commit() flushes everything.
 """
 from __future__ import annotations
@@ -45,7 +45,7 @@ def log_audit(
 
     Parameters
     ----------
-    session:        AsyncSession — the active DB session.
+    session:        AsyncSession - the active DB session.
     action:         Short verb, e.g. "create", "update", "delete", "approve".
     resource_type:  Entity type, e.g. "actor", "campaign", "ioc", "source".
     resource_id:    String representation of the resource PK (optional).

@@ -1,5 +1,5 @@
 /**
- * MatchDetailDrawer.test.tsx — (BRAND-02 frontend).
+ * MatchDetailDrawer.test.tsx - (BRAND-02 frontend).
  *
  * Coverage:
  *   - Provenance renders all 3 detector tiers (fts, ct_log, dnstwist) with correct badges
@@ -26,7 +26,7 @@ if (
 }
 
 // ---------------------------------------------------------------------------
-// Mocks — hoisted before component imports
+// Mocks - hoisted before component imports
 // ---------------------------------------------------------------------------
 
 vi.mock("sonner", () => ({
@@ -272,7 +272,7 @@ describe("MatchDetailDrawer", () => {
 
   // ---- Provenance rendering ------------------------------------------------
 
-  it("test_renders_provenance_fts: FTS detector badge + raw_input + similarity —", () => {
+  it("test_renders_provenance_fts: FTS detector badge + raw_input + similarity -", () => {
     renderDrawer(FTS_MATCH, FTS_DETAILS);
 
     // Detector badge
@@ -281,11 +281,11 @@ describe("MatchDetailDrawer", () => {
     // Raw input
     expect(screen.getByText("Event abc12345")).toBeInTheDocument();
 
-    // Matched value — may appear multiple times (provenance + timeline links)
+    // Matched value - may appear multiple times (provenance + timeline links)
     expect(screen.getAllByText("acmecorp-phishing.com").length).toBeGreaterThan(0);
 
-    // Similarity always "—"
-    expect(screen.getByText("—")).toBeInTheDocument();
+    // Similarity always "-"
+    expect(screen.getByText("-")).toBeInTheDocument();
   });
 
   it("test_renders_provenance_ctlog: CT log badge renders with correct raw_input", () => {
@@ -324,7 +324,7 @@ describe("MatchDetailDrawer", () => {
   it("test_renders_timeline: 3 entries render with actor emails and action labels", () => {
     renderDrawer(FTS_MATCH, FTS_DETAILS);
 
-    // All actors (alice appears twice — two entries)
+    // All actors (alice appears twice - two entries)
     expect(screen.getAllByText("alice@example.com").length).toBeGreaterThan(0);
     expect(screen.getByText("bob@example.com")).toBeInTheDocument();
 

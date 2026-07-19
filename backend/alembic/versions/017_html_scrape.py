@@ -1,4 +1,4 @@
-"""HTML-scrape source config — adds sources.scrape_config JSONB.
+"""HTML-scrape source config - adds sources.scrape_config JSONB.
 
 Revision ID: 017_html_scrape
 Revises: 016_monitoring
@@ -9,7 +9,7 @@ Quick task 260425-ovt: a "scraped feed" source type reuses the existing
 operator-supplied CSS selectors in a new sparse JSONB column. No ENUM change
 required.
 
-The column is nullable — existing rss/taxii/nvd rows are unaffected.
+The column is nullable - existing rss/taxii/nvd rows are unaffected.
 """
 from __future__ import annotations
 

@@ -117,7 +117,7 @@ describe("AssetsTable (12.1-05b)", () => {
 
   it("stale pill renders only when stale=true (with muted tokens, NOT signal-amber)", () => {
     renderTable();
-    // Filter out the column header <th> — only count rendered badge pills.
+    // Filter out the column header <th> - only count rendered badge pills.
     const pills = screen
       .getAllByText("Stale")
       .filter((el) => el.tagName.toLowerCase() !== "th");
@@ -143,7 +143,7 @@ describe("AssetsTable (12.1-05b)", () => {
     expect(onRowClick).toHaveBeenCalledWith("a2");
   });
 
-  it("pagination text reads 'Page 1 of 2 — 50 per page' when total=52", () => {
+  it("pagination text reads 'Page 1 of 2 - 50 per page' when total=52", () => {
     renderTable();
     const text = screen.getByTestId("assets-pagination-text");
     // NB: em-dash \u2014 between "of 2" and "50 per page"

@@ -1,4 +1,4 @@
-"""Integration tests for EASM diff endpoint — plan 11-05 / EASM-08.
+"""Integration tests for EASM diff endpoint - plan 11-05 / EASM-08.
 
 Covers:
   - GET /api/projects/{id}/easm/scans/{scan_id}/diff
@@ -23,7 +23,7 @@ pytestmark = pytest.mark.integration
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _make_auth_user(role: str = "Admin") -> "AuthUser":  # type: ignore[name-defined]
+def _make_auth_user(role: str = "Admin") -> "AuthUser":  # type: ignore[name-defined]  # noqa: F821
     from app.security.jwt import AuthUser
 
     return AuthUser(
@@ -199,7 +199,7 @@ async def test_diff_new_findings(diff_app, db_session):
     await _create_finding(db_session, project_id, prior_id, "VULNERABILITY", "b.example.com")
     # This findings: A + B + C (new C in this scan)
     # Note: easm_findings is unique per (project_id, bbot_event_type, canonical_target),
-    # so A and B already exist — we update their scan_id via a new row with the same key.
+    # so A and B already exist - we update their scan_id via a new row with the same key.
     # For the diff test we insert separate rows with scan_id pointing to the respective scan.
     # We create C in this_id scan
     await _create_finding(db_session, project_id, this_id, "VULNERABILITY", "c.example.com")
@@ -218,10 +218,10 @@ async def test_diff_new_findings(diff_app, db_session):
     assert r.status_code == 200
     data = r.json()
     assert data["prior_scan_id"] == str(prior_id)
-    # c.example.com is in this scan but not prior — it's NEW
+    # c.example.com is in this scan but not prior - it's NEW
     new_targets = {e["canonical_target"] for e in data["new"]}
     assert "c.example.com" in new_targets
-    # a.example.com is in prior but not this scan (since we used a-v2 in this scan) — RESOLVED
+    # a.example.com is in prior but not this scan (since we used a-v2 in this scan) - RESOLVED
     resolved_targets = {e["canonical_target"] for e in data["resolved"]}
     assert "a.example.com" in resolved_targets
     assert "b.example.com" in resolved_targets
@@ -291,7 +291,7 @@ async def test_diff_changed_findings(diff_app, db_session):
     # when a finding target exists in both scans and has different raw_bbot.
 
     # Insert prior finding directly with raw SQL (bypassing unique constraint per scan)
-    # The unique constraint is (project_id, bbot_event_type, canonical_target) — not per scan.
+    # The unique constraint is (project_id, bbot_event_type, canonical_target) - not per scan.
     # So for CHANGED tests, we need to simulate the case by having the same finding
     # in both scans via the scan_id. This is only possible if the finding was upserted.
     # For integration test purposes, we verify the logic with unique targets and accept
@@ -325,7 +325,7 @@ async def test_diff_changed_findings(diff_app, db_session):
     })
     await db_session.commit()
 
-    # Now insert the "current" version — same (project_id, type, target) would violate unique.
+    # Now insert the "current" version - same (project_id, type, target) would violate unique.
     # The upsert pattern in the real worker would UPDATE the existing row.
     # For diff test, we insert a new row with scan_id pointing to this scan and a different hash.
     # To work around the unique constraint in tests, use a slightly different canonical_target.
@@ -391,7 +391,7 @@ async def test_diff_match_key_is_type_plus_target_only(diff_app, db_session):
 
     # To test match-key semantics with same (type, target) in both scans:
     # We must work around the UNIQUE constraint on easm_findings.
-    # The real system uses ON CONFLICT DO UPDATE — the finding row points to the latest scan.
+    # The real system uses ON CONFLICT DO UPDATE - the finding row points to the latest scan.
     # For testing CHANGED semantics, we need to directly insert rows with the same (type, target)
     # in both scans. We do this by inserting the prior scan row first, then updating scan_id
     # to simulate the "prior" scan had a finding, and the "current" scan has the same finding
@@ -424,7 +424,7 @@ async def test_diff_match_key_is_type_plus_target_only(diff_app, db_session):
     await db_session.commit()
 
     # Step 2: Insert second finding for this_id scan with SAME (type, target) but different raw_bbot
-    # Unique constraint prevents same (project_id, type, target) — workaround: insert with same key
+    # Unique constraint prevents same (project_id, type, target) - workaround: insert with same key
     # using a different content_hash (constraint is on type+target not hash).
     # We need to use a INSERT ... ON CONFLICT approach or just accept that in production
     # the existing row would be updated to point to the latest scan.

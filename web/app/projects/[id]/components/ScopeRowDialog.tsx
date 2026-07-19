@@ -10,14 +10,14 @@
  *   - active_test_scope (default false)
  *   - intel_scope (default true)
  *
- * Validation (UI-SPEC §Error states — byte-exact copy):
+ * Validation (UI-SPEC §Error states - byte-exact copy):
  *   - CIDR:  "Enter a valid CIDR block, e.g. 10.0.0.0/24."
  *   - FQDN:  "Enter a valid domain, e.g. example.com."
  *   - AS int: "AS number must be a positive integer."
  *   - Cert: "Enter a SHA-1 (40 hex) or SHA-256 (64 hex) certificate fingerprint."
  *   - Both flags off: "Row must target at least intel or active test."
  *
- * Per-type validation runs client-side (lib/scope-validators.ts) pre-submit —
+ * Per-type validation runs client-side (lib/scope-validators.ts) pre-submit -
  * identical error copy to the backend, so a rejected input looks the same
  * whether the network round-trip happened or not.
  *
@@ -46,7 +46,7 @@ import { Switch } from "@/components/ui/switch";
 
 // Zod schema enforces the "at least one of intel/active_test" invariant with
 // the exact UI-SPEC error string. Per-value validation (CIDR/FQDN/AS/cert) is
-// NOT embedded here because the copy is type-dependent — we run it manually
+// NOT embedded here because the copy is type-dependent - we run it manually
 // in submit() and push the result into `valueError` state for inline display.
 const schema = z
   .object({
@@ -58,7 +58,7 @@ const schema = z
   })
   .refine((v) => v.active_test_scope || v.intel_scope, {
     message: "Row must target at least intel or active test.",
-    // Attach the both-off error to `intel_scope` so FormState sees it — the
+    // Attach the both-off error to `intel_scope` so FormState sees it - the
     // component reads from form.formState.errors.intel_scope for display.
     path: ["intel_scope"],
   });
@@ -81,7 +81,7 @@ export function ScopeRowDialog({
   onClose,
 }: {
   open: boolean;
-  /** One of the 7 ScopeType literals — dispatches the per-type validator. */
+  /** One of the 7 ScopeType literals - dispatches the per-type validator. */
   scopeType: ScopeType;
   /** Dialog header + primary CTA hint (e.g. "Add IP range"). */
   addLabel: string;
@@ -93,7 +93,7 @@ export function ScopeRowDialog({
     resolver: zodResolver(schema),
     defaultValues: DEFAULTS,
   });
-  // Per-type validation error (CIDR/FQDN/AS/cert) — distinct from zod errors.
+  // Per-type validation error (CIDR/FQDN/AS/cert) - distinct from zod errors.
   const [valueError, setValueError] = useState<string | null>(null);
 
   // Reset the form whenever the dialog re-opens or the scope type switches;

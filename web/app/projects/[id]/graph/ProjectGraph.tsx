@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectGraph — -03 (GRAPH-01 frontend), extended -04 (ATK-02..05).
+ * ProjectGraph - -03 (GRAPH-01 frontend), extended -04 (ATK-02..05).
  *
  * Client component that renders a Cytoscape force-layout graph for a project's
  * aggregate threat intelligence. Handles three UI states:
@@ -16,7 +16,7 @@
  *   - Pentagon attack-step nodes colored by MITRE tactic
  *   - Truncation banner for windowed analysis responses
  *
- * Layout uses built-in `cose` (NOT cose-bilkent — not installed per RESEARCH §3).
+ * Layout uses built-in `cose` (NOT cose-bilkent - not installed per RESEARCH §3).
  * NODE_STYLES copied verbatim from AttackGraphImpl.tsx for visual consistency.
  * Background #04342C mirrors the per-event attack graph.
  */
@@ -31,13 +31,13 @@ import { analyseAttackPath } from "@/app/projects/lib/api";
 import type { AttackPathResponse } from "@/app/projects/lib/api";
 
 // ── Plugin guard ────────────────────────────────────────────────────────────
-// cose layout is built-in — no plugin import needed.
+// cose layout is built-in - no plugin import needed.
 // dagre import is intentionally omitted (not needed for project graph).
 
-// ── Layout config — verbatim from AttackGraphToolbar.tsx:39-43 ─────────────
+// ── Layout config - verbatim from AttackGraphToolbar.tsx:39-43 ─────────────
 const LAYOUT = { name: "cose", animate: true, animationDuration: 400 };
 
-// ── Styling — verbatim from AttackGraphImpl.tsx NODE_STYLES ────────────────
+// ── Styling - verbatim from AttackGraphImpl.tsx NODE_STYLES ────────────────
 const NODE_STYLES = [
   // ── Per-type fill colors ──────────────────────────────────────
   {
@@ -317,7 +317,7 @@ export function ProjectGraph({ data, projectId }: Props) {
     );
   }
 
-  // State 2: Events present but zero graph relationships — show toolbar + empty-state
+  // State 2: Events present but zero graph relationships - show toolbar + empty-state
   if (nodes.length > 0 && edges.length === 0 && viewMode !== "attack-path") {
     return (
       <div>
@@ -447,7 +447,7 @@ export function ProjectGraph({ data, projectId }: Props) {
           data-testid="graph-truncate-banner"
           className="flex items-center gap-2 px-4 py-2 bg-amber-900/30 border-b border-amber-700/40 text-amber-300 text-sm"
         >
-          Showing top {nodes.length} nodes (truncated) — narrow scope to refine
+          Showing top {nodes.length} nodes (truncated) - narrow scope to refine
         </div>
       )}
       {viewMode === "attack-path" && attackPathData?.truncated && (
@@ -455,7 +455,7 @@ export function ProjectGraph({ data, projectId }: Props) {
           data-testid="attack-path-truncate-banner"
           className="flex items-center gap-2 px-4 py-2 bg-purple-900/30 border-b border-purple-700/40 text-purple-300 text-sm"
         >
-          Analysis based on latest 50 events (window truncated) — narrow date range for full coverage
+          Analysis based on latest 50 events (window truncated) - narrow date range for full coverage
         </div>
       )}
       <div

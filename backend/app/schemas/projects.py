@@ -18,8 +18,8 @@ ScopeTypeLit = Literal["keyword", "service", "domain", "certificate", "whois", "
 ProjectRoleLit = Literal["Lead", "Contributor", "Observer"]
 
 # Scope types that carry FQDNs and therefore require IDN encoding.
-# "domain" — explicit domain name entry.
-# "certificate" — CN / SAN value (also FQDN-bearing per CONTEXT.md §UX-03).
+# "domain" - explicit domain name entry.
+# "certificate" - CN / SAN value (also FQDN-bearing per CONTEXT.md §UX-03).
 _FQDN_SCOPE_TYPES = frozenset({"domain", "certificate"})
 
 
@@ -205,7 +205,7 @@ class SharedIOCSchema(BaseModel):
 
 
 class CompareResponse(BaseModel):
-    """GET /api/projects/compare response — three independent shared-entity panels.
+    """GET /api/projects/compare response - three independent shared-entity panels.
 
     Each list is capped at COMPARE_CAP=500 rows (service-side). Empty arrays
     indicate no overlap (not a 404).

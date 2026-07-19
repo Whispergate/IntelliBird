@@ -2,7 +2,7 @@
 
 /**
  * AISuggestionChip
- * UI-SPEC §Surface 1c — pending/confirmed/discarded suggestion chip.
+ * UI-SPEC §Surface 1c - pending/confirmed/discarded suggestion chip.
  *
  * Optimistic confirm/discard: chip visual state updates immediately.
  * On API error the chip reverts to its previous state with a toast.

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Auth route group layout. Intentionally minimal — no DashboardShell, no TopNav.
+ * Auth route group layout. Intentionally minimal - no DashboardShell, no TopNav.
  * The root layout already renders <NoAuthBanner /> above all children, which
  * includes the auth pages. This layout centers the auth card in the viewport.
  */

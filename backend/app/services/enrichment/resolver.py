@@ -1,4 +1,4 @@
-"""Enrichment provider resolver — ENRICH-01.
+"""Enrichment provider resolver - ENRICH-01.
 
 Resolves the active set of enrichment providers for a given project.
 Priority: per-project row (project_id=<uuid>) > global row (project_id IS NULL).
@@ -20,7 +20,7 @@ from __future__ import annotations
 import logging
 from typing import NamedTuple
 
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.enrichment import EnrichmentProvider
@@ -31,7 +31,7 @@ from app.crypto import decrypt_credentials
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Routing table — locked to CONTEXT.md values; do NOT add providers here.
+# Routing table - locked to CONTEXT.md values; do NOT add providers here.
 # ---------------------------------------------------------------------------
 
 PROVIDER_IOC_ROUTING: dict[str, set[str]] = {
@@ -41,7 +41,7 @@ PROVIDER_IOC_ROUTING: dict[str, set[str]] = {
     "shodan":          {"ip", "ipv6"},
     "otx":             {"domain", "sha256", "sha1", "md5"},
     "urlhaus":         {"domain", "url"},
-    # Passive DNS providers (ENRICH-06) — domain only
+    # Passive DNS providers (ENRICH-06) - domain only
     "securitytrails":  {"domain"},
     "mnemonic":        {"domain"},
     "riskiq_community": {"domain"},
@@ -49,7 +49,7 @@ PROVIDER_IOC_ROUTING: dict[str, set[str]] = {
 
 
 class ProviderRow(NamedTuple):
-    """Resolved provider configuration — api_key already decrypted."""
+    """Resolved provider configuration - api_key already decrypted."""
 
     provider: str
     api_key: str | None         # None when credentials_enc is NULL (keyless providers)
@@ -101,7 +101,7 @@ async def get_enabled_providers(
             EnrichmentProvider.provider.in_(missing_providers),
         )
         global_result = await session.execute(global_stmt)
-        global_rows = global_result.scalars().all()
+        global_rows = global_result.scalars().all()  # type: ignore[assignment]
 
     # 3. Build ProviderRow list
     resolved: list[ProviderRow] = []

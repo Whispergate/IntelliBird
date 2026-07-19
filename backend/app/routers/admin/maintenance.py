@@ -1,13 +1,13 @@
-"""Admin Maintenance Window CRUD — H-7.
+"""Admin Maintenance Window CRUD - H-7.
 
 Endpoints:
-  POST   /api/admin/maintenance-window          — Create a new window (201)
-  GET    /api/admin/maintenance-window          — List all windows
-  GET    /api/admin/maintenance-window/active   — Active window or 404
-  DELETE /api/admin/maintenance-window/{id}     — Delete window (204)
+  POST   /api/admin/maintenance-window          - Create a new window (201)
+  GET    /api/admin/maintenance-window          - List all windows
+  GET    /api/admin/maintenance-window/active   - Active window or 404
+  DELETE /api/admin/maintenance-window/{id}     - Delete window (204)
 
 All endpoints require Admin role. end_at REQUIRED and must be after start_at.
-Scope: global — one active window suppresses ALL monitoring alerts.
+Scope: global - one active window suppresses ALL monitoring alerts.
 """
 from __future__ import annotations
 

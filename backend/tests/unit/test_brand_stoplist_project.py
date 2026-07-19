@@ -1,4 +1,4 @@
-"""Unit tests for load_runtime_stoplist_for_project — BRAND-01.
+"""Unit tests for load_runtime_stoplist_for_project - BRAND-01.
 
 Tests the additive union behaviour of the new async per-project stoplist loader.
 All three tests should FAIL at RED phase (function does not exist yet).
@@ -34,7 +34,7 @@ def _make_async_session(term_rows: list[str]):
 
 
 # ---------------------------------------------------------------------------
-# Test 1 — returns DEFAULT ∪ env-extra ∪ project terms
+# Test 1 - returns DEFAULT ∪ env-extra ∪ project terms
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -43,7 +43,6 @@ async def test_load_runtime_stoplist_for_project_returns_union():
     DEFAULT_STOPLIST ∪ BRAND_STOPLIST_EXTRA env terms ∪ project terms.
     """
     from app.services.brand_stoplist import (
-        DEFAULT_STOPLIST,
         load_runtime_stoplist_for_project,
     )
 
@@ -69,7 +68,7 @@ async def test_load_runtime_stoplist_for_project_returns_union():
 
 
 # ---------------------------------------------------------------------------
-# Test 2 — project with no terms == zero-arg result
+# Test 2 - project with no terms == zero-arg result
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -90,7 +89,7 @@ async def test_load_runtime_stoplist_for_project_empty_project_equals_global():
 
 
 # ---------------------------------------------------------------------------
-# Test 3 — project term casing: stored as-typed, membership check via lower()
+# Test 3 - project term casing: stored as-typed, membership check via lower()
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio

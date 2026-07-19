@@ -197,7 +197,7 @@ export default function ActorProfileClient({ actor: initialActor }: ActorProfile
       await patchCampaign(campaignId, { actor_id: null });
       setCampaigns((prev) => prev.filter((c) => c.id !== campaignId));
     } catch {
-      // silent — could show toast
+      // silent - could show toast
     }
   }
 
@@ -405,7 +405,7 @@ export default function ActorProfileClient({ actor: initialActor }: ActorProfile
 
         {/* Two-column layout at xl */}
         <div className="grid grid-cols-1 xl:grid-cols-[40%_60%] gap-6">
-          {/* Left column — profile info, events, campaigns */}
+          {/* Left column - profile info, events, campaigns */}
           <div className="flex flex-col gap-8">
 
             {/* Events Timeline */}
@@ -531,7 +531,7 @@ export default function ActorProfileClient({ actor: initialActor }: ActorProfile
             </section>
           </div>
 
-          {/* Right column — Cytoscape sub-graph */}
+          {/* Right column - Cytoscape sub-graph */}
           <div>
             <ActorSubGraph actorId={actor.id} />
           </div>

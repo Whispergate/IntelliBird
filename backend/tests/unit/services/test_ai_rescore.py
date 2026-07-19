@@ -1,4 +1,4 @@
-"""Unit tests for ai_rescore_project ±15 clamp — SCR-04.
+"""Unit tests for ai_rescore_project ±15 clamp - SCR-04.
 
 Covers:
   - test_clamp: AI adjustment clamped to ±15 before adding to rule_score
@@ -11,14 +11,13 @@ import asyncio
 import os
 import uuid
 from decimal import Decimal
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, patch
 
 # Set env vars before any app module imports.
 os.environ.setdefault("SECRET_KEY", "a" * 32 + "deadbeef")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 
-import pytest
 
 
 # ---------------------------------------------------------------------------
@@ -94,7 +93,7 @@ async def _run_rescore_with_adjustments(adjustments: list[float], rule_scores: l
     mock_engine = AsyncMock()
     mock_engine.dispose = AsyncMock()
 
-    # Build LLM responses — one per event.
+    # Build LLM responses - one per event.
     call_count = [0]
 
     async def fake_acompletion(**kwargs):
@@ -177,7 +176,7 @@ def test_writes_ai_score_column():
 
     assert len(update_calls) >= 1, "Expected at least one update call"
 
-    # Inspect the update statement — it should set ai_score not score.
+    # Inspect the update statement - it should set ai_score not score.
     # The SQLAlchemy update() call is captured as a stmt object.
     # We check the values dict of the update clause.
     stmt = update_calls[0]
@@ -213,6 +212,6 @@ def test_does_not_modify_rule_score():
         import re
         plain_score_sets = re.findall(r"(?<!ai_)score\s*=", lines)
         assert len(plain_score_sets) == 0, (
-            f"Found plain 'score =' in UPDATE statement — must only update ai_score. "
+            f"Found plain 'score =' in UPDATE statement - must only update ai_score. "
             f"Statement: {compiled_str[:300]}"
         )

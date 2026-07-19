@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetsFilterBar — (UI-SPEC §Surface 4).
+ * AssetsFilterBar - (UI-SPEC §Surface 4).
  *
  * 9 controls: Type multi-select, Scope multi-select, Stale single-select,
  * Module multi-select, First-seen + Last-seen date ranges, Scan select,
@@ -77,7 +77,7 @@ const SCOPE_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
 // ---------------------------------------------------------------------------
 
 /**
- * Multi-select trigger label — UI-SPEC Copywriting Contract byte-exact.
+ * Multi-select trigger label - UI-SPEC Copywriting Contract byte-exact.
  *   0 → defaultLabel (e.g. "All types")
  *   1 → the selected label (or value if labelMap missing)
  *   2+ → "{first} +{N-1}"
@@ -129,7 +129,7 @@ export interface AssetsFilterBarProps {
   onRetryFilterOptions?: () => void;
 }
 
-// Sentinel for "no filter applied" — Radix Select forbids empty string values.
+// Sentinel for "no filter applied" - Radix Select forbids empty string values.
 const ALL_SCANS = "__all__";
 
 export function AssetsFilterBar({
@@ -371,7 +371,7 @@ export function AssetsFilterBar({
           </SelectContent>
         </Select>
 
-        {/* Search input — submit on Enter */}
+        {/* Search input - submit on Enter */}
         <Input
           type="search"
           placeholder="Search target…"
@@ -388,7 +388,7 @@ export function AssetsFilterBar({
           }}
         />
 
-        {/* Clear filters — visible only when at least one filter is active. */}
+        {/* Clear filters - visible only when at least one filter is active. */}
         {showClear && (
           <Button
             variant="ghost"

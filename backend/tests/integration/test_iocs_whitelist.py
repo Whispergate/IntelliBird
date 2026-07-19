@@ -1,4 +1,4 @@
-"""IOC-04 whitelist + clone-on-whitelist + PATCH + DELETE — Plan 22-04 Task 3.
+"""IOC-04 whitelist + clone-on-whitelist + PATCH + DELETE - Plan 22-04 Task 3.
 
 Covers:
   * Lead can whitelist a per-project IOC in place

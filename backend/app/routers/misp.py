@@ -1,4 +1,4 @@
-"""MISP config CRUD router — MISP-01.
+"""MISP config CRUD router - MISP-01.
 
 Endpoints at /api/projects/{project_id}/misp (Lead+ role required):
   GET    /                → MispConfigRead | 404
@@ -15,7 +15,6 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.requests import Request
 
 from app.config import settings
 from app.crypto import encrypt_credentials
@@ -221,7 +220,7 @@ async def test_misp_connection(
                 key=body.api_key,
                 ssl=body.ssl_verify,
             )
-            version = misp.get_version()
+            version = misp.get_version()  # type: ignore[attr-defined]
             return version
 
         result = await asyncio.to_thread(_ping)

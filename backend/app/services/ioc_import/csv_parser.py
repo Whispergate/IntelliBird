@@ -6,7 +6,7 @@ CONTEXT.md §"CSV columns":
   Vendor shape `indicator,type` accepted via header alias.
 
 `project_id` accepts a UUID string OR the literal `'global'` (case-insensitive)
-which is converted to None — admin-only semantics enforced at the route layer.
+which is converted to None - admin-only semantics enforced at the route layer.
 
 Hard cap: 10_000 rows. Exceeding raises `IOCImportTooLarge`; the route maps
 this to HTTP 413 (RESEARCH Pitfall 8).

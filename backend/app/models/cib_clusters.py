@@ -1,4 +1,4 @@
-"""CIB cluster detection result — DISINFO-02."""
+"""CIB cluster detection result - DISINFO-02."""
 from __future__ import annotations
 
 import uuid
@@ -19,7 +19,7 @@ class CibCluster(Base):
     part of a coordinated campaign by MinHashLSH similarity analysis. Rows are
     project-scoped; deleting the project cascades to all its clusters.
 
-    severity is constrained to 'medium' or 'high' — low-confidence matches are
+    severity is constrained to 'medium' or 'high' - low-confidence matches are
     filtered before insertion. evidence is a JSONB blob with detector metadata
     (e.g. similarity scores, representative hashes).
 

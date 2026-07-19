@@ -10,9 +10,9 @@ Error messages match UI-SPEC.md §Error states byte-for-byte (localisable later)
   - Cert: "Enter a SHA-1 (40 hex) or SHA-256 (64 hex) certificate fingerprint."
 
 Consumed by:
-  - backend/app/routers/projects.py — POST /api/projects/{id}/scope validates
+  - backend/app/routers/projects.py - POST /api/projects/{id}/scope validates
     body.value before INSERT, returning 422 with the error message as detail.
-  - backend/app/services/project_scope.py (downstream) — relies on CIDR values
+  - backend/app/services/project_scope.py (downstream) - relies on CIDR values
     being parseable by PostgreSQL `inet` type for the `<<` containment operator.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ import ipaddress
 import re
 
 
-# RFC 1035 — length 1..253, labels 1..63 chars, alnum/hyphen, not starting/ending
+# RFC 1035 - length 1..253, labels 1..63 chars, alnum/hyphen, not starting/ending
 # with hyphen, at least one dot, TLD >= 2 alpha chars.
 _FQDN_RE = re.compile(
     r"^(?=.{1,253}$)([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?\.)+[a-z]{2,}$",
@@ -53,10 +53,10 @@ def validate_fqdn(value: str) -> str:
 
 
 def validate_as_number(value: str) -> str:
-    """ASN — 1..4294967295. Accepts 'AS12345' or '12345'. Returns canonical '12345'.
+    """ASN - 1..4294967295. Accepts 'AS12345' or '12345'. Returns canonical '12345'.
 
     Range: 1 to 4_294_967_295 per RFC 6793 (32-bit AS). 0 is reserved; negatives
-    and non-digit inputs all raise "positive integer" — single error copy for
+    and non-digit inputs all raise "positive integer" - single error copy for
     the UI-SPEC.
     """
     s = value.strip().upper().removeprefix("AS")
@@ -69,7 +69,7 @@ def validate_as_number(value: str) -> str:
 
 
 def validate_certificate_hash(value: str) -> str:
-    """Certificate fingerprint — SHA-1 (40 hex) or SHA-256 (64 hex).
+    """Certificate fingerprint - SHA-1 (40 hex) or SHA-256 (64 hex).
 
     Accepts input with ':' separators (standard fingerprint display format)
     and whitespace; returns lowercase hex with separators stripped.
@@ -90,7 +90,7 @@ def validate_scope_row_value(scope_type: str, value: str) -> str:
       domain      -> FQDN per RFC 1035
       as_number   -> ASN, 1..4294967295
       certificate -> SHA-1 or SHA-256 hex digest
-      keyword     -> free text (trimmed only — used in plainto_tsquery downstream)
+      keyword     -> free text (trimmed only - used in plainto_tsquery downstream)
       service     -> free text (trimmed only)
       whois       -> free text (trimmed only)
     """

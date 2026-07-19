@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * OverviewClient — Overview tab content for /projects/[id] (
+ * OverviewClient - Overview tab content for /projects/[id] (
  * extended by Plan 11).
  *
  * Plan 10-09 shipped the skeleton: project name heading + EngagementTypeBadge
@@ -10,11 +10,11 @@
  * Plan 10-11 extensions (this revision):
  *   - Export button in the page-level header (opens ExportDialog); UI-SPEC
  *     §Export flow PRJ-07 "Entry: Export button in /projects/[id] page-level
- *     header (not per-tab)" — Overview is the page header.
+ *     header (not per-tab)" - Overview is the page header.
  *   - Membership count and bound-source count surfaced in the Project summary
  *     dl so operators can see at a glance whether bindings are restricted.
  *     Fetched on mount alongside the Overview render; failures degrade
- *     silently to "—" so a transient backend hiccup doesn't block the page.
+ *     silently to "-" so a transient backend hiccup doesn't block the page.
  *
  * Deferred to a later release (v2.1 per CONTEXT.md §deferred):
  *   - Event-count sparkline
@@ -68,7 +68,7 @@ export function OverviewClient({ project }: { project: ProjectResponse }) {
           );
         }
       } catch {
-        // Silent degrade to "—" — overview is a summary view, not a
+        // Silent degrade to "-" - overview is a summary view, not a
         // load-bearing surface. Transient backend errors should not block
         // rendering the project name + description.
       }
@@ -120,13 +120,13 @@ export function OverviewClient({ project }: { project: ProjectResponse }) {
         <dl className="grid grid-cols-[max-content_1fr] gap-x-6 gap-y-2 text-sm">
           <dt className="text-muted-foreground">Members</dt>
           <dd className="text-foreground">
-            {membershipCount ?? "—"}
+            {membershipCount ?? "-"}
           </dd>
 
           <dt className="text-muted-foreground">Bound sources</dt>
           <dd className="text-foreground">
             {sourceCount === null
-              ? "—"
+              ? "-"
               : sourceCount === 0
                 ? "0 (all sources visible)"
                 : sourceCount}

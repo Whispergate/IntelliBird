@@ -1,4 +1,4 @@
-"""PRJ-07 per-project export integration tests — plan 10-14.
+"""PRJ-07 per-project export integration tests - plan 10-14.
 
 Covers:
   * test_stix_bundle_parseable: STIX 2.1 bundle is parseable; Identity "IntelliBird" + Note present
@@ -200,7 +200,7 @@ async def test_observer_cannot_export(client, db_session, users_matrix, jwt_sett
 
     pid = await _seed_project_with_events(db_session, "Observer Export Project", n_events=1)
 
-    # Use the project_observer_user (global role = Viewer, not Admin — no bypass)
+    # Use the project_observer_user (global role = Viewer, not Admin - no bypass)
     observer = users_matrix["project_observer_user"]
 
     db_session.add(ProjectMembership(

@@ -1,4 +1,4 @@
-"""Unit tests for GET /api/events/{id}/graph router — / graph.
+"""Unit tests for GET /api/events/{id}/graph router - / graph.
 
 Uses fake env vars + deferred imports to avoid triggering pydantic_settings
 validation (DATABASE_URL, SECRET_KEY required) at collection time.
@@ -25,7 +25,6 @@ os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 @pytest.fixture
 def app_with_router():
     """Minimal FastAPI app with graph router."""
-    from app.database import get_session  # noqa: PLC0415
     from app.routers.graph import router as graph_router  # noqa: PLC0415
 
     app = FastAPI()
@@ -49,7 +48,7 @@ async def test_depth_4_rejected_by_query_validator(app_with_router):
 
 @pytest.mark.asyncio
 async def test_depth_default_is_2(app_with_router, monkeypatch):
-    """Call without depth — traverse_graph should be invoked with depth=2."""
+    """Call without depth - traverse_graph should be invoked with depth=2."""
     from app.database import get_session  # noqa: PLC0415
     from app.services.graph_traversal import DEFAULT_DEPTH  # noqa: PLC0415
 
@@ -57,7 +56,7 @@ async def test_depth_default_is_2(app_with_router, monkeypatch):
 
     async def fake_traverse(session, event_id, depth, dashboard_roles=None, **kwargs):
         captured["depth"] = depth
-        return None  # triggers 404 — we only need to capture arg
+        return None  # triggers 404 - we only need to capture arg
 
     monkeypatch.setattr("app.routers.graph.traverse_graph", fake_traverse)
 
@@ -189,7 +188,7 @@ async def test_dashboard_roles_sourced_from_request_state(app_with_router, monke
     app_with_router.dependency_overrides[get_session] = _fake_session
 
     async with AsyncClient(transport=ASGITransport(app=app_with_router), base_url="http://t") as c:
-        # Send X-Dashboard-Role header — it must be IGNORED
+        # Send X-Dashboard-Role header - it must be IGNORED
         r = await c.get(
             f"/api/events/{uuid.uuid4()}/graph",
             headers={"X-Dashboard-Role": "red"},

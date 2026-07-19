@@ -5,12 +5,10 @@ Tests for dispatcher routing, GenieKey headers, and PD routing_key body injectio
 from __future__ import annotations
 
 import json
-import types
 import uuid
 from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from app.crypto import encrypt_credentials
 from app.services.webhook_dispatcher import _build_auth_headers, _drain_and_dispatch
@@ -117,7 +115,7 @@ def test_pd_routing_key_injected_into_payload_body() -> None:
     """NOTIF-03: routing_key from auth_enc appears in the JSON body sent to PD.
 
     _drain_and_dispatch must inject payload['routing_key'] from decrypted
-    auth_enc BEFORE _post_with_retry is called — routing_key must NOT be
+    auth_enc BEFORE _post_with_retry is called - routing_key must NOT be
     in any Authorization header (PD Events API v2 requires it in the body).
     """
     routing_key = "rk_abc123_test_key"
@@ -184,7 +182,7 @@ def test_pd_routing_key_decrypt_failure_leaves_sentinel() -> None:
     """If auth_enc decrypt fails, _post_with_retry is still called.
 
     The payload's routing_key keeps the '_PENDING_INJECTION_' sentinel (or
-    the key is missing). Delivery will 400 at PD — triggering auto-disable.
+    the key is missing). Delivery will 400 at PD - triggering auto-disable.
     The important thing: no exception escapes _drain_and_dispatch.
     """
     wh = _make_webhook("pagerduty", auth_enc="invalid_encrypted_blob")
@@ -209,7 +207,7 @@ def test_pd_routing_key_decrypt_failure_leaves_sentinel() -> None:
 
     # _post_with_retry was called (dispatch was attempted)
     assert len(post_called) == 1, "Expected _post_with_retry to be called once"
-    # routing_key NOT present from injector (decrypt failed — sentinel or absent)
+    # routing_key NOT present from injector (decrypt failed - sentinel or absent)
     assert post_called[0].get("routing_key") != "rk_real_key", (
         "routing_key should not be a real key when decrypt fails"
     )
@@ -227,7 +225,6 @@ def test_pd_auto_resolve() -> None:
     _fire_pagerduty_resolves must be called (and fire httpx POSTs with
     event_action='resolve' to PD-enabled webhooks for the affected source).
     """
-    import httpx
     from unittest.mock import patch as _patch, MagicMock as _Mock
 
     from app.services.archiver import _fire_pagerduty_resolves

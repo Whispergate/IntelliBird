@@ -1,8 +1,8 @@
-"""Migration 002 — UNIQUE(source_id, content_hash) on events hypertable.
+"""Migration 002 - UNIQUE(source_id, content_hash) on events hypertable.
 
 Requirement: INGR-03 (dedup) + PITFALLS H-3 (race-free dedup at DB layer).
 : DB-level unique constraint, not app-level SELECT-then-INSERT.
-: Constraint on (source_id, content_hash), NOT global — same content
+: Constraint on (source_id, content_hash), NOT global - same content
 from different sources is legitimately stored twice.
 """
 from __future__ import annotations
@@ -60,7 +60,7 @@ def _mk_event_row(source_id: uuid.UUID, content_hash: str, observed_at: datetime
     return {
         "stix_type": "x-intellibird-rss",
         "source_id": source_id,
-        # events.project_id NOT NULL — seed against legacy sentinel.
+        # events.project_id NOT NULL - seed against legacy sentinel.
         "project_id": LEGACY_PROJECT_ID,
         "observed_at": observed_at or datetime.now(timezone.utc),
         "content_hash": content_hash,
@@ -83,7 +83,7 @@ def test_unique_constraint_enforced(migrated_engine) -> None:
 
  TimescaleDB requires the partition column (observed_at) to be part of the
  unique index. Dedup is therefore enforced when source_id + content_hash +
- observed_at are identical — which is the real-world duplicate scenario: a
+ observed_at are identical - which is the real-world duplicate scenario: a
  re-fetched item with the same content_hash will have the same observed_at
  (since we use the item's publication timestamp, not ingestion time).
 """
@@ -120,7 +120,7 @@ def test_unique_constraint_enforced(migrated_engine) -> None:
 def test_unique_constraint_allows_different_sources(migrated_engine) -> None:
     """: same (content_hash, observed_at) from two different source_ids is stored twice.
 
- The unique index is (source_id, content_hash, observed_at) — changing
+ The unique index is (source_id, content_hash, observed_at) - changing
  source_id makes the tuple distinct. Same content from different sources
  is legitimately stored twice (different provenance).
 """
@@ -151,7 +151,7 @@ def test_unique_constraint_allows_different_sources(migrated_engine) -> None:
 
 
 def test_on_conflict_do_nothing(migrated_engine) -> None:
-    """: ON CONFLICT DO NOTHING is race-free — two inserts yield 1 row."""
+    """: ON CONFLICT DO NOTHING is race-free - two inserts yield 1 row."""
     from app.models.events import Event  # noqa: PLC0415
 
     sid = uuid.uuid4()

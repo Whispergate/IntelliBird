@@ -53,7 +53,7 @@ async def test_unique_nulls_not_distinct_rejects_double_global(db_session):
 @pytest.mark.asyncio
 async def test_unique_allows_distinct_types_in_global_scope(db_session):
     """Two global rows with same normalized_value but different `type`
-    are independent entries — must be permitted.
+    are independent entries - must be permitted.
     """
     await db_session.execute(
         text(

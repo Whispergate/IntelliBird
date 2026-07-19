@@ -1,6 +1,6 @@
 """Integration: poll_nvd end-to-end. Uses nvd_cve_sample.json + testcontainers PG.
 
-nvdlib.searchCVE_V2 is monkeypatched to yield the fixture CVE — we are NOT
+nvdlib.searchCVE_V2 is monkeypatched to yield the fixture CVE - we are NOT
 testing nvdlib itself, we are testing that OUR pipeline writes the correct
 three rows (events + cve_details + attack_technique_tags) and advances the
 cursor correctly.

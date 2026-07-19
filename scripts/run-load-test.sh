@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PROD-05 load-test runner — one-shot: pytest -m load + pgbench concurrent-read.
+# PROD-05 load-test runner - one-shot: pytest -m load + pgbench concurrent-read.
 #
 # Appends results (with a header-banner + UTC timestamp) to
 # docs/ops/load-test-results.md. Operator then edits the "Last Run" section
@@ -11,7 +11,7 @@
 #     portion brings its own testcontainer. The pgbench portion requires a DSN
 #     the caller must supply via env vars below.
 #
-# Env vars (pgbench step only — pytest uses its own testcontainer):
+# Env vars (pgbench step only - pytest uses its own testcontainer):
 #   PGHOST     - Postgres host (e.g. 127.0.0.1)
 #   PGPORT     - Postgres port (e.g. 5432)
 #   PGUSER     - Postgres role
@@ -19,7 +19,7 @@
 #   PGPASSWORD - (optional) via .pgpass or env
 #
 # Additional:
-#   PROD05_SKIP_PGBENCH=1 — run pytest only (useful in sandboxed CI)
+#   PROD05_SKIP_PGBENCH=1 - run pytest only (useful in sandboxed CI)
 #
 # Exits non-zero if either the pytest load test fails OR pgbench reports a
 # non-zero rc. The markdown file is still updated so the failure is logged.
@@ -35,7 +35,7 @@ OPERATOR="${USER:-unknown}"
     echo ""
     echo "---"
     echo ""
-    echo "## Run Log — ${TS}"
+    echo "## Run Log - ${TS}"
     echo ""
     echo "- Operator: ${OPERATOR}"
     echo "- Host: $(hostname)"
@@ -66,7 +66,7 @@ fi
 if ! command -v pgbench >/dev/null 2>&1; then
     {
         echo ""
-        echo "_pgbench step skipped — \`pgbench\` not installed on host._"
+        echo "_pgbench step skipped - \`pgbench\` not installed on host._"
         echo ""
         echo "Install with one of:"
         echo "  - Debian/Ubuntu: \`sudo apt-get install -y postgresql-client\`"
@@ -75,14 +75,14 @@ if ! command -v pgbench >/dev/null 2>&1; then
         echo ""
         echo "Or re-run with \`PROD05_SKIP_PGBENCH=1\` to skip explicitly."
     } >> "$RESULTS"
-    echo "scripts/run-load-test.sh: pgbench not found — skipped concurrent-read step." >&2
+    echo "scripts/run-load-test.sh: pgbench not found - skipped concurrent-read step." >&2
     exit "${PYTEST_RC}"
 fi
 
 # --- pgbench concurrent-read step ---
 {
     echo ""
-    echo "### \`pgbench\` concurrent-read — 10 clients × 4 jobs × 60s"
+    echo "### \`pgbench\` concurrent-read - 10 clients × 4 jobs × 60s"
     echo ""
     echo '```'
 } >> "$RESULTS"
@@ -122,7 +122,7 @@ for f in sorted(glob.glob('/tmp/pgbench.*')):
                 except ValueError:
                     continue
 if not rows:
-    print("pgbench log empty — no samples")
+    print("pgbench log empty - no samples")
     sys.exit(0)
 rows.sort()
 p50 = rows[len(rows)//2] / 1000.0

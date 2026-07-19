@@ -1,4 +1,4 @@
-"""Backfill actor idempotency tests —-02 (MAP-05).
+"""Backfill actor idempotency tests --02 (MAP-05).
 
 Tests verify:
 - backfill_geo_once_impl resolves STIX-location events and UPDATEs geo cols
@@ -11,7 +11,6 @@ from __future__ import annotations
 import os
 import subprocess
 import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -177,21 +176,21 @@ def test_backfill_resolves_and_updates(live_db, monkeypatch):
 
     source_id = _insert_source(engine)
 
-    # Event 1: has STIX location SDO — should be updated by backfill
+    # Event 1: has STIX location SDO - should be updated by backfill
     eid_with_location = _insert_event(
         engine,
         source_id=source_id,
         raw_stix=_STIX_WITH_LOCATION,
     )
 
-    # Event 2: has STIX but no geo-resolvable SDO — should stay NULL
+    # Event 2: has STIX but no geo-resolvable SDO - should stay NULL
     eid_no_geo = _insert_event(
         engine,
         source_id=source_id,
         raw_stix=_STIX_NO_GEO,
     )
 
-    # Event 3: already has geo_lat/geo_lon — excluded by SELECT predicate
+    # Event 3: already has geo_lat/geo_lon - excluded by SELECT predicate
     eid_already_resolved = _insert_event(
         engine,
         source_id=source_id,
@@ -225,11 +224,11 @@ def test_backfill_resolves_and_updates(live_db, monkeypatch):
     assert row1.geo_lon == pytest.approx(2.35), f"Expected 2.35, got {row1.geo_lon}"
     assert row1.country_code == "FR"
 
-    # Event 2: unresolvable — stays NULL
+    # Event 2: unresolvable - stays NULL
     assert row2.geo_lat is None, f"Expected None, got {row2.geo_lat}"
     assert row2.geo_lon is None
 
-    # Event 3: was excluded by SELECT predicate — coords unchanged
+    # Event 3: was excluded by SELECT predicate - coords unchanged
     assert row3.geo_lat == pytest.approx(99.0)
     assert row3.geo_lon == pytest.approx(99.0)
 
@@ -245,12 +244,12 @@ def test_backfill_is_idempotent(live_db, monkeypatch):
     geo_module._reader_attempted = False
     geo_module._lookup_ip.cache_clear()
 
-    # First pass (may have been run already by previous test — that's fine)
+    # First pass (may have been run already by previous test - that's fine)
     from app.services.geo_backfill import backfill_geo_once_impl
 
     backfill_geo_once_impl()
 
-    # Second pass — all previously-resolvable rows already have geo_lat set
+    # Second pass - all previously-resolvable rows already have geo_lat set
     result2 = backfill_geo_once_impl()
 
     assert result2["updated"] == 0, (

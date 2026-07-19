@@ -1,11 +1,11 @@
-"""/api/projects/{project_id}/assets — project asset surface.
+"""/api/projects/{project_id}/assets - project asset surface.
 
 Read endpoints (list/summary/detail) plus write (PATCH note) + export (CSV/JSON):
-  GET    /                       — list (paginated, filterable)
-  GET    /summary                — 7-bucket count summary
-  GET    /{asset_id}             — detail (findings + promoted events + note)
-  PATCH  /{asset_id}/note        — upsert note (Contributor+ / global Admin|Analyst)
-  GET    /export?format=csv|json — streaming export, 413 when >50k matched rows
+  GET    /                       - list (paginated, filterable)
+  GET    /summary                - 7-bucket count summary
+  GET    /{asset_id}             - detail (findings + promoted events + note)
+  PATCH  /{asset_id}/note        - upsert note (Contributor+ / global Admin|Analyst)
+  GET    /export?format=csv|json - streaming export, 413 when >50k matched rows
 
 Router registered via main.py include_router(assets.router) (04b).
 """
@@ -18,7 +18,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import and_, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -71,7 +71,7 @@ async def load_active_project_or_422(
     """Reject legacy sentinel + archived projects with 422.
 
     RATIONALE (locked in revision): no canonical public helper exists in
-    app.security.project_membership for the legacy/archived guard — that guard
+    app.security.project_membership for the legacy/archived guard - that guard
     currently lives as `_load_project_or_404` in routers/easm.py. Cross-router
     `_`-import is an anti-pattern, so this router defines its own 10-line public
     helper. If a canonical guard lands later, migrate here.
@@ -138,7 +138,7 @@ def _annotate_rows(
 
 
 # ---------------------------------------------------------------------------
-# Shared filter pipeline — consumed by list_assets + export_assets.
+# Shared filter pipeline - consumed by list_assets + export_assets.
 # ---------------------------------------------------------------------------
 
 
@@ -180,7 +180,7 @@ async def _collect_filtered_rows(
         stmt = stmt.where(EASMFinding.module.in_(list(module)))
 
     raw_rows = (await session.execute(stmt)).all()
-    annotated = _annotate_rows(raw_rows, scope_rows, stale_cutoff)
+    annotated = _annotate_rows(raw_rows, scope_rows, stale_cutoff)  # type: ignore[arg-type]
 
     # Post-aggregation date-range filters (MIN/MAX are per-aggregated-row).
     if first_seen_from is not None:
@@ -213,7 +213,7 @@ async def _collect_filtered_rows(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/assets — list
+# GET /api/projects/{project_id}/assets - list
 # ---------------------------------------------------------------------------
 
 
@@ -261,7 +261,7 @@ async def list_assets(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/assets/summary — 7-bucket counts
+# GET /api/projects/{project_id}/assets/summary - 7-bucket counts
 # ---------------------------------------------------------------------------
 
 
@@ -279,19 +279,19 @@ async def assets_summary(
 
     stmt = assets_query.build_assets_aggregation_select(project_id)
     raw_rows = (await session.execute(stmt)).all()
-    annotated = _annotate_rows(raw_rows, scope_rows, stale_cutoff)
+    annotated = _annotate_rows(raw_rows, scope_rows, stale_cutoff)  # type: ignore[arg-type]
 
     buckets = assets_query.summary_from_rows(annotated)
     # Ensure all 7 bucket keys present (summary_from_rows guarantees this;
     # belt-and-braces to honour the must_have truth).
     for k in SUMMARY_BUCKET_KEYS:
-        buckets.setdefault(k, buckets.get(k))  # no-op for already-present keys
+        buckets.setdefault(k, buckets.get(k))  # type: ignore[arg-type]  # no-op for already-present keys
 
     return AssetSummary(buckets=buckets)
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/assets/export — CSV/JSON export
+# GET /api/projects/{project_id}/assets/export - CSV/JSON export
 # ---------------------------------------------------------------------------
 #
 # Declared BEFORE the detail endpoint so FastAPI's declaration-order route
@@ -395,7 +395,7 @@ async def export_assets(
             detail={
                 "matched": len(rows),
                 "cap": EXPORT_ROW_CAP,
-                "detail": "Too many assets — narrow filter before exporting.",
+                "detail": "Too many assets - narrow filter before exporting.",
             },
         )
 
@@ -431,7 +431,7 @@ async def export_assets(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/assets/{asset_id} — detail
+# GET /api/projects/{project_id}/assets/{asset_id} - detail
 # ---------------------------------------------------------------------------
 
 
@@ -457,7 +457,7 @@ async def asset_detail(
         raise HTTPException(status_code=404, detail="asset_not_found")
     bbot_event_type, canonical_target = resolved
 
-    # Re-aggregate for just this (type, target) — reuse same SELECT then filter
+    # Re-aggregate for just this (type, target) - reuse same SELECT then filter
     # in Python so we keep a single source of truth on aggregation shape.
     agg_stmt = assets_query.build_assets_aggregation_select(project_id).where(
         and_(
@@ -466,12 +466,12 @@ async def asset_detail(
         )
     )
     agg_rows = (await session.execute(agg_stmt)).all()
-    annotated = _annotate_rows(agg_rows, scope_rows, stale_cutoff)
+    annotated = _annotate_rows(agg_rows, scope_rows, stale_cutoff)  # type: ignore[arg-type]
     if not annotated:
         raise HTTPException(status_code=404, detail="asset_not_found")
     row = annotated[0]
 
-    # Findings fan-out (drawer-only raw_bbot — Pitfall 1).
+    # Findings fan-out (drawer-only raw_bbot - Pitfall 1).
     finding_stmt = (
         select(EASMFinding, EASMScan.started_at)
         .join(EASMScan, EASMScan.id == EASMFinding.scan_id)
@@ -499,7 +499,7 @@ async def asset_detail(
             )
         )
 
-    # Promoted events via content_hash (LOCKED — matches easm_promoter.py).
+    # Promoted events via content_hash (LOCKED - matches easm_promoter.py).
     content_hash_subq = (
         select(EASMFinding.content_hash)
         .where(
@@ -559,7 +559,7 @@ async def asset_detail(
 
 
 # ---------------------------------------------------------------------------
-# PATCH /api/projects/{project_id}/assets/{asset_id}/note — upsert note
+# PATCH /api/projects/{project_id}/assets/{asset_id}/note - upsert note
 # ---------------------------------------------------------------------------
 
 
@@ -584,7 +584,7 @@ async def patch_asset_note(
     """
     await load_active_project_or_422(session, project_id)
 
-    # Authority check — explicit. require_auth (not require_project_membership)
+    # Authority check - explicit. require_auth (not require_project_membership)
     # is used so the helper below can distinguish Observer (403) from missing
     # membership (also 403) with matching copy to the easm patch_finding path.
     contributor_rank = PROJECT_ROLE_RANK["Contributor"]

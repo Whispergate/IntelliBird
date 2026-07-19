@@ -3,13 +3,13 @@
 These two helpers are the ONLY code path that touches the events table
 insert + UNIQUE(source_id, content_hash, observed_at) ON CONFLICT DO NOTHING
 contract and the sources health-field update contract
-. Worker plans 03/04/05 call these — they do not re-implement.
+. Worker plans 03/04/05 call these - they do not re-implement.
 
 IMPORTANT: The unique index on the events hypertable spans THREE columns:
 (source_id, content_hash, observed_at). TimescaleDB requires the partition
 column (observed_at) in every unique index. Workers must pass observed_at
 in the row dict. Re-fetched items use the original item publication timestamp
-as observed_at, so the triple is identical on re-fetch — dedup works correctly.
+as observed_at, so the triple is identical on re-fetch - dedup works correctly.
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ def _inject_score_into_row(session: Session, row: dict) -> None:
     Mutates ``row`` in-place. No-ops if score is already set (caller pre-scored).
     """
     if row.get("score") is not None:
-        return  # already scored by caller — don't double-score
+        return  # already scored by caller - don't double-score
 
     from app.services.scoring import score_event, ScoringWeights  # lazy import
     from app.services.scoring.defaults import DEFAULT_SOURCE_CONFIDENCE  # lazy import
@@ -63,7 +63,7 @@ def _inject_score_into_row(session: Session, row: dict) -> None:
 
     score_val, scored_at_ts, score_ver = score_event(
         feed_type=feed_type,
-        cvss_score=None,    # RSS/TAXII path — no CVSS at this stage
+        cvss_score=None,    # RSS/TAXII path - no CVSS at this stage
         brand_severity=None,
         observed_at=observed_at,
         source_confidence=src_conf,
@@ -101,7 +101,7 @@ def _persist_event_for_bindings(
       - Per-project dedup: relies on 4-col unique index
         (project_id, source_id, content_hash, observed_at) created in migration 021.
 
-    Sync session — workers use sync sessions. Do NOT import from
+    Sync session - workers use sync sessions. Do NOT import from
     ``app.services.project_scope`` (that module is async-only).
 
     Quick task 260429-tyq.
@@ -116,7 +116,7 @@ def _persist_event_for_bindings(
 
     inserted = 0
     for pid in project_ids:
-        # Shallow copy — _persist_event mutates (geo, enrichment, score). The
+        # Shallow copy - _persist_event mutates (geo, enrichment, score). The
         # nested raw_stix dict is read-only inside _persist_event so a shallow
         # copy is sufficient.
         per_row = {**row, "project_id": pid}
@@ -131,7 +131,7 @@ def _persist_event(session: Session, row: dict) -> int:
  for `session.commit` at the end of the batch.
 
  The four-column conflict target matches the unique index
- uq_events_source_content_hash recreated by migration 021 — TimescaleDB
+ uq_events_source_content_hash recreated by migration 021 - TimescaleDB
  requires the partition column (observed_at) in any unique index on a
  hypertable. The row dict MUST include observed_at (set to the feed
  item's published/modified timestamp so re-fetches produce identical
@@ -147,9 +147,9 @@ def _persist_event(session: Session, row: dict) -> int:
         from app.models.projects import LEGACY_PROJECT_ID  # lazy import (avoids cycles)
         row["project_id"] = LEGACY_PROJECT_ID
 
-    # MAP-05 — resolve geo at ingest if worker has not pre-populated
+    # MAP-05 - resolve geo at ingest if worker has not pre-populated
     if row.get("geo_lat") is None or row.get("geo_lon") is None:
-        from app.services.geo import resolve_geo  # lazy import — keeps worker boot cheap
+        from app.services.geo import resolve_geo  # lazy import - keeps worker boot cheap
         lat, lon, cc = resolve_geo(row.get("raw_stix"))
         if lat is not None and lon is not None:
             row["geo_lat"] = lat
@@ -157,7 +157,7 @@ def _persist_event(session: Session, row: dict) -> int:
             if cc is not None and row.get("country_code") is None:
                 row["country_code"] = cc
 
-    #+ article enrichment — regex-extract CVE IDs, ATT&CK technique
+    #+ article enrichment - regex-extract CVE IDs, ATT&CK technique
     # IDs, IOCs, severity, country hints from title + description prose.
     # Deterministic (no NLP inference). Extracted ATT&CK IDs get feed_asserted
     # provenance because the text literally contains them.
@@ -170,11 +170,11 @@ def _persist_event(session: Session, row: dict) -> int:
     merge_enrichment_into_event_row(row, enrichment)
 
     # SCR-01: populate score, scored_at, score_version at INSERT time.
-    # Pure scoring function — no additional DB writes. One SELECT on sources.
+    # Pure scoring function - no additional DB writes. One SELECT on sources.
     _inject_score_into_row(session, row)
 
     stmt = (
-        pg_insert(Event.__table__)
+        pg_insert(Event.__table__)  # type: ignore[arg-type]
         .values(**row)
         .on_conflict_do_nothing(
             index_elements=["project_id", "source_id", "content_hash", "observed_at"]
@@ -192,14 +192,14 @@ def _persist_event(session: Session, row: dict) -> int:
         bump_last_event_at(session, source_id_val)
 
     # Fire-and-forget ATT&CK tag rows for extracted techniques. If the ID
-    # does not exist in attack_techniques catalog the FK check fails — we
+    # does not exist in attack_techniques catalog the FK check fails - we
     # swallow individual failures so ingest stays green (scope-safety).
     from sqlalchemy.dialects.postgresql import insert as _pg_insert  # noqa: PLC0415
     from app.models.tags import AttackTechniqueTag  # noqa: PLC0415
     for tag_row in attack_technique_tag_rows(inserted[0], enrichment):
         try:
             session.execute(
-                _pg_insert(AttackTechniqueTag.__table__)
+                _pg_insert(AttackTechniqueTag.__table__)  # type: ignore[arg-type]
                 .values(**tag_row)
                 .on_conflict_do_nothing()
             )
@@ -208,7 +208,7 @@ def _persist_event(session: Session, row: dict) -> int:
             pass
 
     # IOC-08: write IOC rows + ioc_event_links for indicators
-    # discovered in title+description. Best-effort — must NEVER raise into the
+    # discovered in title+description. Best-effort - must NEVER raise into the
     # ingest hot path (a single malformed indicator should not break the event
     # INSERT). The enrichment object was built above; reuse it directly so
     # we don't pay for a second regex pass.
@@ -232,7 +232,7 @@ def _persist_event(session: Session, row: dict) -> int:
         )
 
     # SIGMA-02: evaluate active Sigma rules against this event.
-    # Best-effort — must NEVER raise into the ingest hot path.
+    # Best-effort - must NEVER raise into the ingest hot path.
     try:
         from app.services.sigma_engine import evaluate_sigma_rules  # noqa: PLC0415
         evaluate_sigma_rules(session, inserted[0], row.get("project_id"))
@@ -261,7 +261,7 @@ def _maybe_enqueue_auto_summary(
     """Enqueue ai_summarise_event if the project's provider is Ollama.
 
     Best-effort: any failure (no provider, broker down, dramatiq import error)
-    is swallowed — ingest must NOT fail because the AI worker is offline.
+    is swallowed - ingest must NOT fail because the AI worker is offline.
     """
     if project_id is None:
         return
@@ -290,13 +290,13 @@ def _maybe_enqueue_auto_summary(
         if row != "ollama":
             return
         import uuid as _uuid  # noqa: PLC0415
-        import app.workers.broker as _broker  # noqa: PLC0415  — side-effect: init dramatiq broker
+        import app.workers.broker as _broker  # noqa: PLC0415  - side-effect: init dramatiq broker
         _ = _broker
         from app.workers.ai import ai_summarise_event  # noqa: PLC0415
         job_id = str(_uuid.uuid4())
         ai_summarise_event.send(job_id, str(event_id), str(project_id))  # type: ignore[attr-defined]
     except Exception:  # noqa: BLE001
-        # Log via root logger — keeping ingest hot path silent on AI failure.
+        # Log via root logger - keeping ingest hot path silent on AI failure.
         import logging  # noqa: PLC0415
         logging.getLogger(__name__).debug(
             "auto_summary_enqueue_skipped event_id=%s project_id=%s",
@@ -311,13 +311,13 @@ def update_source_health(
     status: str,
     succeeded: bool,
 ) -> None:
-    """Update sources.last_polled_at, last_status, consecutive_failures —.
+    """Update sources.last_polled_at, last_status, consecutive_failures -.
 
  - `last_polled_at` → now (DB-side clock, not Python's)
  - `last_status` → one of VALID_STATUSES
  - `consecutive_failures` → 0 on success, else self-increment (+1)
 
- Caller commits the transaction — this helper only issues the UPDATE.
+ Caller commits the transaction - this helper only issues the UPDATE.
 """
     if status not in VALID_STATUSES:
         raise ValueError(

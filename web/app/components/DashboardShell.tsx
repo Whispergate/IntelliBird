@@ -47,7 +47,7 @@ export function DashboardShell({ role, children }: Props) {
             </Suspense>
           </div>
 
-          {/* Bottom half slot — widgets + events list inject here from 05-04+05-05*/}
+          {/* Bottom half slot - widgets + events list inject here from 05-04+05-05*/}
           <Suspense fallback={null}>
             <div
               data-testid="dashboard-bottom-half"

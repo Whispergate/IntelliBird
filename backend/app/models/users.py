@@ -1,4 +1,4 @@
-"""User ORM — AUTH-01, AUTH-02, AUTH-03.
+"""User ORM - AUTH-01, AUTH-02, AUTH-03.
 
 Single table for local + OIDC accounts. Columns match migration 008_users_and_auth.
 """

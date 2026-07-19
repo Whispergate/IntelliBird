@@ -1,4 +1,4 @@
-"""Integration: OpenAPI / Swagger surface — SYS-03."""
+"""Integration: OpenAPI / Swagger surface - SYS-03."""
 from __future__ import annotations
 
 import os

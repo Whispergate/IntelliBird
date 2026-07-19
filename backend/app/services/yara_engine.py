@@ -1,5 +1,5 @@
 """
-— YARA engine: in-memory sample scan and STIX pattern extraction scan.
+- YARA engine: in-memory sample scan and STIX pattern extraction scan.
 SECURITY: No temp files written. All YARA scanning is in-process bytes matching.
 """
 from __future__ import annotations
@@ -7,8 +7,13 @@ import io
 import logging
 import re
 import uuid
+from typing import TYPE_CHECKING
+
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+if TYPE_CHECKING:
+    import yara
 
 log = logging.getLogger(__name__)
 
@@ -29,9 +34,8 @@ async def scan_sample(
     """
     Scan sample bytes against all enabled YARA rules scoped to project_id or global.
     Returns list of {rule_id, rule_name, family} dicts for each matching rule.
-    Never raises — yara.Error per rule is logged and skipped.
+    Never raises - yara.Error per rule is logged and skipped.
     """
-    import yara  # Import deferred so module is importable without libyara installed
     rules_rows = await _load_active_rules(db, project_id, stix_only=False)
     matches = []
     for row in rules_rows:
@@ -59,7 +63,6 @@ async def scan_stix_pattern(
     that have stix_pattern_scan: true metadata.
     Returns list of {rule_id, rule_name, family} dicts.
     """
-    import yara
     # Only load rules that have the stix_pattern_scan metadata flag in their content
     rules_rows = await _load_active_rules(db, project_id, stix_only=True)
     if not rules_rows:

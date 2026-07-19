@@ -1,13 +1,13 @@
 """Brand-term stoplist + specificity predicates.
 
-DEFAULT_STOPLIST is a code constant — frozen in v2.0. Operators extend it via the
+DEFAULT_STOPLIST is a code constant - frozen in v2.0. Operators extend it via the
 BRAND_STOPLIST_EXTRA environment variable (comma-separated, case-insensitive),
 which is unioned into the runtime set by load_runtime_stoplist().
 
 BRAND-01: per-project additive union via load_runtime_stoplist_for_project.
-Existing zero-arg load_runtime_stoplist() (sync) is UNCHANGED — back-compat preserved.
+Existing zero-arg load_runtime_stoplist() (sync) is UNCHANGED - back-compat preserved.
 
-Pattern mirrors app.services.bbot_safelist — frozenset + env-extra union
+Pattern mirrors app.services.bbot_safelist - frozenset + env-extra union
 + lazy settings read so tests can monkeypatch the settings singleton.
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 # ---------------------------------------------------------------------------
-# DEFAULT_STOPLIST — ~150 generic English / brand / tech / action words that
+# DEFAULT_STOPLIST - ~150 generic English / brand / tech / action words that
 # would otherwise produce runaway FTS + ct_log noise for short generic terms.
 # Every entry must be lowercase; is_stoplisted() lowercases inputs before check.
 # ---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ def is_stoplisted(value: str, runtime_stoplist: frozenset[str] | None = None) ->
 
 
 def is_short(value: str) -> bool:
-    """True if `value` is shorter than 6 characters — too generic for safe matching."""
+    """True if `value` is shorter than 6 characters - too generic for safe matching."""
     return len(value) < 6
 
 
@@ -79,7 +79,7 @@ def load_runtime_stoplist() -> frozenset[str]:
     """Return DEFAULT_STOPLIST unioned with BRAND_STOPLIST_EXTRA (comma-separated env).
 
     Settings singleton is read at call time so tests can monkeypatch.
-    Zero-arg sync API — UNCHANGED for back-compat with all existing callers.
+    Zero-arg sync API - UNCHANGED for back-compat with all existing callers.
     """
     extra_raw = getattr(settings, "BRAND_STOPLIST_EXTRA", None) or ""
     extras = frozenset(
@@ -102,7 +102,7 @@ async def load_runtime_stoplist_for_project(
     All project terms are lowercased to match the lookup convention used by
     is_stoplisted() and DEFAULT_STOPLIST entries.
 
-    Async — requires an active AsyncSession (from brand_monitor.scan_project or
+    Async - requires an active AsyncSession (from brand_monitor.scan_project or
     brand router handlers). Use zero-arg load_runtime_stoplist() from sync paths.
     """
     from sqlalchemy import select  # local import avoids circular at module level

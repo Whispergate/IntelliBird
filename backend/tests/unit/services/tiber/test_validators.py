@@ -1,19 +1,19 @@
 """Unit tests for TIBER report section completeness and validation gates.
 
-Wave 0 stubs — skip-marked pending Wave 3 service layer (18-03-PLAN).
+Wave 0 stubs - skip-marked pending Wave 3 service layer (18-03-PLAN).
 Each test documents the exact behaviour expected from app.services.tiber.validators.
 
 Requirements covered:
-  TIBER-01 — section completeness gate (completeness_check)
-  TIBER-02 — scenario stepper 5-step validation gate (scenario_gate_check)
-  TIBER-03 — history list query excludes content_bytea column
-  AI-08    — ai_draft_scenario_narrative actor must be on queue_name="ai"
+  TIBER-01 - section completeness gate (completeness_check)
+  TIBER-02 - scenario stepper 5-step validation gate (scenario_gate_check)
+  TIBER-03 - history list query excludes content_bytea column
+  AI-08    - ai_draft_scenario_narrative actor must be on queue_name="ai"
 """
 from __future__ import annotations
 
 import pytest
 
-# No pytestmark — unit tests are the default (not integration-marked)
+# No pytestmark - unit tests are the default (not integration-marked)
 
 
 # ---------------------------------------------------------------------------
@@ -51,7 +51,7 @@ def test_section_completeness_gate_required_fields() -> None:
     """
     from app.services.tiber.validators import completeness_check
 
-    # 1. Fully valid report — empty dict returned
+    # 1. Fully valid report - empty dict returned
     valid_report = _make_valid_report()
     result = completeness_check(valid_report)
     assert result == {}, f"Expected fully-complete report to pass, got: {result}"
@@ -70,7 +70,7 @@ def test_section_completeness_gate_required_fields() -> None:
     assert "scope" in result3
     assert "in_scope_assets" in result3["scope"]
 
-    # 4. out_of_scope_assets not set (None — must be at least empty array)
+    # 4. out_of_scope_assets not set (None - must be at least empty array)
     report_null_oos = _make_valid_report()
     report_null_oos.out_of_scope_assets = None
     result4 = completeness_check(report_null_oos)
@@ -162,14 +162,14 @@ def test_scenario_completeness() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="Wave 4 — history query module not yet shipped (18-04-PLAN)")
+@pytest.mark.skip(reason="Wave 4 - history query module not yet shipped (18-04-PLAN)")
 def test_history_query_excludes_bytea(monkeypatch) -> None:
     """History list query SQL must never reference content_bytea column.
 
     The history sidebar loads export metadata rows (id, format, version_number,
     filename, generated_at, generated_by_user_id, report_state_at_export).
     Fetching content_bytea in this query triggers TOAST decompression for ALL
-    export versions on every sidebar load — O(n * PDF_size) per page load.
+    export versions on every sidebar load - O(n * PDF_size) per page load.
 
     Test strategy: call get_report_history_query() from the history module,
     capture the compiled SQL string, and assert 'content_bytea' does not appear.
@@ -228,18 +228,17 @@ def test_narrative_actor_queue(monkeypatch) -> None:
     )
 
     # Confirm it is NOT in reports.py (that would be the wrong module)
-    import ast
     import pathlib
     reports_worker = pathlib.Path("app/workers/reports.py")
     if reports_worker.exists():
         source = reports_worker.read_text()
         assert "ai_draft_scenario_narrative" not in source, (
-            "ai_draft_scenario_narrative found in reports.py — must be in ai.py only."
+            "ai_draft_scenario_narrative found in reports.py - must be in ai.py only."
         )
 
 
 # ---------------------------------------------------------------------------
-# Helpers — only used by stubs above (not imported at module level from app/)
+# Helpers - only used by stubs above (not imported at module level from app/)
 # ---------------------------------------------------------------------------
 
 

@@ -4,11 +4,11 @@ Rules locked by 11-CONTEXT.md §Scope consumption:
   - active_test_scope=True is the SOLE gate for BBOT seeding (intel_scope is IGNORED)
   - Only scope_type in {domain, ip_range, as_number} produces BBOT seeds
   - exclude=True rows become --blacklist entries (never seeds)
-  - keyword / service / certificate / whois rows are intel-only — never reach BBOT
+  - keyword / service / certificate / whois rows are intel-only - never reach BBOT
   - Empty scope returns empty list; caller (router) rejects with HTTP 422 if empty
 
 Design rationale:
-  - Pure async DB reads — zero subprocess I/O, fully unit-testable
+  - Pure async DB reads - zero subprocess I/O, fully unit-testable
   - No per-row picker at launch time: the scan uses all active_test_scope=True rows
     of the supported types, preserving the "scope is scope" invariant from CONTEXT.md
   - intel_scope is intentionally not referenced in the WHERE clause; including it would
@@ -54,7 +54,7 @@ async def derive_bbot_seeds(db: AsyncSession, project_id: uuid.UUID) -> list[str
 
     Filters applied:
       - project_id matches
-      - active_test_scope IS True  (sole gate — intel_scope intentionally IGNORED)
+      - active_test_scope IS True  (sole gate - intel_scope intentionally IGNORED)
       - exclude IS False           (exclude=True rows go to blacklist only)
       - scope_type IN {domain, ip_range, as_number}  (intel-only types excluded)
 
@@ -79,7 +79,7 @@ async def derive_bbot_blacklist(db: AsyncSession, project_id: uuid.UUID) -> list
     """Return BBOT --blacklist values for a project's active-test exclude rows.
 
     Identical filter to derive_bbot_seeds EXCEPT exclude IS True (not False).
-    Only scope types in BBOT_SEEDING_SCOPE_TYPES contribute to the blacklist —
+    Only scope types in BBOT_SEEDING_SCOPE_TYPES contribute to the blacklist -
     intel-only types (keyword/service/certificate/whois) are never passed to BBOT.
 
     Returns empty list when no matching exclude rows exist.

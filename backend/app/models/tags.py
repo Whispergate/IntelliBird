@@ -1,4 +1,4 @@
-"""ATT&CK technique tags on events — SYS-02 provenance fields."""
+"""ATT&CK technique tags on events - SYS-02 provenance fields."""
 from __future__ import annotations
 
 import uuid
@@ -17,7 +17,7 @@ class AttackTechniqueTag(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, server_default=text("gen_random_uuid()")
     )
-    # NOTE: no FK to events.id — TimescaleDB hypertables can't be FK targets.
+    # NOTE: no FK to events.id - TimescaleDB hypertables can't be FK targets.
     # App-level integrity enforces the link.
     event_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), nullable=False

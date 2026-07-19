@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * FormatBadge — inline export format badge.
+ * FormatBadge - inline export format badge.
  * UI-SPEC §Surface 8 colour map verbatim.
  */
 

@@ -1,5 +1,5 @@
 # schemas package
-from app.schemas.assets import (# noqa: F401 — ASSET-AGG, ASSET-NOTE, ASSET-EXPORT
+from app.schemas.assets import (# noqa: F401 - ASSET-AGG, ASSET-NOTE, ASSET-EXPORT
     SUMMARY_BUCKET_KEYS,
     AssetDetail,
     AssetExportFormat,
@@ -14,7 +14,7 @@ from app.schemas.assets import (# noqa: F401 — ASSET-AGG, ASSET-NOTE, ASSET-EX
     AssetSummaryBucket,
     StaleFilter,
 )
-from app.schemas.brand import (# noqa: F401 — BRP-01..05
+from app.schemas.brand import (# noqa: F401 - BRP-01..05
     BrandDashboardResponse,
     BrandMatchPatch,
     BrandMatchRead,

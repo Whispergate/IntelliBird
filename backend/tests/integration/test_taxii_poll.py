@@ -208,7 +208,7 @@ def test_taxii_poll_otx_taxii1_live(live_db, monkeypatch: pytest.MonkeyPatch):
             text("SELECT last_status FROM sources WHERE id = :sid"),
             {"sid": str(sid)},
         ).scalar()
-        # Accept ok or rate_limited — both indicate successful communication
+        # Accept ok or rate_limited - both indicate successful communication
         assert status in ("ok", "rate_limited", "network_error"), \
             f"Unexpected status: {status}"
         count = s.execute(

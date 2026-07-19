@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 
 /**
- * ArchivedBadge — dim slate-coloured caption pill for archived projects.
+ * ArchivedBadge - dim slate-coloured caption pill for archived projects.
  *
  * Appears next to the project name on /projects list rows where
  * `project.archived === true`. Combined with a 60% row-opacity overlay so the
@@ -26,7 +26,7 @@ export function ArchivedBadge() {
 }
 
 /**
- * LegacyBadge — caption-cased "Legacy data" pill pinned to the legacy
+ * LegacyBadge - caption-cased "Legacy data" pill pinned to the legacy
  * sentinel project row. Distinct from ArchivedBadge so operators can tell the
  * difference between "project was archived by an operator" and "sentinel row
  * holding legacy data that is read-only by design".

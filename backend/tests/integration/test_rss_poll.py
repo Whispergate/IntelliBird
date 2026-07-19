@@ -1,9 +1,9 @@
 """Integration: poll_rss end-to-end against captured Krebs fixture + live PG.
 
 INGR-01 (schedule + persist) via direct invocation (APScheduler wiring in).
-INGR-02 (normalisation) — SYS-01 provenance asserted.
-INGR-03 (dedup) — re-poll yields zero new rows.
- — sources.last_polled_at / last_status / consecutive_failures updated.
+INGR-02 (normalisation) - SYS-01 provenance asserted.
+INGR-03 (dedup) - re-poll yields zero new rows.
+ - sources.last_polled_at / last_status / consecutive_failures updated.
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ FIXTURE = BACKEND_DIR / "tests" / "fixtures" / "rss_krebs_2026-04.xml"
 def live_db():
     with PostgresContainer("intellibird-db:m1") as pg:
         url = pg.get_connection_url()
-        raw = pg.get_connection_url()
+        pg.get_connection_url()
         # Build asyncpg URL from raw components to avoid URL masking issues
         from sqlalchemy.engine import make_url
         parsed_url = make_url(url)
@@ -106,14 +106,14 @@ def test_rss_poll_dedup_on_refetch(live_db, rss_source_id, monkeypatch: pytest.M
 
     from app.workers.rss import poll_rss_impl
     poll_rss_impl(str(rss_source_id))
-    poll_rss_impl(str(rss_source_id))  # second poll — should dedup
+    poll_rss_impl(str(rss_source_id))  # second poll - should dedup
 
     with Session(engine) as s:
         count = s.execute(
             text("SELECT count(*) FROM events WHERE source_id = :sid"),
             {"sid": str(rss_source_id)},
         ).scalar()
-        assert count == 2  # INGR-03 — no duplicate rows
+        assert count == 2  # INGR-03 - no duplicate rows
 
 
 def test_rss_poll_source_health_on_success(live_db, rss_source_id, monkeypatch: pytest.MonkeyPatch):

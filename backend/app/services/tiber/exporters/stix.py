@@ -1,7 +1,7 @@
-"""TIBER STIX 2.1 exporter — TIBER-03.
+"""TIBER STIX 2.1 exporter - TIBER-03.
 
 Builds a STIX 2.1 Bundle containing:
-  - stix2.Identity("IntelliBird", "system") — producer provenance
+  - stix2.Identity("IntelliBird", "system") - producer provenance
   - stix2.ThreatActor for each actor profile
   - stix2.AttackPattern for each unique ATT&CK technique
   - stix2.Report SDO with:
@@ -47,7 +47,7 @@ def build_tiber_stix_bundle(
         actors: List of actor objects. Each must have:
                 .name (str), .motivation (str|None), .capability_assessment (str|None),
                 .relevance_to_target (str|None). Optional: .id for internal mapping.
-        scenarios: List of scenario objects (currently unused in bundle composition —
+        scenarios: List of scenario objects (currently unused in bundle composition -
                    reserved for future AttackPattern-to-scenario CourseOfAction SDOs).
         techniques: List of ATT&CK technique ID strings (e.g. ["T1566", "T1190"]).
                     Each becomes an AttackPattern SDO.
@@ -56,7 +56,7 @@ def build_tiber_stix_bundle(
         JSON string (bundle.serialize(pretty=False)) suitable for BYTEA storage.
         Passes stix2.parse(strict=True, allow_custom=True) round-trip.
     """
-    # Producer identity — first in bundle, included in object_refs
+    # Producer identity - first in bundle, included in object_refs
     producer = stix2.Identity(name="IntelliBird", identity_class="system")
     objects: list = [producer]
     ids: list[str] = [producer.id]
@@ -95,11 +95,11 @@ def build_tiber_stix_bundle(
         objects.append(ap)
         ids.append(ap.id)
 
-    # Report SDO — object_refs covers Identity + ThreatActors + AttackPatterns
+    # Report SDO - object_refs covers Identity + ThreatActors + AttackPatterns
     # (all IDs collected so far, excluding the Report itself which cannot self-reference)
     published_dt = getattr(report, "created_at", None) or datetime.now(timezone.utc)
     if not isinstance(published_dt, datetime):
-        # Handle date objects (engagement_window_start etc) — convert to datetime
+        # Handle date objects (engagement_window_start etc) - convert to datetime
         published_dt = datetime.now(timezone.utc)
     if published_dt.tzinfo is None:
         published_dt = published_dt.replace(tzinfo=timezone.utc)
@@ -130,7 +130,7 @@ def validate_stix_bundle_strict(bundle_json: str) -> None:
       - Invalid STIX IDs (wrong UUID format, wrong type prefix)
       - Missing required fields per STIX 2.1 spec
 
-    stix2 v3.0.2 applies validation during parse() by default — no separate
+    stix2 v3.0.2 applies validation during parse() by default - no separate
     strict= flag is needed. allow_custom=True permits x_intellibird_* custom
     properties without validation failure.
 
@@ -141,4 +141,4 @@ def validate_stix_bundle_strict(bundle_json: str) -> None:
         stix2.exceptions.STIXError: if bundle fails STIX 2.1 validation.
     """
     parsed = stix2.parse(bundle_json, allow_custom=True)
-    assert parsed is not None, "stix2.parse returned None — bundle is invalid"
+    assert parsed is not None, "stix2.parse returned None - bundle is invalid"

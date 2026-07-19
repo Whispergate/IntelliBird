@@ -19,7 +19,7 @@ def _isolate_global_state() -> Generator[None, None, None]:
     tests/integration/conftest.py because they require session-scoped containers.
 
     Snapshot strategy: settings.model_dump() returns shallow dict, safe because
-    all Settings fields are scalars (str|int|bool|Literal|None) — verified in RESEARCH.
+    all Settings fields are scalars (str|int|bool|Literal|None) - verified in RESEARCH.
     """
     # --- 1. Lazy imports (avoid breaking unit tests with no app.* deps) ---
     from app.config import settings as _settings
@@ -74,7 +74,7 @@ def argon2_fast(monkeypatch: pytest.MonkeyPatch) -> None:
     Production: time_cost=3, memory_cost=65536, parallelism=4 (~200ms per hash).
     Test:       time_cost=1, memory_cost=8,    parallelism=1 (~5ms per hash).
 
-    Tests that need this must request the fixture explicitly — autouse would slow the
+    Tests that need this must request the fixture explicitly - autouse would slow the
     test runtime for tests that don't hash anything.
     """
     pytest.importorskip("pwdlib")
@@ -84,7 +84,7 @@ def argon2_fast(monkeypatch: pytest.MonkeyPatch) -> None:
     fast_hasher = PasswordHash((
         Argon2Hasher(time_cost=1, memory_cost=8, parallelism=1),
     ))
-    # Only patch if the module exists — during Wave 0 the module does not yet exist.
+    # Only patch if the module exists - during Wave 0 the module does not yet exist.
     try:
         from app.security import passwords as pw_module  # type: ignore[import-not-found]
         monkeypatch.setattr(pw_module, "password_hash", fast_hasher, raising=False)

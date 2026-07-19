@@ -1,7 +1,7 @@
 # Owned by: 13-01-PLAN (PROD-01) + 18-01-PLAN (TIBER-04 leakage extension)
 """Integration regression tests for PROD-01 cross-project leakage.
 
-Tests below currently fail (red) until 18-03-PLAN service layer ships — H-4 leakage
+Tests below currently fail (red) until 18-03-PLAN service layer ships - H-4 leakage
 gate per ROADMAP. The three test_tiber_* functions at the bottom of this file are the
 Wave 0 red baseline: they import from app.services.tiber.auto_populate which does not
 yet exist. They MUST fail today with ImportError/ModuleNotFoundError and MUST pass
@@ -10,14 +10,14 @@ after Wave 3 (18-03-PLAN) ships the TIBER service layer.
 Proves Project A-scoped callers cannot observe Project B data through the four
 surfaces mandated by 13-01-PLAN:
 
-  1. REST list endpoint    — GET /api/events?project_id=<project_a>
-  2. Project-scoped intel  — GET /api/projects/{project_b}/assets
-  3. Project-scoped graph  — GET /api/events/{event_in_b}/graph?project_id=<project_b>
-  4. Raw AGE BFS           — cypher('intellibird_graph', ...) variable-length path,
+  1. REST list endpoint    - GET /api/events?project_id=<project_a>
+  2. Project-scoped intel  - GET /api/projects/{project_b}/assets
+  3. Project-scoped graph  - GET /api/events/{event_in_b}/graph?project_id=<project_b>
+  4. Raw AGE BFS           - cypher('intellibird_graph', ...) variable-length path,
                              bounded *1..3 per AGE issue #195
 
 A positive control (test 5) guards against a false-negative where the graph is
-empty — it asserts Project A's own BFS returns the expected 20 events.
+empty - it asserts Project A's own BFS returns the expected 20 events.
 
 Fixture: two_project_fixture (conftest-registered; builds 2 projects × 20 events
 each, all referencing the same :Actor in AGE with :SEEN_IN edges).
@@ -34,7 +34,7 @@ Gaps surfaced during this plan (documented in 13-01-SUMMARY.md):
   - GAP-2: GET /api/events/{id}/graph does NOT call require_project_membership
     on its project_id query param either. Isolation here rides on
     traverse_graph rejecting seed/project mismatch (404) + Cypher-level
-    project_id filter — still leak-proof, but via the wrong layer.
+    project_id filter - still leak-proof, but via the wrong layer.
 """
 from __future__ import annotations
 
@@ -57,14 +57,14 @@ TEST_SIGNING_KEY = "j" * 64  # matches two_project.py fixture mint key
 
 
 # ---------------------------------------------------------------------------
-# Harness helpers — mirror test_admin_users._patch_auth + _client
+# Harness helpers - mirror test_admin_users._patch_auth + _client
 # ---------------------------------------------------------------------------
 
 
 def _patch_auth(monkeypatch) -> None:
     """Enable AUTH_ENABLED, pin signing key, stub token_version/jti checks.
 
-    The fixture mints its JWTs with token_version=0 and a random jti — without
+    The fixture mints its JWTs with token_version=0 and a random jti - without
     these stubs the real middleware would call Redis / DB for those lookups
     and fail in the testcontainer."""
     import app.middleware.auth as auth_mod
@@ -127,7 +127,7 @@ async def test_list_scoped(two_project_fixture, db_session, monkeypatch):
     comment). Asserts set equality of returned events' project_ids against
     {project_a.id}.
 
-    Seeds a permissive keyword scope row first — without it, the
+    Seeds a permissive keyword scope row first - without it, the
     scope predicate shorts to `false` for projects lacking scope, producing
     an empty result set and a vacuous pass.
     """
@@ -182,7 +182,7 @@ async def test_intel_scoped(two_project_fixture, monkeypatch):
             headers=_bearer(fx.jwt_a),
         )
     assert r.status_code == 403, (
-        f"LEAK: intel route {r.status_code} for cross-project JWT — {r.text}"
+        f"LEAK: intel route {r.status_code} for cross-project JWT - {r.text}"
     )
 
 
@@ -195,7 +195,7 @@ async def test_graph_scoped(two_project_fixture, monkeypatch):
     project filter. Concretely: a Project A JWT hitting a Project B event's
     graph with project_id=project_a narrows the BFS such that the seed fails
     the `seed.project_id == project_id` gate in graph_traversal.py:117 and
-    returns 404. This test asserts the non-200 outcome — whether 403 (future
+    returns 404. This test asserts the non-200 outcome - whether 403 (future
     hardening via membership dep) or 404 (current behavior). Either blocks
     the leak; both are regression-safe for PROD-01.
     """
@@ -211,9 +211,9 @@ async def test_graph_scoped(two_project_fixture, monkeypatch):
         )
     # Accept either 403 (preferred future state: membership dep added) or 404
     # (current state: seed/project mismatch → traverse returns None → router
-    # converts to 404). Reject 200 — that is a leak.
+    # converts to 404). Reject 200 - that is a leak.
     assert r.status_code in (403, 404), (
-        f"LEAK: graph router {r.status_code} for cross-project request — {r.text}"
+        f"LEAK: graph router {r.status_code} for cross-project request - {r.text}"
     )
 
 
@@ -229,7 +229,7 @@ async def test_age_bfs_scoped(two_project_fixture, db_session):
     This test simulates the correctly-scoped query: BFS from the shared actor
     into Events whose `project_id` property equals project_a, then assert
     NONE of those events carry project_id = project_b. That count must be 0
-    — the label-level gate is what saves us when application code does pre-
+    - the label-level gate is what saves us when application code does pre-
     filter. A future regression that drops `project_id` from the Event vertex
     properties OR rewrites the gate as a post-filter would flip this to >0.
 
@@ -258,7 +258,7 @@ async def test_age_bfs_scoped(two_project_fixture, db_session):
         + " $$) AS (leaked ag_catalog.agtype)"
     )
     row = (await raw.exec_driver_sql(sql)).first()
-    assert row is not None, "AGE BFS returned no rows at all — graph unreachable"
+    assert row is not None, "AGE BFS returned no rows at all - graph unreachable"
     leaked = _count_from_agtype(row[0])
     assert leaked == 0, (
         f"LEAK: Project A-scoped BFS reached {leaked} Project B event(s) via the "
@@ -273,7 +273,7 @@ async def test_positive_control_same_project(two_project_fixture, db_session):
 
     Guards against an empty-graph false-negative where every leakage assertion
     would vacuously pass. Mirrors the AGE BFS in test_age_bfs_scoped but
-    scopes to project_a — must return exactly 20 (the fixture's per-project
+    scopes to project_a - must return exactly 20 (the fixture's per-project
     event count).
 
     Bounded *1..3 per AGE issue #195.
@@ -299,7 +299,7 @@ async def test_positive_control_same_project(two_project_fixture, db_session):
     assert seen == 20, (
         f"Positive control failed: expected 20 Project A events reachable "
         f"from shared actor via :SEEN_IN*1..3, got {seen}. Either fixture "
-        f"seed changed or AGE edge traversal is broken — other tests may be "
+        f"seed changed or AGE edge traversal is broken - other tests may be "
         f"false-negatives."
     )
 
@@ -348,7 +348,7 @@ async def test_list_no_project_id_rejects_non_admin(two_project_fixture, db_sess
 
     async with await _client() as c:
         r = await c.get("/api/events", headers=_bearer(fx.jwt_a))
-    # NO project_id, NO limit — raw request to hit the no-param path.
+    # NO project_id, NO limit - raw request to hit the no-param path.
 
     assert r.status_code in (400, 403), (
         f"GAP-1 REGRESSION: GET /api/events without project_id from non-admin "
@@ -385,7 +385,7 @@ async def test_score_filter_no_leakage(two_project_fixture, db_session, monkeypa
 
     This test proves the tier filter flows through the build_scope_predicate chokepoint
     (events.project_id scopes which events are returned; the override lateral subquery
-    only adds a score column — it cannot pull in Project B events).
+    only adds a score column - it cannot pull in Project B events).
     """
     _patch_auth(monkeypatch)
     fx = two_project_fixture
@@ -408,7 +408,7 @@ async def test_score_filter_no_leakage(two_project_fixture, db_session, monkeypa
     await db_session.commit()
 
     async with await _client() as c:
-        # (a) Project A scoped, tier=S — the S-tier event must appear.
+        # (a) Project A scoped, tier=S - the S-tier event must appear.
         r_a = await c.get(
             "/api/events",
             headers=_bearer(fx.jwt_a),
@@ -427,7 +427,7 @@ async def test_score_filter_no_leakage(two_project_fixture, db_session, monkeypa
             f"Returned IDs: {returned_a_ids}"
         )
 
-        # (b) Project B scoped, tier=S — must be empty (no Project B events are S-tier;
+        # (b) Project B scoped, tier=S - must be empty (no Project B events are S-tier;
         #     Project A's override cannot bleed across the project boundary).
         r_b = await c.get(
             "/api/events",
@@ -444,7 +444,7 @@ async def test_score_filter_no_leakage(two_project_fixture, db_session, monkeypa
         returned_b_items = r_b.json()["items"]
         assert len(returned_b_items) == 0, (
             f"LEAK (SCR-03): Project B tier=S query returned {len(returned_b_items)} event(s) "
-            f"— Project A's override should NOT bleed into Project B scope. "
+            f"- Project A's override should NOT bleed into Project B scope. "
             f"Returned IDs: {[i['id'] for i in returned_b_items]}"
         )
         # Defensive: Project A's scored event must not appear in Project B results.
@@ -489,7 +489,7 @@ async def test_list_no_project_id_admin_sees_all(two_project_fixture, db_session
 
     # Seed permissive keyword scope for BOTH projects so build_scope_predicate
     # does not short-circuit to false (the scope predicate only fires when
-    # project_id is provided; admin without project_id skips it — but seed
+    # project_id is provided; admin without project_id skips it - but seed
     # anyway in case the router path changes).
     await _seed_permissive_scope(db_session, fx.project_a.id, "evt")
     await _seed_permissive_scope(db_session, fx.project_b.id, "evt")
@@ -497,16 +497,16 @@ async def test_list_no_project_id_admin_sees_all(two_project_fixture, db_session
     # Mint an Admin JWT: role='Admin', pm=[] (no project memberships required).
     # enforce_project_query_scope returns None for role == 'Admin' regardless of pm.
     import os as _os
-    signing_key = _os.environ.get("JWT_SIGNING_KEY") or (_os.environ.get("SECRET_KEY")) or ("j" * 64)
+    _os.environ.get("JWT_SIGNING_KEY") or (_os.environ.get("SECRET_KEY")) or ("j" * 64)
     # Use TEST_SIGNING_KEY constant (pinned to 'j'*64) to match _patch_auth's monkeypatch.
     admin_user_id = str(__import__("uuid").uuid4())
     jwt_admin, _ = mint_access_token_with_pm(
         admin_user_id,
-        "Admin",           # role — exact casing from app/middleware/auth.py:200 `user.role == "Admin"`
-        ["red", "blue"],   # dashboard_roles — admin sees all visibility tiers
-        0,                 # token_version — matches stub in _patch_auth
+        "Admin",           # role - exact casing from app/middleware/auth.py:200 `user.role == "Admin"`
+        ["red", "blue"],   # dashboard_roles - admin sees all visibility tiers
+        0,                 # token_version - matches stub in _patch_auth
         TEST_SIGNING_KEY,  # signing key pinned by _patch_auth monkeypatch
-        [],                # pm — Admin bypass; no project memberships needed
+        [],                # pm - Admin bypass; no project memberships needed
         False,             # pm_truncated
     )
 
@@ -535,7 +535,7 @@ async def test_list_no_project_id_admin_sees_all(two_project_fixture, db_session
 # ---------------------------------------------------------------------------
 # TIBER-04 / H-4: TIBER auto-populate leakage gates (Wave 0 RED baseline)
 #
-# These three tests MUST FAIL today with ImportError — app.services.tiber.auto_populate
+# These three tests MUST FAIL today with ImportError - app.services.tiber.auto_populate
 # does not yet exist. They will turn green after Wave 3 (18-03-PLAN) ships.
 # ---------------------------------------------------------------------------
 
@@ -551,7 +551,7 @@ async def test_tiber_threat_landscape_no_leakage(two_project_fixture, db_session
     A permissive keyword='evt' scope row is added so build_scope_predicate does not
     short-circuit to `false` (empty scope → empty result → vacuous pass; per project_scope.py L182).
     """
-    from app.services.tiber.auto_populate import populate_threat_landscape  # noqa: F401 — intentional ImportError
+    from app.services.tiber.auto_populate import populate_threat_landscape  # noqa: F401 - intentional ImportError
 
     _patch_auth(monkeypatch)
     fx = two_project_fixture
@@ -588,7 +588,7 @@ async def test_tiber_actor_profiles_no_leakage(two_project_fixture, db_session, 
     Cross-check: actor.source_event_ids must not intersect fx.events_b (Project B
     event IDs seeded by two_project_fixture).
     """
-    from app.services.tiber.auto_populate import populate_actor_profiles  # noqa: F401 — intentional ImportError
+    from app.services.tiber.auto_populate import populate_actor_profiles  # noqa: F401 - intentional ImportError
 
     _patch_auth(monkeypatch)
     fx = two_project_fixture
@@ -637,7 +637,7 @@ async def test_tiber_scenarios_longlist_no_leakage(two_project_fixture, db_sessi
     )
 
     # Fetch the set of technique_ids actually seen in Project A events
-    # Table is attack_technique_tags (not event_attack_techniques — that table doesn't exist).
+    # Table is attack_technique_tags (not event_attack_techniques - that table doesn't exist).
     result = await db_session.execute(
         text(
             "SELECT DISTINCT technique_id FROM attack_technique_tags "
@@ -652,7 +652,7 @@ async def test_tiber_scenarios_longlist_no_leakage(two_project_fixture, db_sessi
         if technique_id is not None and project_a_techniques:
             assert technique_id in project_a_techniques, (
                 f"LEAK (TIBER-04): scenario technique {technique_id!r} was not observed "
-                f"in any Project A event. Only Project B has this TTP — cross-project leak. "
+                f"in any Project A event. Only Project B has this TTP - cross-project leak. "
                 f"Project A techniques: {project_a_techniques}"
             )
 
@@ -676,7 +676,7 @@ async def test_project_graph_no_leakage(two_project_fixture, db_session):
     Validation strategy:
       - Call traverse_project(db_session, project_a_id, dashboard_roles=["red","blue"],
         max_nodes=1000, max_edges=5000)
-      - Inspect each node's `tag_source` field (set by add_node) — should NOT
+      - Inspect each node's `tag_source` field (set by add_node) - should NOT
         reference any id from fx.events_b (Project B event UUIDs as strings)
       - Assert result.truncated is False: 20 events at 1-hop depth is well below
         the 1000-node cap
@@ -707,7 +707,7 @@ async def test_project_graph_no_leakage(two_project_fixture, db_session):
 
     # The 20-event fixture seed is well below the 1000-node cap.
     assert result.truncated is False, (
-        f"GRAPH-02: result.truncated=True for a 20-event fixture — cap logic may be wrong. "
+        f"GRAPH-02: result.truncated=True for a 20-event fixture - cap logic may be wrong. "
         f"Node count: {len(result.nodes)}"
     )
 
@@ -757,13 +757,13 @@ async def test_project_graph_returns_only_in_scope_events(two_project_fixture, d
 
 
 # ---------------------------------------------------------------------------
-# (IOC foundation) — Plan 22-03 wires the cross-project ACL chokepoint
+# (IOC foundation) - Plan 22-03 wires the cross-project ACL chokepoint
 # for the iocs table. This test covers BOTH directions of the IOC leakage
 # surface:
 #   1. GET /api/iocs scoped via build_ioc_scope_predicate
 #   2. GET /api/events/{event_id}/iocs scoped via the SAME predicate (so a
 #      Project A user pivoting against a Project B event_id receives [], not
-#      403, not the data — no information disclosure).
+#      403, not the data - no information disclosure).
 # ---------------------------------------------------------------------------
 
 
@@ -781,7 +781,7 @@ async def test_iocs_leakage(two_project_fixture, db_session, monkeypatch):
       a. jwt_a (Lead on Project A) hitting GET /api/iocs sees A + global, NOT B.
       b. jwt_admin sees all three.
       c. jwt_a hitting GET /api/events/{B_event_id}/iocs (after linking the
-         Project B IOC to a Project B event) returns [] — no leakage via the
+         Project B IOC to a Project B event) returns [] - no leakage via the
          event-side pivot, even when the event_id itself is guessed.
       d. The same event-side endpoint returns the linked IOC for jwt_admin.
 
@@ -843,7 +843,7 @@ async def test_iocs_leakage(two_project_fixture, db_session, monkeypatch):
             f"IOC-03: Global IOC missing from jwt_a result (must be visible to all): {ids_a}"
         )
         assert str(ioc_b) not in ids_a, (
-            f"LEAK (IOC-03): Project B IOC visible to jwt_a — cross-project leakage: "
+            f"LEAK (IOC-03): Project B IOC visible to jwt_a - cross-project leakage: "
             f"{ids_a}"
         )
 
@@ -874,7 +874,7 @@ async def test_iocs_leakage(two_project_fixture, db_session, monkeypatch):
             f"GET /api/events/{event_b_id}/iocs as jwt_a: {evt_rows}"
         )
 
-        # (d) Same endpoint as Admin returns the IOC — proves the link is
+        # (d) Same endpoint as Admin returns the IOC - proves the link is
         #     correctly wired and (c)'s emptiness was scope-driven, not a
         #     missing link.
         r_evt_admin = await c.get(
@@ -889,15 +889,15 @@ async def test_iocs_leakage(two_project_fixture, db_session, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# (IOC Enrichment APIs) — Plan 23-01 Wave 0 stub
+# (IOC Enrichment APIs) - Plan 23-01 Wave 0 stub
 #
-# ENRICH-05: enrichment ACL chokepoint — ioc_enrichments rows for Project B
+# ENRICH-05: enrichment ACL chokepoint - ioc_enrichments rows for Project B
 # must not be visible to a Project A caller via GET /api/iocs/{id}/enrichments.
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
-@pytest.mark.xfail(reason="not yet implemented — enrichment ACL not shipped")
+@pytest.mark.xfail(reason="not yet implemented - enrichment ACL not shipped")
 async def test_enrichment_leakage(two_project_fixture):
     """PROD-01 extension: ioc_enrichments rows for Project B must not be
     visible to a Project A caller via GET /api/iocs/{id}/enrichments."""
@@ -906,7 +906,7 @@ async def test_enrichment_leakage(two_project_fixture):
 
 
 # ---------------------------------------------------------------------------
-# (Dark-Web Collection) — Plan 24-01 Wave 0 stub
+# (Dark-Web Collection) - Plan 24-01 Wave 0 stub
 #
 # DARK-01..07: dark-web events (tor_html/paste/telegram) bound to Project B
 # must not appear in Project A's /api/events response.
@@ -923,7 +923,7 @@ async def test_darkweb_event_leakage(two_project_fixture):
 
 
 # ---------------------------------------------------------------------------
-# (Threat Actors, Campaigns & Audit Log) — Plan 25-01 Wave 0 stub
+# (Threat Actors, Campaigns & Audit Log) - Plan 25-01 Wave 0 stub
 #
 # ACTOR-03 / ACTOR-05 / ACTOR-06: campaigns bound to Project B must not be
 # accessible via a Project A JWT through GET /api/campaigns.
@@ -948,11 +948,11 @@ async def test_actor_campaign_leakage(two_project_fixture):
     This stub captures the leakage contract before campaign routes exist.
     It will be fleshed out in plan 25-05 after the campaign CRUD routes ship.
     """
-    assert False, "stub — implement after campaign routes ship"
+    assert False, "stub - implement after campaign routes ship"
 
 
 # ---------------------------------------------------------------------------
-# (GRAPH-04) — Multi-hop DomainPivot traverse isolation gates
+# (GRAPH-04) - Multi-hop DomainPivot traverse isolation gates
 #
 # These tests prove that 2-hop and 3-hop AGE Cypher traversals scoped to
 # Project A cannot reach DomainPivot nodes belonging to Project B, even when
@@ -1004,7 +1004,7 @@ async def _seed_domain_pivot_pair(db_session, project_a_id, project_b_id):
         },
     )
 
-    # Insert whois_cache rows — same registrar to simulate infrastructure overlap
+    # Insert whois_cache rows - same registrar to simulate infrastructure overlap
     await db_session.execute(
         _text(
             "INSERT INTO whois_cache (domain, registrar, registrant_email, fetched_at) "
@@ -1017,7 +1017,7 @@ async def _seed_domain_pivot_pair(db_session, project_a_id, project_b_id):
     )
     await db_session.commit()
 
-    # Sync each domain to the AGE graph — this MERGEs DomainPivot nodes and
+    # Sync each domain to the AGE graph - this MERGEs DomainPivot nodes and
     # (correctly) does NOT create cross-project SHARES_INFRA edges.
     await sync_domain_pivot(db_session, str(ioc_id_a), domain_a, str(project_a_id))
     await sync_domain_pivot(db_session, str(ioc_id_b), domain_b, str(project_b_id))
@@ -1048,7 +1048,7 @@ async def test_traverse_2hop_isolation(two_project_fixture, db_session):
     pid_a = str(fx.project_a.id)
     pid_b = str(fx.project_b.id)
 
-    # 2-hop traversal from ALL project_a DomainPivot nodes — should never reach project_b
+    # 2-hop traversal from ALL project_a DomainPivot nodes - should never reach project_b
     cypher_body = (
         f"MATCH (seed:DomainPivot {{project_id: '{pid_a}'}})"
         f"-[:SHARES_INFRA*1..2]-(t:DomainPivot) "
@@ -1061,7 +1061,7 @@ async def test_traverse_2hop_isolation(two_project_fixture, db_session):
         + " $$) AS (leaked ag_catalog.agtype)"
     )
     row = (await raw.exec_driver_sql(sql)).first()
-    assert row is not None, "AGE traversal returned no rows — graph may be unreachable"
+    assert row is not None, "AGE traversal returned no rows - graph may be unreachable"
     leaked = _count_from_agtype(row[0])
     assert leaked == 0, (
         f"LEAK (GRAPH-04): 2-hop DomainPivot traversal from project_a reached "
@@ -1073,7 +1073,7 @@ async def test_traverse_2hop_isolation(two_project_fixture, db_session):
 async def test_traverse_3hop_isolation(two_project_fixture, db_session):
     """GRAPH-04: 3-hop DomainPivot traversal scoped to Project A returns ZERO Project B nodes.
 
-    Extends test_traverse_2hop_isolation to 3 hops — the maximum supported by
+    Extends test_traverse_2hop_isolation to 3 hops - the maximum supported by
     the traverse endpoint. Deeper traversal must not create more leakage surface.
     """
     fx = two_project_fixture
@@ -1098,7 +1098,7 @@ async def test_traverse_3hop_isolation(two_project_fixture, db_session):
         + " $$) AS (leaked ag_catalog.agtype)"
     )
     row = (await raw.exec_driver_sql(sql)).first()
-    assert row is not None, "AGE 3-hop traversal returned no rows — graph may be unreachable"
+    assert row is not None, "AGE 3-hop traversal returned no rows - graph may be unreachable"
     leaked = _count_from_agtype(row[0])
     assert leaked == 0, (
         f"LEAK (GRAPH-04): 3-hop DomainPivot traversal from project_a reached "
@@ -1187,8 +1187,8 @@ async def test_case_isolation(two_project_fixture, monkeypatch):
         )
 
     if list_r.status_code == 403:
-        # RBAC blocked cross-project access — preferred isolation path
-        isolation_mode = "403 RBAC block"
+        # RBAC blocked cross-project access - preferred isolation path
+        pass
     elif list_r.status_code == 200:
         items = list_r.json().get("items", [])
         assert len(items) == 0, (
@@ -1196,7 +1196,6 @@ async def test_case_isolation(two_project_fixture, monkeypatch):
             f"GET /api/projects/{fx.project_b.id}/cases. "
             f"Cases: {[i.get('title') for i in items]}"
         )
-        isolation_mode = "200 with empty items (project_id scope)"
     else:
         raise AssertionError(
             f"Unexpected status {list_r.status_code} for cross-project case list: {list_r.text}"

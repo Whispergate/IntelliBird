@@ -52,5 +52,5 @@ async def test_dashboard_role_captured_in_middleware():
         r = await c.get("/healthz", headers={"X-Dashboard-Role": "blue"})
         assert r.status_code == 200
         assert "x-request-id" in [h.lower() for h in r.headers.keys()]
-        # The log line is captured to stdout — live integration checks it via docker logs
+        # The log line is captured to stdout - live integration checks it via docker logs
         # (full assertion handled in unit test; integration here verifies the handler path runs)

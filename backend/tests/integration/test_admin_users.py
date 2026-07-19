@@ -1,6 +1,6 @@
 """POST/GET/PATCH /api/admin/users + /unlock + disable flushes refresh tokens.
 
-Integration tests — AUTH-01/02. Activated by plan 09-04.
+Integration tests - AUTH-01/02. Activated by plan 09-04.
 
 Uses ASGITransport with the FastAPI app (no live DB required for token/auth tests;
 DB-touching tests require the db_session fixture from conftest).
@@ -118,7 +118,7 @@ ADMIN_CREATE_BODY = {
 
 
 # ---------------------------------------------------------------------------
-# POST /api/admin/users — create user
+# POST /api/admin/users - create user
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -284,7 +284,7 @@ async def test_create_user_duplicate_username_returns_409(db_session, monkeypatc
 
 
 # ---------------------------------------------------------------------------
-# GET /api/admin/users — list users
+# GET /api/admin/users - list users
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -359,7 +359,7 @@ async def test_list_users_locked_field_reflects_redis_state(db_session, monkeypa
             await record_failure(redis, "locktest_user")
         await redis.aclose()
     except Exception:
-        pytest.skip("Redis not available — skipping locked field test")
+        pytest.skip("Redis not available - skipping locked field test")
 
     async with await _client() as c:
         r = await c.get("/api/admin/users", headers=_admin_headers())
@@ -371,7 +371,7 @@ async def test_list_users_locked_field_reflects_redis_state(db_session, monkeypa
 
 
 # ---------------------------------------------------------------------------
-# PATCH /api/admin/users/{id} — update user
+# PATCH /api/admin/users/{id} - update user
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -522,7 +522,7 @@ async def test_patch_user_role_admin_forces_both_dashboards(db_session, monkeypa
 
 
 # ---------------------------------------------------------------------------
-# POST /api/admin/users/{id}/unlock — clear Redis lockout
+# POST /api/admin/users/{id}/unlock - clear Redis lockout
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -591,7 +591,7 @@ async def test_unlock_clears_redis_keys(db_session, monkeypatch, argon2_fast):
         assert locked_before is True
         await redis.aclose()
     except Exception:
-        pytest.skip("Redis not available — skipping unlock Redis keys test")
+        pytest.skip("Redis not available - skipping unlock Redis keys test")
 
     async with await _client() as c:
         r_unlock = await c.post(
@@ -612,7 +612,7 @@ async def test_unlock_clears_redis_keys(db_session, monkeypatch, argon2_fast):
 
 
 # ---------------------------------------------------------------------------
-# DELETE /api/admin/users/{id} — delete user
+# DELETE /api/admin/users/{id} - delete user
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -650,7 +650,7 @@ async def test_admin_delete_user_204_and_row_gone(db_session, monkeypatch, argon
 
 @pytest.mark.asyncio
 async def test_admin_delete_self_400_cannot_delete_self(db_session, monkeypatch, argon2_fast):
-    """Admin cannot delete their own account — 400 cannot_delete_self."""
+    """Admin cannot delete their own account - 400 cannot_delete_self."""
     from app.config import settings
     from sqlalchemy import text
 
@@ -721,7 +721,7 @@ async def test_analyst_delete_403(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# POST /api/admin/users/{id}/reset-password — admin password reset
+# POST /api/admin/users/{id}/reset-password - admin password reset
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio

@@ -1,7 +1,7 @@
-"""Enrichment result Redis cache — ENRICH-03.
+"""Enrichment result Redis cache - ENRICH-03.
 
 24-hour per-provider, per-indicator result cache. Cache hits bypass the
-quota gate entirely — a cache hit never increments any quota counter.
+quota gate entirely - a cache hit never increments any quota counter.
 
 Redis key shape:
   enrich:result:{provider}:{normalized_indicator}   TTL=86400s (24h)

@@ -1,5 +1,5 @@
 /**
- * TermsClient tests — plan 12-09 (UI-SPEC §Surface 5).
+ * TermsClient tests - plan 12-09 (UI-SPEC §Surface 5).
  *
  * Coverage:
  *   - Table renders all 7 columns
@@ -200,7 +200,7 @@ describe("TermsClient", () => {
     await waitFor(() => {
       expect(screen.getByText("oldterm")).toBeInTheDocument();
     });
-    // listBrandTerms called twice — second with include_archived=true
+    // listBrandTerms called twice - second with include_archived=true
     expect(vi.mocked(listBrandTerms)).toHaveBeenCalledWith("proj-1", true);
 
     // Archived row renders with opacity-60 on its <tr>

@@ -3,7 +3,7 @@
 Plan 15-05.
 
 Proves that the lateral subquery injected by build_events_query for override
-scores is filtered by event_id only — cross-project isolation is enforced by
+scores is filtered by event_id only - cross-project isolation is enforced by
 the outer build_scope_predicate chokepoint (events.project_id = project_id),
 not by a project_id filter inside the lateral subquery itself.
 
@@ -46,13 +46,13 @@ def _compile_with_project(
 
 def test_override_query_does_not_bypass_scope_predicate() -> None:
     """The compiled SQL must reference event_score_overrides (override join exists)
-    AND events.project_id (chokepoint predicate) — proving the override lateral
+    AND events.project_id (chokepoint predicate) - proving the override lateral
     subquery does NOT bypass the scope predicate.
 
     Specifically:
     - event_score_overrides must appear (lateral subquery is wired in).
     - events.project_id must appear in the WHERE clause (chokepoint is preserved).
-    - The lateral subquery does NOT add its own project_id filter — project
+    - The lateral subquery does NOT add its own project_id filter - project
       isolation is solely the outer WHERE clause's responsibility.
     """
     project_a = uuid.uuid4()
@@ -70,7 +70,7 @@ def test_override_query_does_not_bypass_scope_predicate() -> None:
     )
 
     # The project_id value (A) must appear as the bound parameter for the
-    # scope predicate — confirming the chokepoint is scoped to this project.
+    # scope predicate - confirming the chokepoint is scoped to this project.
     assert str(project_a) in sql, (
         f"Expected project_a UUID {project_a} in compiled SQL:\n{sql}"
     )
@@ -80,7 +80,7 @@ def test_override_lateral_subquery_filters_by_event_id_not_project_id() -> None:
     """The lateral subquery for override score uses event_id correlation only.
 
     This confirms the subquery is `WHERE event_score_overrides.event_id = events.id`
-    (correlated lateral) — not a project_id join. Cross-project isolation is
+    (correlated lateral) - not a project_id join. Cross-project isolation is
     delegated to the outer scope predicate, not duplicated inside the subquery.
     """
     project_a = uuid.uuid4()
@@ -95,7 +95,7 @@ def test_override_lateral_subquery_filters_by_event_id_not_project_id() -> None:
     )
 
     # The override subquery should NOT directly filter by project_id inside
-    # itself — that would be redundant and potentially confusing. Isolation
+    # itself - that would be redundant and potentially confusing. Isolation
     # lives in the outer WHERE block.
     # We verify this by checking the event_score_overrides reference is a
     # correlated subquery (contains events.id), not a joined project filter.
@@ -105,7 +105,7 @@ def test_override_lateral_subquery_filters_by_event_id_not_project_id() -> None:
 
 
 def test_override_query_scoped_to_project() -> None:
-    """Alias for the primary isolation test — mirrors the Wave-0 stub name.
+    """Alias for the primary isolation test - mirrors the Wave-0 stub name.
 
     Queries scoped to project_id=A must not reference any project_b UUID in
     the compiled SQL. The override lateral subquery is purely event_id based;

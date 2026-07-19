@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { GeoMapImpl } from "@/app/components/GeoMapImpl";
 
-// Tests target GeoMapImpl directly — the dynamic wrapper is untestable in jsdom.
+// Tests target GeoMapImpl directly - the dynamic wrapper is untestable in jsdom.
 // maplibre-gl + pmtiles are mocked globally in vitest.setup.ts.
 
 vi.mock("next/navigation", () => ({

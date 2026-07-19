@@ -1,5 +1,5 @@
 // Owned by: 17-09-PLAN
-// AIRerankCard — Surface 5 per 17-UI-SPEC.md.
+// AIRerankCard - Surface 5 per 17-UI-SPEC.md.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
@@ -154,7 +154,7 @@ describe("AIRerankCard (17-09)", () => {
 
       await waitFor(() => {
         expect(toastSuccess).toHaveBeenCalledWith(
-          "AI re-ranking complete — 10 events updated.",
+          "AI re-ranking complete - 10 events updated.",
         );
       });
     });

@@ -1,11 +1,11 @@
-"""FastAPI router for the TIBER report generation surface — TIBER-01..03, AI-08.
+"""FastAPI router for the TIBER report generation surface - TIBER-01..03, AI-08.
 
 All endpoints are under prefix /api/projects/{project_id}/tiber.
 
 Role gates:
-  Member+   — read (GET) endpoints
-  Lead+     — write/create/publish/export endpoints
-  Admin     — archive, restore
+  Member+   - read (GET) endpoints
+  Lead+     - write/create/publish/export endpoints
+  Admin     - archive, restore
 
 State machine:
   draft → published  (Lead+ POST /publish)
@@ -18,18 +18,18 @@ POST /archive returns 409 Conflict when state != 'published'.
 POST /restore returns 409 Conflict when state != 'archived'.
 
 Export list (GET /exports) explicitly excludes content_bytea column (TOAST
-avoidance — H-5). content_bytea is only fetched on explicit download requests:
+avoidance - H-5). content_bytea is only fetched on explicit download requests:
 GET /exports/{export_id}/download.
 """
 from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Annotated, Literal
+from typing import Literal
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
-from sqlalchemy import func, select
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
@@ -152,7 +152,7 @@ def _run_gates(report: TiberReport, actors: list, scenarios: list) -> None:
 
 
 # ---------------------------------------------------------------------------
-# POST /api/projects/{project_id}/tiber/reports — create report (Lead+)
+# POST /api/projects/{project_id}/tiber/reports - create report (Lead+)
 # ---------------------------------------------------------------------------
 
 
@@ -196,7 +196,7 @@ async def create_report(
     await db.flush()
 
     # --- Auto-populate 4 sections ---
-    # 1. Threat Landscape — top-N events
+    # 1. Threat Landscape - top-N events
     try:
         tl_events = await populate_threat_landscape(db, project_id, top_n=20)
         report.tl_top_events = [
@@ -259,7 +259,7 @@ async def create_report(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/tiber/reports — list reports (Member+)
+# GET /api/projects/{project_id}/tiber/reports - list reports (Member+)
 # ---------------------------------------------------------------------------
 
 
@@ -286,7 +286,7 @@ async def list_reports(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/tiber/reports/{report_id} — get report (Member+)
+# GET /api/projects/{project_id}/tiber/reports/{report_id} - get report (Member+)
 # ---------------------------------------------------------------------------
 
 
@@ -303,7 +303,7 @@ async def get_report(
 
 
 # ---------------------------------------------------------------------------
-# PATCH /api/projects/{project_id}/tiber/reports/{report_id} — update (Lead+)
+# PATCH /api/projects/{project_id}/tiber/reports/{report_id} - update (Lead+)
 # ---------------------------------------------------------------------------
 
 
@@ -318,14 +318,14 @@ async def patch_report(
 ) -> TiberReportRead:
     """Partially update a TIBER report.
 
-    Returns 409 Conflict when the report state is 'published' — published
+    Returns 409 Conflict when the report state is 'published' - published
     reports are immutable; use POST /clone to create an editable copy.
     """
     report = await _get_report(db, report_id, project_id)
     if report.state == "published":
         raise HTTPException(
             status_code=409,
-            detail="report_published_immutable — use POST /clone to create an editable draft",
+            detail="report_published_immutable - use POST /clone to create an editable draft",
         )
     for key, value in body.model_dump(exclude_unset=True).items():
         setattr(report, key, value)
@@ -337,7 +337,7 @@ async def patch_report(
 
 
 # ---------------------------------------------------------------------------
-# POST /reports/{report_id}/publish — publish report (Lead+)
+# POST /reports/{report_id}/publish - publish report (Lead+)
 # ---------------------------------------------------------------------------
 
 
@@ -380,7 +380,7 @@ async def publish_report(
 
 
 # ---------------------------------------------------------------------------
-# POST /reports/{report_id}/archive — archive report (Admin only)
+# POST /reports/{report_id}/archive - archive report (Admin only)
 # ---------------------------------------------------------------------------
 
 
@@ -407,7 +407,7 @@ async def archive_report(
 
 
 # ---------------------------------------------------------------------------
-# POST /reports/{report_id}/restore — restore to draft (Admin only)
+# POST /reports/{report_id}/restore - restore to draft (Admin only)
 # ---------------------------------------------------------------------------
 
 
@@ -438,7 +438,7 @@ async def restore_report(
 
 
 # ---------------------------------------------------------------------------
-# POST /reports/{report_id}/clone — clone to new draft (Member+)
+# POST /reports/{report_id}/clone - clone to new draft (Member+)
 # ---------------------------------------------------------------------------
 
 
@@ -453,7 +453,7 @@ async def clone_report(
     """Clone a TIBER report into a new fresh draft.
 
     Copies all section fields + actor profiles + scenarios from the source report.
-    The new report gets state='draft' and a fresh ID — original report unchanged.
+    The new report gets state='draft' and a fresh ID - original report unchanged.
     Preserves audit trail: original published row remains intact.
     """
     source = await _get_report(db, report_id, project_id)
@@ -504,7 +504,7 @@ async def clone_report(
             source_event_ids=list(ap.source_event_ids),
         ))
 
-    # Copy scenarios — remap actor_id refs to new actor IDs
+    # Copy scenarios - remap actor_id refs to new actor IDs
     source_scenarios = (await db.execute(
         select(TiberScenario).where(TiberScenario.tiber_report_id == source.id)
     )).scalars().all()
@@ -535,7 +535,7 @@ async def clone_report(
 
 
 # ---------------------------------------------------------------------------
-# POST /reports/{report_id}/sections/{section}/refresh — section refresh diff (Lead+)
+# POST /reports/{report_id}/sections/{section}/refresh - section refresh diff (Lead+)
 # ---------------------------------------------------------------------------
 
 
@@ -552,7 +552,7 @@ async def refresh_section(
 ) -> RefreshDiffResponse:
     """Return a diff of current vs freshly auto-populated section content.
 
-    Does NOT write anything — returns side-by-side diff rows for analyst review.
+    Does NOT write anything - returns side-by-side diff rows for analyst review.
     Call POST .../sections/{section}/apply to selectively apply accepted rows.
     """
     from app.services.tiber.auto_populate import (  # noqa: PLC0415
@@ -653,7 +653,7 @@ async def refresh_section(
 
 
 # ---------------------------------------------------------------------------
-# POST /reports/{report_id}/sections/{section}/apply — apply diff selections (Lead+)
+# POST /reports/{report_id}/sections/{section}/apply - apply diff selections (Lead+)
 # ---------------------------------------------------------------------------
 
 
@@ -669,7 +669,7 @@ async def apply_section_refresh(
 ) -> TiberReportRead:
     """Apply accepted diff field paths from a section refresh.
 
-    Only fields listed in body.accepted_field_paths are written — no silent
+    Only fields listed in body.accepted_field_paths are written - no silent
     overwrite of analyst edits for unaccepted fields.
     """
     from app.services.tiber.auto_populate import (  # noqa: PLC0415
@@ -912,7 +912,7 @@ async def draft_narrative(
     """Enqueue AI narrative draft for a scenario.
 
     Enqueues ai_draft_scenario_narrative on the `ai` queue.
-    Returns {job_id} 202 — SSE consumer at existing /api/ai/jobs/{job_id}/stream.
+    Returns {job_id} 202 - SSE consumer at existing /api/ai/jobs/{job_id}/stream.
 
     Also stores the job:project association in Redis for stream auth.
     """
@@ -959,7 +959,7 @@ async def create_export(
 ) -> dict:
     """Enqueue a report export.
 
-    Runs completeness_check + scenario_gate_check — rejects with 422 if gates fail.
+    Runs completeness_check + scenario_gate_check - rejects with 422 if gates fail.
     Enqueues generate_report_actor on the `reports` queue.
     Returns {export_id, status: 'queued', format} 202.
     """
@@ -998,7 +998,7 @@ async def list_exports(
     decompression on every row in the history list (H-5 TOAST avoidance).
     content_bytea is only fetched by GET /exports/{export_id}/download.
     """
-    # Explicitly select only metadata columns — NEVER include content_bytea here
+    # Explicitly select only metadata columns - NEVER include content_bytea here
     cols = [
         ReportExport.id,
         ReportExport.tiber_report_id,
@@ -1076,7 +1076,7 @@ async def download_export(
 ) -> Response:
     """Stream a report export BYTEA blob with Content-Disposition attachment.
 
-    This is the ONLY endpoint that fetches content_bytea — all other export
+    This is the ONLY endpoint that fetches content_bytea - all other export
     endpoints exclude the BYTEA column (H-5 TOAST avoidance).
 
     MIME types:
@@ -1084,7 +1084,7 @@ async def download_export(
       pdf      → application/pdf
       stix     → application/json
     """
-    # Only here do we fetch content_bytea — explicit download request
+    # Only here do we fetch content_bytea - explicit download request
     row = await db.get(ReportExport, export_id)
     if row is None or row.project_id != project_id or row.tiber_report_id != report_id:
         raise HTTPException(status_code=404, detail="export_not_found")

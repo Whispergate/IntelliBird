@@ -1,4 +1,4 @@
-"""test_scope_intersection — PRJ-03 (plan 10-05).
+"""test_scope_intersection - PRJ-03 (plan 10-05).
 
 Query-time scope intersection semantics: domain suffix match, CIDR << containment,
 keyword FTS reuse, empty-scope-empty-result invariant, exclude rows subtract from

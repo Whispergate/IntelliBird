@@ -1,6 +1,6 @@
 """/refresh rotates JTI + old JTI blocklisted + reuse detection bumps token_version
 
-Integration tests — AUTH-03/M-1. Activated by plan 09-03.
+Integration tests - AUTH-03/M-1. Activated by plan 09-03.
 
 Requires: testcontainers (Postgres + Redis). Skipped gracefully when Docker unavailable.
 """
@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import os
 import uuid
-from typing import AsyncIterator
 
 import pytest
 import pytest_asyncio
@@ -26,7 +25,7 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 @pytest.fixture(scope="module")
 def monkeypatch_module():
-    """Module-scoped monkeypatch — stdlib's monkeypatch is function-scoped."""
+    """Module-scoped monkeypatch - stdlib's monkeypatch is function-scoped."""
     mp = pytest.MonkeyPatch()
     yield mp
     mp.undo()
@@ -54,7 +53,6 @@ async def full_client(pg_url, redis_url, _migrations_applied, argon2_fast):
     # Seed a test user
     from app.models.users import User
     from app.security.passwords import hash_password
-    import redis.asyncio as aioredis
 
     test_user_id = uuid.uuid4()
     async with factory() as s:
@@ -128,7 +126,7 @@ async def test_refresh_happy_path_new_pair_issued(full_client):
     assert r.status_code == 200, r.text
     access_1 = r.json()["access_token"]
 
-    # POST /refresh — httpx stores the Set-Cookie automatically
+    # POST /refresh - httpx stores the Set-Cookie automatically
     r2 = await client.post("/auth/refresh")
     assert r2.status_code == 200, r2.text
     access_2 = r2.json()["access_token"]
@@ -168,8 +166,6 @@ async def test_refresh_old_jti_blocklisted_before_new_pair_returned(full_client)
 @pytest.mark.asyncio
 async def test_refresh_reuse_detection_bumps_token_version(full_client):
     """Presenting a previously-rotated (revoked) refresh token bumps token_version."""
-    import redis.asyncio as aioredis
-    from sqlalchemy import select
     from app.models.users import User
 
     client, factory, user_id, redis_url = full_client
@@ -182,12 +178,11 @@ async def test_refresh_reuse_detection_bumps_token_version(full_client):
     assert r.status_code == 200
     old_refresh = r.cookies.get("refresh_token")
 
-    # First refresh — rotates old cookie
+    # First refresh - rotates old cookie
     r2 = await client.post("/auth/refresh")
     assert r2.status_code == 200
 
     # Manually inject the old (now revoked) refresh cookie and POST /refresh again
-    old_client_kwargs = {"cookies": {"refresh_token": old_refresh}}
     r3 = await client.post("/auth/refresh", cookies={"refresh_token": old_refresh})
     assert r3.status_code == 401
     assert r3.json()["detail"] == "revoked_token"

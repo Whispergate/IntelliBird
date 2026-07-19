@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * PublishModal — Surface 9. Confirmation dialog before locking/publishing a report.
+ * PublishModal - Surface 9. Confirmation dialog before locking/publishing a report.
  * UI-SPEC §Surface 9.
  *
  * Buttons:
- *   - "Lock and publish" (destructive) — calls publishReport, toasts success
- *   - "Keep editing" — closes without changes
+ *   - "Lock and publish" (destructive) - calls publishReport, toasts success
+ *   - "Keep editing" - closes without changes
  */
 
 import { useState } from "react";
@@ -76,7 +76,7 @@ export function PublishModal({
             <li>CBEST mode setting</li>
           </ul>
           <p className="text-xs text-muted-foreground mt-2">
-            To continue editing after publishing, use &ldquo;Clone to new draft&rdquo; — the
+            To continue editing after publishing, use &ldquo;Clone to new draft&rdquo; - the
             published version remains intact.
           </p>
         </div>

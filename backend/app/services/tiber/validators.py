@@ -1,4 +1,4 @@
-"""TIBER report completeness validators — TIBER-01/02.
+"""TIBER report completeness validators - TIBER-01/02.
 
 Two validation functions:
   completeness_check(report) -> dict[str, list[str]]
@@ -75,7 +75,7 @@ def completeness_check(report: Any) -> dict[str, list[str]]:
     out_of_scope = getattr(report, "out_of_scope_assets", None)
     if out_of_scope is None:
         scope_missing.append("out_of_scope_assets")
-    # Note: empty list [] is valid — only None fails
+    # Note: empty list [] is valid - only None fails
 
     if scope_missing:
         missing["scope"] = scope_missing

@@ -1,4 +1,4 @@
-"""Migration 016 schema verification — scaffold for plan 16-02.
+"""Migration 016 schema verification - scaffold for plan 16-02.
 
 Integration tests verifying that Alembic migration 016 applies the expected
 schema changes: source_ingest_stats hypertable, 90d retention policy,
@@ -18,7 +18,7 @@ os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
 import pytest  # noqa: E402
 
-pytestmark = pytest.mark.skip(reason="scaffold — implemented in plan 16-02")
+pytestmark = pytest.mark.skip(reason="scaffold - implemented in plan 16-02")
 
 
 @pytest.mark.asyncio

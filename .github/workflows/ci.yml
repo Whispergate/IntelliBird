@@ -5,18 +5,20 @@ on:
     branches: ["**"]
   pull_request:
     branches: ["**"]
+  # Allow the deploy-demo workflow to reuse this suite as a gate.
+  workflow_call:
 
 jobs:
   backend:
-    name: Backend — lint, audit, test
+    name: Backend - lint, audit, test
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -29,7 +31,7 @@ jobs:
       - name: Lint (ruff + mypy)
         run: cd backend && uv run ruff check . && uv run mypy app
 
-      - name: Security audit — dependency CVE gate
+      - name: Security audit - dependency CVE gate
         # CVE-2026-33634: litellm 1.82.7 and 1.82.8 are compromised.
         # This gate must pass before any docker compose build step.
         run: make audit-deps
@@ -47,7 +49,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build containers
         run: docker compose -f ops/docker-compose.yml build

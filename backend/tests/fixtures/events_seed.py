@@ -29,14 +29,14 @@ from datetime import datetime, timedelta, timezone
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Fixed UUIDs — tests can reference directly
+# Fixed UUIDs - tests can reference directly
 SOURCE_RSS   = uuid.UUID("00000000-0000-4000-8000-000000000001")
 SOURCE_TAXII = uuid.UUID("00000000-0000-4000-8000-000000000002")
 SOURCE_NVD   = uuid.UUID("00000000-0000-4000-8000-000000000003")
 # every event row must carry a project_id; legacy seeds map to
 # the LEGACY_PROJECT_ID sentinel row created by migration 009.
 LEGACY_PROJECT_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
-# TLP markings — STIX 2.1 TLP 2.0 canonical names + stable test UUIDs
+# TLP markings - STIX 2.1 TLP 2.0 canonical names + stable test UUIDs
 # seed_50_events upserts these into tlp_markings so filters resolve correctly.
 TLP_CLEAR    = uuid.UUID("00000000-0000-4000-9000-000000000001")
 TLP_GREEN    = uuid.UUID("00000000-0000-4000-9000-000000000002")
@@ -44,7 +44,7 @@ TLP_AMBER    = uuid.UUID("00000000-0000-4000-9000-000000000003")
 
 _WORDS = ["APT28", "phishing", "vulnerability", "exploit", "campaign"]
 
-# Fixed event UUIDs — deterministic across test runs
+# Fixed event UUIDs - deterministic across test runs
 _EVENT_UUIDS = [
     uuid.UUID(f"00000000-0000-4000-8001-{i:012d}") for i in range(50)
 ]
@@ -54,7 +54,7 @@ _BASE_OBSERVED_AT = datetime(2025, 9, 1, tzinfo=timezone.utc)
 
 def _tags_for(i: int) -> list[str] | None:
     """Return deterministic tags for event index i."""
-    # Explicit NULL for events 5, 15, 25 — exercises ARRAY NULL coalesce path
+    # Explicit NULL for events 5, 15, 25 - exercises ARRAY NULL coalesce path
     if i in (5, 15, 25):
         return None
     if i < 10:
@@ -151,7 +151,7 @@ async def seed_50_events(session: AsyncSession) -> list[dict]:
             else:
                 raw_stix = None
 
-            # Build tags SQL fragment — NULL vs ARRAY literal
+            # Build tags SQL fragment - NULL vs ARRAY literal
             if tags is None:
                 tags_sql = "NULL"
                 tags_param: dict = {}

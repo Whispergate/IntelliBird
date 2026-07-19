@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * SourceHealthTable — shadcn Table listing all source health metrics.
+ * SourceHealthTable - shadcn Table listing all source health metrics.
  * MON-04 dashboard requirement.
  *
  * Columns:
  *   Name (clickable → opens MonitoringConfigDrawer)
  *   Feed type
- *   Last event (relative — "5m ago", "2h ago", "Never")
+ *   Last event (relative - "5m ago", "2h ago", "Never")
  *   SLA badge (SilenceBadge)
  *   Silent failures (yellow if ≥ 3)
  *   Sparkline (IngestSparkline 120×32)

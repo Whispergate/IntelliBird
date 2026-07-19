@@ -1,4 +1,4 @@
-"""Integration tests for AI-06 summarise endpoint + SSE stream — Plan 17-07.
+"""Integration tests for AI-06 summarise endpoint + SSE stream - Plan 17-07.
 
 Covers:
   - POST /api/events/{id}/ai/summarise returns 202 + {job_id}; ai_summarise_event.send invoked
@@ -249,7 +249,6 @@ async def test_concurrent_streams(monkeypatch) -> None:
     from app.main import create_app  # noqa: PLC0415
     from app.database import get_session  # noqa: PLC0415
 
-    done_flags: dict[str, int] = {}
 
     async def fake_get(key):
         return project_id.encode()
@@ -356,9 +355,9 @@ async def test_first_chunk_within_200ms(monkeypatch) -> None:
     assert r.status_code == 200, r.text
     assert "pre-seeded-token" in r.text
     # The first chunk (which was pre-seeded) should arrive very quickly.
-    # We assert the full response completes within 500ms — pre-seeded chunks
+    # We assert the full response completes within 500ms - pre-seeded chunks
     # are returned on first lrange poll (no sleep needed in this path).
-    assert elapsed_ms < 500, f"Response took {elapsed_ms:.0f}ms — expected < 500ms"
+    assert elapsed_ms < 500, f"Response took {elapsed_ms:.0f}ms - expected < 500ms"
 
 
 # ---------------------------------------------------------------------------

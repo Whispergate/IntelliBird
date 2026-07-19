@@ -37,7 +37,7 @@ export function WebhooksClient({ initialWebhooks }: { initialWebhooks: Webhook[]
       tableKeyRef.current += 1;
       setTableKey(tableKeyRef.current);
     } catch {
-      // swallow — table still shows stale rows
+      // swallow - table still shows stale rows
     }
   }
 

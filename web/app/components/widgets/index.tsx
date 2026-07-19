@@ -11,7 +11,7 @@ import InfluenceOpsWidget from "@/app/projects/[id]/InfluenceOpsWidget";
 const GRID_CLASS = "grid grid-cols-1 md:grid-cols-3 gap-6";
 
 // InfluenceOpsWidget is hidden at this level (no project context).
-// Live rendering is in OverviewClient — it queries per-project source counts.
+// Live rendering is in OverviewClient - it queries per-project source counts.
 export function BlueWidgets() {
   return (
     <div data-testid="blue-widgets" className={GRID_CLASS}>

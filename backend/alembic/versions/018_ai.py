@@ -16,13 +16,13 @@ Schema foundation for the AI subsystem:
     AI-01: per-project LLM provider configuration. One row per project (UNIQUE on
     project_id). Stores provider_type (ollama/openai/anthropic), model_name, api_base
     (Ollama endpoint; NULL for hosted providers), and AES-256-GCM encrypted credentials
-    in credentials_enc + credentials_key_version — exact mirror of sources.credentials_enc
+    in credentials_enc + credentials_key_version - exact mirror of sources.credentials_enc
     pattern from migration 007_credentials_key_version. project_id FK ondelete=CASCADE.
 
   ai_summaries table
     AI-02: LLM-generated summaries for individual events (summary_type='event') and
     daily project digests (summary_type='digest'). event_id is a soft UUID (no FK
-    constraint to events.id) — events is a TimescaleDB hypertable and CANNOT be a FK
+    constraint to events.id) - events is a TimescaleDB hypertable and CANNOT be a FK
     target (same pattern as event_score_overrides.event_id in migration 013, and
     brand_matches.event_id in migration 011, and attack_technique_tags.event_id in
     migration 001). project_id FK ondelete=CASCADE for hard project scope.
@@ -37,23 +37,23 @@ Schema foundation for the AI subsystem:
 
   events.ai_score numeric(5,2) NULL
     SCR-04: AI reranking stores per-event clamp result (rule_score ± 15). Read path:
-    COALESCE(ai_score, score) — ai_score when AI rerank is enabled and present, else
+    COALESCE(ai_score, score) - ai_score when AI rerank is enabled and present, else
     rule-computed score from migration 013. INSERT-only at scoring time per migration 013
-    precedent — no UPDATE on compressed chunks.
+    precedent - no UPDATE on compressed chunks.
 
   projects.ai_* columns
-    ai_digest_enabled bool default false — opt-in daily digest generation
-    ai_rerank_enabled bool default false — opt-in AI reranking pass
-    ai_daily_token_cap int default 100000 — per-project token budget cap
-    digest_schedule_cron text default '0 6 * * *' — APScheduler cron expression
+    ai_digest_enabled bool default false - opt-in daily digest generation
+    ai_rerank_enabled bool default false - opt-in AI reranking pass
+    ai_daily_token_cap int default 100000 - per-project token budget cap
+    digest_schedule_cron text default '0 6 * * *' - APScheduler cron expression
 
 ADD COLUMN safety (from migration 013 precedent):
   events is a TimescaleDB hypertable with columnstore. Each ADD COLUMN is its own
-  op.execute() statement — required to avoid FeatureNotSupportedError on compressed
-  hypertables. ai_score is nullable with no FK or NOT NULL constraint — safe as a
+  op.execute() statement - required to avoid FeatureNotSupportedError on compressed
+  hypertables. ai_score is nullable with no FK or NOT NULL constraint - safe as a
   single statement.
 
-  projects is a plain PostgreSQL table — standard op.add_column() is safe.
+  projects is a plain PostgreSQL table - standard op.add_column() is safe.
 """
 from __future__ import annotations
 
@@ -108,7 +108,7 @@ def upgrade() -> None:
     # --- 2. ai_providers table -------------------------------------------------------
     # One row per project (UNIQUE project_id). credentials_enc + credentials_key_version
     # mirror sources.credentials_enc pattern exactly (migration 007_credentials_key_version).
-    # project_id FK ondelete=CASCADE — provider config is scoped to project lifetime.
+    # project_id FK ondelete=CASCADE - provider config is scoped to project lifetime.
     # api_base is NULL for hosted providers (OpenAI / Anthropic); required for Ollama.
     op.execute(
         """
@@ -129,7 +129,7 @@ def upgrade() -> None:
     )
 
     # --- 3. ai_summaries table -------------------------------------------------------
-    # event_id is a soft UUID (NO FK CONSTRAINT) — events is a hypertable and cannot
+    # event_id is a soft UUID (NO FK CONSTRAINT) - events is a hypertable and cannot
     # be a FK target. Same pattern as event_score_overrides (migration 013) and
     # brand_matches (migration 011). Digests have event_id=NULL (summary_type='digest').
     # project_id FK ondelete=CASCADE enforces hard project scope (PROD-01 surface).
@@ -159,7 +159,7 @@ def upgrade() -> None:
     )
 
     # --- 4. ai_suggestions table -----------------------------------------------------
-    # ai_summary_id FK (CASCADE) — suggestions are children of a summary; deleting the
+    # ai_summary_id FK (CASCADE) - suggestions are children of a summary; deleting the
     # summary purges its suggestions. project_id FK (CASCADE) adds a direct project scope
     # column for efficient filtering without joining through ai_summaries.
     # event_id is also a soft UUID (no FK to hypertable) for the same reason as
@@ -191,13 +191,13 @@ def upgrade() -> None:
 
     # --- 5. events.ai_score numeric(5,2) NULL ----------------------------------------
     # SCR-04: AI reranking stores clamp result (rule_score ± 15). Matches events.score
-    # precision (numeric(5,2)) from migration 013. INSERT-only at scoring time — no
+    # precision (numeric(5,2)) from migration 013. INSERT-only at scoring time - no
     # UPDATE on compressed chunks per migration 013 precedent. IF NOT EXISTS is a
     # safety guard for idempotent partial re-runs.
     op.execute("ALTER TABLE events ADD COLUMN IF NOT EXISTS ai_score numeric(5,2) NULL;")
 
     # --- 6. projects.ai_* columns ----------------------------------------------------
-    # projects is a plain PG table — op.add_column() is safe (no hypertable caveat).
+    # projects is a plain PG table - op.add_column() is safe (no hypertable caveat).
     # Defaults match 17-CONTEXT.md §Decisions: digest_schedule_cron='0 6 * * *',
     # ai_daily_token_cap=100000, ai_digest_enabled=false, ai_rerank_enabled=false.
     op.add_column(

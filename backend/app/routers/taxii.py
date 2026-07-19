@@ -1,14 +1,14 @@
-"""TAXII 2.1 outbound server router — TAXII-01..05.
+"""TAXII 2.1 outbound server router - TAXII-01..05.
 
 All endpoints require a valid partner key via require_taxii_client Depends().
 The JWT AuthMiddleware is bypassed for /taxii2 paths (see middleware/auth.py).
 
 Endpoints:
-  GET /taxii2/                                    — Discovery (TAXII-01)
-  GET /taxii2/api/                                — API Root info (TAXII-01)
-  GET /taxii2/api/collections/                    — Collections list (TAXII-02)
-  GET /taxii2/api/collections/{collection_id}/    — Single collection (TAXII-02)
-  GET /taxii2/api/collections/{collection_id}/objects/  — Objects (TAXII-02, TAXII-04, TAXII-05)
+  GET /taxii2/                                    - Discovery (TAXII-01)
+  GET /taxii2/api/                                - API Root info (TAXII-01)
+  GET /taxii2/api/collections/                    - Collections list (TAXII-02)
+  GET /taxii2/api/collections/{collection_id}/    - Single collection (TAXII-02)
+  GET /taxii2/api/collections/{collection_id}/objects/  - Objects (TAXII-02, TAXII-04, TAXII-05)
 
 Content-Type on ALL responses: application/taxii+json;version=2.1 (TAXII-05)
 """
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
@@ -40,7 +40,7 @@ from app.services.taxii_bundle import build_tlp_predicate, event_to_stix_sdo
 
 log = structlog.get_logger(__name__)
 
-PAGE_CAP: int = 100  # TAXII-05: hard cap — no single response exceeds 100 objects
+PAGE_CAP: int = 100  # TAXII-05: hard cap - no single response exceeds 100 objects
 
 TAXII_CONTENT_TYPE = "application/taxii+json;version=2.1"
 
@@ -48,7 +48,7 @@ router = APIRouter(tags=["taxii"])
 
 
 # ---------------------------------------------------------------------------
-# Custom response class — forces correct Content-Type on all TAXII responses
+# Custom response class - forces correct Content-Type on all TAXII responses
 # RESEARCH.md §Pitfall 1: FastAPI's JSONResponse hardcodes application/json
 # ---------------------------------------------------------------------------
 
@@ -74,7 +74,7 @@ def _taxii_base_url(request: Request) -> str:
 
 
 # ---------------------------------------------------------------------------
-# GET /taxii2/  — Discovery (TAXII 2.1 §4)
+# GET /taxii2/  - Discovery (TAXII 2.1 §4)
 # ---------------------------------------------------------------------------
 
 @router.get("/")
@@ -91,7 +91,7 @@ async def get_discovery(
     base = _taxii_base_url(request)
     resource = DiscoveryResource(
         title="IntelliBird TAXII 2.1",
-        description="IntelliBird threat intelligence feed — partner pull",
+        description="IntelliBird threat intelligence feed - partner pull",
         default=f"{base}/taxii2/api/",
         api_roots=[f"{base}/taxii2/api/"],
     )
@@ -99,7 +99,7 @@ async def get_discovery(
 
 
 # ---------------------------------------------------------------------------
-# GET /taxii2/api/  — API Root (TAXII 2.1 §5.1)
+# GET /taxii2/api/  - API Root (TAXII 2.1 §5.1)
 # ---------------------------------------------------------------------------
 
 @router.get("/api/")
@@ -113,7 +113,7 @@ async def get_api_root(
 
 
 # ---------------------------------------------------------------------------
-# GET /taxii2/api/collections/  — Collections list (TAXII 2.1 §5.2)
+# GET /taxii2/api/collections/  - Collections list (TAXII 2.1 §5.2)
 # ---------------------------------------------------------------------------
 
 @router.get("/api/collections/")
@@ -121,7 +121,7 @@ async def get_collections(
     client: TaxiiClient = Depends(require_taxii_client),
     session: AsyncSession = Depends(get_session),
 ) -> Response:
-    """TAXII 2.1 §5.2 — List collections the partner key has ACL for.
+    """TAXII 2.1 §5.2 - List collections the partner key has ACL for.
 
     Each taxii_clients row is bound to exactly one project_id.
     That project is the one collection this partner can see.
@@ -148,7 +148,7 @@ async def get_collections(
 
 
 # ---------------------------------------------------------------------------
-# GET /taxii2/api/collections/{collection_id}/  — Single collection (TAXII 2.1 §5.2)
+# GET /taxii2/api/collections/{collection_id}/  - Single collection (TAXII 2.1 §5.2)
 # ---------------------------------------------------------------------------
 
 @router.get("/api/collections/{collection_id}/")
@@ -157,7 +157,7 @@ async def get_collection(
     client: TaxiiClient = Depends(require_taxii_client),
     session: AsyncSession = Depends(get_session),
 ) -> Response:
-    """TAXII 2.1 §5.2 — Single collection resource."""
+    """TAXII 2.1 §5.2 - Single collection resource."""
     # Validate that the partner has ACL for this collection
     if collection_id != str(client.project_id):
         raise HTTPException(status_code=403, detail="taxii_collection_forbidden")
@@ -180,7 +180,7 @@ async def get_collection(
 
 
 # ---------------------------------------------------------------------------
-# GET /taxii2/api/collections/{collection_id}/objects/  — Objects (TAXII 2.1 §5.4)
+# GET /taxii2/api/collections/{collection_id}/objects/  - Objects (TAXII 2.1 §5.4)
 # ---------------------------------------------------------------------------
 
 @router.get("/api/collections/{collection_id}/objects/")
@@ -192,7 +192,7 @@ async def get_objects(
     limit: int | None = Query(default=None, ge=1, le=PAGE_CAP),
     next_cursor: str | None = Query(default=None, alias="next"),
 ) -> Response:
-    """TAXII 2.1 §5.4 — Paginated STIX objects for a collection.
+    """TAXII 2.1 §5.4 - Paginated STIX objects for a collection.
 
     Enforces:
       - ACL: partner can only access their bound project_id (TAXII-04)
@@ -200,7 +200,7 @@ async def get_objects(
       - Page cap: max 100 objects per response (TAXII-05)
       - Pagination: more/next cursor envelope (TAXII-05)
     """
-    # ACL check — TAXII-04
+    # ACL check - TAXII-04
     if collection_id != str(client.project_id):
         raise HTTPException(status_code=403, detail="taxii_collection_forbidden")
 

@@ -1,9 +1,9 @@
-"""IOC-05 re-sighting upsert integration tests — Plan 22-04 Task 1.
+"""IOC-05 re-sighting upsert integration tests - Plan 22-04 Task 1.
 
 Re-sighting an expired IOC via the upsert path MUST:
   * flip status='expired' → 'active'
   * bump last_seen
-  * NEVER change confidence (analyst-set, not auto-inflated — RESEARCH Pitfall 5)
+  * NEVER change confidence (analyst-set, not auto-inflated - RESEARCH Pitfall 5)
   * append a row to ioc_event_links
 """
 from __future__ import annotations
@@ -55,7 +55,7 @@ async def test_resighting_flips_expired_to_active_and_preserves_confidence(db_se
     two_years_ago = datetime.now(timezone.utc) - timedelta(days=730)
 
     # Seed project first (FK target), then expired IOC with analyst-set
-    # confidence 0.95 — re-sighting must NOT mutate this back to default 0.7.
+    # confidence 0.95 - re-sighting must NOT mutate this back to default 0.7.
     await db_session.execute(
         text(
             "INSERT INTO projects (id, name, engagement_type, created_by, archived) "

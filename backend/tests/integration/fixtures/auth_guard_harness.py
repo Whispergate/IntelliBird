@@ -11,7 +11,7 @@ Dry-run contract (to be honoured by the entrypoint in plan 13-04):
   `alembic upgrade head` or `exec gunicorn`. This lets integration tests
   exercise the guard without starting the real app.
 - The guard still fails with exit 78 if AUTH_ENABLED is not 'true'
-  regardless of the dry-run flag — guards run before dry-run short-circuit.
+  regardless of the dry-run flag - guards run before dry-run short-circuit.
 
 Usage:
     result = run_entrypoint({"AUTH_ENABLED": "false"})

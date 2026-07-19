@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MembershipDialog — Add-member modal for Memberships tab (
+ * MembershipDialog - Add-member modal for Memberships tab (
  * PRJ-05).
  *
  * UI-SPEC §/projects/[id] detail §Memberships tab locks:
@@ -15,12 +15,12 @@
  * Error surfacing:
  *   - Empty user_sub → client-side toast (no round-trip)
  *   - Backend 422 "User not found in Authentik" → toast copy from UI-SPEC
- *   - Backend 409 membership_exists → distinct copy (spec-implied — explicit
+ *   - Backend 409 membership_exists → distinct copy (spec-implied - explicit
  *     about duplicate rather than "user not found")
  *
  * Note on form shape: this dialog mirrors ProjectDialog from plan 10-08 in
  * dialog styling + button placement, but does NOT use react-hook-form +
- * zodResolver here — the two-field shape is trivial enough that local useState
+ * zodResolver here - the two-field shape is trivial enough that local useState
  * is clearer. Upgrading to RHF if the form grows (e.g., assign-to-team, invite
  * expiry) is a v2.1 refactor.
  */
@@ -128,21 +128,21 @@ export function MembershipDialog({
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="Lead" id="role-lead" />
                 <Label htmlFor="role-lead" className="font-normal">
-                  <span className="font-medium">Lead</span> — project admin
+                  <span className="font-medium">Lead</span> - project admin
                   (add/remove members, edit settings, bind sources, export)
                 </Label>
               </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="Contributor" id="role-contrib" />
                 <Label htmlFor="role-contrib" className="font-normal">
-                  <span className="font-medium">Contributor</span> — edit
+                  <span className="font-medium">Contributor</span> - edit
                   scope and tags (default)
                 </Label>
               </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="Observer" id="role-observer" />
                 <Label htmlFor="role-observer" className="font-normal">
-                  <span className="font-medium">Observer</span> — read-only
+                  <span className="font-medium">Observer</span> - read-only
                   access to intel, graph, and scope
                 </Label>
               </div>

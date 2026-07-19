@@ -3,7 +3,7 @@
 Validates FN + FN: the compose file declares all six
 services and every host-side port publish is bound to 127.0.0.1 only.
 
-This is a static test over ops/docker-compose.yml — no containers are
+This is a static test over ops/docker-compose.yml - no containers are
 launched.
 """
 from __future__ import annotations

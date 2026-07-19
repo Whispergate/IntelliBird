@@ -1,21 +1,18 @@
-"""Unit tests for bbot_runner.py — subprocess + semaphore + reaper + persistence primitives.
+"""Unit tests for bbot_runner.py - subprocess + semaphore + reaper + persistence primitives.
 
 Plan: 11-04a (EASM-01, EASM-02, EASM-03, EASM-09)
 
-All tests use monkeypatch to mock subprocess.run / subprocess.Popen — no live Docker, no live Redis.
+All tests use monkeypatch to mock subprocess.run / subprocess.Popen - no live Docker, no live Redis.
 Golden fixtures from backend/tests/fixtures/bbot_ndjson/ used for NDJSON stream tests.
 """
 from __future__ import annotations
 
 import hashlib
 import io
-import json
 import subprocess
 import uuid
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
-from unittest.mock import MagicMock, call, patch
 
 import pytest
 
@@ -38,7 +35,7 @@ def _make_completed_process(stdout="", returncode=0, stderr=""):
 # Module under test (imported after env guards)
 # ---------------------------------------------------------------------------
 
-import os
+import os  # noqa: E402
 os.environ.setdefault("SECRET_KEY", "a" * 32)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("JWT_SIGNING_KEY", "b" * 32)
@@ -52,7 +49,7 @@ from app.services import bbot_runner  # noqa: E402
 
 
 def test_launch_uses_om_json_flag_not_output_modules(monkeypatch):
-    """PITFALLS §Pitfall 1 — -om json, NOT --output-modules json."""
+    """PITFALLS §Pitfall 1 - -om json, NOT --output-modules json."""
     captured: list[list[str]] = []
 
     def mock_run(args, **kwargs):
@@ -74,7 +71,7 @@ def test_launch_uses_om_json_flag_not_output_modules(monkeypatch):
 
 
 def test_launch_passive_includes_rf_passive(monkeypatch):
-    """EASM-03 — passive mode appends -rf passive to args."""
+    """EASM-03 - passive mode appends -rf passive to args."""
     captured: list[list[str]] = []
 
     def mock_run(args, **kwargs):
@@ -94,7 +91,7 @@ def test_launch_passive_includes_rf_passive(monkeypatch):
 
 
 def test_launch_active_omits_rf_passive(monkeypatch):
-    """EASM-03 — active mode must NOT include -rf passive."""
+    """EASM-03 - active mode must NOT include -rf passive."""
     captured: list[list[str]] = []
 
     def mock_run(args, **kwargs):
@@ -112,7 +109,7 @@ def test_launch_active_omits_rf_passive(monkeypatch):
 
 
 def test_launch_uses_dash_d_detached(monkeypatch):
-    """PITFALLS §Pitfall 2 — must use docker run -d (detached)."""
+    """PITFALLS §Pitfall 2 - must use docker run -d (detached)."""
     captured: list[list[str]] = []
 
     def mock_run(args, **kwargs):
@@ -298,7 +295,7 @@ def test_content_hash_has_no_scan_id_influence():
     hash_a = bbot_runner.content_hash_for(_PROJECT_ID, "VULNERABILITY", "sub.example.com")
     hash_b = bbot_runner.content_hash_for(_PROJECT_ID, "VULNERABILITY", "sub.example.com")
 
-    # Calling with explicitly different scan contexts — hash must not vary
+    # Calling with explicitly different scan contexts - hash must not vary
     assert hash_a == hash_b
 
 

@@ -1,4 +1,4 @@
-""" MAP-05 — one-shot backfill actor.
+""" MAP-05 - one-shot backfill actor.
 
 Idempotent by SELECT predicate (WHERE geo_lat IS NULL). Iterates existing
 events with a non-empty raw_stix, calls resolve_geo, UPDATEs coords in
@@ -27,7 +27,7 @@ BATCH_SIZE = 500
 @contextmanager
 def _open_session() -> Iterator[SyncSession]:
     """Open a sync SQLAlchemy session from the configured DATABASE_URL."""
-    from app.config import settings  # lazy import — no circular-import risk
+    from app.config import settings  # lazy import - no circular-import risk
 
     sync_url = settings.DATABASE_URL
     sync_url = sync_url.replace("postgresql+asyncpg://", "postgresql://")
@@ -45,11 +45,11 @@ def backfill_geo_once_impl() -> dict:
 
  Returns a summary dict: {'scanned': int, 'updated': int, 'skipped': int}.
  Commits after each batch of BATCH_SIZE rows to avoid long-running
- transactions. Safe to call multiple times — the SELECT predicate
+ transactions. Safe to call multiple times - the SELECT predicate
  (geo_lat IS NULL AND geo_lon IS NULL) ensures already-resolved rows
  are never touched.
 """
-    from app.services.geo import resolve_geo  # lazy import — MMDB may not exist
+    from app.services.geo import resolve_geo  # lazy import - MMDB may not exist
 
     scanned = 0
     updated = 0
@@ -64,7 +64,7 @@ def backfill_geo_once_impl() -> dict:
     with _open_session() as session:
         while True:
             if cursor_observed_at is None:
-                # First page — no keyset filter
+                # First page - no keyset filter
                 rows = session.execute(
                     text("""
  SELECT id, observed_at, raw_stix
@@ -138,7 +138,7 @@ def backfill_geo_once_impl() -> dict:
 
 @dramatiq.actor(max_retries=0, queue_name="maintenance")
 def backfill_geo_once(_ignore: str = "nil") -> None:
-    """Dramatiq actor wrapper — enqueued by scheduler at startup.
+    """Dramatiq actor wrapper - enqueued by scheduler at startup.
 
  The _ignore parameter matches the bootstrap_attack convention so
  scheduler._make_dispatch(backfill_geo_once, "nil") works unchanged.

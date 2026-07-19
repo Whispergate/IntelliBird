@@ -1,11 +1,11 @@
-"""Per-source retention archiver — STO-01, STO-03, STO-04.
+"""Per-source retention archiver - STO-01, STO-03, STO-04.
 
 : TimescaleDB add_retention_policy and add_compression_policy are
 HYPERTABLE-WIDE (they apply to all rows regardless of source_id). IntelliBird
 requires per-source retention, so archiving is done in application SQL via
 per-source DELETE (policy=drop) or UPDATE events SET archived=true
 (policy=move-to-cold). The events.archived flag is the application-level
-'in cold storage' marker (STO-04 — archived rows remain referenceable so
+'in cold storage' marker (STO-04 - archived rows remain referenceable so
 attack graph references do not break).
 
 Scheduled nightly at 03:00 UTC by app.scheduler.jobs (job id 'archiver_nightly').
@@ -112,7 +112,7 @@ def _archive_source(
             ),
             {"sid": source_id, "days": str(hot_retention_days)},
         )
-        return int(result.rowcount or 0), []
+        return int(result.rowcount or 0), []  # type: ignore[attr-defined]
 
     if policy == "move-to-cold":
         # Collect IDs BEFORE the UPDATE so we can fire PD resolves post-commit.
@@ -137,10 +137,10 @@ def _archive_source(
             ),
             {"sid": source_id, "days": str(hot_retention_days)},
         )
-        return int(result.rowcount or 0), archived_ids
+        return int(result.rowcount or 0), archived_ids  # type: ignore[attr-defined]
 
     logger.warning(
-        "archiver_unknown_policy source_id=%s policy=%s — treating as keep",
+        "archiver_unknown_policy source_id=%s policy=%s - treating as keep",
         source_id,
         policy,
     )

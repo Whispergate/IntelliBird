@@ -1,4 +1,4 @@
-"""AGE spike — concurrent write/read under two Dramatiq actors.
+"""AGE spike - concurrent write/read under two Dramatiq actors.
 
 CONTEXT deliverable. Requires:
  - intellibird-db:m1 image running (db service)
@@ -50,13 +50,13 @@ def test_age_concurrent_write_read(pg_container, monkeypatch) -> None:
     import importlib
     import app.config as cfg
     importlib.reload(cfg)
-    # Dramatiq actors can only be registered once per process — avoid re-registering
+    # Dramatiq actors can only be registered once per process - avoid re-registering
     # when the module has already been imported by earlier tests in the suite.
     import sys
     if "app.workers.age_spike" in sys.modules:
         import app.workers.age_spike as spike
     else:
-        import app.workers.age_spike as spike  # noqa: F401 — first import registers actors
+        import app.workers.age_spike as spike  # noqa: F401 - first import registers actors
 
     batch_a = f"A-{uuid.uuid4().hex[:6]}"
     batch_b = f"B-{uuid.uuid4().hex[:6]}"
@@ -85,7 +85,10 @@ def test_age_concurrent_write_read(pg_container, monkeypatch) -> None:
                           args=(GRAPH_NAME, batch_a, 10))
     t2 = threading.Thread(target=spike.age_spike_writer.fn,
                           args=(GRAPH_NAME, batch_b, 10))
-    t1.start(); t2.start(); t1.join(); t2.join()
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
 
     observed = spike.age_spike_reader.fn(GRAPH_NAME, expect_at_least=20, timeout_sec=10)
     assert observed >= 20, f"expected >=20 AGE vertices, saw {observed}"

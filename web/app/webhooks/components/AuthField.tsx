@@ -15,7 +15,7 @@ import type { WebhookFormValues } from "../lib/webhookSchema";
 /**
  * Conditional auth field for Generic destination type only.
  * Returns null for Slack / Teams / Discord (auth is handled by the destination's
- * own mechanism — no operator-supplied credentials needed).
+ * own mechanism - no operator-supplied credentials needed).
  *
  * For Generic destinations:
  * - Auth Type Select: None / Bearer token / Basic auth / Custom header

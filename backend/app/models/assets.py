@@ -1,11 +1,11 @@
-"""Asset note ORM — project asset surface.
+"""Asset note ORM - project asset surface.
 
 The only write-state on the asset inventory surface. Assets themselves are a
 query-time aggregation over `easm_findings`; notes are the one stored artefact
 per asset (keyed on the same (project_id, bbot_event_type, canonical_target)
 tuple that makes easm_findings unique).
 
-Notes are anchored to the project, NOT to any specific `easm_findings` row —
+Notes are anchored to the project, NOT to any specific `easm_findings` row -
 scan cleanup does not drop notes (RESEARCH §Pitfall 7).
 """
 from __future__ import annotations
@@ -25,7 +25,7 @@ from app.models.base import Base
 class AssetNote(Base):
     """Operator-writable free-text note on a project asset.
 
-    Key tuple: (project_id, bbot_event_type, canonical_target) — matches the
+    Key tuple: (project_id, bbot_event_type, canonical_target) - matches the
     dedup key of `easm_findings`. UNIQUE at the DB level so upserts are safe.
     """
 

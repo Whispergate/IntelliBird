@@ -8,12 +8,12 @@ repository. Only this README and `.gitkeep` are tracked.
 
 When present, the GeoLite2-City database enables IntelliBird workers to resolve source IP
 addresses from ingested events into latitude/longitude coordinates for display on the threat
-map. When the file is absent workers skip IP resolution silently — events that carry STIX
+map. When the file is absent workers skip IP resolution silently - events that carry STIX
 `location` objects still resolve coordinates via their embedded data.
 
 ## Download
 
-Four options — pick one:
+Four options - pick one:
 
 ### Option A (Recommended): Compose `geoip` profile sidecar
 
@@ -92,7 +92,7 @@ The backend reads the file path from the environment variable:
 GEOLITE_PATH=/app/geolite/GeoLite2-City.mmdb
 ```
 
-This is the default value — no override is needed unless you store the file elsewhere.
+This is the default value - no override is needed unless you store the file elsewhere.
 
 ## Licence
 

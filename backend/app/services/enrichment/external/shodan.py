@@ -1,4 +1,4 @@
-"""Shodan enrichment provider — ENRICH-02.
+"""Shodan enrichment provider - ENRICH-02.
 
 Supports: ip, ipv6
 
@@ -13,7 +13,7 @@ score = min(float(vuln_count * 10), 100.0)
 evidence_text = first 5 CVE keys joined by ", "
 
 CRITICAL: HTTP 401 (free-tier key insufficient for host lookups) must NOT
-call record_quota_failure — it is a permanent API key limitation, not a
+call record_quota_failure - it is a permanent API key limitation, not a
 transient quota event. Return None with evidence_text="shodan_key_insufficient".
 """
 from __future__ import annotations
@@ -68,7 +68,7 @@ async def enrich(
 
     Returns a dict ready for IOCEnrichment creation, or None on failure.
 
-    HTTP 401 → None (key insufficient — NOT a quota failure, do not call
+    HTTP 401 → None (key insufficient - NOT a quota failure, do not call
     record_quota_failure).
     """
     if ioc_type not in _SUPPORTED_TYPES:
@@ -113,7 +113,7 @@ async def enrich(
         return None
 
     if response.status_code == 401:
-        # Free-tier API key cannot perform host lookups — NOT a quota failure
+        # Free-tier API key cannot perform host lookups - NOT a quota failure
         logger.info("shodan_key_insufficient ip=%s", normalized_value)
         return {
             "provider": PROVIDER,
@@ -125,7 +125,7 @@ async def enrich(
         }
 
     if response.status_code == 404:
-        # IP not indexed in Shodan — valid "unknown"
+        # IP not indexed in Shodan - valid "unknown"
         await record_success(redis, PROVIDER, project_scope)
         verdict, score, evidence = "unknown", 0.0, "ip_not_in_shodan"
         await cache_result(redis, PROVIDER, normalized_value, verdict, score, evidence)

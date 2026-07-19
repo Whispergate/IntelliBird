@@ -1,8 +1,8 @@
-"""MON-01 last_event_at update — plan 16-05.
+"""MON-01 last_event_at update - plan 16-05.
 
 Tests that all four ingest sites call bump_last_event_at (or its async variant)
 after a successful event insert. Uses unittest.mock to avoid a real DB dependency
-at the unit layer — integration coverage lives in test_source_ingest_stats.py.
+at the unit layer - integration coverage lives in test_source_ingest_stats.py.
 
 Sites covered:
   1. normalise._persist_event (via bump_last_event_at)
@@ -12,9 +12,8 @@ Sites covered:
 """
 from __future__ import annotations
 
-import types
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch, call
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 

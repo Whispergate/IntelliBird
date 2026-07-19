@@ -31,7 +31,7 @@
 
     /* Brand tokens (direct hex for non-shadcn components) */
     --brand-ink: #0D1B2A;               /* Midnight (background) */
-    --brand-primary: #1d9e75;           /* Teal (CTAs / active states — unchanged) */
+    --brand-primary: #1d9e75;           /* Teal (CTAs / active states - unchanged) */
     --brand-deep-teal: #0f6e56;         /* Border accent against midnight */
     --brand-mist: #9fe1cb;
     --brand-fog: #e1f5ee;
@@ -46,13 +46,13 @@
     --card-foreground: 157 46% 92%;
     --popover: 217 37% 17%;
     --popover-foreground: 157 46% 92%;
-    --primary: 160 69% 37%;             /* Teal — unchanged */
+    --primary: 160 69% 37%;             /* Teal - unchanged */
     --primary-foreground: 213 53% 11%;
     --secondary: 217 37% 25%;           /* Slate-blue lifted */
     --secondary-foreground: 157 46% 92%;
     --muted: 217 37% 21%;
     --muted-foreground: 213 25% 72%;
-    --accent: 35 86% 54%;               /* Signal amber — unchanged */
+    --accent: 35 86% 54%;               /* Signal amber - unchanged */
     --accent-foreground: 213 53% 11%;
     --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 98%;
@@ -62,7 +62,7 @@
   }
 }
 
-/* Brand typography scale — use via Tailwind arbitrary values or @apply */
+/* Brand typography scale - use via Tailwind arbitrary values or @apply */
 @layer base {
   :root {
     --font-display-size: 32px;
@@ -120,7 +120,7 @@
   }
 }
 
-/* Hide scrollbar in tab strips (WebKit/Blink) — Firefox handled via scrollbarWidth:none inline */
+/* Hide scrollbar in tab strips (WebKit/Blink) - Firefox handled via scrollbarWidth:none inline */
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }

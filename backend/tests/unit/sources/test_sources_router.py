@@ -1,4 +1,4 @@
-"""Unit tests for admin/sources CRUD router —.
+"""Unit tests for admin/sources CRUD router -.
 
 Uses httpx.AsyncClient + ASGITransport with an in-memory aiosqlite DB
 backed by SQLAlchemy async engine. All 17 tests run without Postgres or Redis.
@@ -29,7 +29,7 @@ from app.models.sources import Source  # noqa: E402
 from app.routers.admin.sources import router  # noqa: E402
 
 # SQLite-compatible DDL for the tables we need.
-# IDs are set from Python side (uuid.uuid4) — no server-side gen_random_uuid needed.
+# IDs are set from Python side (uuid.uuid4) - no server-side gen_random_uuid needed.
 _SOURCES_DDL = """
 CREATE TABLE IF NOT EXISTS sources (
  id TEXT PRIMARY KEY,

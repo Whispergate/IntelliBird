@@ -1,14 +1,14 @@
-"""AuthMiddleware + role gate dependencies — AUTH-02, AUTH-03.
+"""AuthMiddleware + role gate dependencies - AUTH-02, AUTH-03.
 
 Replaces the stub. Validation chain per CONTEXT.md:
   1. Bearer token extracted from Authorization header.
   2. PyJWT signature + exp validated via app.security.jwt.decode_token.
   3. claim 'type' must be 'access' (refresh tokens are not valid on protected endpoints).
   4. claim 'token_version' checked against users.token_version (30s in-memory TTL cache).
-  5. Redis jwt:revoked:{jti} checked — FAIL-CLOSED: Redis connection error returns 503.
+  5. Redis jwt:revoked:{jti} checked - FAIL-CLOSED: Redis connection error returns 503.
   6. request.state.user populated with AuthUser dataclass.
 
-EXEMPT_PATHS (pre-auth surface — must not require a token):
+EXEMPT_PATHS (pre-auth surface - must not require a token):
   /healthz                       Docker healthcheck
   /api/system/status             NoAuthBanner fetch (must render pre-login)
   /api/admin/rekey-credentials pre-auth setup-token-gated recovery
@@ -19,11 +19,11 @@ EXEMPT_PATHS (pre-auth surface — must not require a token):
   /api/auth/oidc/callback        Authentik redirect target
 
 TAXII 2.1 exemption:
-  /taxii2 (all sub-paths, checked via startswith) — TAXII 2.1 outbound server uses its
+  /taxii2 (all sub-paths, checked via startswith) - TAXII 2.1 outbound server uses its
   own partner-key authentication (require_taxii_client Depends), not JWT bearer tokens.
   The startswith check is used (not a frozenset entry) to cover all TAXII sub-paths.
 
-ASGI order (lock from — preserved):
+ASGI order (lock from - preserved):
   outermost -> innermost = RequestLogMiddleware -> AuthMiddleware -> CORSMiddleware -> route
 """
 from __future__ import annotations
@@ -60,7 +60,7 @@ EXEMPT_PATHS: frozenset[str] = frozenset({
 })
 
 # ---------------------------------------------------------------------------
-# token_version cache — 30-second in-memory TTL per worker (CONTEXT.md;
+# token_version cache - 30-second in-memory TTL per worker (CONTEXT.md;
 # accept the multi-worker consistency gap per PITFALL 5)
 # ---------------------------------------------------------------------------
 
@@ -87,11 +87,11 @@ async def _get_cached_token_version(user_id: str) -> int | None:
 
 
 # ---------------------------------------------------------------------------
-# Redis blocklist — fail-closed 503 on connection error
+# Redis blocklist - fail-closed 503 on connection error
 # ---------------------------------------------------------------------------
 
 async def _is_jti_revoked(jti: str) -> bool:
-    """Raises RuntimeError('auth_infra_down') on Redis failure — caller translates to 503."""
+    """Raises RuntimeError('auth_infra_down') on Redis failure - caller translates to 503."""
     import redis.asyncio as aioredis
     try:
         client = aioredis.from_url(settings.REDIS_URL)
@@ -147,7 +147,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         except pyjwt.InvalidTokenError:
             return JSONResponse({"detail": "invalid_token"}, status_code=401)
 
-        # 3. type check — only access tokens reach protected endpoints
+        # 3. type check - only access tokens reach protected endpoints
         if claims.get("type") != "access":
             return JSONResponse({"detail": "invalid_token"}, status_code=401)
 
@@ -156,7 +156,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if current_tv is None or claims["token_version"] < current_tv:
             return JSONResponse({"detail": "revoked_token"}, status_code=401)
 
-        # 5. Redis JTI blocklist — fail-closed 503 on connection error (PITFALL 3)
+        # 5. Redis JTI blocklist - fail-closed 503 on connection error (PITFALL 3)
         try:
             revoked = await _is_jti_revoked(claims["jti"])
         except RuntimeError:
@@ -166,7 +166,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return JSONResponse({"detail": "revoked_token"}, status_code=401)
 
         # 6. Populate request.state.user (includes project_memberships
-        #    pm_truncated — claim keys default to [] and False for tokens minted
+        #    pm_truncated - claim keys default to [] and False for tokens minted
         # legacy.)
         # PROD-03: role MUST derive from JWT claim only; never read X-Dashboard-Role from the request.
         pm_raw = claims.get("pm", [])
@@ -190,7 +190,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
 
 # ---------------------------------------------------------------------------
-# FastAPI dependencies — role gates
+# FastAPI dependencies - role gates
 # ---------------------------------------------------------------------------
 
 def require_auth(request: Request) -> AuthUser:

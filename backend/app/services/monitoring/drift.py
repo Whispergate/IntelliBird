@@ -1,12 +1,12 @@
 """Volume-drift detection for (MON-02).
 
-Pure Python — no pandas dependency. EWMA over 168 hourly buckets (7 days)
+Pure Python - no pandas dependency. EWMA over 168 hourly buckets (7 days)
 using alpha = 2/(N+1) (standard EMA span formula). Z-score via stdlib statistics.
 
 Alpha formula: alpha = 2 / (168 + 1) ≈ 0.012
   - span N = 168 (7 days × 24 hours of hourly buckets)
   - Standard EMA span-N formula: alpha = 2 / (N + 1)
-  - Small alpha → slowly adapting baseline (correct — we want stability)
+  - Small alpha → slowly adapting baseline (correct - we want stability)
 
 Locked thresholds from .planning/phases/16-continuous-monitoring/16-CONTEXT.md:
   - z > 3   → 'high' severity
@@ -15,7 +15,7 @@ Locked thresholds from .planning/phases/16-continuous-monitoring/16-CONTEXT.md:
 
 Min-count guard: no alert when baseline_mean * 24 < 10 events/day.
 Learning window: 7 days from source.created_at OR monitoring_config.last_changed_at
-  — suppresses drift alerts during baseline ramp-up (M-5).
+  - suppresses drift alerts during baseline ramp-up (M-5).
 """
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ def compute_z_score(hourly_counts: list[float], current_value: float) -> float |
     - Single-element baseline: statistics.stdev requires >= 2 data points
 
     Callers are expected to check is_in_learning_window() before calling this
-    function — drift.py is pure math with no knowledge of source creation dates.
+    function - drift.py is pure math with no knowledge of source creation dates.
     """
     if len(hourly_counts) < MIN_BASELINE_POINTS:
         return None
@@ -86,7 +86,7 @@ def classify_severity(
       z > z_medium (default 2.0) → 'medium'
       else → None (no alert)
 
-    Negative z (drift DOWN — volume drop) is intentionally not alerted here.
+    Negative z (drift DOWN - volume drop) is intentionally not alerted here.
     Silence detection (MON-01) covers the case where a source goes quiet.
     """
     if z is None:
@@ -114,7 +114,7 @@ def is_in_learning_window(
         source_created_at: Timezone-aware datetime of when the source was created.
         config_last_changed_at: Timezone-aware datetime of last monitoring_config
             change, or None if config has never been changed.
-        now: Override for "now" — primarily for testing. Defaults to UTC now.
+        now: Override for "now" - primarily for testing. Defaults to UTC now.
     """
     if now is None:
         now = datetime.now(timezone.utc)

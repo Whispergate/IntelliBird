@@ -1,10 +1,10 @@
-"""AI-05 — docker-compose --profile ai YAML validation tests.
+"""AI-05 - docker-compose --profile ai YAML validation tests.
 
 Covers:
   - Ollama service has profiles: [ai]
   - ollama_models named volume is declared and mounted at /root/.ollama
   - GPU deploy.resources.reservations.devices block with driver: nvidia is present
-    (commented-out block counts — we read the raw YAML text for this assertion)
+    (commented-out block counts - we read the raw YAML text for this assertion)
   - api service has OLLAMA_BASE_URL environment variable
 
 Uses `docker compose -f ops/docker-compose.yml --profile ai config --format json`
@@ -126,7 +126,7 @@ def test_ollama_models_named_volume() -> None:
                 volume_mounts.append((v, ""))
 
     sources = [src for src, _ in volume_mounts]
-    targets = [tgt for _, tgt in volume_mounts]
+    [tgt for _, tgt in volume_mounts]
 
     assert "ollama_models" in sources, (
         f"ollama service must mount the 'ollama_models' named volume; "
@@ -168,7 +168,7 @@ def test_gpu_deploy_block_documented_or_present() -> None:
     )
     assert has_nvidia_block, (
         "ops/docker-compose.yml must contain a GPU passthrough block "
-        "(driver: nvidia) under the ollama service — "
+        "(driver: nvidia) under the ollama service - "
         "either active or commented-out for CPU-only hosts. "
         "See docs/ops/ai-providers.md §GPU passthrough."
     )

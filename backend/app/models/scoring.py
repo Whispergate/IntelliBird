@@ -2,11 +2,11 @@
 
 SCR-01, SCR-03.
 
-EventScoreOverride — per-project admin score overrides keyed on (event_id, score_version).
+EventScoreOverride - per-project admin score overrides keyed on (event_id, score_version).
   event_id is a soft UUID (no FK to events.id) because events is a TimescaleDB hypertable and
   cannot be a FK target. Same pattern as brand_matches.event_id (migration 011).
 
-ProjectScoringRules — per-project weight / decay / tier cutoff overrides.
+ProjectScoringRules - per-project weight / decay / tier cutoff overrides.
   One row per project (UNIQUE on project_id). The rules JSONB column stores:
     {
       "weights": {"cvss": 50, "recency": 20, "source": 15, "relevance": 15},
@@ -24,7 +24,6 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-import sqlalchemy as sa
 from sqlalchemy import ForeignKey, Integer, Numeric, PrimaryKeyConstraint, TIMESTAMP, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -35,7 +34,7 @@ from app.models.base import Base
 class EventScoreOverride(Base):
     """Per-project scoring override for a specific event version.
 
-    PK is (event_id, score_version) — composite primary key allows multiple
+    PK is (event_id, score_version) - composite primary key allows multiple
     version rows per event while read path uses ORDER BY score_version DESC LIMIT 1.
 
     project_id FK to projects.id (CASCADE DELETE) enables PROD-01 isolation:
@@ -44,7 +43,7 @@ class EventScoreOverride(Base):
 
     __tablename__ = "event_score_overrides"
 
-    # Soft UUID — no FK to events.id; events is a hypertable (cannot be FK target).
+    # Soft UUID - no FK to events.id; events is a hypertable (cannot be FK target).
     event_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     project_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

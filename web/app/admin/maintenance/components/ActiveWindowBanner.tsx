@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ActiveWindowBanner — polls GET /api/admin/maintenance-window/active every 60s.
+ * ActiveWindowBanner - polls GET /api/admin/maintenance-window/active every 60s.
  * H-7 maintenance window suppression.
  *
  * When 200: shows yellow alert "Maintenance window active until {end_at}".
@@ -47,7 +47,7 @@ export function ActiveWindowBanner() {
         setActiveWindow(null);
       }
     } catch {
-      // Network error — don't clear existing state; silently retry
+      // Network error - don't clear existing state; silently retry
     }
   }
 
@@ -72,7 +72,7 @@ export function ActiveWindowBanner() {
     >
       <span className="font-semibold shrink-0">Maintenance window active</span>
       <span style={{ color: "rgba(239,159,39,0.85)" }}>
-        until {formatWindowEnd(activeWindow.end_at)} — monitoring alerts suppressed
+        until {formatWindowEnd(activeWindow.end_at)} - monitoring alerts suppressed
         {activeWindow.reason ? ` (${activeWindow.reason})` : ""}
       </span>
     </div>

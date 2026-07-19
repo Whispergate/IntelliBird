@@ -10,7 +10,7 @@ Adds filter_presets table (FIL-04).
 TimescaleDB note: ALTER TABLE... ADD COLUMN... GENERATED ALWAYS AS... STORED
 triggers a backfill over all existing chunks. Non-concurrent; accept block on
 bootstrapped datasets. (CREATE INDEX CONCURRENTLY in a txn) NOT used
-here — standard CREATE INDEX propagates to chunks via TimescaleDB 2.x.
+here - standard CREATE INDEX propagates to chunks via TimescaleDB 2.x.
 
 Name check constraint: ^[a-z0-9_-]{1,64}$ applied on filter_presets.name.
 """

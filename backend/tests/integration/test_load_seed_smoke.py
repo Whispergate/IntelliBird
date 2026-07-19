@@ -1,4 +1,4 @@
-"""Smoke test for load_seed fixture — PROD-05 Wave 0.
+"""Smoke test for load_seed fixture - PROD-05 Wave 0.
 
 Uses a tiny n (100 rows × 2 projects = 200 rows) so it stays in the default
 pytest suite (NOT marked @pytest.mark.load). The actual 500k-row exercise is
@@ -98,7 +98,7 @@ def test_seed_streams_in_chunks():
         chunks_seen += 1
         total_seen += len(chunk)
         if chunks_seen >= 2:
-            # Stop early — confirming >1 chunk proves streaming works.
+            # Stop early - confirming >1 chunk proves streaming works.
             break
 
     assert chunks_seen >= 2, "generator did not emit multiple chunks (not streaming)"

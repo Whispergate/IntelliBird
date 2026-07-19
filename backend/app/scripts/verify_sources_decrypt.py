@@ -6,8 +6,8 @@ Run AFTER `POST /api/admin/rekey-credentials` to confirm every
 the canary row survives) by iterating every real source row.
 
 Exit codes:
-    0 — every non-NULL credentials_enc decrypted OK.
-    1 — one or more rows failed (IDs + error types printed to stderr).
+    0 - every non-NULL credentials_enc decrypted OK.
+    1 - one or more rows failed (IDs + error types printed to stderr).
 
 Usage:
     docker compose -f ops/docker-compose.yml exec api \\
@@ -38,7 +38,7 @@ async def _run() -> int:
         total += 1
         try:
             decrypt_credentials(settings.SECRET_KEY, enc)
-        except Exception as exc:  # noqa: BLE001 — surface any failure
+        except Exception as exc:  # noqa: BLE001 - surface any failure
             failed.append((str(sid), f"{type(exc).__name__}: {exc}"))
 
     if failed:

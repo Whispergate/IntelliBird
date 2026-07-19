@@ -1,10 +1,10 @@
-"""TAXII/STIX polling actor — INGT-01, INGT-02, INGT-03, INGT-04.
+"""TAXII/STIX polling actor - INGT-01, INGT-02, INGT-03, INGT-04.
 
 - Version negotiation: try taxii2client.v21 first; on failure fall back to v20.
 - Pagination: call collection.get_objects(added_after=cursor, next=None) then
  loop while envelope.get("more") is truthy, passing envelope["next"].
 - Cursor advance: ONLY after all pages committed. Cursor source
- per TAXII-SPIKE.md recommendation — default = max(modified) across batch.
+ per TAXII-SPIKE.md recommendation - default = max(modified) across batch.
 - Auth: decrypt credentials_enc per poll, inject into Server constructor.
 - OTX dispatch: if source URL contains /taxii/discovery and server responds
  with application/xml (TAXII 1.1), route to taxii1_otx.poll_otx_taxii1.
@@ -26,7 +26,6 @@ from app.crypto import decrypt_credentials
 from app.ingest.normalise import _persist_event_for_bindings, update_source_health
 from app.services.source_health import update_silent_failure_count, record_ingest_stats
 from app.ingest.taxii_parser import normalise_stix_object, parse_stix_bundle
-from app.models.markings import TlpMarking
 from app.models.sources import Source
 
 logger = logging.getLogger(__name__)
@@ -81,7 +80,7 @@ def _decrypt_taxii_creds(credentials_enc: str | None) -> dict | None:
 
 
 def _build_server(url: str, creds: dict | None) -> Any:
-    """Version negotiation — prefer v2.1, fall back to v2.0.
+    """Version negotiation - prefer v2.1, fall back to v2.0.
 
  creds shape: {"type":"basic","username":"...","password":"..."} or
  {"type":"bearer","token":"..."} or None.
@@ -95,8 +94,8 @@ def _build_server(url: str, creds: dict | None) -> Any:
             kwargs["password"] = creds.get("password")
         elif t == "bearer":
             # taxii2-client accepts a requests.auth.AuthBase subclass via auth=
-            import requests  # noqa: PLC0415
-            class _Bearer(requests.auth.AuthBase):
+            import requests  # type: ignore[import-untyped]  # noqa: PLC0415
+            class _Bearer(requests.auth.AuthBase):  # type: ignore[misc]
                 def __init__(self, tok: str) -> None:
                     self.tok = tok
                 def __call__(self, r):  # type: ignore[no-untyped-def]
@@ -106,7 +105,7 @@ def _build_server(url: str, creds: dict | None) -> Any:
     try:
         return taxii_v21_Server(url, **kwargs)
     except Exception as e:  # noqa: BLE001
-        logger.warning("taxii_v21_failed url=%s error=%s — falling back to v20", url, e)
+        logger.warning("taxii_v21_failed url=%s error=%s - falling back to v20", url, e)
         return taxii_v20_Server(url, **kwargs)
 
 
@@ -196,7 +195,7 @@ def poll_taxii_impl(source_id_str: str) -> None:
                 logger.warning("record_ingest_stats_failed source_id=%s err=%s", source_id, stats_err)
             return
 
-        # Parse + persist — on parse failure, drop the single object but keep going.
+        # Parse + persist - on parse failure, drop the single object but keep going.
         inserted = 0
         latest_modified_str: str | None = None
 
@@ -280,7 +279,7 @@ def poll_taxii_impl(source_id_str: str) -> None:
                             source_id, obj_err, str(p)[:200],
                         )
 
-            # Cursor advance — ONLY after all pages written.
+            # Cursor advance - ONLY after all pages written.
             if latest_modified_str:
                 _advance_cursor(session, source_id, latest_modified_str)
 

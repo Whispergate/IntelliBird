@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ActionableIntelligenceSection — Section 3b: Actionable Intelligence Assessment.
+ * ActionableIntelligenceSection - Section 3b: Actionable Intelligence Assessment.
  * UI-SPEC §3b.
  *
  * Auto-populated + manual. Refresh button opens RefreshDiffModal (wired in 18-07).
@@ -111,7 +111,7 @@ export function ActionableIntelligenceSection({
         </div>
       </div>
 
-      {/* Refresh diff modal — Surface 5 */}
+      {/* Refresh diff modal - Surface 5 */}
       {!readOnly && (
         <RefreshDiffModal
           open={refreshModalOpen}

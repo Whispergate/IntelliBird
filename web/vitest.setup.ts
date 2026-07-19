@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
-// next-auth/react — mock useSession + SessionProvider so TopNav and other
+// next-auth/react - mock useSession + SessionProvider so TopNav and other
 // client components that call useSession() work in jsdom without a real
 // NextAuth provider. Returns a null session by default; individual tests that
 // need a user can override via vi.mocked(useSession).mockReturnValue(...).
@@ -11,7 +11,7 @@ vi.mock("next-auth/react", () => ({
   SessionProvider: ({ children }: { children: any }) => children,
 }));
 
-// Polyfill Element.scrollIntoView — jsdom does not implement it. Radix UI
+// Polyfill Element.scrollIntoView - jsdom does not implement it. Radix UI
 // Select calls scrollIntoView on the selected option at mount time. Without
 // this stub the call throws "candidate?.scrollIntoView is not a function"
 // and leaks as an unhandled error in every test that renders a Select.
@@ -19,7 +19,7 @@ if (typeof Element !== "undefined" && !Element.prototype.scrollIntoView) {
   Element.prototype.scrollIntoView = () => {};
 }
 
-// Polyfill ResizeObserver — required by Radix UI primitives (Select, RadioGroup, Sheet, etc.)
+// Polyfill ResizeObserver - required by Radix UI primitives (Select, RadioGroup, Sheet, etc.)
 // in jsdom which does not implement it natively.
 if (typeof globalThis.ResizeObserver === "undefined") {
   globalThis.ResizeObserver = class ResizeObserver {
@@ -41,7 +41,7 @@ if (typeof globalThis.URL !== "undefined" && !globalThis.URL.createObjectURL) {
   globalThis.URL.createObjectURL = vi.fn(() => "blob:mock");
 }
 
-// maplibre-gl — default export is the maplibregl namespace. Tests that render GeoMap
+// maplibre-gl - default export is the maplibregl namespace. Tests that render GeoMap
 // should not attempt a real Map instantiation; Map constructor is a noop returning a
 // minimal shape. addProtocol is tracked as a spy so SeedPresets / GeoMap tests can assert
 // registration behaviour.
@@ -75,7 +75,7 @@ vi.mock("maplibre-gl", () => {
   };
 });
 
-// pmtiles — Protocol constructor produces .tile() method bound to MapLibre.
+// pmtiles - Protocol constructor produces .tile() method bound to MapLibre.
 // Must use a regular function (not arrow) since GeoMapImpl calls `new Protocol()`.
 vi.mock("pmtiles", () => {
   const tileMethod = vi.fn();
@@ -85,7 +85,7 @@ vi.mock("pmtiles", () => {
   return { Protocol: ProtocolConstructor };
 });
 
-// react-cytoscapejs — default export renders a placeholder div. Tests asserting graph
+// react-cytoscapejs - default export renders a placeholder div. Tests asserting graph
 // mount should query by data-testid="cytoscape-graph".
 vi.mock("react-cytoscapejs", () => ({
   default: vi.fn(({ style }: { style?: React.CSSProperties }) => {
@@ -99,13 +99,13 @@ vi.mock("react-cytoscapejs", () => ({
   }),
 }));
 
-// cytoscape + cytoscape-dagre — constructor stubs to avoid DOM dependency.
+// cytoscape + cytoscape-dagre - constructor stubs to avoid DOM dependency.
 vi.mock("cytoscape", () => ({
   default: Object.assign(vi.fn(), { use: vi.fn() }),
 }));
 vi.mock("cytoscape-dagre", () => ({ default: {} }));
 
-// supercluster — pin-clustering library used by GeoMapImpl. jsdom cannot execute the
+// supercluster - pin-clustering library used by GeoMapImpl. jsdom cannot execute the
 // WebAssembly/native path. Expose a constructor stub whose returned instance implements
 // the four methods GeoMapImpl calls.
 vi.mock("supercluster", () => {

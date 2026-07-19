@@ -1,9 +1,9 @@
 """
-DISINFO-03 — Narrative operation prompt constant and validator are present.
+DISINFO-03 - Narrative operation prompt constant and validator are present.
 
 These tests directly import existing modules that will be MODIFIED in
 to add narrative_op support. Tests will FAIL (NameError /
-KeyError) until those modifications land — this is intentional RED state.
+KeyError) until those modifications land - this is intentional RED state.
 
 Targets:
   - backend/app/services/llm/prompts.py        (add SYSTEM_PROMPT_NARRATIVE_OP_V1)
@@ -11,7 +11,6 @@ Targets:
   - backend/app/schemas/ai.py                  (extend suggestion_type Literal)
 """
 import os
-import pytest
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("SECRET_KEY", "s" * 64)
@@ -23,7 +22,7 @@ def test_narrative_op_prompt_exists():
 
     Will raise NameError until Plan 04 adds the constant.
     """
-    from app.services.llm.prompts import SYSTEM_PROMPT_NARRATIVE_OP_V1  # noqa: F401 — tested by import
+    from app.services.llm.prompts import SYSTEM_PROMPT_NARRATIVE_OP_V1  # noqa: F401 - tested by import
 
     assert isinstance(SYSTEM_PROMPT_NARRATIVE_OP_V1, str)
     assert len(SYSTEM_PROMPT_NARRATIVE_OP_V1) > 0
@@ -49,7 +48,7 @@ def test_validate_narrative_op_always_true():
     from app.services.llm.suggestion_validator import VALIDATORS
 
     assert "narrative_op" in VALIDATORS, (
-        "VALIDATORS missing 'narrative_op' key — add it in Plan 04"
+        "VALIDATORS missing 'narrative_op' key - add it in Plan 04"
     )
 
 

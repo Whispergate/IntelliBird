@@ -8,7 +8,7 @@ the FastAPI app.
 Important:
 - No ACME / Let's Encrypt. Uses `auto_https off` + plain `http://` site address
   so the harness works in CI (per RESEARCH §Pitfall 3).
-- No top-level I/O — the Caddyfile is only written when the context manager is
+- No top-level I/O - the Caddyfile is only written when the context manager is
   entered, so merely importing this module has zero side effects.
 - Idempotent: multiple enters create fresh Caddyfile tempfiles.
 
@@ -62,13 +62,13 @@ def caddy_harness(
     """Start a Caddy container proxying to upstream_host:upstream_port.
 
     Yields a SimpleNamespace with:
-      .proxy_url — `http://{host}:{mapped_port}` the test client should call
-      .container — the underlying DockerContainer (if caller needs logs)
-      .stop()    — explicit stop hook (also called on exit)
+      .proxy_url - `http://{host}:{mapped_port}` the test client should call
+      .container - the underlying DockerContainer (if caller needs logs)
+      .stop()    - explicit stop hook (also called on exit)
 
     The container is cleaned up on `__exit__` regardless of exception.
     """
-    # Import lazily — avoids requiring testcontainers at module import time.
+    # Import lazily - avoids requiring testcontainers at module import time.
     from testcontainers.core.container import DockerContainer
     from testcontainers.core.waiting_utils import wait_for_logs
 

@@ -1,4 +1,4 @@
-"""Integration: PATCH /api/events/{id}/tags — FIL-03 live DB.
+"""Integration: PATCH /api/events/{id}/tags - FIL-03 live DB.
 
 Uses testcontainers with intellibird-db:m1 image + alembic head migration.
 Follows the pattern established in test_events_api.py: module-scoped container,
@@ -19,9 +19,6 @@ from sqlalchemy import make_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from tests.fixtures.events_seed import (
-    SOURCE_NVD,
-    SOURCE_RSS,
-    SOURCE_TAXII,
     seed_50_events,
 )
 
@@ -51,7 +48,7 @@ def live_db_tags():
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
             "JWT_SIGNING_KEY": "j" * 64,
-            "REDIS_URL": "redis://localhost:1",  # unreachable — not needed for these tests
+            "REDIS_URL": "redis://localhost:1",  # unreachable - not needed for these tests
         }
         for k, v in env.items():
             os.environ[k] = v
@@ -82,7 +79,7 @@ async def tags_client(live_db_tags):
     engine = create_async_engine(asyncpg_url, pool_pre_ping=True, future=True)
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-    # Seed 50 events — idempotent (truncates first)
+    # Seed 50 events - idempotent (truncates first)
     async with factory() as session:
         await seed_50_events(session)
 

@@ -1,4 +1,4 @@
-"""Integration tests — GET /api/events + /api/events/{id} against live DB.
+"""Integration tests - GET /api/events + /api/events/{id} against live DB.
 
 Exercises: pagination, filters, visibility header, archived handling, 404s.
 Uses testcontainers with intellibird-db:m1 image + alembic head migration.
@@ -18,13 +18,11 @@ import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import make_url, text
+from sqlalchemy import make_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from tests.fixtures.events_seed import (
     SOURCE_NVD,
-    SOURCE_RSS,
-    SOURCE_TAXII,
     seed_50_events,
 )
 
@@ -53,7 +51,7 @@ def live_db_events():
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
             "JWT_SIGNING_KEY": "j" * 64,
-            "REDIS_URL": "redis://localhost:1",  # unreachable — fire-and-forget pub/sub
+            "REDIS_URL": "redis://localhost:1",  # unreachable - fire-and-forget pub/sub
         }
         for k, v in env.items():
             os.environ[k] = v
@@ -85,7 +83,7 @@ async def events_client(live_db_events):
     engine = create_async_engine(asyncpg_url, pool_pre_ping=True, future=True)
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-    # Seed 50 events — seed truncates first so idempotent across test runs
+    # Seed 50 events - seed truncates first so idempotent across test runs
     async with factory() as session:
         await seed_50_events(session)
 
@@ -194,7 +192,7 @@ async def test_visibility_no_filter_when_no_auth(events_client):
     r = await events_client.get("/events?limit=200", headers={"X-Dashboard-Role": "red"})
     b = r.json()
     assert r.status_code == 200
-    # No filtering applied — all visibility buckets present or absent depending on seed
+    # No filtering applied - all visibility buckets present or absent depending on seed
     # The key assertion: the header does NOT cause a 400/422/500 error
     assert isinstance(b["items"], list)
 

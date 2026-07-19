@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * DigestView — Daily Digest page client component (AI-07).
+ * DigestView - Daily Digest page client component (AI-07).
  * Surface 3 per 17-UI-SPEC.md.
  *
  * - Fetches latest ai_summaries digest row from GET /api/projects/{id}/ai/digest.
@@ -93,7 +93,7 @@ function renderDigestLines(text: string): React.ReactNode[] {
       );
     } else if (line.startsWith("- ")) {
       bulletBuffer.push({ line, idx });
-    } else if (line.match(/^— Summary based on \d+ of \d+ events$/)) {
+    } else if (line.match(/^- Summary based on \d+ of \d+ events$/)) {
       flushBullets();
       result.push(
         <p key={idx} className="text-muted-foreground text-xs mt-4 border-t border-border pt-2">
@@ -200,7 +200,7 @@ export function DigestView({ projectId }: { projectId: string }) {
           }
         }
       } catch {
-        // transient — keep polling
+        // transient - keep polling
       }
       setTimeout(poll, 3_000);
     };

@@ -89,7 +89,7 @@ describe("GeoMap pins (plan 06-04, MAP-01)", () => {
     } as never);
   });
 
-  it("test_list_events_called_with_has_geo_and_role — calls listEvents with has_geo and role", async () => {
+  it("test_list_events_called_with_has_geo_and_role - calls listEvents with has_geo and role", async () => {
     vi.mocked(apiClient.listEvents).mockResolvedValue({
       items: [],
       next_cursor: null,
@@ -112,7 +112,7 @@ describe("GeoMap pins (plan 06-04, MAP-01)", () => {
     expect(secondArg).toBe("red");
   });
 
-  it("test_empty_state_overlay_renders_exact_copy — shows empty overlay when no events", async () => {
+  it("test_empty_state_overlay_renders_exact_copy - shows empty overlay when no events", async () => {
     // GeoMapImpl fires two listEvents calls: has_geo=true for pins, then a
     // probe (limit=1) to distinguish "no events at all" from "no geo-resolved
     // events". The "No geo-resolved events…" copy renders only when the probe
@@ -145,7 +145,7 @@ describe("GeoMap pins (plan 06-04, MAP-01)", () => {
     });
   });
 
-  it("test_map_addSource_called_with_cluster_true — addSource called with cluster options after load", async () => {
+  it("test_map_addSource_called_with_cluster_true - addSource called with cluster options after load", async () => {
     vi.mocked(apiClient.listEvents).mockResolvedValue({
       items: twoGeoEvents,
       next_cursor: null,
@@ -182,7 +182,7 @@ describe("GeoMap pins (plan 06-04, MAP-01)", () => {
     });
   });
 
-  it("test_addSource_features_match_events — GeoJSON features match event coordinates and ids", async () => {
+  it("test_addSource_features_match_events - GeoJSON features match event coordinates and ids", async () => {
     vi.mocked(apiClient.listEvents).mockResolvedValue({
       items: twoGeoEvents,
       next_cursor: null,
@@ -234,7 +234,7 @@ describe("GeoMap pins (plan 06-04, MAP-01)", () => {
     expect(feature1.properties?.event_id).toBe(twoGeoEvents[1].id);
   });
 
-  it("test_phase5_placeholder_overlay_absent — overlay text must not appear in DOM", async => {
+  it("test_phase5_placeholder_overlay_absent - overlay text must not appear in DOM", async => {
     vi.mocked(apiClient.listEvents).mockResolvedValue({
       items: [],
       next_cursor: null,

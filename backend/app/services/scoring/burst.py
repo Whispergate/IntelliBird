@@ -1,12 +1,12 @@
-"""Burst suppression helpers for webhook_dispatcher.py — SCR-05.
+"""Burst suppression helpers for webhook_dispatcher.py - SCR-05.
 
 Implements a Redis sliding-window cap: at most BURST_HIGH_CAP HIGH-tier (S+A)
 webhook fires per project per BURST_WINDOW_SEC rolling window.
 
 References:
   - 15-CONTEXT.md §"Burst suppression"
-  - 15-RESEARCH.md §"Pattern 4" + §"Code Examples — Redis Sliding Window (Sync)"
-  - 15-RESEARCH.md §"Pitfall 5" — do NOT use async get_redis() here; the webhook
+  - 15-RESEARCH.md §"Pattern 4" + §"Code Examples - Redis Sliding Window (Sync)"
+  - 15-RESEARCH.md §"Pitfall 5" - do NOT use async get_redis() here; the webhook
     dispatcher runs in a Dramatiq worker thread with a synchronous redis_lib.Redis
     client. Mixing asyncio.run() into a sync worker causes nested event loop errors.
 
@@ -43,12 +43,12 @@ def is_burst_suppressed(r: redis_lib.Redis, project_id: str) -> bool:
       3. Return True if count >= BURST_HIGH_CAP (cap reached, suppress this fire).
 
     The ZREMRANGEBYSCORE + ZCARD pair is pipelined for efficiency. No write
-    happens here — only reads. This keeps the function safe to call speculatively
+    happens here - only reads. This keeps the function safe to call speculatively
     before deciding whether to record.
 
     Args:
         r:          Sync redis_lib.Redis client (passed from webhook_dispatcher).
-        project_id: String project UUID — used as part of the Redis key.
+        project_id: String project UUID - used as part of the Redis key.
 
     Returns:
         True if the project has already fired BURST_HIGH_CAP+ HIGH-tier webhooks
@@ -80,7 +80,7 @@ def record_high_tier_dispatch(r: redis_lib.Redis, project_id: str) -> None:
 
     Args:
         r:          Sync redis_lib.Redis client (passed from webhook_dispatcher).
-        project_id: String project UUID — used as part of the Redis key.
+        project_id: String project UUID - used as part of the Redis key.
     """
     import uuid as _uuid
 
@@ -107,7 +107,7 @@ def record_high_tier_dispatch(r: redis_lib.Redis, project_id: str) -> None:
 #       record_dispatch_key(r, key)
 #       ... dispatch alert ...
 #
-# The project-scoped functions above are NOT modified — callers are
+# The project-scoped functions above are NOT modified - callers are
 # unaffected.
 
 def is_burst_suppressed_key(r: redis_lib.Redis, key: str, cap: int) -> bool:

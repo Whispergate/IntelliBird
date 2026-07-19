@@ -154,7 +154,7 @@ describe("ScanLaunchDialog", () => {
     await screen.findByText("shodan_dns");
     expect(
       screen.getByText(
-        "Shodan API key optional — enables shodan_dns. Without it, shodan_dns is skipped and the scan continues.",
+        "Shodan API key optional - enables shodan_dns. Without it, shodan_dns is skipped and the scan continues.",
       ),
     ).toBeInTheDocument();
   });

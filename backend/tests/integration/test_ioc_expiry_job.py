@@ -1,4 +1,4 @@
-"""IOC-05 daily expiry scheduler integration tests — Plan 22-04 Task 2.
+"""IOC-05 daily expiry scheduler integration tests - Plan 22-04 Task 2.
 
 Covers:
   * `expire_iocs(session)` flips active → expired when last_seen + ttl exceeded.

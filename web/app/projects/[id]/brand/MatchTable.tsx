@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MatchTable — (UI-SPEC §Surface 2 §Match table).
+ * MatchTable - (UI-SPEC §Surface 2 §Match table).
  *
  * 8-column brand-match table per UI-SPEC:
  *   Term (180px) | Matched value (flex-1, font-mono 12px, truncate@48) |
@@ -9,7 +9,7 @@
  *   First seen (120px) | Last seen (120px) |
  *   Status (140px pill + signal-amber dot on watchlist) | Actions (140px Select)
  *
- * Row height 44px (WCAG 2.5.5 — matches FindingsTable).
+ * Row height 44px (WCAG 2.5.5 - matches FindingsTable).
  * Dismissed rows: opacity-60 + text-muted-foreground.
  * Watchlist rows: signal-amber dot before lifecycle pill.
  * Observer role: Actions Select disabled with tooltip
@@ -43,7 +43,7 @@ import type {
 import { patchBrandMatch } from "./lib/api";
 
 // ---------------------------------------------------------------------------
-// Source chip — UI-SPEC §Color
+// Source chip - UI-SPEC §Color
 //   dnstwist: signal-amber (accent reserved #5)
 //   ct_log:   teal mist
 //   fts:      slate muted
@@ -70,7 +70,7 @@ function SourceChip({ source }: { source: BrandSource }) {
 }
 
 // ---------------------------------------------------------------------------
-// Severity chip — UI-SPEC §Color
+// Severity chip - UI-SPEC §Color
 // ---------------------------------------------------------------------------
 function SeverityChip({ severity }: { severity: BrandSeverity }) {
   const classes: Record<BrandSeverity, string> = {
@@ -165,7 +165,7 @@ function relTime(iso: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Actions Select — in-row lifecycle changer
+// Actions Select - in-row lifecycle changer
 // ---------------------------------------------------------------------------
 interface ActionsSelectProps {
   match: BrandMatchRead;
@@ -327,7 +327,7 @@ export function MatchTable({
               .filter(Boolean)
               .join(" ");
 
-            const termValue = match.term?.value ?? match.term_value ?? "—";
+            const termValue = match.term?.value ?? match.term_value ?? "-";
             const termType = match.term?.term_type ?? match.term_type ?? null;
             const highNoiseRisk =
               match.term?.high_noise_risk ?? match.high_noise_risk ?? false;
@@ -357,7 +357,7 @@ export function MatchTable({
                             />
                           </TooltipTrigger>
                           <TooltipContent>
-                            Flagged high noise risk — term is in default stoplist
+                            Flagged high noise risk - term is in default stoplist
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -367,7 +367,7 @@ export function MatchTable({
                   </div>
                 </td>
 
-                {/* Matched value — font-mono 12px + click affordance (UI-SPEC §Surface 3) */}
+                {/* Matched value - font-mono 12px + click affordance (UI-SPEC §Surface 3) */}
                 <td className="py-2 px-3">
                   <TooltipProvider>
                     <Tooltip>
@@ -435,7 +435,7 @@ export function MatchTable({
                   </TooltipProvider>
                 </td>
 
-                {/* Status — lifecycle pill + watchlist signal-amber dot */}
+                {/* Status - lifecycle pill + watchlist signal-amber dot */}
                 <td className="py-2 px-3" style={{ width: "140px" }}>
                   <div className="flex items-center gap-1.5">
                     {isWatchlist && (

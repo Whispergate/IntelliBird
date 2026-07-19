@@ -5,7 +5,7 @@ Revises: 017_events_dedup_per_project
 Create Date: 2026-05-02
 
 Adds a per-project boolean controlling whether newly-ingested events are
-automatically summarised by the Ollama worker. Off by default — bulk feeds
+automatically summarised by the Ollama worker. Off by default - bulk feeds
 (e.g. NVD initial backfill, large STIX bundles) would otherwise queue
 thousands of summary jobs and saturate the AI worker.
 """

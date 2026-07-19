@@ -1,18 +1,18 @@
-"""AI infrastructure ORM models — AI-01, AI-02, AI-03.
+"""AI infrastructure ORM models - AI-01, AI-02, AI-03.
 
 Three models for the LLM subsystem:
 
-  AIProvider  — per-project LLM provider config with AES-256-GCM encrypted
+  AIProvider  - per-project LLM provider config with AES-256-GCM encrypted
                 credentials. Mirrors sources.credentials_enc + credentials_key_version
                 pattern exactly (migration 007).
 
-  AISummary   — LLM-generated summaries for individual events (summary_type='event')
+  AISummary   - LLM-generated summaries for individual events (summary_type='event')
                 and daily project digests (summary_type='digest'). event_id is a soft
-                UUID (no FK to events hypertable — same constraint as
+                UUID (no FK to events hypertable - same constraint as
                 EventScoreOverride.event_id from migration 013 and
                 BrandMatch.event_id from migration 011).
 
-  AISuggestion — Analyst-gated entity extraction staging. LLM proposes CVE IDs,
+  AISuggestion - Analyst-gated entity extraction staging. LLM proposes CVE IDs,
                  ATT&CK technique IDs, or threat-actor names; analyst confirms or
                  discards. status: pending → confirmed | discarded.
                  decided_by_user_id FK (SET NULL) preserves audit trail after user
@@ -35,7 +35,7 @@ class AIProvider(Base):
 
     AI-01. One row per project (UNIQUE constraint on project_id).
     credentials_enc + credentials_key_version mirror sources.credentials_enc
-    exactly — AES-256-GCM encryption via app.crypto. Encrypted at write time,
+    exactly - AES-256-GCM encryption via app.crypto. Encrypted at write time,
     decrypted at read time inside the AI router.
 
     api_base is required for Ollama (e.g. 'http://localhost:11434'); NULL for
@@ -65,7 +65,7 @@ class AIProvider(Base):
     model_name: Mapped[str] = mapped_column(Text, nullable=False)
     # Ollama base URL (e.g. 'http://ollama:11434'); NULL for hosted providers.
     api_base: Mapped[str | None] = mapped_column(Text, nullable=True)
-    # AES-256-GCM encrypted credentials JSON blob — mirrors sources.credentials_enc.
+    # AES-256-GCM encrypted credentials JSON blob - mirrors sources.credentials_enc.
     # NULL for credential-less providers (e.g. Ollama with no auth).
     credentials_enc: Mapped[str | None] = mapped_column(Text, nullable=True)
     # Monotonic key-version counter for credential rotation. Bumped by the
@@ -88,7 +88,7 @@ class AISummary(Base):
     (summary_type='event', event_id=UUID) and daily project digests
     (summary_type='digest', event_id=NULL).
 
-    event_id is a soft UUID — NO FK constraint to events.id. Events is a
+    event_id is a soft UUID - NO FK constraint to events.id. Events is a
     TimescaleDB hypertable and CANNOT be a FK target (same pattern as
     EventScoreOverride.event_id in migration 013 and BrandMatch.event_id in
     migration 011). The application layer enforces the relationship.
@@ -113,7 +113,7 @@ class AISummary(Base):
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )
-    # Soft FK to events.id — no DB constraint (events is a hypertable).
+    # Soft FK to events.id - no DB constraint (events is a hypertable).
     # NULL for digest summaries (summary_type='digest').
     event_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     summary_type: Mapped[str] = mapped_column(
@@ -148,12 +148,12 @@ class AISuggestion(Base):
     ai_summary_id FK (CASCADE) links each suggestion to the summary that generated
     it; deleting the summary purges its suggestions.
 
-    event_id is a soft UUID — no FK to the events hypertable (same pattern as
+    event_id is a soft UUID - no FK to the events hypertable (same pattern as
     AISummary.event_id). project_id FK (CASCADE) provides a direct project scope
     column without joining through ai_summaries.
 
     decided_by_user_id FK (SET NULL) preserves the audit trail when a user account
-    is deleted — the decision record survives, the user reference becomes NULL.
+    is deleted - the decision record survives, the user reference becomes NULL.
 
     Added by migration 014_ai.
     """
@@ -175,7 +175,7 @@ class AISuggestion(Base):
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )
-    # Soft FK to events.id — no DB constraint (events is a hypertable).
+    # Soft FK to events.id - no DB constraint (events is a hypertable).
     event_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     suggestion_type: Mapped[str] = mapped_column(
         PgEnum("cve", "attack", "actor", name="ai_suggestion_type_enum", create_type=False),
@@ -198,7 +198,7 @@ class AISuggestion(Base):
     decided_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True), nullable=True
     )
-    # FK (SET NULL) — preserves audit trail when the deciding user account is deleted.
+    # FK (SET NULL) - preserves audit trail when the deciding user account is deleted.
     decided_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),

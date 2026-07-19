@@ -42,12 +42,12 @@ def _tactic_from_stix(obj: dict) -> str | None:
 
 
 def upsert_techniques_sync(bundle: dict, matrix: str) -> int:
-    """Synchronous upsert — called from Dramatiq actor (sync context).
+    """Synchronous upsert - called from Dramatiq actor (sync context).
 
  Uses a short-lived sync engine so it does not collide with the API's
  async engine. Returns the number of rows upserted.
 """
-    from app.config import settings  # lazy import — see module docstring
+    from app.config import settings  # lazy import - see module docstring
 
     # Convert asyncpg DSN → psycopg DSN for sync use
     url = settings.DATABASE_URL.replace("+asyncpg", "")
@@ -68,7 +68,7 @@ def upsert_techniques_sync(bundle: dict, matrix: str) -> int:
                 "stix_id": obj.get("id"),
                 "raw_stix": obj,
             }
-            stmt = pg_insert(AttackTechnique.__table__).values(**row)
+            stmt = pg_insert(AttackTechnique.__table__).values(**row)  # type: ignore[arg-type]
             stmt = stmt.on_conflict_do_update(
                 index_elements=["technique_id"],
                 set_={

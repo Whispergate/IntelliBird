@@ -1,4 +1,4 @@
-"""Unit tests for easm_scope.py — EASM-02 scope consumption.
+"""Unit tests for easm_scope.py - EASM-02 scope consumption.
 
 Activated by plan 11-02 (was Wave 0 stub referencing plan 11-04).
 
@@ -18,12 +18,11 @@ os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/
 
 import pytest
 import pytest_asyncio
-from sqlalchemy import event as sa_event
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.models.base import Base  # noqa: F401
-import app.models.easm  # noqa: F401 — imported to resolve Project.easm_scans relationship mapper
+import app.models.easm  # noqa: F401 - imported to resolve Project.easm_scans relationship mapper
 from app.models.projects import ProjectScopeRow
 from app.services.easm_scope import (
     BBOT_SEEDING_SCOPE_TYPES,
@@ -71,7 +70,7 @@ def _make_scope_row(
     """Build a ProjectScopeRow without FK constraints (SQLite in-memory skips project FK).
 
     created_at is supplied explicitly because SQLite does not support the `now()`
-    server_default used by the ORM — supplying it at the Python level bypasses the
+    server_default used by the ORM - supplying it at the Python level bypasses the
     RETURNING clause that would trigger that error.
     """
     return ProjectScopeRow(
@@ -143,7 +142,7 @@ class TestDeriveBbotSeeds:
 
     @pytest.mark.asyncio
     async def test_derive_seeds_excludes_keyword_rows(self, db_session: AsyncSession) -> None:
-        """keyword rows are intel-only — must NOT appear in BBOT seeds."""
+        """keyword rows are intel-only - must NOT appear in BBOT seeds."""
         row = _make_scope_row(PROJECT_ID, "keyword", "ransomware")
         db_session.add(row)
         await db_session.commit()
@@ -153,7 +152,7 @@ class TestDeriveBbotSeeds:
 
     @pytest.mark.asyncio
     async def test_derive_seeds_excludes_service_rows(self, db_session: AsyncSession) -> None:
-        """service rows are intel-only — must NOT appear in BBOT seeds."""
+        """service rows are intel-only - must NOT appear in BBOT seeds."""
         row = _make_scope_row(PROJECT_ID, "service", "http://internal.example.com:8080")
         db_session.add(row)
         await db_session.commit()
@@ -163,7 +162,7 @@ class TestDeriveBbotSeeds:
 
     @pytest.mark.asyncio
     async def test_derive_seeds_excludes_certificate_rows(self, db_session: AsyncSession) -> None:
-        """certificate rows are intel-only — must NOT appear in BBOT seeds."""
+        """certificate rows are intel-only - must NOT appear in BBOT seeds."""
         row = _make_scope_row(PROJECT_ID, "certificate", "deadbeef" * 8)
         db_session.add(row)
         await db_session.commit()
@@ -173,7 +172,7 @@ class TestDeriveBbotSeeds:
 
     @pytest.mark.asyncio
     async def test_derive_seeds_excludes_whois_rows(self, db_session: AsyncSession) -> None:
-        """whois rows are intel-only — must NOT appear in BBOT seeds."""
+        """whois rows are intel-only - must NOT appear in BBOT seeds."""
         row = _make_scope_row(PROJECT_ID, "whois", "ACME Corp")
         db_session.add(row)
         await db_session.commit()
@@ -213,7 +212,7 @@ class TestDeriveBbotSeeds:
 
     @pytest.mark.asyncio
     async def test_derive_seeds_excludes_intel_only_rows(self, db_session: AsyncSession) -> None:
-        """active_test_scope=False, intel_scope=True — scope is intel-only; not fed to BBOT."""
+        """active_test_scope=False, intel_scope=True - scope is intel-only; not fed to BBOT."""
         row = _make_scope_row(
             PROJECT_ID, "domain", "intel-only.example.com",
             active_test_scope=False, intel_scope=True,
@@ -226,9 +225,9 @@ class TestDeriveBbotSeeds:
 
     @pytest.mark.asyncio
     async def test_derive_seeds_ignores_intel_scope_flag(self, db_session: AsyncSession) -> None:
-        """intel_scope=False does NOT block seeding — active_test_scope is sole gate.
+        """intel_scope=False does NOT block seeding - active_test_scope is sole gate.
 
-        11-CONTEXT.md §Scope consumption: 'intel_scope flag is IGNORED for BBOT —
+        11-CONTEXT.md §Scope consumption: 'intel_scope flag is IGNORED for BBOT -
         active_test_scope is the sole gate for scan-seeding.'
         """
         row = _make_scope_row(
@@ -258,7 +257,7 @@ class TestDeriveBbotSeeds:
     async def test_derive_seeds_empty_scope_returns_empty_list(
         self, db_session: AsyncSession
     ) -> None:
-        """No scope rows for project_id returns empty list — caller handles 422."""
+        """No scope rows for project_id returns empty list - caller handles 422."""
         seeds = await derive_bbot_seeds(db_session, uuid.uuid4())
         assert seeds == []
 

@@ -1,4 +1,4 @@
-"""Unit tests for register_ai_jobs APScheduler wiring — AI-06, AI-07, SCR-04.
+"""Unit tests for register_ai_jobs APScheduler wiring - AI-06, AI-07, SCR-04.
 
 Covers:
   - test_register_ai_jobs_adds_three_jobs: exactly 3 add_job calls with correct ids
@@ -15,10 +15,9 @@ os.environ.setdefault("SECRET_KEY", "a" * 32 + "deadbeef")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 from apscheduler.triggers.cron import CronTrigger
 
-import pytest
 
 
 def _make_mock_scheduler():
@@ -40,7 +39,7 @@ def test_register_ai_jobs_adds_three_jobs():
     )
 
     # Verify ids.
-    job_ids = {c.kwargs.get("id") or c[0][2] for c in scheduler.add_job.call_args_list}
+    {c.kwargs.get("id") or c[0][2] for c in scheduler.add_job.call_args_list}
     # Extract id keyword arg from each call.
     call_ids = set()
     for c in scheduler.add_job.call_args_list:

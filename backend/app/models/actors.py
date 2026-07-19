@@ -1,17 +1,17 @@
-"""ORM models for the threat-actor / campaign subsystem — ACTOR-01, ACTOR-03.
+"""ORM models for the threat-actor / campaign subsystem - ACTOR-01, ACTOR-03.
 
 Schema mirrors alembic 026_threat_actors_campaigns_audit.
 
 Design notes:
-  * ThreatActor.aliases is a PostgreSQL ARRAY(Text) column — nullable.
+  * ThreatActor.aliases is a PostgreSQL ARRAY(Text) column - nullable.
   * ThreatActor.mitre_group_id has a partial unique index (see migration 026) so it is
     declared unique=True here for SQLAlchemy introspection; the partial index in the DB
     is the authoritative constraint.
   * CampaignEvent.event_id and ActorEventLink.event_id are SOFT FKs (no ForeignKey
-    constraint) — events is a TimescaleDB hypertable; real FK constraints are not
+    constraint) - events is a TimescaleDB hypertable; real FK constraints are not
     supported against hypertables.
   * country, motivation, sophistication are NOT standard STIX fields. Nullable, analyst-
-    editable only — never populated from automated bootstrap.
+    editable only - never populated from automated bootstrap.
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ class ThreatActor(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     primary_name: Mapped[str] = mapped_column(Text, nullable=False)
-    # Analyst-editable fields (NOT from STIX — nullable)
+    # Analyst-editable fields (NOT from STIX - nullable)
     aliases: Mapped[list[str] | None] = mapped_column(ARRAY(Text), nullable=True)
     country: Mapped[str | None] = mapped_column(Text, nullable=True)
     motivation: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -99,7 +99,7 @@ class Campaign(Base):
 class CampaignEvent(Base):
     """M2M junction: campaign ↔ event.
 
-    event_id is a SOFT FK — events is a TimescaleDB hypertable and cannot carry
+    event_id is a SOFT FK - events is a TimescaleDB hypertable and cannot carry
     real FK constraints.
     """
 
@@ -110,7 +110,7 @@ class CampaignEvent(Base):
         ForeignKey("campaigns.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    # Soft FK — NO ForeignKey("events.id") — events is a hypertable.
+    # Soft FK - NO ForeignKey("events.id") - events is a hypertable.
     event_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True
     )
@@ -123,7 +123,7 @@ class CampaignEvent(Base):
 class ActorEventLink(Base):
     """Auto-link from fuzzy actor-name match (rapidfuzz score ≥ 85).
 
-    event_id is a SOFT FK — events is a TimescaleDB hypertable and cannot carry
+    event_id is a SOFT FK - events is a TimescaleDB hypertable and cannot carry
     real FK constraints.
     """
 
@@ -134,7 +134,7 @@ class ActorEventLink(Base):
         ForeignKey("threat_actors.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    # Soft FK — NO ForeignKey("events.id") — events is a hypertable.
+    # Soft FK - NO ForeignKey("events.id") - events is a hypertable.
     event_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True
     )

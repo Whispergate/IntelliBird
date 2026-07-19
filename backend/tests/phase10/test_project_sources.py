@@ -1,4 +1,4 @@
-"""test_project_sources — PRJ-05 project_sources binding (plan 10-04).
+"""test_project_sources - PRJ-05 project_sources binding (plan 10-04).
 
 Covers:
   * test_binding_restricts: PUT replaces atomically; empty PUT removes all.
@@ -161,9 +161,7 @@ async def test_observer_cannot_bind(
     client, db_session, users_matrix, jwt_settings
 ) -> None:
     """Observer role on a project receives 403 on PUT /sources (Contributor+ required)."""
-    from app.models.projects import Project, ProjectMembership
     from app.security.jwt import (
-        PROJECT_ROLE_RANK,
         build_membership_claim,
         mint_access_token_with_pm,
     )

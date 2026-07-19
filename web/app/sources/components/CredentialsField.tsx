@@ -15,7 +15,7 @@ import type { FeedType } from "@/app/api-client";
 import type { SourceFormValues, TaxiiAuthScheme } from "../lib/sourceSchema";
 
 /** Verbatim placeholder shown on all credential inputs in Edit mode.*/
-const EDIT_PLACEHOLDER = "(unchanged — type to replace)";
+const EDIT_PLACEHOLDER = "(unchanged - type to replace)";
 
 type Props = {
   feed_type: FeedType;
@@ -30,7 +30,7 @@ type Props = {
  * - TAXII → auth-scheme Select + conditional username/password/token inputs
  *
  * All credential inputs are type="password", autoComplete="off", spellCheck={false}.
- * In Edit mode, inputs show the verbatim placeholder "(unchanged — type to replace)".
+ * In Edit mode, inputs show the verbatim placeholder "(unchanged - type to replace)".
 */
 export function CredentialsField({ feed_type, mode }: Props) {
   const {

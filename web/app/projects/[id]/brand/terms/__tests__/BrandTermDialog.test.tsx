@@ -1,5 +1,5 @@
 /**
- * BrandTermDialog tests — plan 12-09 (UI-SPEC §Surface 6).
+ * BrandTermDialog tests - plan 12-09 (UI-SPEC §Surface 6).
  *
  * Coverage:
  *   - RadioGroup renders all 4 term_type options
@@ -8,7 +8,7 @@
  *   - Analyst (canCreatePerson=false) → person radio disabled with tooltip
  *   - Stoplist advisory appears for value in DEFAULT_STOPLIST ("core")
  *   - Short-term advisory appears for short non-stoplisted value ("api"? "core" is in stoplist)
- *       — use "xyzab" (5 chars, not in stoplist) to assert short-only path
+ *       - use "xyzab" (5 chars, not in stoplist) to assert short-only path
  *   - onBlur fires preview; likely_too_broad warning renders
  *   - No labelled "Cancel" button; shadcn DialogPrimitive.Close X icon present
  *   - 409 surfaces in valueError useState with canonical copy
@@ -130,7 +130,7 @@ describe("BrandTermDialog", () => {
     expect(wrapper).not.toBeNull();
     await user.hover(wrapper!);
     const tips = await screen.findAllByText(
-      "Creating person-type terms requires Lead or Admin role — GDPR liability requires elevated authority.",
+      "Creating person-type terms requires Lead or Admin role - GDPR liability requires elevated authority.",
     );
     expect(tips.length).toBeGreaterThan(0);
   });
@@ -183,7 +183,7 @@ describe("BrandTermDialog", () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          "This term matches 860 of your last 1000 events (86%) — likely too broad.",
+          "This term matches 860 of your last 1000 events (86%) - likely too broad.",
         ),
       ).toBeInTheDocument(),
     );

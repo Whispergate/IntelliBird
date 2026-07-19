@@ -53,7 +53,7 @@ class Source(Base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
     # SCR-01: feed source reliability weighting for score_event function.
     # Backfilled by migration 013 per feed_type: taxii=1.0, nvd=1.0, rss=0.7.
-    # Custom sources start NULL — ingest pipeline applies per-type defaults on first poll.
+    # Custom sources start NULL - ingest pipeline applies per-type defaults on first poll.
     confidence: Mapped[Decimal | None] = mapped_column(Numeric(3, 2), nullable=True)
     # MON-01: SLA-based silence detection pivot. NULL = no event ever received
     # (itself a silence signal). Updated by all 4 ingest sites after successful insert.
@@ -65,7 +65,7 @@ class Source(Base):
     monitoring_config: Mapped[dict] = mapped_column(
         JSONB, nullable=False, server_default=text("'{}'::jsonb")
     )
-    # Quick task 260425-ovt: HTML-scrape selector config. Sparse — populated only
+    # Quick task 260425-ovt: HTML-scrape selector config. Sparse - populated only
     # when feed_type='custom'. Schema validated by app.ingest.html_scrape_parser
     # .validate_scrape_config (item_selector / title_selector / link_selector
     # required). Added by migration 017_html_scrape.
@@ -101,7 +101,7 @@ class SourceIngestStats(Base):
 
     This is a TimescaleDB hypertable partitioned by 'time' (migration 016). The composite
     primary key (time, source_id) satisfies TimescaleDB's requirement that the time column
-    be part of the PK. The ORM treats it as a regular table — hypertable semantics are
+    be part of the PK. The ORM treats it as a regular table - hypertable semantics are
     fully transparent to SQLAlchemy.
 
     Note: source_ingest_stats cannot be a FK target (same limitation as events hypertable).
@@ -126,11 +126,11 @@ class SourceIngestStats(Base):
 
 
 class MaintenanceWindow(Base):
-    """Global maintenance window — suppresses all MON-01..03 monitoring alerts.
+    """Global maintenance window - suppresses all MON-01..03 monitoring alerts.
 
     H-7: a single active window suspends silence, volume drift, and parse
     error rate alerts for the duration. 'Active' is defined as now() BETWEEN start_at AND
-    end_at — no daemon required; windows auto-expire when end_at passes.
+    end_at - no daemon required; windows auto-expire when end_at passes.
 
     created_by_user_id is nullable so programmatically created rows (e.g. API bootstrap)
     don't require a user context. ON DELETE SET NULL preserves window history after a user

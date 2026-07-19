@@ -1,9 +1,9 @@
-"""Unit tests for WHOIS service — ENRICH-07.
+"""Unit tests for WHOIS service - ENRICH-07.
 
 Tests 7-day refetch suppression logic. Uses a real in-memory SQLite session
 where possible, or mocks the SQL execution to simulate cache state.
 
-NOTE: asyncwhois is patched — no real DNS/WHOIS calls in unit tests.
+NOTE: asyncwhois is patched - no real DNS/WHOIS calls in unit tests.
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ async def test_whois_cache_hit_within_7_days():
     """ENRICH-07: whois_cache row fetched within 7 days is returned without a new API call.
 
     We mock the SQLAlchemy session's execute() to simulate a fresh row (3 days old)
-    in whois_cache. The TTL gate should find it and return immediately — asyncwhois
+    in whois_cache. The TTL gate should find it and return immediately - asyncwhois
     must NOT be called.
     """
     from app.services.whois import fetch_and_cache_whois
@@ -46,11 +46,11 @@ async def test_whois_cache_hit_within_7_days():
 
     mock_session = AsyncMock()
 
-    # First execute call: TTL gate SELECT — returns the fresh row
+    # First execute call: TTL gate SELECT - returns the fresh row
     ttl_result = MagicMock()
     ttl_result.mappings.return_value.first.return_value = fresh_row
 
-    # Second execute call: full SELECT * — returns same row
+    # Second execute call: full SELECT * - returns same row
     full_result = MagicMock()
     full_result.mappings.return_value.first.return_value = fresh_row
 
@@ -62,7 +62,7 @@ async def test_whois_cache_hit_within_7_days():
         mock_aio.return_value = ("", {})  # should NOT be called
         result = await fetch_and_cache_whois(mock_session, mock_redis, domain)
 
-    # asyncwhois must not have been called — cache hit suppresses it
+    # asyncwhois must not have been called - cache hit suppresses it
     mock_aio.assert_not_called()
     assert result is not None
 
@@ -79,7 +79,7 @@ async def test_whois_stale_row_triggers_refetch():
     domain = "stale-whois-test.example.com"
     now = datetime.now(timezone.utc)
 
-    # Simulate the TTL gate returning None (stale row — outside 7-day window)
+    # Simulate the TTL gate returning None (stale row - outside 7-day window)
     ttl_result = MagicMock()
     ttl_result.mappings.return_value.first.return_value = None  # cache miss
 

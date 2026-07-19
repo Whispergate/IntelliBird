@@ -1,4 +1,4 @@
-"""Unit tests for Ollama startup health probe — AI-05.
+"""Unit tests for Ollama startup health probe - AI-05.
 
 Covers:
   - probe_ollama returns "healthy" when /api/tags responds 200 in < 5s
@@ -27,7 +27,7 @@ def _mock_response(status_code: int):
 
 
 # ---------------------------------------------------------------------------
-# Test: healthy — 200 response, fast
+# Test: healthy - 200 response, fast
 # ---------------------------------------------------------------------------
 
 
@@ -52,7 +52,7 @@ async def test_probe_healthy_under_5s() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test: slow — 200 response but >= 5s elapsed
+# Test: slow - 200 response but >= 5s elapsed
 # ---------------------------------------------------------------------------
 
 
@@ -78,7 +78,7 @@ async def test_probe_slow_5_to_10s() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test: down — timeout exception
+# Test: down - timeout exception
 # ---------------------------------------------------------------------------
 
 
@@ -101,7 +101,7 @@ async def test_probe_down_on_timeout() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test: down — non-200 response
+# Test: down - non-200 response
 # ---------------------------------------------------------------------------
 
 

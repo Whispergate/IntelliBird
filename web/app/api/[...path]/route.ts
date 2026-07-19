@@ -35,7 +35,7 @@ async function proxy(
 
   // AUTH-02 + AUTH-04: inject Authorization: Bearer from the Auth.js
   // v5 session when AUTH_ENABLED=true. This is the single source of truth for
-  // auth on upstream calls — the client CANNOT set Authorization because the
+  // auth on upstream calls - the client CANNOT set Authorization because the
   // incoming header is overwritten server-side here. X-Dashboard-Role is also
   // stripped (INFRA-04 behaviour preserved).
   if (process.env.AUTH_ENABLED === "true") {

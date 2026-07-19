@@ -4,7 +4,6 @@ Tests for notification payload builders (NOTIF-03, NOTIF-04, NOTIF-05).
 
 from __future__ import annotations
 
-import pytest
 
 from app.services.webhook_payloads import (
     build_ntfy_payload,

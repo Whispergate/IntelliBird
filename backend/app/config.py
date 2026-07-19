@@ -1,4 +1,4 @@
-"""Runtime configuration — pydantic-settings + placeholder-rejection validator.
+"""Runtime configuration - pydantic-settings + placeholder-rejection validator.
 
 Imported at startup by api (app.main), worker (app.workers.broker), and
 scheduler (app.scheduler.jobs). If SECRET_KEY is a placeholder or <32
@@ -52,7 +52,7 @@ class Settings(BaseSettings):
             "Previous SECRET_KEY used during credentials rekey. "
             "Set in .env before POST /api/admin/rekey-credentials, "
             "unset after. Deliberately NOT subject to placeholder-length "
-            "validation — old keys may pre-date the 32-char rule."
+            "validation - old keys may pre-date the 32-char rule."
         ),
     )
     SETUP_TOKEN: str | None = Field(
@@ -72,7 +72,7 @@ class Settings(BaseSettings):
         ),
     )
 
-    # jwt signing key — AUTH-03. Separate from SECRET_KEY so rotating one
+    # jwt signing key - AUTH-03. Separate from SECRET_KEY so rotating one
     # does not invalidate the other. Validated by reject_placeholders below.
     JWT_SIGNING_KEY: str = Field(
         ...,
@@ -83,7 +83,7 @@ class Settings(BaseSettings):
         ),
     )
 
-    # Authentik OIDC — AUTH-01. All fields optional; presence of SSO_ISSUER_URL
+    # Authentik OIDC - AUTH-01. All fields optional; presence of SSO_ISSUER_URL
     # enables the OIDC login button on /login and registers /api/auth/oidc/* routes.
     SSO_ISSUER_URL: str | None = Field(
         default=None,
@@ -111,7 +111,7 @@ class Settings(BaseSettings):
     )
     SSO_VIEWER_GROUPS: str | None = Field(
         default=None,
-        description="Comma-separated Authentik group names that map to Viewer role (optional — unmatched groups default to Viewer per CONTEXT.md)",
+        description="Comma-separated Authentik group names that map to Viewer role (optional - unmatched groups default to Viewer per CONTEXT.md)",
     )
 
     # ingest knobs
@@ -125,7 +125,7 @@ class Settings(BaseSettings):
     )
     INGEST_MAX_ITEMS_PER_POLL: int = Field(
         default=5000,
-        description="Safety cap — max items processed per single poll attempt across any feed type",
+        description="Safety cap - max items processed per single poll attempt across any feed type",
     )
     INGEST_SILENT_FAILURE_THRESHOLD: int = Field(
         default=5,
@@ -169,7 +169,7 @@ class Settings(BaseSettings):
         default="",
         description=(
             "Comma-separated extra module names unioned with BBOT_STABLE_PASSIVE_MODULES "
-            "at startup. Empty by default. Use for testing only — production operators "
+            "at startup. Empty by default. Use for testing only - production operators "
             "should update the verified safelist and redeploy."
         ),
     )

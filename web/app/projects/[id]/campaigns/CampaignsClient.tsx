@@ -39,9 +39,9 @@ import {
 } from "@/components/ui/tooltip";
 
 function formatDate(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (isNaN(d.getTime())) return "—";
+  if (isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
@@ -213,7 +213,7 @@ export default function CampaignsClient({ projectId, initialData }: CampaignsCli
                         {campaign.summary_md
                           ? campaign.summary_md.slice(0, 120) +
                             (campaign.summary_md.length > 120 ? "…" : "")
-                          : "—"}
+                          : "-"}
                       </TableCell>
                       <TableCell>
                         <span className="text-xs text-muted-foreground">

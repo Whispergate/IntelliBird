@@ -1,5 +1,5 @@
 """
-— Sandbox provider abstraction.
+- Sandbox provider abstraction.
 SandboxReport: common normalised result schema.
 get_provider_module(): dispatch to provider module by name.
 """
@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class SandboxReport:
-    """Normalised sandbox analysis result — common schema across all providers."""
+    """Normalised sandbox analysis result - common schema across all providers."""
     techniques: list[str] = field(default_factory=list)      # MITRE ATT&CK IDs e.g. ["T1059.001"]
     network_iocs: list[str] = field(default_factory=list)    # IPs, domains, URLs observed
     process_tree: dict = field(default_factory=dict)         # Provider-native process tree JSON

@@ -1,5 +1,5 @@
 /**
- * MatchTable tests — plan 12-08.
+ * MatchTable tests - plan 12-08.
  *
  * Covers UI-SPEC §Surface 2 §Match table columns:
  *   - 8-column header shape

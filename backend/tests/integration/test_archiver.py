@@ -1,4 +1,4 @@
-"""Integration tests for the per-source archiver — STO-01, STO-03, STO-04.
+"""Integration tests for the per-source archiver - STO-01, STO-03, STO-04.
 
 Uses testcontainers PostgreSQL (intellibird-db:m1) with alembic upgrade head
 to get a real TimescaleDB hypertable. Tests prove the DELETE (drop) and

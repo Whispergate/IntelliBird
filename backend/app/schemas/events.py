@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for events API — FIL-01, FIL-02."""
+"""Pydantic v2 schemas for events API - FIL-01, FIL-02."""
 from __future__ import annotations
 
 import uuid
@@ -39,7 +39,7 @@ class EventItem(BaseModel):
 
 
 class EventDetail(EventItem):
-    """Full event including raw_stix JSONB — returned by GET /api/events/{id}."""
+    """Full event including raw_stix JSONB - returned by GET /api/events/{id}."""
 
     raw_stix: dict | None = None
 

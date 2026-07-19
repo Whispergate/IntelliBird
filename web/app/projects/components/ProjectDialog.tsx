@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectDialog — create/edit modal for a project.
+ * ProjectDialog - create/edit modal for a project.
  *
  * Pattern mirrors web/app/sources/components/SourceDialog.tsx (shadcn Dialog
  * + react-hook-form + zod resolver). Submit CTA uses signal amber (reserved
@@ -99,7 +99,7 @@ export function ProjectDialog({
     defaultValues: DEFAULTS,
   });
 
-  // Sync form state when (mode, initial) change — ProjectDialog is always
+  // Sync form state when (mode, initial) change - ProjectDialog is always
   // mounted so useForm only inits once at mount time (same pattern as
   // SourceDialog).
   useEffect(() => {
@@ -184,7 +184,7 @@ export function ProjectDialog({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    {/* Native textarea — shadcn Textarea primitive not installed
+                    {/* Native textarea - shadcn Textarea primitive not installed
                         (per package.json). Matches SourceDialog precedent. */}
                     <textarea
                       {...field}

@@ -1,4 +1,4 @@
-"""Unit tests for preset schemas + name regex — FIL-04."""
+"""Unit tests for preset schemas + name regex - FIL-04."""
 from __future__ import annotations
 
 import uuid

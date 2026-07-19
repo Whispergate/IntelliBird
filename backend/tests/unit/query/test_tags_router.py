@@ -1,4 +1,4 @@
-"""Unit tests for PATCH /events/{id}/tags — FIL-03.
+"""Unit tests for PATCH /events/{id}/tags - FIL-03.
 
 NOTE on SQLite ARRAY limitation:
  PostgreSQL ARRAY(Text) semantics (reading list, writing list) are not supported by
@@ -49,7 +49,7 @@ async def app_with_session():
                 "stix_id TEXT, "
                 "stix_type TEXT NOT NULL DEFAULT 'indicator', "
                 "source_id TEXT, "
-                # events.project_id NOT NULL — defaulting to
+                # events.project_id NOT NULL - defaulting to
                 # LEGACY_PROJECT_ID sentinel for SQLite test rows.
                 "project_id TEXT NOT NULL DEFAULT '00000000-0000-0000-0000-000000000001', "
                 "fetched_at TEXT NOT NULL DEFAULT '2025-01-01T00:00:00+00:00', "
@@ -124,20 +124,20 @@ async def test_patch_422_invalid_tag_in_remove(app_with_session):
 
 @pytest.mark.asyncio
 async def test_patch_empty_body_noop_returns_404(app_with_session):
-    """Empty add/remove is valid body — returns 404 (event not found) not 422."""
+    """Empty add/remove is valid body - returns 404 (event not found) not 422."""
     app, _factory = app_with_session
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://t") as c:
         r = await c.patch(
             f"/api/events/{uuid.uuid4()}/tags",
             json={"add": [], "remove": []},
         )
-    # 404 because no event in DB — NOT 422 (body is valid)
+    # 404 because no event in DB - NOT 422 (body is valid)
     assert r.status_code == 404
 
 
 @pytest.mark.asyncio
 async def test_patch_uppercase_tag_normalised_to_422_path(app_with_session):
-    """Uppercase letters are normalised to lowercase before validation — should accept."""
+    """Uppercase letters are normalised to lowercase before validation - should accept."""
     app, _factory = app_with_session
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://t") as c:
         r = await c.patch(

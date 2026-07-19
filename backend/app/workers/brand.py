@@ -1,7 +1,7 @@
 """Brand Protection Dramatiq actor.
 
 Wraps `app.services.brand_monitor.scan_project` on queue='brand-monitor' (M-8 CPU
-isolation lock — keeps scan cycles off the default queue so NVD/RSS/TAXII/EASM
+isolation lock - keeps scan cycles off the default queue so NVD/RSS/TAXII/EASM
 throughput is unaffected by dnstwist subprocess CPU).
 
 Per-loop async engine pattern (easm.py lesson):
@@ -56,7 +56,7 @@ async def _async_scan(project_id: UUID) -> dict[str, int]:
     max_backoff=60_000,
 )
 def brand_monitor_scan_project(project_id_str: str) -> None:
-    """Actor entry point — sync wrapper around async scan_project.
+    """Actor entry point - sync wrapper around async scan_project.
 
     `project_id_str` is a string UUID (Dramatiq serialises args as JSON).
     On success: logs `brand_monitor_scan_complete` with stats dict.

@@ -1,5 +1,5 @@
 // Owned by: 17-09-PLAN
-// OllamaHealthBanner — Surface 6 per 17-UI-SPEC.md.
+// OllamaHealthBanner - Surface 6 per 17-UI-SPEC.md.
 
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";

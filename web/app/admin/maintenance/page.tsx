@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * /admin/maintenance — Maintenance Window management page.
+ * /admin/maintenance - Maintenance Window management page.
  * H-7 maintenance window suppression.
  *
  * Sections:
- *   - ActiveWindowBanner (top — also shown on /admin/monitoring)
+ *   - ActiveWindowBanner (top - also shown on /admin/monitoring)
  *   - CreateWindowForm (create new maintenance window)
  *   - History list: all windows sorted desc by start_at, with Delete button
  *
@@ -67,7 +67,7 @@ const STATUS_STYLES: Record<string, React.CSSProperties> = {
 };
 
 function formatDateTime(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
   if (isNaN(d.getTime())) return iso;
   return d.toLocaleString(undefined, {
@@ -157,7 +157,7 @@ export default function MaintenancePage() {
             color: "#fca5a5",
           }}
         >
-          403 — Admin access required.
+          403 - Admin access required.
         </div>
       </div>
     );
@@ -231,7 +231,7 @@ export default function MaintenancePage() {
                         </span>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">
-                        {w.reason ?? "—"}
+                        {w.reason ?? "-"}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button

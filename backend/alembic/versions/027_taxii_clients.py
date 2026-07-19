@@ -1,13 +1,13 @@
-"""027 — taxii_clients table.
+"""027 - taxii_clients table.
 
 TAXII-03, TAXII-04: Per-partner API key store for TAXII 2.1 outbound server.
 
-Stores one row per external partner. The raw API key is NEVER stored — only its
+Stores one row per external partner. The raw API key is NEVER stored - only its
 SHA-256 hex digest (api_key_hash). TLP enforcement is at query time using tlp_max_level.
 
 Design notes:
-  * api_key_hash has a UNIQUE index — the lookup path for every inbound TAXII request.
-  * revoked=true must be effective immediately — no caching in the service layer.
+  * api_key_hash has a UNIQUE index - the lookup path for every inbound TAXII request.
+  * revoked=true must be effective immediately - no caching in the service layer.
   * project_id FK CASCADE: deleting a project removes all partner keys for that project.
   * rate_limit_rpm stored here so the service layer reads it without a separate config lookup.
 """

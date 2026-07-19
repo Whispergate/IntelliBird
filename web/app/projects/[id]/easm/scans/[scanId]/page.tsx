@@ -1,5 +1,5 @@
 /**
- * Scan Detail page — (UI-SPEC §Surface 6).
+ * Scan Detail page - (UI-SPEC §Surface 6).
  *
  * Server component rendering ScanDetailClient.
  */
@@ -12,7 +12,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: "Scan Detail — IntelliBird",
+  title: "Scan Detail - IntelliBird",
 };
 
 export default async function ScanDetailPage({ params }: PageProps) {

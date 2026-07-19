@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * BrandTermDialog — (UI-SPEC §Surface 6).
+ * BrandTermDialog - (UI-SPEC §Surface 6).
  *
  * Single dialog with conditional GDPR block for all 4 term types:
  *   keyword | domain | product | person
@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
-  // DialogClose — shadcn DialogContent renders the built-in
+  // DialogClose - shadcn DialogContent renders the built-in
   // DialogPrimitive.Close X icon in the top-right corner automatically
   // (see web/components/ui/dialog.tsx). We import it here to make the
   // dismiss-via-DialogClose-only contract discoverable in this file.
@@ -74,17 +74,17 @@ const TYPE_META: Record<BrandTermType, TermTypeMeta> = {
   },
   domain: {
     label: "domain",
-    description: "A domain name — scans CT logs and dnstwist lookalikes.",
+    description: "A domain name - scans CT logs and dnstwist lookalikes.",
     placeholder: "e.g. intellibird.io",
   },
   product: {
     label: "product",
-    description: "A product or brand name — scans event text and CT logs.",
+    description: "A product or brand name - scans event text and CT logs.",
     placeholder: "e.g. IntelliBird Platform",
   },
   person: {
     label: "person",
-    description: "A person's name — triggers GDPR retention limits.",
+    description: "A person's name - triggers GDPR retention limits.",
     placeholder: "e.g. Jane Smith",
   },
 };
@@ -104,7 +104,7 @@ void DialogClose;
 interface BrandTermDialogProps {
   open: boolean;
   projectId: string;
-  /** Authority-matrix gate — Analyst (global) + Contributor (project) → false.
+  /** Authority-matrix gate - Analyst (global) + Contributor (project) → false.
    *  When false, the 'person' radio is disabled and a tooltip explains why. */
   canCreatePerson?: boolean;
   /** Project GDPR person-match retention window (days). Default '90'. */
@@ -258,7 +258,7 @@ export function BrandTermDialog({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Field 1 — Term type RadioGroup */}
+          {/* Field 1 - Term type RadioGroup */}
           <fieldset className="space-y-2">
             <legend className="text-[14px] font-medium mb-2">Term type</legend>
             <RadioGroup
@@ -303,7 +303,7 @@ export function BrandTermDialog({
                         </TooltipTrigger>
                         <TooltipContent>
                           Creating person-type terms requires Lead or Admin role
-                          — GDPR liability requires elevated authority.
+                          - GDPR liability requires elevated authority.
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -314,7 +314,7 @@ export function BrandTermDialog({
             </RadioGroup>
           </fieldset>
 
-          {/* Field 2 — Value */}
+          {/* Field 2 - Value */}
           <div className="space-y-1">
             <Label htmlFor="term-value" className="text-[14px] font-medium">
               Value
@@ -361,11 +361,11 @@ export function BrandTermDialog({
           {preview && preview.warning === "likely_too_broad" && (
             <div className={advisoryCls} role="alert">
               This term matches {preview.preview_matches} of your last 1000
-              events ({preview.percent}%) — likely too broad.
+              events ({preview.percent}%) - likely too broad.
             </div>
           )}
 
-          {/* GDPR notice block — only when term_type === 'person' */}
+          {/* GDPR notice block - only when term_type === 'person' */}
           {termType === "person" && (
             <div
               className="border border-destructive rounded-md px-4 py-3 space-y-3"
@@ -395,7 +395,7 @@ export function BrandTermDialog({
             </div>
           )}
 
-          {/* Error channel 2 — API error */}
+          {/* Error channel 2 - API error */}
           {valueError && (
             <div
               className="border border-destructive rounded-md px-3 py-2 text-sm text-destructive"

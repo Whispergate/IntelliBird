@@ -1,4 +1,4 @@
-"""Request-log middleware — SYS-04.
+"""Request-log middleware - SYS-04.
 
 Emits one structlog JSON line per HTTP request with:
  ts, level, event='http_request', method, path, status, duration_ms,
@@ -6,7 +6,7 @@ Emits one structlog JSON line per HTTP request with:
 
 Binds request_id to structlog.contextvars so downstream log calls
 (events_listed, tags_patched, graph_queried,...) inherit it automatically
-— backend/app/logging.py already includes structlog.contextvars.merge_contextvars
+- backend/app/logging.py already includes structlog.contextvars.merge_contextvars
 in the processor chain.
 
 : BaseHTTPMiddleware can swallow exceptions. We try/except
@@ -38,7 +38,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 
         # PROD-03: the X-Dashboard-Role reads below are LOGGING-ONLY (observability
         # for forensic review of spoof attempts). They DO NOT influence role filtering
-        # — role is derived from the JWT claim in AuthMiddleware + events_query.
+        # - role is derived from the JWT claim in AuthMiddleware + events_query.
         start = time.perf_counter()
         status_code = 500
         try:

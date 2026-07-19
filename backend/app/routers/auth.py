@@ -1,4 +1,4 @@
-"""POST /api/auth/* + GET /api/auth/me — AUTH-01, AUTH-03.
+"""POST /api/auth/* + GET /api/auth/me - AUTH-01, AUTH-03.
 
 Endpoints:
   POST /api/auth/login              local-credentials login
@@ -46,7 +46,6 @@ from app.security.jwt import (
     mint_refresh_token_with_pm,
 )
 from app.security.lockout import (
-    FAILS_THRESHOLD,
     clear_lockout,
     is_locked,
     record_failure,
@@ -70,7 +69,7 @@ REFRESH_COOKIE_NAME = "refresh_token"
 OIDC_STATE_COOKIE = "oidc_state"
 OIDC_VERIFIER_COOKIE = "oidc_verifier"
 OIDC_NONCE_COOKIE = "oidc_nonce"
-OIDC_COOKIE_TTL = 300  # 5 minutes — state round-trip must complete quickly
+OIDC_COOKIE_TTL = 300  # 5 minutes - state round-trip must complete quickly
 
 
 # ---------------------------------------------------------------------------
@@ -80,7 +79,7 @@ OIDC_COOKIE_TTL = 300  # 5 minutes — state round-trip must complete quickly
 class MembershipSummary(BaseModel):
     """Hydrated project_memberships entry for /api/auth/me (project_name + archived flag).
 
-    Truncated on /me when the JWT pm_truncated flag is set — clients must call
+    Truncated on /me when the JWT pm_truncated flag is set - clients must call
     /api/auth/memberships for the full paginated list.
     """
 
@@ -96,7 +95,7 @@ class UserPublic(BaseModel):
     role: str
     dashboard_roles: list[str]
     must_change_password: bool
-    # additions — populated by /api/auth/me; defaults keep other
+    # additions - populated by /api/auth/me; defaults keep other
     # /auth/* endpoints (login, refresh, change-password, oidc-callback) that
     # serialize UserPublic in their TokenResponse compatible without touching
     # the DB for membership hydration.
@@ -167,7 +166,7 @@ async def _issue_tokens_and_cookie(
     removals propagate within the access-TTL window (15 min). See RESEARCH.md
     §Refresh token handling.
 
-    `db` is required — every mint site in this router has a session available.
+    `db` is required - every mint site in this router has a session available.
     """
     sub_candidates: list[str] = [str(u.id)]
     if u.oidc_sub:
@@ -217,7 +216,7 @@ async def login(
         )).scalar_one_or_none()
 
         if user is None:
-            # PITFALL 7 — equalise timing for enumeration protection.
+            # PITFALL 7 - equalise timing for enumeration protection.
             verify_dummy()
             await record_failure(redis, body.username)
             raise HTTPException(status_code=401, detail="invalid_credentials")
@@ -248,7 +247,7 @@ async def login(
 
 
 # ---------------------------------------------------------------------------
-# /refresh — rotation + reuse detection (PITFALL 4)
+# /refresh - rotation + reuse detection (PITFALL 4)
 # ---------------------------------------------------------------------------
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -286,7 +285,7 @@ async def refresh(
             # Bump token_version to invalidate ALL outstanding tokens for this user
             user_id = uuid.UUID(claims["sub"])
             await db.execute(
-                User.__table__.update()
+                User.__table__.update()  # type: ignore[attr-defined]
                 .where(User.id == user_id)
                 .values(token_version=User.token_version + 1)
             )
@@ -298,7 +297,7 @@ async def refresh(
                 headers={"X-Session-Revoked": "reuse_detected"},
             )
 
-        # Revoke the old refresh JTI FIRST (before minting new — PITFALL 4 ordering)
+        # Revoke the old refresh JTI FIRST (before minting new - PITFALL 4 ordering)
         await redis.set(
             f"jwt:revoked:{old_jti}",
             "1",
@@ -348,7 +347,7 @@ async def logout(
                         ex=REFRESH_TOKEN_TTL_SECONDS,
                     )
             except pyjwt.InvalidTokenError:
-                pass  # bad refresh cookie — nothing to revoke
+                pass  # bad refresh cookie - nothing to revoke
     finally:
         await redis.aclose()
 
@@ -399,7 +398,7 @@ async def me(
 
 
 # ---------------------------------------------------------------------------
-# /memberships — paginated hydrated list for users with pm_truncated=true
+# /memberships - paginated hydrated list for users with pm_truncated=true
 # ---------------------------------------------------------------------------
 
 @router.get("/memberships", response_model=list[MembershipResponse])
@@ -413,13 +412,13 @@ async def list_my_memberships(
 
     Used when the JWT pm claim was truncated (pm_truncated=true; >PM_CUTOFF
     memberships). Returns up to `limit` (default 100, max 100) rows ordered by
-    created_at DESC, id DESC. `cursor` is an ISO8601 timestamp — only rows
+    created_at DESC, id DESC. `cursor` is an ISO8601 timestamp - only rows
     with created_at < cursor are returned (keyset pagination).
     """
     if limit < 1 or limit > 100:
         raise HTTPException(status_code=400, detail="limit must be 1..100")
 
-    # Resolve user_sub candidates — include oidc_sub when present so OIDC and
+    # Resolve user_sub candidates - include oidc_sub when present so OIDC and
     # local accounts surface identically.
     sub_candidates: list[str] = [user.id]
     oidc_row = (await db.execute(
@@ -500,7 +499,7 @@ async def change_password(
 
 
 # ---------------------------------------------------------------------------
-# OIDC — Authentik authorization code flow with PKCE
+# OIDC - Authentik authorization code flow with PKCE
 # ---------------------------------------------------------------------------
 
 def _pkce_challenge() -> tuple[str, str]:

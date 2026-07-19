@@ -1,16 +1,16 @@
-"""TAXII 2.1 partner-key authentication dependency — TAXII-03.
+"""TAXII 2.1 partner-key authentication dependency - TAXII-03.
 
-IMPORTANT: This is NOT an ASGI middleware — it is a FastAPI Depends() dependency.
+IMPORTANT: This is NOT an ASGI middleware - it is a FastAPI Depends() dependency.
 It does NOT extend AuthMiddleware or touch JWTs. The TAXII router prefix (/taxii2)
 must be exempt from AuthMiddleware (done in plan 26-04 / main.py).
 
 Auth options accepted (TAXII 2.1 §3.3 SHOULD):
-  - Authorization: Basic base64(<anything>:<raw_api_key>)  — password field is the key
-  - X-TAXII-API-Key: <raw_api_key>  — custom header (widely supported by TAXII clients)
+  - Authorization: Basic base64(<anything>:<raw_api_key>)  - password field is the key
+  - X-TAXII-API-Key: <raw_api_key>  - custom header (widely supported by TAXII clients)
 
 Key lookup: SHA-256 hex digest of raw key -> SELECT FROM taxii_clients WHERE api_key_hash = ?
   - NO CACHING. Revocation must be effective within one request (TAXII-03).
-  - taxii_clients is tiny (tens of rows) — direct DB lookup is sub-millisecond.
+  - taxii_clients is tiny (tens of rows) - direct DB lookup is sub-millisecond.
 
 Rate limiting: Redis sorted-set rolling window (60-second window, per client ID).
   - Key pattern: taxii:ratelimit:{client_id}
@@ -41,19 +41,19 @@ def _extract_raw_key(request: Request) -> str | None:
 
     Checks:
     1. X-TAXII-API-Key: <key>
-    2. Authorization: Basic base64(<client_id>:<key>)  — password field used as key
+    2. Authorization: Basic base64(<client_id>:<key>)  - password field used as key
     """
-    # Custom header (takes priority — simpler for automated clients)
+    # Custom header (takes priority - simpler for automated clients)
     header_key = request.headers.get("X-TAXII-API-Key")
     if header_key:
         return header_key.strip()
 
-    # HTTP Basic — password field is the API key
+    # HTTP Basic - password field is the API key
     auth = request.headers.get("Authorization", "")
     if auth.lower().startswith("basic "):
         try:
             decoded = base64.b64decode(auth[6:]).decode("utf-8", errors="replace")
-            # Format is "username:password" — password is the key
+            # Format is "username:password" - password is the key
             _, _, raw_key = decoded.partition(":")
             if raw_key:
                 return raw_key.strip()
@@ -69,7 +69,7 @@ def _hash_key(raw_key: str) -> str:
 
 
 async def _check_rate_limit(client: TaxiiClient) -> None:
-    """Redis rolling-window rate limiter — raises HTTP 429 if exceeded.
+    """Redis rolling-window rate limiter - raises HTTP 429 if exceeded.
 
     Uses a sorted set with UNIX timestamp scores. Window = 60 seconds.
     Limit = client.rate_limit_rpm (requests per minute).
@@ -122,7 +122,7 @@ async def require_taxii_client(
     Raises HTTP 401 for missing/invalid/revoked keys.
     Raises HTTP 429 for rate-limit exceeded.
 
-    NEVER caches lookups — revocation must be instantaneous (TAXII-03).
+    NEVER caches lookups - revocation must be instantaneous (TAXII-03).
     """
     raw_key = _extract_raw_key(request)
     if not raw_key:
@@ -134,7 +134,7 @@ async def require_taxii_client(
 
     key_hash = _hash_key(raw_key)
 
-    # Direct DB lookup — no cache (TAXII-03: revocation must be instant)
+    # Direct DB lookup - no cache (TAXII-03: revocation must be instant)
     result = await session.execute(
         select(TaxiiClient).where(TaxiiClient.api_key_hash == key_hash)
     )

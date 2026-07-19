@@ -1,4 +1,4 @@
-"""Server-side graph centrality computation — GRAPH-03.
+"""Server-side graph centrality computation - GRAPH-03.
 
 Computes PageRank + betweenness centrality via networkx for graphs returned
 by the traverse endpoint. Results are cached in Redis for 10 minutes keyed
@@ -12,7 +12,6 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
-from typing import Optional
 
 import networkx as nx
 
@@ -28,7 +27,7 @@ def _cache_key(node_ids: list[str]) -> str:
 
 
 def _compute(node_ids: list[str], edge_tuples: list[tuple[str, str, str]]) -> dict[str, float] | None:
-    """Pure computation — no I/O. Returns None if > 500 nodes."""
+    """Pure computation - no I/O. Returns None if > 500 nodes."""
     if len(node_ids) > _CENTRALITY_NODE_LIMIT:
         return None
 

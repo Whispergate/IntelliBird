@@ -121,7 +121,7 @@ def test_jwt_signing_key_placeholder_exits() -> None:
 
 def test_jwt_signing_key_too_short_exits() -> None:
     """reject_placeholders exits 1 when JWT_SIGNING_KEY is shorter than 32 chars."""
-    result = _spawn_jwt("a" * 16)  # 16 chars — below MIN_SECRET_KEY_LEN
+    result = _spawn_jwt("a" * 16)  # 16 chars - below MIN_SECRET_KEY_LEN
     assert result.returncode == 1, (
         f"Short JWT_SIGNING_KEY must exit 1, got {result.returncode}\n"
         f"stdout: {result.stdout}\nstderr: {result.stderr}"

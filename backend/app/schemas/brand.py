@@ -3,7 +3,7 @@
 
 BRP-01..BRP-05.
 
-All enum fields use Literal types for compile-time safety + OpenAPI generation —
+All enum fields use Literal types for compile-time safety + OpenAPI generation -
 mirrors the easm.py pattern.
 
 BrandDashboardResponse carries the `has_expiring_dismissals` and
@@ -21,7 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
-# Literal enum types — mirror brand_* PG enums from migration 011
+# Literal enum types - mirror brand_* PG enums from migration 011
 # ---------------------------------------------------------------------------
 TermType = Literal["keyword", "domain", "product", "person"]
 TermMode = Literal["active", "watch_only"]
@@ -35,7 +35,7 @@ LifecycleStatus = Literal["new", "confirmed", "dismissed", "watchlist"]
 # ---------------------------------------------------------------------------
 
 class BrandTermCreate(BaseModel):
-    """POST /api/projects/{id}/brand/terms — create a new watched term.
+    """POST /api/projects/{id}/brand/terms - create a new watched term.
 
     `gdpr_consent` MUST be true when `term_type == 'person'` (enforced server-side
     in the router; validator here is lenient to allow partial UI drafts).
@@ -49,7 +49,7 @@ class BrandTermCreate(BaseModel):
 
 
 class BrandTermPatch(BaseModel):
-    """PATCH /api/projects/{id}/brand/terms/{term_id} — mode flip or archive."""
+    """PATCH /api/projects/{id}/brand/terms/{term_id} - mode flip or archive."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -102,7 +102,7 @@ class BrandMatchRead(BaseModel):
 
 
 class BrandMatchPatch(BaseModel):
-    """PATCH /api/projects/{id}/brand/matches/{match_id} — lifecycle transition.
+    """PATCH /api/projects/{id}/brand/matches/{match_id} - lifecycle transition.
 
     `dismiss_days` is required when `lifecycle_status == 'dismissed'`; validated
     server-side. 1..3650 days (≈10y max).
@@ -131,11 +131,11 @@ class BrandSuppressionExtend(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Match history / details DTOs — BRAND-02
+# Match history / details DTOs - BRAND-02
 # ---------------------------------------------------------------------------
 
 class HistoryEntry(BaseModel):
-    """A single entry in match_metadata.history[] — written at PATCH time."""
+    """A single entry in match_metadata.history[] - written at PATCH time."""
 
     model_config = ConfigDict(extra="allow")
 
@@ -181,7 +181,7 @@ class MatchDetailsResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 class BrandPreviewResponse(BaseModel):
-    """GET /api/projects/{id}/brand/terms/preview?value=... — noise preview.
+    """GET /api/projects/{id}/brand/terms/preview?value=... - noise preview.
 
     `warning='likely_too_broad'` triggers the 'high_noise_risk' auto-flag on create.
     """
@@ -201,11 +201,11 @@ class BrandSuppressionRow(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Stoplist DTOs — BRAND-01
+# Stoplist DTOs - BRAND-01
 # ---------------------------------------------------------------------------
 
 class BrandStoplistTermCreate(BaseModel):
-    """POST /api/projects/{id}/brand/stoplist — add a per-project stoplist term."""
+    """POST /api/projects/{id}/brand/stoplist - add a per-project stoplist term."""
 
     term: str = Field(..., min_length=1, max_length=200)
 
@@ -230,7 +230,7 @@ class BrandStoplistTermRead(BaseModel):
 
 
 class BrandDashboardResponse(BaseModel):
-    """GET /api/projects/{id}/brand/dashboard — aggregated dashboard payload.
+    """GET /api/projects/{id}/brand/dashboard - aggregated dashboard payload.
 
     `has_expiring_dismissals` → show the "X dismissals expiring in 7 days" banner.
     `has_recent_auto_downgrade` → show the "N terms auto-downgraded to watch_only"

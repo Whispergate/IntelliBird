@@ -1,4 +1,4 @@
-"""WHOIS enrichment service — ENRICH-07.
+"""WHOIS enrichment service - ENRICH-07.
 
 Fetches WHOIS registration data for a domain and caches it in whois_cache
 with a 7-day refetch suppression gate. Uses asyncwhois for native async
@@ -14,7 +14,6 @@ Rate-limit protection:
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 from datetime import datetime, timezone, date as date_type
 from typing import Optional
@@ -28,7 +27,7 @@ from app.models.passive_dns import WhoisCache
 
 logger = logging.getLogger(__name__)
 
-_WHOIS_LOCK_TTL = 300  # 5 minutes — prevents concurrent fetch of same domain
+_WHOIS_LOCK_TTL = 300  # 5 minutes - prevents concurrent fetch of same domain
 _WHOIS_TIMEOUT = 30.0  # seconds before asyncwhois gives up
 
 
@@ -91,7 +90,7 @@ async def fetch_and_cache_whois(
     last 7 days, it is returned immediately without a network call.
     Per-domain Redis lock: prevents concurrent workers from double-fetching.
     """
-    # 1. Check DB TTL gate — most common path, no Redis needed
+    # 1. Check DB TTL gate - most common path, no Redis needed
     existing = (await session.execute(
         text(
             "SELECT id, domain, registrar, registrant_email, registration_date, "
@@ -114,7 +113,7 @@ async def fetch_and_cache_whois(
     lock_key = f"whois:lock:{domain}"
     acquired = await redis.set(lock_key, "1", nx=True, ex=_WHOIS_LOCK_TTL)
     if not acquired:
-        # Another worker is fetching — return existing stale row if any (or None)
+        # Another worker is fetching - return existing stale row if any (or None)
         logger.debug("whois_lock_not_acquired domain=%s", domain)
         stale = (await session.execute(
             text("SELECT * FROM whois_cache WHERE domain = :domain"),

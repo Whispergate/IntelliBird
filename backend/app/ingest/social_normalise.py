@@ -1,4 +1,4 @@
-"""Social post normaliser — DISINFO-01.
+"""Social post normaliser - DISINFO-01.
 
 Converts raw Mastodon, 4chan, and Reddit post dicts into the canonical
 event row dict accepted by _persist_event_for_bindings.
@@ -9,7 +9,6 @@ import hashlib
 import html
 import uuid
 from datetime import datetime, timezone
-from typing import Any
 
 
 def _post_id(post: dict, platform: str) -> str:
@@ -24,7 +23,7 @@ def _post_content(post: dict, platform: str) -> str:
     if platform == "mastodon":
         # Strip basic HTML tags from Mastodon content (e.g. <p>, <br>)
         raw = post.get("content", "") or ""
-        # Simple tag-strip — good enough for keyword matching / storage
+        # Simple tag-strip - good enough for keyword matching / storage
         import re
         return re.sub(r"<[^>]+>", " ", html.unescape(raw)).strip()
     if platform == "4chan":

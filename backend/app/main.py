@@ -6,7 +6,7 @@ Startup sequence:
  2. configure_logging sets structlog JSON output.
  3. Log a prominent HOST-binding banner. If HOST != 127.0.0.1,
     the log line is ERROR level so operators notice.
- 4. FastAPI lifespan runs _run_startup_decrypt_check — canary seed/verify.
+ 4. FastAPI lifespan runs _run_startup_decrypt_check - canary seed/verify.
  5. AuthMiddleware stub sits between CORSMiddleware and RequestLogMiddleware.
  6. /healthz responds 200 so docker compose healthcheck passes.
 """
@@ -73,7 +73,7 @@ from app.routers.system import router as system_router
 from app.routers.tags import router as tags_router
 from app.routers.taxii import router as taxii_router
 from app.routers.tiber import router as tiber_router
-from app.workers import broker as _broker  # noqa: F401 — registers actors
+from app.workers import broker as _broker  # noqa: F401 - registers actors
 
 configure_logging()
 log = structlog.get_logger(__name__)
@@ -99,7 +99,7 @@ def _startup_bind_banner() -> None:
 def _startup_auth_banner() -> None:
     """Log AUTH_ENABLED state + presence of JWT_SIGNING_KEY + SSO_ISSUER_URL at startup.
 
-    Never logs the key itself — only boolean "configured" indicators.
+    Never logs the key itself - only boolean "configured" indicators.
     """
     sso_configured = bool(settings.SSO_ISSUER_URL and settings.SSO_CLIENT_ID)
     log.info(
@@ -112,7 +112,7 @@ def _startup_auth_banner() -> None:
 
 
 async def _run_startup_decrypt_check() -> Literal["ok", "failed", "unknown"]:
-    """Canary-based decrypt sanity check — INFRA-03.
+    """Canary-based decrypt sanity check - INFRA-03.
 
     The canary row (id=CANARY_ID) is inserted by migration 007 with
     credentials_enc=NULL. First startup after the migration seeds the blob;
@@ -132,7 +132,7 @@ async def _run_startup_decrypt_check() -> Literal["ok", "failed", "unknown"]:
                 )
                 return "unknown"
             if row.credentials_enc is None:
-                # First startup after migration 007 — seed the blob.
+                # First startup after migration 007 - seed the blob.
                 row.credentials_enc = encrypt_credentials(
                     settings.SECRET_KEY, CANARY_PLAINTEXT
                 )
@@ -174,7 +174,7 @@ async def lifespan(fastapi_instance: FastAPI):
 
 def create_app() -> FastAPI:
     _startup_bind_banner()
-    _startup_auth_banner()  # NEW — AUTH-03
+    _startup_auth_banner()  # NEW - AUTH-03
 
     fastapi_app = FastAPI(
         title="IntelliBird API",
@@ -220,7 +220,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(admin_taxii_clients_router, prefix="/api")
     fastapi_app.include_router(admin_yara_rules_router, prefix="/api")
     fastapi_app.include_router(admin_sigma_rules_router, prefix="/api")
-    # Sandbox config router — absolute prefix /api/projects/{id}/sandbox-config
+    # Sandbox config router - absolute prefix /api/projects/{id}/sandbox-config
     fastapi_app.include_router(sandbox_router)
     fastapi_app.include_router(admin_monitoring_router, prefix="/api")
     fastapi_app.include_router(admin_maintenance_router, prefix="/api")
@@ -238,7 +238,7 @@ def create_app() -> FastAPI:
     # resolves on compare_router first, not on projects_router's /{project_id} catchall.
     fastapi_app.include_router(projects_compare_router, prefix="/api")
     fastapi_app.include_router(projects_router, prefix="/api")
-    # EASM: safelist_router before easm_router — /api/easm/safelist must not collide
+    # EASM: safelist_router before easm_router - /api/easm/safelist must not collide
     # with /api/projects/.../easm/... path (no collision, but consistent with
     # compare_router-before-projects_router ordering for sibling routers).
     fastapi_app.include_router(easm_safelist_router, prefix="/api")
@@ -260,7 +260,7 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(admin_ai_jobs_router, prefix="/api")
     # Assets router has absolute prefix baked in (/api/projects/{id}/assets)
     fastapi_app.include_router(assets_router)
-    # TIBER report generation router — absolute prefix /api/projects/{id}/tiber
+    # TIBER report generation router - absolute prefix /api/projects/{id}/tiber
     fastapi_app.include_router(tiber_router)
     # TAXII 2.1 outbound server. No /api prefix; TAXII uses its own /taxii2 prefix.
     fastapi_app.include_router(taxii_router, prefix="/taxii2")

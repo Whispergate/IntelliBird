@@ -1,10 +1,8 @@
-"""Webhook payload builder tests — unskipped by 07-02."""
+"""Webhook payload builder tests - unskipped by 07-02."""
 from __future__ import annotations
 
-import pytest
 
 from app.services.webhook_payloads import (
-    _TLP_DISCORD_COLOR,
     _TLP_SLACK_EMOJI,
     build_discord_payload,
     build_generic_payload,
@@ -83,8 +81,8 @@ class TestSlackPayload:
         single_text = single["blocks"][0]["text"]["text"]
         multi_text = multi["blocks"][0]["text"]["text"]
 
-        # Singular: "1 new events matched my-preset" — plan says N new events (no plural swap)
-        # The plan verbatim: f"{N} new events matched {preset}" — always "events"
+        # Singular: "1 new events matched my-preset" - plan says N new events (no plural swap)
+        # The plan verbatim: f"{N} new events matched {preset}" - always "events"
         assert single_text == f"1 new events matched {PRESET_NAME}"
         assert multi_text == f"2 new events matched {PRESET_NAME}"
 
@@ -126,7 +124,7 @@ class TestSlackPayload:
         elem_text = last_block["elements"][0]["text"]
         expected_link = f"<{DASHBOARD_URL}/events?preset={PRESET_NAME}|View all matches>"
         assert expected_link in elem_text
-        # ISO timestamp present — check for 'T' and 'Z' or '+' (timezone marker)
+        # ISO timestamp present - check for 'T' and 'Z' or '+' (timezone marker)
         assert "T" in elem_text  # ISO 8601 datetime separator
 
     def test_max_10_sections(self):
@@ -200,7 +198,7 @@ class TestTeamsPayload:
  Also no 'MessageCard' string in contentType values."""
         result = build_teams_payload([build_fake_event()], PRESET_NAME, DASHBOARD_URL)
         all_keys = _walk_keys(result)
-        assert "@type" not in all_keys, "Legacy MessageCard '@type' key found — Pitfall 4 violation"
+        assert "@type" not in all_keys, "Legacy MessageCard '@type' key found - Pitfall 4 violation"
 
         # Also verify no contentType mentions MessageCard
         attachment_content_type = result["attachments"][0]["contentType"]
@@ -249,7 +247,7 @@ class TestDiscordPayload:
         assert result["content"].endswith("... and 5 more")
 
     def test_embed_fields_type_tlp_source(self):
-        """Each embed.fields has entries name=Type, name=TLP, name=Source — all inline=True."""
+        """Each embed.fields has entries name=Type, name=TLP, name=Source - all inline=True."""
         events = [build_fake_event() for _ in range(3)]
         result = build_discord_payload(events, PRESET_NAME, DASHBOARD_URL)
         for embed in result["embeds"]:
@@ -291,7 +289,7 @@ class TestGenericPayload:
         assert result_no_qp["preset"]["query_params"] == {}
 
     def test_count_matches_events_len(self):
-        """Test with N=0, N=1, N=7 — all 3 assertions."""
+        """Test with N=0, N=1, N=7 - all 3 assertions."""
         for n in (0, 1, 7):
             events = [build_fake_event() for _ in range(n)]
             result = build_generic_payload(events, PRESET_NAME, DASHBOARD_URL)

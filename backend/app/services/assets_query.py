@@ -1,11 +1,11 @@
 """Asset aggregation query builder.
 
 Single-source-of-truth for:
-  * build_assets_aggregation_select — GROUP BY on easm_findings
-  * compute_asset_scope            — per-row scope dispatch (in/out/unscoped)
-  * asset_id_for                   — stable synthetic id for URL paths
-  * bucket_for_type                — summary-card type grouping
-  * load_stale_cutoff              — MAX finished-scan started_at per project
+  * build_assets_aggregation_select - GROUP BY on easm_findings
+  * compute_asset_scope            - per-row scope dispatch (in/out/unscoped)
+  * asset_id_for                   - stable synthetic id for URL paths
+  * bucket_for_type                - summary-card type grouping
+  * load_stale_cutoff              - MAX finished-scan started_at per project
 
 Invariants:
   * Scope rows fetched ONCE per request (research Pitfall 2)
@@ -33,7 +33,7 @@ from app.schemas.assets import AssetScope, AssetSummaryBucket, SUMMARY_BUCKET_KE
 DOMAIN_SCOPED_TYPES: Final[frozenset[str]] = frozenset({
     "DNS_NAME", "URL", "URL_UNVERIFIED", "HTTP_RESPONSE", "VHOST",
     # CONTEXT §Scope reconciliation: hostname-bearing finding types dispatch
-    # through FQDN suffix matching — they are domain-scoped, not
+    # through FQDN suffix matching - they are domain-scoped, not
     # unscoped-by-design.
     "SUBDOMAIN_TAKEOVER_CANDIDATE", "FINDING", "VULNERABILITY",
 })
@@ -43,7 +43,7 @@ HYBRID_SCOPED_TYPES: Final[frozenset[str]] = frozenset({"OPEN_TCP_PORT", "OPEN_U
 # CONTEXT §Scope reconciliation (authoritative): only TECHNOLOGY / EMAIL_ADDRESS
 # / WAF / USERNAME are unscoped-by-v1-design. Other low-signal types that
 # cannot be anchored to any scope row also land here. SUBDOMAIN_TAKEOVER_CANDIDATE,
-# FINDING, VULNERABILITY are NOT included — they route through DOMAIN_SCOPED_TYPES.
+# FINDING, VULNERABILITY are NOT included - they route through DOMAIN_SCOPED_TYPES.
 UNSCOPED_BY_DESIGN: Final[frozenset[str]] = frozenset({
     "TECHNOLOGY", "EMAIL_ADDRESS", "USERNAME", "WAF",
     "HASHED_PASSWORD", "PASSWORD", "STORAGE_BUCKET", "MOBILE_APP",
@@ -84,7 +84,7 @@ def asset_id_for(bbot_event_type: str, canonical_target: str) -> str:
 
 
 def _extract_host_port(value: str) -> tuple[str, str | None]:
-    """Split 'host:port' — returns (host, port_or_none).
+    """Split 'host:port' - returns (host, port_or_none).
     Handles IPv6 brackets if present ([::1]:443 -> ("::1", "443")).
     """
     if value.startswith("[") and "]" in value:
@@ -119,7 +119,7 @@ def compute_asset_scope(
     canonical_target: str,
     scope_rows: Iterable[ProjectScopeRow],
 ) -> AssetScope:
-    """Python-side scope dispatch — pure function, no I/O.
+    """Python-side scope dispatch - pure function, no I/O.
 
     Caller MUST fetch scope_rows once per request via
     project_scope.fetch_scope_rows_intel; this function iterates the cache.
@@ -189,7 +189,7 @@ def build_assets_aggregation_select(project_id: uuid.UUID):
         modules (array_agg DISTINCT module),
         severity_max (MAX severity)
 
-    Does NOT pull the finding raw payload — that's drawer-only (Pitfall 1).
+    Does NOT pull the finding raw payload - that's drawer-only (Pitfall 1).
     """
     return (
         select(
@@ -224,7 +224,7 @@ def summary_from_rows(
 ) -> dict[str, AssetSummaryBucket]:
     """Reduce aggregation rows (each with bbot_event_type + stale bool) to per-bucket counts.
 
-    Every SUMMARY_BUCKET_KEYS member appears in output even when zero —
+    Every SUMMARY_BUCKET_KEYS member appears in output even when zero -
     UI-SPEC §Surface 3 locks stable 7-card layout.
     """
     counts = {k: 0 for k in SUMMARY_BUCKET_KEYS}

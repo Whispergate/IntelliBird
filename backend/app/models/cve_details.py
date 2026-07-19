@@ -1,4 +1,4 @@
-"""CveDetails — INGC-02 indexed CVE-specific columns, keyed on event_id.
+"""CveDetails - INGC-02 indexed CVE-specific columns, keyed on event_id.
 
 No FK to events: events is a TimescaleDB hypertable (PITFALLS H-7-adjacent
 constraint from). App-level integrity only, same as

@@ -1,4 +1,4 @@
-"""CIB Clusters router — DISINFO-04.
+"""CIB Clusters router - DISINFO-04.
 
 Exposes GET /api/projects/{project_id}/cib-clusters for the
 InfluenceOpsWidget on the Blue team dashboard.

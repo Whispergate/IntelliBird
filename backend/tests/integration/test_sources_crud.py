@@ -1,4 +1,4 @@
-"""Integration tests for admin/sources CRUD router —.
+"""Integration tests for admin/sources CRUD router -.
 
 Uses testcontainers Postgres (intellibird-db:m1 image) + alembic upgrade head
 to prove the full HTTP round-trip against a live Postgres database.
@@ -36,7 +36,7 @@ def live_db_sources():
             "DATABASE_URL": asyncpg_url,
             "SECRET_KEY": "x" * 48,
             "JWT_SIGNING_KEY": "j" * 64,
-            "REDIS_URL": "redis://localhost:1",  # unreachable — pub/sub fire-and-forget
+            "REDIS_URL": "redis://localhost:1",  # unreachable - pub/sub fire-and-forget
         }
         r = subprocess.run(
             ["uv", "run", "alembic", "upgrade", "head"],
@@ -62,7 +62,6 @@ async def sources_client(live_db_sources):
     import importlib
     import app.config as cfg_module
     importlib.reload(cfg_module)
-    settings = cfg_module.settings
 
     engine = create_async_engine(asyncpg_url, pool_pre_ping=True, future=True)
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
@@ -118,7 +117,7 @@ async def test_sources_full_crud_roundtrip(sources_client):
         "enabled": True,
     }
 
-    # POST — create
+    # POST - create
     create_resp = await sources_client.post("/admin/sources", json=payload)
     assert create_resp.status_code == 201
     src = create_resp.json()
@@ -128,32 +127,32 @@ async def test_sources_full_crud_roundtrip(sources_client):
     assert src["enabled"] is True
     assert "credentials_enc" not in create_resp.text
 
-    # GET list — contains the created source
+    # GET list - contains the created source
     list_resp = await sources_client.get("/admin/sources")
     assert list_resp.status_code == 200
     items = list_resp.json()
     assert any(item["id"] == src_id for item in items)
     assert "credentials_enc" not in list_resp.text
 
-    # GET /{id} — returns the same source
+    # GET /{id} - returns the same source
     get_resp = await sources_client.get(f"/admin/sources/{src_id}")
     assert get_resp.status_code == 200
     assert get_resp.json()["id"] == src_id
     assert "credentials_enc" not in get_resp.text
 
-    # PATCH — update enabled=False
+    # PATCH - update enabled=False
     patch_resp = await sources_client.patch(
         f"/admin/sources/{src_id}", json={"enabled": False}
     )
     assert patch_resp.status_code == 200
     assert patch_resp.json()["enabled"] is False
 
-    # GET /{id} — reflects the update
+    # GET /{id} - reflects the update
     get_after_patch = await sources_client.get(f"/admin/sources/{src_id}")
     assert get_after_patch.status_code == 200
     assert get_after_patch.json()["enabled"] is False
 
-    # GET /{id}/event-count — zero events
+    # GET /{id}/event-count - zero events
     count_resp = await sources_client.get(f"/admin/sources/{src_id}/event-count")
     assert count_resp.status_code == 200
     assert count_resp.json()["count"] == 0
@@ -162,6 +161,6 @@ async def test_sources_full_crud_roundtrip(sources_client):
     del_resp = await sources_client.delete(f"/admin/sources/{src_id}")
     assert del_resp.status_code == 204
 
-    # GET /{id} — 404
+    # GET /{id} - 404
     not_found = await sources_client.get(f"/admin/sources/{src_id}")
     assert not_found.status_code == 404

@@ -1,19 +1,19 @@
 "use client";
 
 /**
- * AssetDetailDrawer — (UI-SPEC §Surface 6).
+ * AssetDetailDrawer - (UI-SPEC §Surface 6).
  *
  * Right-side shadcn Sheet drawer. Mounts when `assetId` is non-null.
  *
  * Sections (top-to-bottom):
- *   1. SheetHeader — canonical_target (mono) + Copy button
- *   2. Metadata row — type / scope / stale / First-Last-seen / Scans
- *   3. Findings — newest scan first; per-finding <Collapsible> for Raw BBOT JSON
- *   4. Promoted events — conditional; signal-amber left-border provenance pill
- *   5. Note — <Textarea> with debounced autosave via useNoteAutosave hook
+ *   1. SheetHeader - canonical_target (mono) + Copy button
+ *   2. Metadata row - type / scope / stale / First-Last-seen / Scans
+ *   3. Findings - newest scan first; per-finding <Collapsible> for Raw BBOT JSON
+ *   4. Promoted events - conditional; signal-amber left-border provenance pill
+ *   5. Note - <Textarea> with debounced autosave via useNoteAutosave hook
  *
  * Signal-amber (`var(--brand-signal)`) is reserved in this phase to the
- * Promoted events provenance pill only — the table stale badge uses muted
+ * Promoted events provenance pill only - the table stale badge uses muted
  * grey per UI-SPEC §Color.
  */
 
@@ -46,7 +46,7 @@ import { useNoteAutosave } from "../hooks/useNoteAutosave";
 import type { AssetScope } from "./AssetsTable";
 
 // ---------------------------------------------------------------------------
-// Types — mirror backend GET /api/projects/{id}/assets/{asset_id} schema
+// Types - mirror backend GET /api/projects/{id}/assets/{asset_id} schema
 // (12.1-02). Generated api-client lands in 12.1-06.
 // ---------------------------------------------------------------------------
 
@@ -138,7 +138,7 @@ function relativeTime(from: Date | null): string {
 }
 
 // ---------------------------------------------------------------------------
-// Scope chip — duplicated here to avoid cross-importing from the table file
+// Scope chip - duplicated here to avoid cross-importing from the table file
 // (keeps AssetsTable.tsx as a pure presentation surface; tiny redundancy).
 // ---------------------------------------------------------------------------
 
@@ -174,7 +174,7 @@ function ScopeChip({ scope }: { scope: AssetScope }) {
 }
 
 // ---------------------------------------------------------------------------
-// Finding row — collapsible raw JSON
+// Finding row - collapsible raw JSON
 // ---------------------------------------------------------------------------
 
 function FindingRow({ finding }: { finding: AssetFinding }) {
@@ -263,7 +263,7 @@ function NoteEditor({
       rows={4}
       value={draft}
       disabled={disabled}
-      placeholder="Add a note for this asset — ownership, context, follow-up…"
+      placeholder="Add a note for this asset - ownership, context, follow-up…"
       onChange={(e) => setDraft(e.target.value)}
       data-testid="asset-note-textarea"
     />
@@ -485,7 +485,7 @@ export function AssetDetailDrawer({
                 )}
               </section>
 
-              {/* Promoted events — conditional */}
+              {/* Promoted events - conditional */}
               {detail.promoted_events.length > 0 && (
                 <section>
                   <div className="flex items-baseline gap-2">

@@ -1,5 +1,5 @@
 /**
- * DISINFO-04 — InfluenceOpsWidget renders null when no social sources exist,
+ * DISINFO-04 - InfluenceOpsWidget renders null when no social sources exist,
  *              shows a heading when sources are present, and lists CIB clusters.
  *
  * Implemented in: web/app/projects/[id]/InfluenceOpsWidget.tsx
@@ -10,7 +10,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 
-// Direct import — will fail until Plan 06 creates the component
+// Direct import - will fail until Plan 06 creates the component
 import InfluenceOpsWidget from "./InfluenceOpsWidget";
 
 interface CibCluster {
@@ -23,7 +23,7 @@ interface CibCluster {
 describe("InfluenceOpsWidget", () => {
   it("renders_null_when_no_social_sources", () => {
     /**
-     * When socialSourceCount is 0, the widget must render nothing —
+     * When socialSourceCount is 0, the widget must render nothing -
      * no DOM nodes should be present in the container.
      */
     const { container } = render(

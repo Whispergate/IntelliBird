@@ -1,4 +1,4 @@
-"""PROD-02 — EASM active-scan gate pentest.
+"""PROD-02 - EASM active-scan gate pentest.
 
 Penetration-style assertion that the active-scan two-factor gate at
 POST /api/projects/{project_id}/easm/scans cannot be bypassed by a
@@ -11,12 +11,12 @@ Gate fields on the Project row (migration 011):
   - scope_acknowledgement_text         (text, must match project.name)
   - active_auth_confirmed_at           (timestamp, within BBOT_ACTIVE_AUTH_TTL_SECONDS)
 
-Server-side gate is in backend/app/routers/easm.py::_is_active_gate_valid —
+Server-side gate is in backend/app/routers/easm.py::_is_active_gate_valid -
 this pentest re-reads that contract via the public API.
 
 All POSTs go through httpx + ASGITransport (no UI helpers). Auth identity is
 injected via FastAPI dependency_overrides[require_auth] to simulate the
-claim shape that AuthMiddleware would populate — the "tampered JWT" case
+claim shape that AuthMiddleware would populate - the "tampered JWT" case
 models a token whose role/project-rank has been downgraded post-issuance
 and is therefore equivalent to an attacker who has rewritten the claim.
 """
@@ -31,7 +31,7 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 os.environ.setdefault("SECRET_KEY", "s" * 64)
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -51,7 +51,7 @@ def _make_auth_user(
     role: str = "Viewer",
     project_id: uuid.UUID | None = None,
     project_rank: int = 3,  # 3 = Lead (active-scan authority)
-) -> "AuthUser":  # type: ignore[name-defined]
+) -> "AuthUser":  # type: ignore[name-defined]  # noqa: F821
     from app.security.jwt import AuthUser
 
     pm: dict[str, int] = {}
@@ -137,7 +137,7 @@ def _valid_gate_kwargs(project_name: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Gate-missing matrix — 4 parametrized cases
+# Gate-missing matrix - 4 parametrized cases
 # ---------------------------------------------------------------------------
 
 GATE_FIELDS: tuple[str, str, str] = (
@@ -198,14 +198,14 @@ async def test_active_scan_rejected_when_gate_field_missing(
     body = r.json()
     detail = (body.get("detail") or "").lower()
     # Either the gate-specific detail or a defence-in-depth role rejection is
-    # acceptable — both prove the active scan was NOT dispatched.
+    # acceptable - both prove the active scan was NOT dispatched.
     assert "gate" in detail or "active_scan_gate" in detail or "active" in detail, (
         f"expected gate-related 403 detail; got: {body}"
     )
 
 
 # ---------------------------------------------------------------------------
-# Tampered-JWT case — reduced role/rank cannot launch even with valid gate
+# Tampered-JWT case - reduced role/rank cannot launch even with valid gate
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -225,13 +225,13 @@ async def test_active_scan_rejected_with_tampered_jwt(easm_app, db_session):
     tampered_user = _make_auth_user(
         role="Viewer",           # downgraded from Admin
         project_id=project_id,
-        project_rank=1,          # Observer — below Lead threshold for active launch
+        project_rank=1,          # Observer - below Lead threshold for active launch
     )
 
     from app.middleware.auth import require_auth
     app.dependency_overrides[require_auth] = lambda: tampered_user
 
-    # Project has a FULLY VALID gate — so any 403 is pinned to authority + gate
+    # Project has a FULLY VALID gate - so any 403 is pinned to authority + gate
     # being non-bypassable via direct HTTP.
     await _create_project(
         db_session,
@@ -251,7 +251,7 @@ async def test_active_scan_rejected_with_tampered_jwt(easm_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# Positive control — passive scan with valid caller returns 2xx
+# Positive control - passive scan with valid caller returns 2xx
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -272,7 +272,7 @@ async def test_passive_scan_positive_control_returns_2xx(easm_app, db_session):
     from app.middleware.auth import require_auth
     app.dependency_overrides[require_auth] = lambda: admin_user
 
-    # No gate needed for passive — create the project without gate fields set.
+    # No gate needed for passive - create the project without gate fields set.
     await _create_project(db_session, project_id, project_name, admin_user.id)
 
     with (

@@ -34,7 +34,7 @@ def test_default_scoring_config_shape() -> None:
     # Decay half-life
     assert cfg["decay_half_life_days"] == 14
 
-    # Tier cutoffs — strictly descending S > A > B > C
+    # Tier cutoffs - strictly descending S > A > B > C
     cutoffs = cfg["tier_cutoffs"]
     assert cutoffs["S"] > cutoffs["A"] > cutoffs["B"] > cutoffs["C"], (
         f"Tier cutoffs must be strictly descending: {cutoffs}"

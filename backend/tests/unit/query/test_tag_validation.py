@@ -1,4 +1,4 @@
-"""Tests for TAG_REGEX + TagPatchRequest validator — FIL-03 /."""
+"""Tests for TAG_REGEX + TagPatchRequest validator - FIL-03 /."""
 from __future__ import annotations
 
 import pytest

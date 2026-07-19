@@ -1,14 +1,12 @@
-"""MON-02 volume drift detection — plan 16-04.
+"""MON-02 volume drift detection - plan 16-04.
 
 Tests the EWMA z-score drift detection logic: severity thresholds, min-count
 guard, learning window suppression, and the standard alpha formula.
 """
 from __future__ import annotations
 
-import math
 from datetime import datetime, timedelta, timezone
 
-import pytest
 
 from app.services.monitoring.drift import (
     EWMA_ALPHA,

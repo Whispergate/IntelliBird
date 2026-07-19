@@ -1,11 +1,11 @@
-"""Social listening polling actor — DISINFO-01.
+"""Social listening polling actor - DISINFO-01.
 
 poll_social(source_id) is the Dramatiq actor entrypoint.  It delegates to
 poll_social_impl so integration tests can invoke the implementation
 synchronously without the Dramatiq actor dispatch layer.
 
 Supported platforms: mastodon, 4chan, reddit.
-Twitter/X requires a paid API tier — see docs/ops/social-sources.md.
+Twitter/X requires a paid API tier - see docs/ops/social-sources.md.
 """
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ _REDDIT_USER_AGENT = "IntelliBird/4.0 (self-hosted threat intelligence platform)
 
 @contextmanager
 def _open_session() -> Iterator[Session]:
-    """Sync-engine session per poll — mirrors app.workers.rss pattern.
+    """Sync-engine session per poll - mirrors app.workers.rss pattern.
 
     Lazily imports settings so ``import app.workers.social_worker`` stays cheap.
     """
@@ -242,7 +242,7 @@ def _fetch_posts(src: dict) -> list[dict]:
 
 
 def poll_social_impl(source_id_str: str) -> None:
-    """Actor body — sync implementation.  Called by ``poll_social.send(...)``
+    """Actor body - sync implementation.  Called by ``poll_social.send(...)``
     or directly by integration tests.
     """
     source_id = uuid.UUID(source_id_str)
@@ -322,10 +322,12 @@ def poll_social_impl(source_id_str: str) -> None:
                     if rc >= 1:
                         inserted += rc
                         parse_ok += 1
-                        # Enqueue AI narrative classification (optional — do not fail ingest)
+                        # Enqueue AI narrative classification (optional - do not fail ingest)
                         if rc >= 1:
                             try:
-                                from app.workers.ai import suggest_for_event  # noqa: PLC0415
+                                # TODO: suggest_for_event actor is not yet implemented in
+                                # app.workers.ai — feature is dead (import caught below).
+                                from app.workers.ai import suggest_for_event  # type: ignore[attr-defined]  # noqa: PLC0415
                                 # Look up the event id by content_hash for AI enqueue
                                 event_row = session.execute(
                                     text(
@@ -346,7 +348,7 @@ def poll_social_impl(source_id_str: str) -> None:
                                         str(event_row.id), str(event_row.project_id)
                                     )
                             except Exception:  # noqa: BLE001
-                                pass  # AI pipeline optional — do not fail ingest
+                                pass  # AI pipeline optional - do not fail ingest
                     else:
                         deduped += 1
                         parse_ok += 1

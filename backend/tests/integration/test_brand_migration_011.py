@@ -1,4 +1,4 @@
-"""Brand Protection migration 011 integration test — brand_terms + brand_matches +
+"""Brand Protection migration 011 integration test - brand_terms + brand_matches +
 projects.gdpr_person_match_retention_days column.
 
 BRP-01..BRP-05.
@@ -38,7 +38,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 def live_db_010():
     """Start intellibird-db:m1, migrate to 010_easm, yield (engine, env).
 
-    Leaves the DB at 010 — tests upgrade to 011 and can downgrade back.
+    Leaves the DB at 010 - tests upgrade to 011 and can downgrade back.
     """
     with PostgresContainer("intellibird-db:m1") as pg:
         url = pg.get_connection_url()

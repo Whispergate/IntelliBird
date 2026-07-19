@@ -1,4 +1,4 @@
-"""TIBER report generation schema — TIBER-01..03, AI-08.
+"""TIBER report generation schema - TIBER-01..03, AI-08.
 
 Revision ID: 015_tiber
 Revises: 014_ai
@@ -14,7 +14,7 @@ Schema foundation for the TIBER report editor + exporter + history:
   tiber_reports table
     TIBER-01: One TTIR (Targeted Threat Intelligence Report) per engagement.
     Stores the 6-section TIBER-EU / CBEST structure. project_id FK CASCADE
-    is the hard project scope boundary (PROD-01 / H-4 pattern — every
+    is the hard project scope boundary (PROD-01 / H-4 pattern - every
     project-scoped table carries project_id FK with ON DELETE CASCADE so the
     scope chokepoint in build_scope_predicate is always reachable via simple
     predicate). state: draft → published → archived (state machine enforced at
@@ -23,7 +23,7 @@ Schema foundation for the TIBER report editor + exporter + history:
   tiber_actor_profiles table
     TIBER-01: Named threat actor profile rows for Threat Actor Profiles section.
     Denormalised project_id FK CASCADE alongside tiber_report_id FK CASCADE
-    mirrors the ai_suggestions multi-FK pattern from migration 014 — direct
+    mirrors the ai_suggestions multi-FK pattern from migration 014 - direct
     project scope column avoids join through tiber_reports for scope isolation.
 
   tiber_scenarios table
@@ -41,7 +41,7 @@ Schema foundation for the TIBER report editor + exporter + history:
     version_number is monotonic per (tiber_report_id, format). 50MB hard cap
     enforced by DB CHECK constraint ck_reports_bytea_size (octet_length ≤ 52428800).
     report_state_at_export snapshots the tiber_reports.state at export time for
-    audit trail — provides exact state that was in effect when the bytes were
+    audit trail - provides exact state that was in effect when the bytes were
     generated, even after later state transitions.
 
   Three ENUMs (idempotent DO $$ EXCEPTION WHEN duplicate_object guard):
@@ -50,7 +50,7 @@ Schema foundation for the TIBER report editor + exporter + history:
     scenario_objective_enum: availability, integrity, confidentiality
 
 ADD COLUMN safety:
-  No hypertable columns modified in this migration — all DDL is CREATE TABLE
+  No hypertable columns modified in this migration - all DDL is CREATE TABLE
   and CREATE TYPE. No split-statement requirement applies here.
 
 Cascade count: ≥6 ON DELETE CASCADE FKs across 5 tables (one per project_id FK
@@ -104,12 +104,12 @@ def upgrade() -> None:
 
     # --- 2. tiber_reports table -------------------------------------------------------
     # TIBER-01: Core TTIR document row. Stores all 6-section fields.
-    # cbest_mode boolean — when true, frontend/exporter replaces "CIF" with
+    # cbest_mode boolean - when true, frontend/exporter replaces "CIF" with
     # "Critical Business Service" in labels and export output.
     # in_scope_assets, out_of_scope_assets, aia_recommendations, tl_top_events are
-    # JSONB arrays (default '[]') — analyst-editable lists, auto-populated from
+    # JSONB arrays (default '[]') - analyst-editable lists, auto-populated from
     # project scope data and event feed respectively.
-    # created_by_user_id FK (SET NULL) — preserves audit trail after user deletion.
+    # created_by_user_id FK (SET NULL) - preserves audit trail after user deletion.
     op.execute(
         """
         CREATE TABLE tiber_reports (
@@ -141,10 +141,10 @@ def upgrade() -> None:
 
     # --- 3. tiber_actor_profiles table -----------------------------------------------
     # TIBER-01: Named threat actor profiles. Denormalised project_id FK CASCADE
-    # mirrors ai_suggestions dual-FK pattern (migration 014) — direct scope column
+    # mirrors ai_suggestions dual-FK pattern (migration 014) - direct scope column
     # avoids join through tiber_reports for project-scope isolation (PROD-01 / H-4).
-    # source_event_ids JSONB — list of event UUIDs (soft refs; events is a hypertable
-    # and cannot be FK targets — same pattern as AISummary.event_id in migration 014).
+    # source_event_ids JSONB - list of event UUIDs (soft refs; events is a hypertable
+    # and cannot be FK targets - same pattern as AISummary.event_id in migration 014).
     op.execute(
         """
         CREATE TABLE tiber_actor_profiles (
@@ -168,11 +168,11 @@ def upgrade() -> None:
     # --- 4. tiber_scenarios table -----------------------------------------------------
     # TIBER-02: Scenario chain rows. Each row is one threat scenario:
     #   actor → CIF/CBS label → objective type → ATT&CK technique → procedure prose.
-    # actor_id FK (SET NULL) — actor profile deletion does not cascade-delete the
+    # actor_id FK (SET NULL) - actor profile deletion does not cascade-delete the
     # scenario; scenario survives with actor_id=NULL (orphaned actor reference).
-    # ai_draft_metadata JSONB — stores 'ai_drafted', 'edited_by', 'edited_at' fields
+    # ai_draft_metadata JSONB - stores 'ai_drafted', 'edited_by', 'edited_at' fields
     # for the AI-drafted badge (AI-08; CONTEXT.md §AI-08 scenario narrative).
-    # sort_order integer — for UI drag-reorder within the longlist.
+    # sort_order integer - for UI drag-reorder within the longlist.
     op.execute(
         """
         CREATE TABLE tiber_scenarios (
@@ -200,10 +200,10 @@ def upgrade() -> None:
 
     # --- 5. project_tiber_state table ------------------------------------------------
     # TIBER-01: Per-project TIBER configuration singleton.
-    # PK is project_id (one row per project — no separate uuid PK).
-    # default_top_events_n — Threat Landscape auto-populate N; per-report override
+    # PK is project_id (one row per project - no separate uuid PK).
+    # default_top_events_n - Threat Landscape auto-populate N; per-report override
     # stored on tiber_reports.tl_top_events_count (this is the project default).
-    # tiber_phase — free-text project engagement phase label (e.g. 'Preparation',
+    # tiber_phase - free-text project engagement phase label (e.g. 'Preparation',
     # 'Testing', 'Closure'); NULL until operator sets it.
     op.execute(
         """
@@ -220,14 +220,14 @@ def upgrade() -> None:
 
     # --- 6. reports table ------------------------------------------------------------
     # TIBER-03: Binary export store. One row per export action per format.
-    # content_bytea — actual export bytes (Markdown text, PDF binary, STIX JSON).
+    # content_bytea - actual export bytes (Markdown text, PDF binary, STIX JSON).
     # 50MB hard cap enforced by CHECK constraint ck_reports_bytea_size.
-    # version_number — monotonic per (tiber_report_id, format); application layer
+    # version_number - monotonic per (tiber_report_id, format); application layer
     # assigns next version = MAX(version_number) + 1 for this (report_id, format)
     # pair before INSERT.
-    # report_state_at_export — snapshot of tiber_reports.state at export time for
+    # report_state_at_export - snapshot of tiber_reports.state at export time for
     # immutable audit trail (CONTEXT.md §Versioning / H-5 TOAST avoidance note).
-    # generated_by_user_id FK (SET NULL) — preserves audit trail after user deletion.
+    # generated_by_user_id FK (SET NULL) - preserves audit trail after user deletion.
     op.execute(
         """
         CREATE TABLE reports (

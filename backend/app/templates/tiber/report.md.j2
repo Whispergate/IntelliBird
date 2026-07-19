@@ -1,12 +1,12 @@
-{# TIBER-EU TTIR Report Template — Phase 18 / TIBER-03
-   ECB TIBER-EU TTIR Guidance January 2025 — 6-section structure.
+{# TIBER-EU TTIR Report Template - Phase 18 / TIBER-03
+   ECB TIBER-EU TTIR Guidance January 2025 - 6-section structure.
 
    SECURITY INVARIANTS (enforced by .semgrep.yml + code review):
    - ALL variables use {{ var }} autoescaped by Jinja2.
    - Pre-rendered HTML sections (tl_narrative_html, aia_summary_html, etc.) are
-     markupsafe.Markup() objects — they pass through autoescaping without double-encoding.
+     markupsafe.Markup() objects - they pass through autoescaping without double-encoding.
    - This template is file-based (SSTI prevention).
-   - The pipe-safe filter is BANNED in this template — zero occurrences.
+   - The pipe-safe filter is BANNED in this template - zero occurrences.
 #}
 # {{ report_title }}
 
@@ -58,7 +58,7 @@
 {% for event in tl_top_events %}
 | {{ loop.index }} | {{ event.title }} | {{ event.score }} | {{ event.observed_at }} |
 {% else %}
-| — | _No events in scope._ | — | — |
+| - | _No events in scope._ | - | - |
 {% endfor %}
 
 ---

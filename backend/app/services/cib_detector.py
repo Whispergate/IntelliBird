@@ -1,4 +1,4 @@
-"""CIB (Coordinated Inauthentic Behaviour) detector — DISINFO-02.
+"""CIB (Coordinated Inauthentic Behaviour) detector - DISINFO-02.
 
 Uses MinHashLSH (datasketch) to detect clusters of near-identical social media
 posts ingested by the social listening workers. Clusters of >= 5 similar posts
@@ -65,8 +65,8 @@ def detect_cib_cluster(
     """Return clusters of post IDs whose content exceeds the similarity threshold.
 
     Each post dict must have:
-      - ``id``   — unique post identifier (any string-able value)
-      - ``text`` — post content to compute MinHash over
+      - ``id``   - unique post identifier (any string-able value)
+      - ``text`` - post content to compute MinHash over
 
     Only clusters with ``len(candidates) >= min_cluster_size`` are returned.
     Visited IDs are de-duplicated so no post appears in more than one cluster.
@@ -95,7 +95,7 @@ def detect_cib_cluster(
         try:
             lsh.insert(key, m)
         except ValueError:
-            pass  # duplicate key — skip
+            pass  # duplicate key - skip
         minhashes[key] = m
 
     clusters: list[list[str]] = []
@@ -248,7 +248,7 @@ def run_cib_sweep_for_project(
             try:
                 member_uuids.append(uuid.UUID(cid_str))
             except (ValueError, AttributeError):
-                pass  # non-UUID synthetic ID — skip
+                pass  # non-UUID synthetic ID - skip
 
         cluster_row = CibCluster(
             project_id=project_id,
@@ -279,12 +279,12 @@ def run_cib_sweep_for_project(
 
 
 def run_cib_sweep() -> None:
-    """Global CIB sweep — called by APScheduler every 300 s.
+    """Global CIB sweep - called by APScheduler every 300 s.
 
     Acquires a Redis lock (NX EX 300) to prevent overlapping sweeps when
     multiple scheduler instances run (e.g. canary + stable deployments).
     """
-    from app.config import settings  # noqa: PLC0415 — deferred to avoid circular import
+    from app.config import settings  # noqa: PLC0415 - deferred to avoid circular import
     import redis as redis_lib  # noqa: PLC0415
 
     r = redis_lib.Redis.from_url(settings.REDIS_URL, decode_responses=True)

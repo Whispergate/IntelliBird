@@ -1,5 +1,5 @@
 """
-CERT-03 — When certstream_enabled=True for a project, brand_monitor_tick_job
+CERT-03 - When certstream_enabled=True for a project, brand_monitor_tick_job
           skips the crt.sh CT-log branch for that project (dnstwist still runs).
 
 Implemented in: backend/app/services/brand_monitor.py
@@ -16,11 +16,9 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 @pytest.mark.xfail(reason="certstream_enabled guard not yet implemented", strict=False)
 def test_ctlog_scan_skipped_when_certstream_enabled():
     """scan_project skips _ctlog_scan when project has certstream_enabled=True."""
-    from unittest.mock import AsyncMock, patch
-    from app.services.brand_monitor import scan_project
     # When certstream_enabled=True, _ctlog_scan must not be called
     # Full implementation tested in Wave 2 (Plan 03)
-    assert True  # placeholder — implementation will replace
+    assert True  # placeholder - implementation will replace
 
 
 @pytest.mark.xfail(reason="certstream_enabled guard not yet implemented", strict=False)

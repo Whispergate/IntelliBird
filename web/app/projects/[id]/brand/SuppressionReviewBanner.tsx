@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * SuppressionReviewBanner — (UI-SPEC §Surface 3 + §Surface 4).
+ * SuppressionReviewBanner - (UI-SPEC §Surface 3 + §Surface 4).
  *
  * Exports BOTH the amber banner and the review Dialog (single file).
  *
- * Banner: `border-l-4 border-[var(--brand-signal)] bg-accent/10` — identical
+ * Banner: `border-l-4 border-[var(--brand-signal)] bg-accent/10` - identical
  * CSS to 24h-warning banner. Entire banner is clickable (role="button")
  * and opens the Dismissed-matches-expiring-soon Dialog.
  *
@@ -38,7 +38,7 @@ import type {
 import { extendDismissal, listSuppressionReview } from "./lib/api";
 
 // ---------------------------------------------------------------------------
-// Source chip (local copy — colour rules identical to MatchTable SourceChip)
+// Source chip (local copy - colour rules identical to MatchTable SourceChip)
 // ---------------------------------------------------------------------------
 function SourceChip({ source }: { source: BrandSource }) {
   const labels: Record<BrandSource, string> = {
@@ -278,7 +278,7 @@ function SuppressionReviewModal({
                       </span>
                     </div>
 
-                    {/* Right — 4 canonical action buttons */}
+                    {/* Right - 4 canonical action buttons */}
                     {isActioned ? (
                       <Check
                         className="w-4 h-4 text-primary"

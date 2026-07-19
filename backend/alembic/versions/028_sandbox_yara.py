@@ -1,4 +1,4 @@
-"""028 — sandbox_configs, sandbox_reports hypertable, yara_rules, yara_matches.
+"""028 - sandbox_configs, sandbox_reports hypertable, yara_rules, yara_matches.
 
 SANDBOX-01, SANDBOX-03, SANDBOX-04, YARA-01, YARA-02.
 
@@ -6,13 +6,13 @@ Creates four tables that form the foundation for the sandbox detonation and YARA
 scanning subsystems.
 
   sandbox_configs       Per-project provider config (one row per project, unique).
-  sandbox_reports       TimescaleDB hypertable partitioned on submitted_at — holds
+  sandbox_reports       TimescaleDB hypertable partitioned on submitted_at - holds
                         full detonation results, polling state, extracted techniques.
   yara_rules            Global or per-project YARA rule store with compiled bytea cache.
   yara_matches          M2M join between yara_rules and events (SOFT FK on event_id).
 
 Design notes:
-  * sandbox_reports.event_id is a SOFT FK (no REFERENCES clause) — events is a
+  * sandbox_reports.event_id is a SOFT FK (no REFERENCES clause) - events is a
     TimescaleDB hypertable; real FK constraints are not supported against hypertables.
     Nullable because a report may be triggered from an IOC that has no event link.
   * yara_matches.event_id is also a SOFT FK for the same reason.
@@ -37,7 +37,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # ------------------------------------------------------------------
-    # 1. sandbox_configs — per-project provider configuration
+    # 1. sandbox_configs - per-project provider configuration
     # ------------------------------------------------------------------
     op.execute("""
 CREATE TABLE sandbox_configs (
@@ -56,9 +56,9 @@ CREATE TABLE sandbox_configs (
 """)
 
     # ------------------------------------------------------------------
-    # 2. sandbox_reports — TimescaleDB hypertable (partition on submitted_at)
+    # 2. sandbox_reports - TimescaleDB hypertable (partition on submitted_at)
     #
-    # Composite PK (id, submitted_at) required by TimescaleDB — the partition
+    # Composite PK (id, submitted_at) required by TimescaleDB - the partition
     # column must appear in all unique constraints.
     #
     # event_id is a SOFT FK: events is a hypertable; real FK not supported.
@@ -92,7 +92,7 @@ CREATE TABLE sandbox_reports (
     op.execute("CREATE INDEX ix_sandbox_reports_project_id ON sandbox_reports (project_id);")
 
     # ------------------------------------------------------------------
-    # 3. yara_rules — global or per-project YARA rule store
+    # 3. yara_rules - global or per-project YARA rule store
     #
     # NULL project_id = global rule visible to all projects (admin-curated).
     # compiled_cache stores pre-compiled bytea to avoid recompile on every scan.
@@ -112,7 +112,7 @@ CREATE TABLE yara_rules (
 """)
 
     # ------------------------------------------------------------------
-    # 4. yara_matches — M2M between yara_rules and events
+    # 4. yara_matches - M2M between yara_rules and events
     #
     # event_id is a SOFT FK: events is a hypertable, real FK not supported.
     # scan_context distinguishes file-sample scans from STIX-pattern matches.

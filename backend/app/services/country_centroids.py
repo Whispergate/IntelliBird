@@ -2,7 +2,7 @@
 
 Used as fallback when MaxMind GeoLite2 MMDB is absent OR no IP observable
 exists (text-only intel events). Coordinates are coarse country geographic
-centers — sufficient for map clustering, not for precise targeting.
+centers - sufficient for map clustering, not for precise targeting.
 
 Source: rough centroids from CIA World Factbook + Natural Earth, rounded
 to 1 decimal degree (~10km accuracy). Pure data, no dependency.

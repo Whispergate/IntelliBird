@@ -1,6 +1,6 @@
 """TDD RED: DestinationType must accept all 8 notification channel type values.
 
-NOTIF-01 / Plan 30-02 — extending destination_type_enum with email, pagerduty,
+NOTIF-01 / Plan 30-02 - extending destination_type_enum with email, pagerduty,
 opsgenie, ntfy.
 """
 from __future__ import annotations

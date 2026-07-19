@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import type { EngagementType } from "../lib/api";
 
 /**
- * EngagementTypeBadge — colour-coded pill for a project engagement type.
+ * EngagementTypeBadge - colour-coded pill for a project engagement type.
  *
  * Colours per 10-UI-SPEC §Component Inventory:
  *   - tiber → signal amber left trim (reserved; flags TIBER-engaged projects)

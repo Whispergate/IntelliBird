@@ -1,4 +1,4 @@
-"""GET /api/attack-techniques — ATT&CK technique catalog search.
+"""GET /api/attack-techniques - ATT&CK technique catalog search.
 
 Any authenticated user may query; no project context needed (global catalog).
 """

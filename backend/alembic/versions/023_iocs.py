@@ -1,4 +1,4 @@
-"""IOC foundation — iocs + ioc_event_links + 3 ENUM types.
+"""IOC foundation - iocs + ioc_event_links + 3 ENUM types.
 
 Revision ID: 019_iocs
 Revises: 018_ai_auto_summary_toggle
@@ -7,16 +7,16 @@ Create Date: 2026-05-03
 IOC-01, IOC-08.
 
 Schema-only migration. Backfill of `iocs` from existing events is a separate
-concern — handled by the admin endpoint POST /api/admin/iocs/backfill which
+concern - handled by the admin endpoint POST /api/admin/iocs/backfill which
 delegates to the same Dramatiq actor used by bulk-import (Plan 22-04).
 
 Key decisions (see .planning/phases/22-ioc-foundation/22-CONTEXT.md):
-  * project_id NULLABLE — NULL = global "known bad" row visible to all projects.
-  * UNIQUE (project_id, type, normalized_value) NULLS NOT DISTINCT — PG15+ — so
+  * project_id NULLABLE - NULL = global "known bad" row visible to all projects.
+  * UNIQUE (project_id, type, normalized_value) NULLS NOT DISTINCT - PG15+ - so
     two (NULL, 'ip', '1.2.3.4') rows collide as expected.
-  * 13-value ioc_type_enum locked at this migration — adding a new type
+  * 13-value ioc_type_enum locked at this migration - adding a new type
     requires a new alembic revision.
-  * ioc_event_links.event_id is a SOFT FK (no constraint) — events is a
+  * ioc_event_links.event_id is a SOFT FK (no constraint) - events is a
     TimescaleDB hypertable and hypertables cannot cleanly be FK targets;
     same precedent as brand_matches.event_id.
 
@@ -138,7 +138,7 @@ def upgrade() -> None:
         sa.Column("created_by", sa.Text(), nullable=True),
     )
 
-    # NULLS NOT DISTINCT (PG15+) — two (NULL,'ip','1.2.3.4') rows collide.
+    # NULLS NOT DISTINCT (PG15+) - two (NULL,'ip','1.2.3.4') rows collide.
     op.execute(
         """
         CREATE UNIQUE INDEX uq_iocs_project_type_value
@@ -166,7 +166,7 @@ def upgrade() -> None:
             sa.ForeignKey("iocs.id", ondelete="CASCADE"),
             nullable=False,
         ),
-        # SOFT FK to events hypertable — no constraint, mirrors brand_matches.event_id.
+        # SOFT FK to events hypertable - no constraint, mirrors brand_matches.event_id.
         sa.Column("event_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column(
             "observed_at",

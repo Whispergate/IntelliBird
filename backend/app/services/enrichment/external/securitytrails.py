@@ -1,4 +1,4 @@
-"""SecurityTrails passive DNS provider — ENRICH-06.
+"""SecurityTrails passive DNS provider - ENRICH-06.
 
 Supports: domain
 
@@ -60,7 +60,7 @@ async def _get_cached_pdns(redis, domain: str) -> list[dict] | None:
 
 async def _cache_pdns(redis, domain: str, rows: list[dict]) -> None:
     key = f"enrich:pdns:securitytrails:{domain}"
-    # Serialise — convert datetime to isoformat string for JSON
+    # Serialise - convert datetime to isoformat string for JSON
     serialisable = [
         {
             "ip": r["ip"],
@@ -140,7 +140,7 @@ async def enrich_pdns(
         if response.status_code != 200:
             logger.debug("securitytrails_non200 status=%d domain=%s type=%s",
                          response.status_code, domain, record_type)
-            # Non-200 on one type — skip (e.g., AAAA may have no data)
+            # Non-200 on one type - skip (e.g., AAAA may have no data)
             continue
 
         for rec in response.json().get("records", []):

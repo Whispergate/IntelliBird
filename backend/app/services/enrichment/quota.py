@@ -1,4 +1,4 @@
-"""Atomic Redis quota gate for enrichment providers — ENRICH-03.
+"""Atomic Redis quota gate for enrichment providers - ENRICH-03.
 
 Implements per-minute and per-day quota enforcement using Lua scripts
 executed atomically in Redis. The dual-gate approach ensures that
@@ -49,7 +49,7 @@ PROVIDER_DEFAULT_DAILY_CAPS: dict[str, int | None] = {
 }
 
 # ---------------------------------------------------------------------------
-# Lua script — atomic check-then-increment (single unit increment)
+# Lua script - atomic check-then-increment (single unit increment)
 # Adapted from app/services/llm/token_budget.py BUDGET_LUA.
 # Returns {1, new_val} on allow; {0, current} on deny.
 # ---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ async def check_and_consume_quota(
 
     Returns:
         True if both quotas have capacity and counters were incremented.
-        False if either cap is exceeded — no counter changes persist.
+        False if either cap is exceeded - no counter changes persist.
     """
     # Per-minute gate
     minute_key = _minute_key(provider, project_scope)

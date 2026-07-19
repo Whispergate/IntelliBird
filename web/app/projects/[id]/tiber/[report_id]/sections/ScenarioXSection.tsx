@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScenarioXSection — Section 3f: Scenario X.
+ * ScenarioXSection - Section 3f: Scenario X.
  * UI-SPEC §3f.
  *
  * Manual only. Free-form analyst narrative for additional scenarios.

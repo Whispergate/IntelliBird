@@ -1,6 +1,6 @@
-"""GET /api/events/{id}/graph — Cytoscape-ready graph response.
-GET /api/projects/{id}/graph — project-aggregate multi-seed graph.
-GET /api/projects/{id}/graph/traverse — multi-hop AGE Cypher traversal.
+"""GET /api/events/{id}/graph - Cytoscape-ready graph response.
+GET /api/projects/{id}/graph - project-aggregate multi-seed graph.
+GET /api/projects/{id}/graph/traverse - multi-hop AGE Cypher traversal.
 """
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ from app.services.redis_client import get_redis
 log = structlog.get_logger(__name__)
 router = APIRouter(prefix="/events", tags=["graph"])
 
-# Project-aggregate graph router — registered in main.py with prefix="/api"
+# Project-aggregate graph router - registered in main.py with prefix="/api"
 # so the final path is /api/projects/{project_id}/graph.
 projects_graph_router = APIRouter(prefix="/projects", tags=["graph"])
 
@@ -99,7 +99,7 @@ async def project_graph(
     user: AuthUser = Depends(require_auth),
     db: AsyncSession = Depends(get_session),
 ) -> GraphResponse:
-    """Project-aggregate attack graph — Observer+ can view.
+    """Project-aggregate attack graph - Observer+ can view.
 
     Collects all project events via the build_scope_predicate chokepoint
     (build_events_query with project_id kwarg), then runs multi-seed BFS
@@ -148,7 +148,7 @@ async def traverse_domain_graph(
     GRAPH-01 / GRAPH-04 / GRAPH-03:
     - Bounded BFS via AGE Cypher (:SHARES_INFRA | :SEEN_IN), LIMIT 200.
     - Cross-project isolation enforced via dual project_id predicate
-      (vertex property + WHERE clause — belt-and-suspenders pattern).
+      (vertex property + WHERE clause - belt-and-suspenders pattern).
     - Centrality (PageRank + betweenness) computed server-side via networkx
       and cached in Redis for 10 minutes.
     - Returns GraphResponse with per_node_centrality and centrality_truncated.
@@ -173,7 +173,7 @@ async def traverse_domain_graph(
 
     edge_types_str = "|".join(sorted(active_types))
 
-    # AGE Cypher — dual project_id predicate for GRAPH-04 isolation.
+    # AGE Cypher - dual project_id predicate for GRAPH-04 isolation.
     # NODE_CAP shared with graph_traversal.py (200).
     cypher_body = (
         f"MATCH (seed:DomainPivot {{ioc_id: '{safe_ioc_id}', project_id: '{safe_pid}'}}) "
@@ -205,7 +205,7 @@ async def traverse_domain_graph(
         raise HTTPException(status_code=503, detail="Graph traversal temporarily unavailable")
 
     if not rows:
-        # Seed not found or no traversal results — return empty graph (not 404)
+        # Seed not found or no traversal results - return empty graph (not 404)
         return GraphResponse(nodes=[], edges=[], truncated=False)
 
     def _parse_agtype_props(val: object) -> dict:
@@ -243,7 +243,7 @@ async def traverse_domain_graph(
         for src, tgt, rel in edge_tuples
     ]
 
-    # Centrality computation — cached in Redis for 10 minutes
+    # Centrality computation - cached in Redis for 10 minutes
     redis = await get_redis()
     node_id_list = list(nodes_by_id.keys())
     centrality, centrality_truncated = await get_or_compute_centrality(

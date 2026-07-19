@@ -1,10 +1,9 @@
-"""EventItem geo_lat/geo_lon schema —-03 target (MAP-01, MAP-05)."""
+"""EventItem geo_lat/geo_lon schema --03 target (MAP-01, MAP-05)."""
 from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
 
-import pytest
 
 from app.schemas.events import EventItem
 

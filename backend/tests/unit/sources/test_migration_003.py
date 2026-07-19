@@ -1,17 +1,15 @@
 """Unit tests for migration 003 (archive_policy enum + silent_failure_count).
 
-All tests run offline — no live database required. Monkeypatching alembic.op
+All tests run offline - no live database required. Monkeypatching alembic.op
 is used to inspect the exact sequence of DDL operations emitted by upgrade
 and downgrade.
 """
 from __future__ import annotations
 
-import importlib
 import sys
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import patch
 
 import sqlalchemy as sa
-import pytest
 
 
 # ---------------------------------------------------------------------------
@@ -23,7 +21,8 @@ def _load_migration():
     mod_name = "alembic.versions.v003_archive_policy"
     if mod_name in sys.modules:
         del sys.modules[mod_name]
-    import importlib.util, pathlib
+    import importlib.util
+    import pathlib
     spec = importlib.util.spec_from_file_location(
         mod_name,
         pathlib.Path(__file__).parents[3]
@@ -35,7 +34,7 @@ def _load_migration():
 
 
 # ---------------------------------------------------------------------------
-# Test 1 — revision IDs
+# Test 1 - revision IDs
 # ---------------------------------------------------------------------------
 
 def test_migration_revision_ids():
@@ -45,7 +44,7 @@ def test_migration_revision_ids():
 
 
 # ---------------------------------------------------------------------------
-# Test 2 — upgrade creates enum idempotently
+# Test 2 - upgrade creates enum idempotently
 # ---------------------------------------------------------------------------
 
 def test_upgrade_creates_enum_idempotently():
@@ -63,7 +62,7 @@ def test_upgrade_creates_enum_idempotently():
 
 
 # ---------------------------------------------------------------------------
-# Test 3 — upgrade adds archive_policy column
+# Test 3 - upgrade adds archive_policy column
 # ---------------------------------------------------------------------------
 
 def test_upgrade_adds_archive_policy_column():
@@ -95,7 +94,7 @@ def test_upgrade_adds_archive_policy_column():
 
 
 # ---------------------------------------------------------------------------
-# Test 4 — upgrade adds silent_failure_count column
+# Test 4 - upgrade adds silent_failure_count column
 # ---------------------------------------------------------------------------
 
 def test_upgrade_adds_silent_failure_count_column():
@@ -123,7 +122,7 @@ def test_upgrade_adds_silent_failure_count_column():
 
 
 # ---------------------------------------------------------------------------
-# Test 5 — downgrade drops columns in reverse order then drops enum type
+# Test 5 - downgrade drops columns in reverse order then drops enum type
 # ---------------------------------------------------------------------------
 
 def test_downgrade_drops_columns_in_reverse_order():
@@ -164,7 +163,7 @@ def test_downgrade_drops_columns_in_reverse_order():
 
 
 # ---------------------------------------------------------------------------
-# Test 6 — Source ORM exposes archive_policy column
+# Test 6 - Source ORM exposes archive_policy column
 # ---------------------------------------------------------------------------
 
 def test_source_orm_exposes_archive_policy_column():
@@ -179,7 +178,7 @@ def test_source_orm_exposes_archive_policy_column():
 
 
 # ---------------------------------------------------------------------------
-# Test 7 — Source ORM exposes silent_failure_count column
+# Test 7 - Source ORM exposes silent_failure_count column
 # ---------------------------------------------------------------------------
 
 def test_source_orm_exposes_silent_failure_count_column():

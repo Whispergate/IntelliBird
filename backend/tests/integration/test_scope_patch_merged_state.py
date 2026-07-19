@@ -1,6 +1,6 @@
 """UX-01 backend coverage: PATCH /api/projects/{project_id}/scope/{row_id} merged-state validation.
 
--01 — Wave 1 test scaffolding.
+-01 - Wave 1 test scaffolding.
 
 Three tests covering the merged-state invariant at projects.py:798-801:
   1. all-flags-false rejection: PATCH that would leave both intel_scope=false AND
@@ -11,7 +11,7 @@ Three tests covering the merged-state invariant at projects.py:798-801:
      intel/active state.
 
 Fixture: two_project_fixture (Wave-0 seed) provides project_a + jwt_a (Lead rank
-on project_a — Lead satisfies Contributor+ requirement for PATCH).
+on project_a - Lead satisfies Contributor+ requirement for PATCH).
 
 Auth harness: mirrors test_prod01_cross_project_leakage._patch_auth verbatim.
 """
@@ -34,7 +34,7 @@ TEST_SIGNING_KEY = "j" * 64  # matches two_project.py fixture mint key
 
 
 # ---------------------------------------------------------------------------
-# Harness helpers — mirror test_prod01_cross_project_leakage._patch_auth
+# Harness helpers - mirror test_prod01_cross_project_leakage._patch_auth
 # ---------------------------------------------------------------------------
 
 
@@ -112,7 +112,7 @@ async def test_patch_rejects_both_flags_false(
     must return 422 with a toast-friendly detail string.
 
     Setup: seed a row with intel_scope=true, active_test_scope=false.
-    Patch: {"intel_scope": False} — merged state would be both false.
+    Patch: {"intel_scope": False} - merged state would be both false.
     Expect: 422, detail contains "at least intel or active test".
 
     Backend enforcement point: projects.py:798-801 (after field-by-field apply,
@@ -154,10 +154,10 @@ async def test_patch_single_flag_succeeds(
     two_project_fixture, db_session, monkeypatch
 ):
     """PATCH that leaves intel_scope=true (while setting active_test_scope=false)
-    must return 200 — merged state is valid (intel_scope covers the invariant).
+    must return 200 - merged state is valid (intel_scope covers the invariant).
 
     Setup: seed a row with intel_scope=true, active_test_scope=true.
-    Patch: {"active_test_scope": False} — merged state: intel_scope=true, active=false.
+    Patch: {"active_test_scope": False} - merged state: intel_scope=true, active=false.
     Expect: 200, response body shows intel_scope=true.
     """
     _patch_auth(monkeypatch)

@@ -14,7 +14,6 @@ from __future__ import annotations
 import os
 import uuid
 import unittest.mock as mock
-from typing import AsyncIterator
 
 import pytest
 from fastapi import FastAPI
@@ -181,7 +180,7 @@ async def test_header_ignored_when_claim_is_blue():
 
     with mock.patch("app.routers.events.build_events_query", side_effect=spy_build):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-            # Send a spoofed X-Dashboard-Role: red header — must be ignored
+            # Send a spoofed X-Dashboard-Role: red header - must be ignored
             r = await c.get("/events?limit=10", headers={"X-Dashboard-Role": "red"})
 
     assert r.status_code == 200

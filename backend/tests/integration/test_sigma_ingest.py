@@ -1,11 +1,11 @@
-"""Sigma Rule Engine — integration tests (SIGMA-01, SIGMA-02, SIGMA-03)."""
+"""Sigma Rule Engine - integration tests (SIGMA-01, SIGMA-02, SIGMA-03)."""
 import inspect
 import pytest
 
 
 @pytest.mark.integration
 @pytest.mark.skip(
-    reason="requires running DB — verify manually via alembic upgrade head + psql"
+    reason="requires running DB - verify manually via alembic upgrade head + psql"
 )
 def test_sigma_rule_stored_in_db():
     """SIGMA-01: ORM model for sigma_rules table saves and retrieves a rule from DB correctly."""
@@ -27,7 +27,7 @@ def test_ingest_hook_calls_evaluate_sigma_rules():
 
 @pytest.mark.integration
 @pytest.mark.skip(
-    reason="requires running API + DB — verify with: POST /api/admin/sigma-rules/test"
+    reason="requires running API + DB - verify with: POST /api/admin/sigma-rules/test"
 )
 def test_test_endpoint_returns_match_count():
     """SIGMA-03: POST /api/admin/sigma-rules/test returns {match_count, matched_event_ids} for a known-matching rule."""

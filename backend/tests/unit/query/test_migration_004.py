@@ -1,4 +1,4 @@
-"""Tests for Alembic migration 004 — FIL-04 (filter_presets), FIL-05 (search_tsv + GIN).
+"""Tests for Alembic migration 004 - FIL-04 (filter_presets), FIL-05 (search_tsv + GIN).
 
 Uses importlib.util to load the migration file by path so the leading-digit
 filename (004_fts_and_presets.py) does not break Python import.
@@ -88,7 +88,7 @@ def test_upgrade_creates_filter_presets_table() -> None:
 
 
 def test_downgrade_drops_in_reverse_order() -> None:
-    """downgrade must DROP table, index, and column — all three present."""
+    """downgrade must DROP table, index, and column - all three present."""
     mod = _load_migration()
     src = inspect.getsource(mod.downgrade)
     assert "DROP TABLE IF EXISTS filter_presets" in src, (

@@ -1,13 +1,13 @@
-"""ORM models for Case Management — CASE-01, CASE-02.
+"""ORM models for Case Management - CASE-01, CASE-02.
 
 Tables: cases, case_events, case_iocs
 ENUMs: case_status_enum, case_severity_enum (created in migration 032_cases)
 
 Design notes:
-  * CaseEvent.event_id is a Soft FK — events is a TimescaleDB hypertable;
+  * CaseEvent.event_id is a Soft FK - events is a TimescaleDB hypertable;
     real FK constraints are not supported against hypertables. Same precedent
     as CampaignEvent.event_id (actors.py) and IOCEventLink.event_id (iocs.py).
-  * CaseIOC.ioc_id is a Hard FK — iocs is a regular PostgreSQL table; FK constraint
+  * CaseIOC.ioc_id is a Hard FK - iocs is a regular PostgreSQL table; FK constraint
     is safe and enforces referential integrity.
 """
 from __future__ import annotations
@@ -86,7 +86,7 @@ class Case(Base):
 class CaseEvent(Base):
     """M2M junction: case ↔ event.
 
-    event_id is a Soft FK — events is a TimescaleDB hypertable and cannot carry
+    event_id is a Soft FK - events is a TimescaleDB hypertable and cannot carry
     real FK constraints. Same pattern as CampaignEvent and IOCEventLink.
     """
 
@@ -97,7 +97,7 @@ class CaseEvent(Base):
         ForeignKey("cases.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    # Soft FK — NO ForeignKey("events.id") — events is a TimescaleDB hypertable.
+    # Soft FK - NO ForeignKey("events.id") - events is a TimescaleDB hypertable.
     event_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True
     )
@@ -112,7 +112,7 @@ class CaseEvent(Base):
 class CaseIOC(Base):
     """M2M junction: case ↔ ioc.
 
-    ioc_id is a Hard FK — iocs is a regular PostgreSQL table (not a hypertable),
+    ioc_id is a Hard FK - iocs is a regular PostgreSQL table (not a hypertable),
     so a FK constraint is safe and enforces referential integrity.
     """
 
@@ -123,7 +123,7 @@ class CaseIOC(Base):
         ForeignKey("cases.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    # Hard FK — iocs is NOT a hypertable; ForeignKey() constraint is safe.
+    # Hard FK - iocs is NOT a hypertable; ForeignKey() constraint is safe.
     ioc_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("iocs.id", ondelete="CASCADE"),

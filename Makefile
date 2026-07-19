@@ -28,14 +28,14 @@ audit-deps:
 	cd backend && uv export --no-dev --format requirements-txt > /tmp/intellibird-audit-reqs.txt && uv run pip-audit -r /tmp/intellibird-audit-reqs.txt --desc
 
 # ------------------------------------------------------------------------------
-# Semgrep template security audit — TIBER-03
+# Semgrep template security audit - TIBER-03
 # ------------------------------------------------------------------------------
 # Scans TIBER service layer and templates for:
 #   - template-unescaped-with-safe: | safe filter banned in tiber/*.j2 templates
 #   - render-template-string: render_template_string / jinja2.Template($X) banned
 #
 # Exits non-zero if any rule matches (CI-safe: add to .github/workflows/*.yml).
-# Will exit 0 (pass clean) before any TIBER templates or service code exist —
+# Will exit 0 (pass clean) before any TIBER templates or service code exist -
 # rules only fire on matching files that actually contain the banned patterns.
 #
 # Requires semgrep >= 1.0. Install: pipx install semgrep
@@ -53,7 +53,7 @@ audit-deps:
 #   3. Fix any | safe usages before committing
 
 audit-templates:
-	@which semgrep > /dev/null 2>&1 || (echo "semgrep not found — install with: pipx install semgrep" && exit 1)
+	@which semgrep > /dev/null 2>&1 || (echo "semgrep not found - install with: pipx install semgrep" && exit 1)
 	semgrep --config .semgrep.yml \
 	  backend/app/services/tiber/ \
 	  backend/app/routers/tiber.py \
@@ -64,7 +64,7 @@ audit-templates:
 	@echo "==> audit-templates: semgrep scan complete."
 
 # ------------------------------------------------------------------------------
-# Aggregate audit target — runs all security audit checks
+# Aggregate audit target - runs all security audit checks
 # ------------------------------------------------------------------------------
 
 audit-all: audit-deps audit-templates test-pollution-check
@@ -73,7 +73,7 @@ audit-all: audit-deps audit-templates test-pollution-check
 # ------------------------------------------------------------------------------
 # cross-file pollution regression gate
 # ------------------------------------------------------------------------------
-# Runs the @pytest.mark.cross_file_pollution marker bucket — tests that previously
+# Runs the @pytest.mark.cross_file_pollution marker bucket - tests that previously
 # failed only in combined runs due to fixture pollution.
 #
 # Manual usage:
@@ -87,7 +87,7 @@ test-pollution-check: ## run cross-file pollution regression bucket
 	cd backend && uv run pytest -m cross_file_pollution -v --tb=short
 
 # ------------------------------------------------------------------------------
-# OpenAPI codegen drift gate — INFRA-05
+# OpenAPI codegen drift gate - INFRA-05
 # ------------------------------------------------------------------------------
 # Spins up api + db + redis, waits for healthz, regenerates the TypeScript client
 # from the live schema, and fails if the committed generated file differs.

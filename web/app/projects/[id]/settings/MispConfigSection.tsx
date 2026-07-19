@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MispConfigSection — MISP-01.
+ * MispConfigSection - MISP-01.
  *
  * MISP integration configuration card for Project Settings.
  * Lead+ gated (caller passes isLead prop).
@@ -98,7 +98,7 @@ export function MispConfigSection({ projectId, isLead }: MispConfigSectionProps)
               ssl_verify: sslVerify,
             });
       setConfig(saved);
-      setApiKey(""); // clear after save — backend stores encrypted copy
+      setApiKey(""); // clear after save - backend stores encrypted copy
     } catch (err) {
       console.error("MISP save failed", err);
     } finally {
@@ -249,7 +249,7 @@ export function MispConfigSection({ projectId, isLead }: MispConfigSectionProps)
             }`}
           >
             {testResult.ok
-              ? `Connected — MISP ${testResult.version ?? ""}`
+              ? `Connected - MISP ${testResult.version ?? ""}`
               : `Failed: ${testResult.error}`}
           </div>
         )}

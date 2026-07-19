@@ -1,4 +1,4 @@
-"""_persist_event geo wiring tests —-02 (MAP-05).
+"""_persist_event geo wiring tests --02 (MAP-05).
 
 Tests verify that _persist_event resolves geo coordinates from raw_stix
 when the worker has not pre-populated them, and that pre-existing coords
@@ -14,7 +14,7 @@ import pytest
 
 
 # ---------------------------------------------------------------------------
-# Helper — minimal valid row dict (no geo columns set)
+# Helper - minimal valid row dict (no geo columns set)
 # ---------------------------------------------------------------------------
 
 def _make_row(*, raw_stix=None, geo_lat=None, geo_lon=None):
@@ -56,9 +56,7 @@ def test_persist_event_populates_geo_from_stix_location():
     # Capture the values dict passed to pg_insert.values
     captured_values: dict = {}
 
-    original_pg_insert = None
 
-    from sqlalchemy.dialects.postgresql import insert as real_pg_insert
 
     def fake_pg_insert(table):
         stmt_mock = MagicMock()
@@ -102,7 +100,6 @@ def test_persist_event_preserves_existing_geo():
     def _should_not_be_called(*_args, **_kwargs):
         raise AssertionError("resolve_geo was called despite pre-populated geo columns")
 
-    from sqlalchemy.dialects.postgresql import insert as real_pg_insert
 
     def fake_pg_insert(table):
         stmt_mock = MagicMock()
@@ -121,7 +118,7 @@ def test_persist_event_preserves_existing_geo():
             from app.ingest import normalise
             # Reset module-level import cache to force re-evaluation
             normalise._persist_event(session, row)
-    # No AssertionError raised — test passes
+    # No AssertionError raised - test passes
 
 
 def test_persist_event_none_raw_stix():

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScenariosSection — Section 3e: Threat Scenarios.
+ * ScenariosSection - Section 3e: Threat Scenarios.
  * /07. UI-SPEC §3e.
  *
  * Auto-populated + manual. Scenario selection indicator + ScenarioCard grid.
@@ -62,7 +62,7 @@ export function ScenariosSection({
         projectId,
         reportId: report.id,
       });
-      // Add to list — stepper opens via ScenarioCard immediately
+      // Add to list - stepper opens via ScenarioCard immediately
       onScenariosChange([...scenarios, scenario]);
     } catch (e) {
       toast.error(
@@ -120,7 +120,7 @@ export function ScenariosSection({
           }
         >
           {selectedCount >= 3
-            ? "≥3 required — met"
+            ? "≥3 required - met"
             : `${3 - selectedCount} more required`}
         </Badge>
       </div>
@@ -148,7 +148,7 @@ export function ScenariosSection({
         </div>
       )}
 
-      {/* Refresh diff modal — Surface 5 */}
+      {/* Refresh diff modal - Surface 5 */}
       {!readOnly && (
         <RefreshDiffModal
           open={refreshModalOpen}

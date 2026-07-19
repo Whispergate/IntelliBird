@@ -12,7 +12,7 @@ export default function RootPage() {
       const last = window.localStorage.getItem("intellibird:last-role");
       if (last === "red" || last === "blue") target = last;
     } catch {
-      // localStorage unavailable (Safari private mode, etc.) — default to blue
+      // localStorage unavailable (Safari private mode, etc.) - default to blue
     }
     router.replace(`/${target}`);
   }, [router]);

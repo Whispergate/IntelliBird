@@ -11,7 +11,7 @@ type Props = {
 
 /**
  * Custom multi-select for filter presets.
- * No ScrollArea shadcn component — uses plain div + overflow-y-auto.
+ * No ScrollArea shadcn component - uses plain div + overflow-y-auto.
  * Renders three states: loading, empty, or a scrollable checkbox list.
 */
 export function PresetMultiSelect({ value, options, onChange, loading }: Props) {
@@ -24,7 +24,7 @@ export function PresetMultiSelect({ value, options, onChange, loading }: Props) 
   if (options.length === 0) {
     return (
       <span className="text-xs text-muted-foreground">
-        No presets yet — save a filter preset on the Events page first.
+        No presets yet - save a filter preset on the Events page first.
       </span>
     );
   }

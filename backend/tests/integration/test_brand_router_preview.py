@@ -1,4 +1,4 @@
-"""Integration tests for the brand router — preview endpoint + Redis caching (12-06)."""
+"""Integration tests for the brand router - preview endpoint + Redis caching (12-06)."""
 from __future__ import annotations
 
 import uuid
@@ -69,7 +69,7 @@ async def _seed_project(db_session, admin_user_id: str) -> uuid.UUID:
 
 
 class _FakeRedis:
-    """Minimal async Redis stand-in — counts get/setex calls for cache-behaviour asserts."""
+    """Minimal async Redis stand-in - counts get/setex calls for cache-behaviour asserts."""
 
     def __init__(self) -> None:
         self.store: dict[str, str] = {}
@@ -134,7 +134,7 @@ async def test_preview_endpoint_uses_cache_on_second_call(brand_app, db_session,
             f"/api/projects/{pid}/brand/preview?term=cachetest&term_type=keyword"
         )
         assert r2.status_code == 200
-        # second call should hit cache — no new SETEX
+        # second call should hit cache - no new SETEX
         assert fake.setexes == 1
         assert r1.json() == r2.json()
 

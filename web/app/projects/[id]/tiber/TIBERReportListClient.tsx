@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * TIBERReportListClient — Surface 1 TIBER reports list.
+ * TIBERReportListClient - Surface 1 TIBER reports list.
  * UI-SPEC §Surface 1.
  *
  * Renders:
@@ -263,8 +263,8 @@ export function TIBERReportListClient({ projectId }: TIBERReportListClientProps)
                 report.engagement_window_start && report.engagement_window_end && report.in_scope_assets.length > 0,
                 !!report.aia_summary_text && report.aia_recommendations.length > 0,
                 report.tl_top_events.length > 0 && !!report.tl_analyst_narrative,
-                false, // actor profiles — not in this response (fetched separately)
-                false, // scenarios — not in this response
+                false, // actor profiles - not in this response (fetched separately)
+                false, // scenarios - not in this response
                 !!report.scenario_x_narrative,
               ].filter(Boolean).length;
 

@@ -1,4 +1,4 @@
-"""024 — enrichment_providers + ioc_enrichments tables.
+"""024 - enrichment_providers + ioc_enrichments tables.
 
 ENRICH-01, ENRICH-04.
 
@@ -6,7 +6,7 @@ enrichment_providers: per-project (or global, project_id NULL) API key config
   for reputation providers. UNIQUE (project_id, provider) NULLS NOT DISTINCT.
 
 ioc_enrichments: one row per (ioc_id, provider) storing raw API response +
-  normalised verdict. UNIQUE (ioc_id, provider) — upserted on re-enrichment.
+  normalised verdict. UNIQUE (ioc_id, provider) - upserted on re-enrichment.
 
 ioc_verdict ENUM: clean | suspicious | malicious | unknown.
 """

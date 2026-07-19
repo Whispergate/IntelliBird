@@ -1,7 +1,7 @@
 /**
- * /projects/[id]/brand — Brand Protection Dashboard page.
+ * /projects/[id]/brand - Brand Protection Dashboard page.
  *
- * Server component wrapper — hands project id to BrandDashboardClient which
+ * Server component wrapper - hands project id to BrandDashboardClient which
  * owns filter state, data fetching, banner gating, and table rendering.
  * Mirrors EASM page.tsx shape exactly.
  *

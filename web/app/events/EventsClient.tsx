@@ -39,7 +39,7 @@ import { EventsTable } from "./components/EventsTable";
 import { AttachToCaseModal } from "./components/AttachToCaseModal";
 
 // ---------------------------------------------------------------------------
-// BrandProvenanceBadge — rendered in EventsTable when event.source_type === 'brand-monitor'.
+// BrandProvenanceBadge - rendered in EventsTable when event.source_type === 'brand-monitor'.
 //
 // Per 12-UI-SPEC §Surface 7:
 //   - Height 16px (h-4), horizontal padding 8px (px-2)
@@ -49,19 +49,19 @@ import { AttachToCaseModal } from "./components/AttachToCaseModal";
 //       * brand-match:ct_log   → bg-teal-900/40  text-teal-300
 //       * brand-match:fts      → bg-muted        text-muted-foreground
 //       * fallback             → bg-accent/20    text-[var(--brand-signal)]
-//   - Tooltip: "Brand match — {match_source} — /projects/{project_id}/brand"
+//   - Tooltip: "Brand match - {match_source} - /projects/{project_id}/brand"
 //     match_source extracted from first brand-match:* tag
 //     project_id extracted from project:<uuid> tag
 //
 // Co-located here (not in EventsTable.tsx) to keep Surface 7 logic adjacent to
-// the include_brand_match toggle state — mirrors the BBOT precedent where all
+// the include_brand_match toggle state - mirrors the BBOT precedent where all
 // provenance logic lives near the feed-level Switch owner.
 // ---------------------------------------------------------------------------
 export function BrandProvenanceBadge({ event }: { event: EventItem }) {
   // Guard: only render for source_type === 'brand-monitor'.
   if (event.source_type !== "brand-monitor") return null;
 
-  // Extract first brand-match:<source> tag — drives both colour + tooltip text.
+  // Extract first brand-match:<source> tag - drives both colour + tooltip text.
   const matchTag = event.tags.find((t) => t.startsWith("brand-match:"));
   const matchSource = matchTag ? matchTag.slice("brand-match:".length) : "unknown";
 
@@ -80,7 +80,7 @@ export function BrandProvenanceBadge({ event }: { event: EventItem }) {
           ? "bg-muted text-muted-foreground"
           : "bg-accent/20 text-[var(--brand-signal)]";
 
-  const tooltip = `Brand match — ${matchSource} — /projects/${projectId}/brand`;
+  const tooltip = `Brand match - ${matchSource} - /projects/${projectId}/brand`;
 
   return (
     <TooltipProvider>
@@ -99,7 +99,7 @@ export function BrandProvenanceBadge({ event }: { event: EventItem }) {
 }
 
 // ---------------------------------------------------------------------------
-// Sort value helpers — maps between Select value (hyphens) and URL param (underscores)
+// Sort value helpers - maps between Select value (hyphens) and URL param (underscores)
 // ---------------------------------------------------------------------------
 
 type SortValue = "observed_desc" | "score_desc" | "score_asc";
@@ -125,13 +125,13 @@ const SORT_TO_URL: Record<SortValue, string> = {
 function parseFiltersFromSearchParams(sp: URLSearchParams): EventsQuery {
   const out: EventsQuery = {};
 
-  // preset JSON blob — merged in first so explicit params can override
+  // preset JSON blob - merged in first so explicit params can override
   const preset = sp.get("preset");
   if (preset) {
     try {
       Object.assign(out, JSON.parse(decodeURIComponent(preset)));
     } catch {
-      // malformed preset — ignore
+      // malformed preset - ignore
     }
   }
 
@@ -206,7 +206,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
   // events in the main feed. Mirrors includeBbot placement / query-append pattern.
   const [includeBrandMatch, setIncludeBrandMatch] = useState(false);
   // Source-monitoring synthesised alerts (source_silence, volume_drift,
-  // parse_error_rate). Admin/lead-only — toggle hidden from analyst+observer.
+  // parse_error_rate). Admin/lead-only - toggle hidden from analyst+observer.
   const [includeMonitoring, setIncludeMonitoring] = useState(false);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -236,7 +236,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
     listPresets()
       .then((ps) => setPresets(ps))
       .catch(() => {
-        // presets unavailable — not fatal
+        // presets unavailable - not fatal
       });
   }, []);
 
@@ -245,13 +245,13 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
     const parsed = parseFiltersFromSearchParams(searchParams);
     setFilter(parsed);
 
-    // Parse sort from URL — default to observed_desc
+    // Parse sort from URL - default to observed_desc
     const urlSort = searchParams.get("sort") ?? "observed_desc";
     const resolvedSort: SortValue =
       (URL_TO_SORT[urlSort] as SortValue | undefined) ?? "observed_desc";
     setSortValue(resolvedSort);
 
-    // Parse tier filter from URL — comma-separated e.g. "S,A"
+    // Parse tier filter from URL - comma-separated e.g. "S,A"
     const urlTier = searchParams.get("tier");
     if (urlTier) {
       const tierSet = new Set<Tier>(
@@ -268,7 +268,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
     setLoading(true);
     setError(null);
 
-    // Build API query — include sort + tier params when set
+    // Build API query - include sort + tier params when set
     const tierParam = urlTier ?? "";
     const apiSort = urlSort !== "observed_desc" ? urlSort : undefined;
 
@@ -436,11 +436,11 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
       <div style={{ marginBottom: "1rem" }}>
         <h1 className="brand-display text-foreground">Events</h1>
         <p className="text-muted-foreground mt-1" style={{ fontSize: 16 }}>
-          All ingested intel events — filter, tag, and drill in.
+          All ingested intel events - filter, tag, and drill in.
         </p>
       </div>
 
-      {/* Quick tag filters — click to add to filter set*/}
+      {/* Quick tag filters - click to add to filter set*/}
       <div style={{ marginBottom: "0.75rem" }} className="flex flex-col gap-1">
         <span className="brand-caption text-[10px] text-muted-foreground" style={{ letterSpacing: "0.12em" }}>
           Quick filters
@@ -475,7 +475,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         </div>
       </div>
 
-      {/* Tier filter chip row — multi-select, OR semantics, URL-synced via ?tier=S,A */}
+      {/* Tier filter chip row - multi-select, OR semantics, URL-synced via ?tier=S,A */}
       <div style={{ marginBottom: "1.5rem" }} className="flex flex-col gap-1" data-testid="tier-filter-row">
         <span className="brand-caption text-muted-foreground" style={{ letterSpacing: "0.12em" }}>
           Tier
@@ -557,7 +557,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
           />
         </div>
 
-        {/* Sort selector — includes score sort options per UI-SPEC §Surface 2 */}
+        {/* Sort selector - includes score sort options per UI-SPEC §Surface 2 */}
         <div style={{ width: 180 }}>
           <Select
             value={sortValue}
@@ -611,7 +611,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         )}
       </div>
 
-      {/* Multi-select toolbar — appears when ≥1 row selected */}
+      {/* Multi-select toolbar - appears when ≥1 row selected */}
       {selectedRows.size >= 1 && (
         <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/50 border border-border mb-2">
           <span className="text-sm text-muted-foreground">
@@ -635,7 +635,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         </div>
       )}
 
-      {/* include_bbot toggle — off by default; keeps main events feed clean (H-4) */}
+      {/* include_bbot toggle - off by default; keeps main events feed clean (H-4) */}
       <div className="flex items-center justify-end gap-2 mt-2 mb-2">
         <Label htmlFor="include-bbot" className="text-sm text-muted-foreground cursor-pointer">
           Include BBOT findings
@@ -647,7 +647,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         />
       </div>
 
-      {/* include_brand_match toggle — off by default; hides brand-monitor events
+      {/* include_brand_match toggle - off by default; hides brand-monitor events
           from the main feed until user opts in (BRP-05, 12-UI-SPEC §Surface 7). */}
       <div className="flex items-center justify-end gap-2 mb-4">
         <Label
@@ -663,7 +663,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         />
       </div>
 
-      {/* include_monitoring toggle — Admin/lead only.
+      {/* include_monitoring toggle - Admin/lead only.
           Synthesised source-monitoring alerts (source_silence, volume_drift,
           parse_error_rate) are noise for analysts; only ops surfaces them. */}
       {isAdmin && (
@@ -764,7 +764,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         />
       )}
 
-      {/* Attach to Case modal — opens when "Attach to Case" button clicked */}
+      {/* Attach to Case modal - opens when "Attach to Case" button clicked */}
       <AttachToCaseModal
         projectId={projectId ?? ""}
         eventIds={Array.from(selectedRows)}
@@ -773,7 +773,7 @@ export function EventsClient({ projectId, projectName, basePath }: EventsClientP
         onSuccess={() => setSelectedRows(new Set())}
       />
 
-      {/* Event detail drawer — unconditional mount; opens on ?event=<id>*/}
+      {/* Event detail drawer - unconditional mount; opens on ?event=<id>*/}
       <EventDetailDrawer />
     </RoleProvider>
   );

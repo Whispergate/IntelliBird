@@ -326,7 +326,7 @@ export default function AuditClient({ initialData }: AuditClientProps) {
                           {row.user_sub.length > 24 ? row.user_sub.slice(0, 24) + "…" : row.user_sub}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
 
@@ -355,7 +355,7 @@ export default function AuditClient({ initialData }: AuditClientProps) {
                             : row.resource_id}
                         </button>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
 
@@ -378,7 +378,7 @@ export default function AuditClient({ initialData }: AuditClientProps) {
                           {expandedRowId === row.id ? "Hide diff" : "View diff"}
                         </button>
                       ) : (
-                        <span className="text-muted-foreground">—</span>
+                        <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                   </TableRow>

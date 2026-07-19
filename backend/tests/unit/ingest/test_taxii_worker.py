@@ -1,4 +1,4 @@
-"""TAXII/STIX parser + TLP resolver + worker tests — INGT-01..04.
+"""TAXII/STIX parser + TLP resolver + worker tests - INGT-01..04.
 
 Parser-level (Task 1): pure parse_stix_bundle + resolve_tlp_marking +
 normalise_stix_object against the captured taxii_mitre_sample.json fixture.
@@ -58,7 +58,7 @@ def test_parse_bundle_allows_custom() -> None:
         ],
     }
     objs = parse_stix_bundle(bundle)
-    assert objs  # Either a list of dicts or a list of stix2 objects — truthy
+    assert objs  # Either a list of dicts or a list of stix2 objects - truthy
     assert len(objs) == 1
 
 
@@ -269,7 +269,7 @@ def test_poll_taxii_first_poll_has_no_added_after(monkeypatch: pytest.MonkeyPatc
     coll = _FakeCollection(pages=[{"objects": [], "more": False}])
     server = _FakeServer([_FakeApiRoot([coll])])
     sid = uuid.uuid4()
-    calls = _install_taxii_mocks(monkeypatch, server=server,
+    _install_taxii_mocks(monkeypatch, server=server,
                                  source_row={"id": sid, "url": "http://x",
                                              "credentials_enc": None,
                                              "last_cursor": None})
@@ -311,7 +311,7 @@ def test_poll_taxii_loops_pagination(monkeypatch: pytest.MonkeyPatch):
 
 
 def test_poll_taxii_cursor_advanced_after_all_pages(monkeypatch: pytest.MonkeyPatch):
-    """Cursor advance MUST happen after all persist calls —."""
+    """Cursor advance MUST happen after all persist calls -."""
     from app.workers import taxii as taxii_module
     page1_obj = _fixture_objects()[0]
     page2_obj = _fixture_objects()[1]
@@ -342,7 +342,7 @@ def test_poll_taxii_cursor_advanced_after_all_pages(monkeypatch: pytest.MonkeyPa
 
     taxii_module.poll_taxii_impl(str(sid))
     # Must persist both objects BEFORE cursor advance
-    first_persist = call_log.index("persist")
+    call_log.index("persist")
     last_persist = len(call_log) - 1 - list(reversed(call_log)).index("persist")
     cursor_idx = call_log.index("cursor_advance")
     assert cursor_idx > last_persist

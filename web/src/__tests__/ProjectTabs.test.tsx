@@ -1,5 +1,5 @@
 // Owned by: 12.1-06-PLAN
-// ProjectTabs — assert 16-tab strip with Assets at position 15 (between EASM and Brand).
+// ProjectTabs - assert 16-tab strip with Assets at position 15 (between EASM and Brand).
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";

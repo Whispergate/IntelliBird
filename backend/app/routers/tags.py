@@ -1,4 +1,4 @@
-"""PATCH /api/events/{event_id}/tags — FIL-03."""
+"""PATCH /api/events/{event_id}/tags - FIL-03."""
 from __future__ import annotations
 
 import uuid
@@ -28,16 +28,16 @@ async def patch_event_tags(
  - Any invalid tag (after lowercasing) in add OR remove → 422 (whole request rejected).
  - Re-adding an existing tag is a no-op; removing an absent tag is a no-op (idempotent).
  - Response: sorted tag array after the operation.
- - 404 if event_id not found (visibility not gated in M1 — auth deferred to M2).
+ - 404 if event_id not found (visibility not gated in M1 - auth deferred to M2).
 """
-    # Composite-PK aware lookup — NOT session.get (: composite PK on hypertable)
+    # Composite-PK aware lookup - NOT session.get (: composite PK on hypertable)
     row = (
         await db.execute(select(Event).where(Event.id == event_id))
     ).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="event not found")
 
-    # Read-modify-write: COALESCE(tags, '{}') — handle NULL tags column
+    # Read-modify-write: COALESCE(tags, '{}') - handle NULL tags column
     current: set[str] = set(row.tags or [])
     add_set: set[str] = set(body.add)
     remove_set: set[str] = set(body.remove)
@@ -48,7 +48,7 @@ async def patch_event_tags(
 
     new_tags = sorted((current - remove_set) | add_set)
 
-    # Atomic UPDATE via raw SQL — SQLAlchemy ARRAY assignment has dialect quirks with asyncpg
+    # Atomic UPDATE via raw SQL - SQLAlchemy ARRAY assignment has dialect quirks with asyncpg
     await db.execute(
         text("UPDATE events SET tags = :tags WHERE id = :eid"),
         {"tags": new_tags, "eid": str(event_id)},

@@ -1,4 +1,4 @@
-"""Integration: FTS via /api/events?free_text=... — FIL-05.
+"""Integration: FTS via /api/events?free_text=... - FIL-05.
 
 Uses the same testcontainers + alembic pattern as test_events_api.py.
 Container spins up once per module; client fixture re-seeds per test.
@@ -17,8 +17,6 @@ from sqlalchemy import make_url
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from tests.fixtures.events_seed import (
-    SOURCE_NVD,
-    SOURCE_RSS,
     SOURCE_TAXII,
     seed_50_events,
 )
@@ -80,7 +78,7 @@ async def fts_client(live_db_fts):
     engine = create_async_engine(asyncpg_url, pool_pre_ping=True, future=True)
     factory = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
-    # Seed 50 events — idempotent (truncates first)
+    # Seed 50 events - idempotent (truncates first)
     async with factory() as session:
         await seed_50_events(session)
 
@@ -164,7 +162,7 @@ async def test_fts_visibility_header_has_no_effect(fts_client):
     )
     assert r_red.status_code == 200
     body = r_red.json()
-    # Header is ignored — items are returned regardless of visibility bucket.
+    # Header is ignored - items are returned regardless of visibility bucket.
     assert isinstance(body["items"], list)
 
 

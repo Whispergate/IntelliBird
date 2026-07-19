@@ -1,9 +1,9 @@
-"""Cross-project compare service — PRJ-06.
+"""Cross-project compare service - PRJ-06.
 
-Two-project comparison only (not N-project Venn — deferred to v2.1 per CONTEXT.md).
+Two-project comparison only (not N-project Venn - deferred to v2.1 per CONTEXT.md).
 Returns three independent shared-entity lists capped at 500 rows each. Every
 panel enforces scope-intersection via `build_scope_predicate(...)` composed into
-the per-project CTE — there is no divergence in scope semantics across the three
+the per-project CTE - there is no divergence in scope semantics across the three
 compare surfaces.
 
 Locked decisions (CONTEXT.md §PRJ-06, iter-1 revisions):
@@ -40,7 +40,7 @@ class SharedIOC(TypedDict):
 
 
 # ---------------------------------------------------------------------------
-# shared_actors — threat-actor + intrusion-set name intersection
+# shared_actors - threat-actor + intrusion-set name intersection
 # ---------------------------------------------------------------------------
 
 
@@ -52,7 +52,7 @@ async def shared_actors(
     """Return lowercased actor names present in BOTH projects' events.
 
     Scope-intersection: both sides are filtered by `build_scope_predicate(...)`
-    composed from each project's intel_scope=True rows — same semantics as
+    composed from each project's intel_scope=True rows - same semantics as
     shared_techniques / shared_iocs.
     """
     pred_a = build_scope_predicate(await fetch_scope_rows_intel(session, project_a))
@@ -90,7 +90,7 @@ async def shared_actors(
 
 
 # ---------------------------------------------------------------------------
-# shared_techniques — ATT&CK technique id intersection (via tag JOIN events)
+# shared_techniques - ATT&CK technique id intersection (via tag JOIN events)
 # ---------------------------------------------------------------------------
 
 
@@ -104,7 +104,7 @@ async def shared_techniques(
     Uses a cross-table JOIN: attack_technique_tags -> events (via event_id) so
     per-project scope predicates apply. attack_technique_tags.event_id has NO
     foreign key to events (TimescaleDB hypertable limitation) so the JOIN is
-    app-level — same pattern as cve_details.
+    app-level - same pattern as cve_details.
     """
     pred_a = build_scope_predicate(await fetch_scope_rows_intel(session, project_a))
     pred_b = build_scope_predicate(await fetch_scope_rows_intel(session, project_b))
@@ -136,7 +136,7 @@ async def shared_techniques(
 
 
 # ---------------------------------------------------------------------------
-# shared_iocs — ip/domain/hash patterns extracted from raw_stix.objects[*].pattern
+# shared_iocs - ip/domain/hash patterns extracted from raw_stix.objects[*].pattern
 # ---------------------------------------------------------------------------
 #
 # STIX indicators live as text patterns inside raw_stix.objects[*].pattern:
@@ -145,17 +145,17 @@ async def shared_techniques(
 #   [file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']
 #
 # enrichment does NOT denormalise indicators into a dedicated column or
-# flat array — extraction is via jsonb_path_query_array + regex substring at
+# flat array - extraction is via jsonb_path_query_array + regex substring at
 # query time. Same MEDIUM-confidence tradeoff as project_scope._clause_domain
 # / _clause_ip_range; enrichment may refactor.
 #
 # Scope-intersection: each kind runs a full pred_a / pred_b guarded subquery
-# pair so the semantics match shared_actors + shared_techniques — iter-1 revision
+# pair so the semantics match shared_actors + shared_techniques - iter-1 revision
 # closes the "IOC panel silently skipped scope predicate" gap.
 
 # Python-side regex patterns for IOC extraction. Single quotes here (not doubled)
 # because the raw_stix JSONB values read out via ->> as actual strings with
-# real single quotes — we're extracting in Python, not via PG's substring(regex).
+# real single quotes - we're extracting in Python, not via PG's substring(regex).
 _IOC_KIND_PATTERNS: list[tuple[Literal["ip", "domain", "hash"], re.Pattern[str]]] = [
     ("ip", re.compile(r"ipv4-addr:value\s*=\s*'([^']+)'")),
     ("domain", re.compile(r"domain-name:value\s*=\s*'([^']+)'")),
@@ -173,7 +173,7 @@ async def _scoped_raw_stix_rows(
     Python-side extraction: we fetch matching events' raw_stix, then extract
     IOC values per-kind via regex in shared_iocs. This trades a larger result
     set over the wire (COMPARE_CAP bounds the output but all matching rows
-    come back pre-filter) for a much simpler SQL shape — jsonb_path_query_array
+    come back pre-filter) for a much simpler SQL shape - jsonb_path_query_array
     requires a jsonpath-typed second argument, which is awkward to bind safely
     from the SA2 text() / literal_column() path. Scope-predicate enforcement
     stays on the SQL side where it belongs.
@@ -196,7 +196,7 @@ def _extract_iocs(
     """Walk each raw_stix doc and extract IOC literals of one kind.
 
     raw_stix may be shaped either as a single STIX object (has 'pattern' directly)
-    or a bundle-style ({"objects": [{"pattern": "..."}, ...]}). We handle both —
+    or a bundle-style ({"objects": [{"pattern": "..."}, ...]}). We handle both -
     the real data ingests is a mix.
     """
     seen: set[str] = set()
@@ -227,7 +227,7 @@ async def shared_iocs(
 
     Scope-intersection: pred_a + pred_b composed via build_scope_predicate are
     applied at the SQL layer when fetching raw_stix rows for each project
-    (symmetric with shared_actors + shared_techniques — all three panels honour
+    (symmetric with shared_actors + shared_techniques - all three panels honour
     scope_predicate equally). Per-kind regex extraction then runs in Python
     over the scope-matching raw_stix docs; intersections are computed as set
     operations. Per-kind results sorted + capped at COMPARE_CAP; total result

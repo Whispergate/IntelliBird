@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScanLaunchDialog — (UI-SPEC §Surface 4).
+ * ScanLaunchDialog - (UI-SPEC §Surface 4).
  *
  * Shadcn Dialog with:
  *   - Mode RadioGroup (Passive default / Active gated)
@@ -48,7 +48,7 @@ interface ScanLaunchDialogProps {
   projectId: string;
   isOpen: boolean;
   onClose: () => void;
-  /** Project gate data — active_scans_authorised + active_auth_confirmed_at */
+  /** Project gate data - active_scans_authorised + active_auth_confirmed_at */
   project: ProjectGateData | null;
   /** True when the current user has Lead or global Admin authority */
   userCanLaunchActive: boolean;
@@ -338,7 +338,7 @@ export function ScanLaunchDialog({
             {/* Shodan optional note */}
             {hasShodan && (
               <p className="text-xs text-muted-foreground leading-[1.5]">
-                Shodan API key optional — enables shodan_dns. Without it,
+                Shodan API key optional - enables shodan_dns. Without it,
                 shodan_dns is skipped and the scan continues.
               </p>
             )}

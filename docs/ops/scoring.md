@@ -16,7 +16,7 @@ The composite score is a weighted sum of four signals:
 | Relevance        | 15            | Tag intersection with project scope (0.0 or 1.0)         |
 | **Sum**          | **100**       | Weights must always sum to 100                           |
 
-**Rationale:** The 50/20/15/15 split is a CVE-driven SOC default — CVSS carries the most weight because NVD-driven workflows treat CVSS 9.0+ as the primary signal for immediate escalation. The remaining 50 points distribute signal from feed timeliness (recency), source reliability, and project-scope relevance. This matches operator expectations from established NVD vulnerability workflows.
+**Rationale:** The 50/20/15/15 split is a CVE-driven SOC default - CVSS carries the most weight because NVD-driven workflows treat CVSS 9.0+ as the primary signal for immediate escalation. The remaining 50 points distribute signal from feed timeliness (recency), source reliability, and project-scope relevance. This matches operator expectations from established NVD vulnerability workflows.
 
 **Formula:**
 
@@ -36,7 +36,7 @@ Events without a real CVSS score receive a synthetic CVSS by feed type (see Synt
 
 ## Decay
 
-Recency uses an exponential half-life formula. The score is **computed on read**, not stored as a decaying column — the base score (`events.score`) and the scoring timestamp (`events.scored_at`) are stored at ingest, and the decayed value is projected at query time.
+Recency uses an exponential half-life formula. The score is **computed on read**, not stored as a decaying column - the base score (`events.score`) and the scoring timestamp (`events.scored_at`) are stored at ingest, and the decayed value is projected at query time.
 
 **Half-life: 14 days** (default)
 
@@ -70,17 +70,17 @@ Events are classified into five tiers based on their 0–100 score:
 
 | Tier | Score range | Meaning                                    |
 |------|-------------|--------------------------------------------|
-| S    | ≥ 90        | Critical — immediate action required       |
-| A    | 75–89       | High — prioritise in next review           |
-| B    | 55–74       | Medium — review within standard cycle      |
-| C    | 30–54       | Low — monitor, defer if resources limited  |
-| D    | < 30        | Informational — background signal          |
+| S    | ≥ 90        | Critical - immediate action required       |
+| A    | 75–89       | High - prioritise in next review           |
+| B    | 55–74       | Medium - review within standard cycle      |
+| C    | 30–54       | Low - monitor, defer if resources limited  |
+| D    | < 30        | Informational - background signal          |
 
-The S tier is intentionally rare — only events with CVSS 9.0+ that are fresh (< 2–3 days old) and from a high-confidence source will typically reach S. This matches the CVSS 9.0+ escalation threshold expected by SOC operators.
+The S tier is intentionally rare - only events with CVSS 9.0+ that are fresh (< 2–3 days old) and from a high-confidence source will typically reach S. This matches the CVSS 9.0+ escalation threshold expected by SOC operators.
 
 Tier cutoffs are per-project overridable via the admin scoring configuration page (see Per-project overrides below).
 
-**NULL score handling:** Pre-migration rows in the events table have `score IS NULL`. The query layer uses `COALESCE(score, 0)` for sort and filter operations, which maps unscored events to tier D. This is documented as the authoritative NULL treatment — do not treat unscored events as tier S or A.
+**NULL score handling:** Pre-migration rows in the events table have `score IS NULL`. The query layer uses `COALESCE(score, 0)` for sort and filter operations, which maps unscored events to tier D. This is documented as the authoritative NULL treatment - do not treat unscored events as tier S or A.
 
 ---
 
@@ -92,9 +92,9 @@ Events without an explicit CVSS base score receive a synthetic value so the scor
 |-------------------------------|----------------|
 | RSS feed (general)            | 5.0            |
 | TAXII (non-CVE)               | 6.0            |
-| Brand match — low severity    | 3.0            |
-| Brand match — medium severity | 6.0            |
-| Brand match — high severity   | 8.0            |
+| Brand match - low severity    | 3.0            |
+| Brand match - medium severity | 6.0            |
+| Brand match - high severity   | 8.0            |
 
 **Priority:** If `cvss_score` is provided, it is used directly. If `brand_severity` is set and `cvss_score` is `None`, brand severity takes priority over the feed type lookup. Only when both are absent is the feed type synthetic applied.
 
@@ -108,8 +108,8 @@ Source confidence is a per-source reliability rating in [0.0, 1.0] that contribu
 |-------------------------------|-------------------|
 | TAXII feeds                   | 1.0               |
 | NVD (CVE database)            | 1.0               |
-| RSS — curated (NCSC, CISA etc.)| 0.9              |
-| RSS — general                 | 0.7               |
+| RSS - curated (NCSC, CISA etc.)| 0.9              |
+| RSS - general                 | 0.7               |
 
 These defaults are stored in `DEFAULT_SOURCE_CONFIDENCE` in `backend/app/services/scoring/defaults.py`. Operators can override confidence per source via the source detail admin UI (the `confidence` column on the `sources` table). The per-type defaults are applied at source creation time; the column is mutable so curated feeds can be elevated to 0.9+ without code changes.
 

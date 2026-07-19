@@ -1,10 +1,10 @@
-"""Unit tests for the suggestion validator gate — AI-03.
+"""Unit tests for the suggestion validator gate - AI-03.
 
 Covers:
-  test_cve_validation     — CVE-ID regex + cve_details cache lookup
-  test_attck_validation   — ATT&CK technique-ID regex + attack_techniques lookup
-  test_actor_sdo_match    — threat-actor name matched against events SDO rows
-  test_silent_reject      — mixed input; invalid candidates logged and dropped
+  test_cve_validation     - CVE-ID regex + cve_details cache lookup
+  test_attck_validation   - ATT&CK technique-ID regex + attack_techniques lookup
+  test_actor_sdo_match    - threat-actor name matched against events SDO rows
+  test_silent_reject      - mixed input; invalid candidates logged and dropped
 
 These are pure-unit tests: the SQLAlchemy async session is mocked so no DB
 container is needed.  The session mock is structured to mirror what
@@ -15,7 +15,7 @@ from __future__ import annotations
 import logging
 import os
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -83,7 +83,7 @@ async def test_cve_validation() -> None:
     assert CVE_REGEX.match("CVE-2024-1234567") is not None  # 7-digit allowed
     assert CVE_REGEX.match("CVE-24-12345") is None
     assert CVE_REGEX.match("cve-2024-12345") is None  # lowercase rejected
-    assert CVE_REGEX.match("CVE-2024-123") is None    # only 3 digits — too short
+    assert CVE_REGEX.match("CVE-2024-123") is None    # only 3 digits - too short
 
 
 # ---------------------------------------------------------------------------
@@ -116,7 +116,7 @@ async def test_attck_validation() -> None:
     assert ATTCK_REGEX.match("T1566") is not None
     assert ATTCK_REGEX.match("T1566.001") is not None
     assert ATTCK_REGEX.match("T123") is None     # too few digits
-    assert ATTCK_REGEX.match("T12345") is None   # five digits — rejected
+    assert ATTCK_REGEX.match("T12345") is None   # five digits - rejected
     assert ATTCK_REGEX.match("T1566.01") is None # sub-technique must be 3 digits
 
 
@@ -131,7 +131,7 @@ async def test_actor_sdo_match() -> None:
     assert await validate_actor_name(db_hit, "APT28") is True
     db_hit.execute.assert_awaited_once()
 
-    # Novel name with no SDO → False (strict — no relaxed fallback)
+    # Novel name with no SDO → False (strict - no relaxed fallback)
     db_miss = _mock_db(scalar_result=None)
     assert await validate_actor_name(db_miss, "FictionalActorXYZ") is False
     db_miss.execute.assert_awaited_once()
@@ -174,7 +174,7 @@ async def test_silent_reject(caplog: pytest.LogCaptureFixture) -> None:
     candidates = [
         ("cve", "CVE-2024-12345"),
         ("attack", "T1566"),
-        ("cve", "CVE-24-1"),        # malformed — dropped before DB call
+        ("cve", "CVE-24-1"),        # malformed - dropped before DB call
         ("actor", "UnknownActor"),  # no SDO → dropped
     ]
 

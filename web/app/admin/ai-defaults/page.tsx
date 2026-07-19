@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /admin/ai-defaults — Global AI provider configuration.
+ * /admin/ai-defaults - Global AI provider configuration.
  *
  * The LEGACY_PROJECT_ID (00000000-0000-0000-0000-000000000001) row in
  * `ai_providers` doubles as the system-wide default. New projects without
@@ -10,7 +10,7 @@
  * for any feed event ingested into _legacy as well as any project that has
  * not customised its provider.
  *
- * Reuses the existing per-project AIProviderCard component — same backend
+ * Reuses the existing per-project AIProviderCard component - same backend
  * endpoints (GET/PUT /api/projects/{id}/ai-provider, ollama-models dropdown,
  * test connection). Role-gated: Admin only (backend require_admin enforces).
  */

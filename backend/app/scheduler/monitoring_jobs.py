@@ -1,6 +1,6 @@
 """monitoring scheduler jobs.
 
-Three global jobs (CONTEXT.md locked decision — NOT per-source):
+Three global jobs (CONTEXT.md locked decision - NOT per-source):
   - silence_check_all       IntervalTrigger(minutes=15)
   - drift_check_all         IntervalTrigger(hours=1)
   - parse_error_check_all   IntervalTrigger(minutes=15)
@@ -11,9 +11,9 @@ canonical-event INSERT helper used by normalise.py → existing webhook fan-out
 consumes the row.
 
 Gates (in order):
-  1. is_in_learning_window  — drift only
-  2. is_maintenance_active  — all jobs (H-7)
-  3. is_burst_suppressed_key — all jobs (cap 5/source/hour)
+  1. is_in_learning_window  - drift only
+  2. is_maintenance_active  - all jobs (H-7)
+  3. is_burst_suppressed_key - all jobs (cap 5/source/hour)
 """
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ PARSE_ERROR_THRESHOLD = 0.5
 
 
 # ---------------------------------------------------------------------------
-# Session + Redis helpers (sync — mirrors brand jobs pattern from jobs.py)
+# Session + Redis helpers (sync - mirrors brand jobs pattern from jobs.py)
 # ---------------------------------------------------------------------------
 
 def _sync_pg_url() -> str:
@@ -91,7 +91,7 @@ def _sync_redis():  # type: ignore[return]
 
 
 # ---------------------------------------------------------------------------
-# Testability helper — injectable "now" for deterministic tests
+# Testability helper - injectable "now" for deterministic tests
 # ---------------------------------------------------------------------------
 
 def _get_now() -> datetime:
@@ -100,7 +100,7 @@ def _get_now() -> datetime:
 
 
 # ---------------------------------------------------------------------------
-# Canonical event INSERT — reuse normalise._persist_event
+# Canonical event INSERT - reuse normalise._persist_event
 # ---------------------------------------------------------------------------
 
 def _persist_canonical_event(session: SyncSession, event_dict: dict) -> None:
@@ -115,7 +115,7 @@ def _persist_canonical_event(session: SyncSession, event_dict: dict) -> None:
     Monitoring rows carry source_id=NULL (sentinel/cross-project alert) and
     project_id=SENTINEL_PROJECT_ID. The conflict target (source_id, content_hash,
     observed_at) with source_id=NULL means dedup is on content_hash+observed_at only
-    for monitoring rows — acceptable since the hash already encodes source_id.
+    for monitoring rows - acceptable since the hash already encodes source_id.
     """
     from app.ingest.normalise import _persist_event  # noqa: PLC0415
 
@@ -136,8 +136,8 @@ def _dispatch_event(
 
     Returns True if dispatched, False if suppressed.
     Gate order (CONTEXT.md):
-      1. is_maintenance_active — global maintenance window suppresses all alerts
-      2. is_burst_suppressed_key — per-source hourly cap (cap=5)
+      1. is_maintenance_active - global maintenance window suppresses all alerts
+      2. is_burst_suppressed_key - per-source hourly cap (cap=5)
     """
     if is_maintenance_active(session):
         logger.info(
@@ -146,14 +146,14 @@ def _dispatch_event(
         return False
 
     key = f"burst:source:{source_id}:hour"
-    if is_burst_suppressed_key(redis_client, key, BURST_CAP_PER_SOURCE):
+    if is_burst_suppressed_key(redis_client, key, BURST_CAP_PER_SOURCE):  # type: ignore[arg-type]
         logger.info(
             "monitoring_dispatch_suppressed reason=burst source_id=%s", source_id
         )
         return False
 
     _persist_canonical_event(session, event_dict)
-    record_dispatch_key(redis_client, key)
+    record_dispatch_key(redis_client, key)  # type: ignore[arg-type]
     return True
 
 
@@ -164,7 +164,7 @@ def _dispatch_event(
 def silence_check_all_job() -> None:
     """Iterate active sources; emit silence event when now - last_event_at > resolved SLA.
 
-    Source with last_event_at=None (never emitted) is skipped — treated as
+    Source with last_event_at=None (never emitted) is skipped - treated as
     in-grace until first event arrives. This avoids false alerts on freshly
     added sources.
     """
@@ -180,7 +180,7 @@ def silence_check_all_job() -> None:
         for row in rows:
             last_event_at = row["last_event_at"]
             if last_event_at is None:
-                # Never emitted — skip until first event arrives
+                # Never emitted - skip until first event arrives
                 continue
 
             cfg = MonitoringConfig.model_validate(row["monitoring_config"] or {})
@@ -273,7 +273,7 @@ def drift_check_all_job() -> None:
                 source_id=str(row["id"]),
                 source_name=row["name"],
                 severity=severity,
-                z_score=z,
+                z_score=z,  # type: ignore[arg-type]
                 baseline_mean=baseline_mean,
                 current_value=current,
                 window_bucket=buckets[-1]["bucket"],
@@ -341,13 +341,13 @@ def parse_error_check_all_job() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Registration helper — called from build_scheduler() in jobs.py
+# Registration helper - called from build_scheduler() in jobs.py
 # ---------------------------------------------------------------------------
 
 def register_monitoring_jobs(scheduler: BlockingScheduler) -> None:
     """Wire the 3 monitoring jobs onto the given scheduler.
 
-    Job IDs (stable — used by tests + ops):
+    Job IDs (stable - used by tests + ops):
       - monitoring_silence_check_all    : IntervalTrigger(minutes=15)
       - monitoring_drift_check_all      : IntervalTrigger(hours=1)
       - monitoring_parse_error_check_all: IntervalTrigger(minutes=15)

@@ -18,7 +18,7 @@ from app.schemas.projects import ScopeRowCreate, ScopeRowUpdate
 # ---------------------------------------------------------------------------
 
 def _make_create(scope_type: str, value: str, **kwargs) -> ScopeRowCreate:
-    """Convenience wrapper — intel_scope defaults to True so the at-least-one-flag
+    """Convenience wrapper - intel_scope defaults to True so the at-least-one-flag
     validator passes without needing it in every test call."""
     return ScopeRowCreate(
         scope_type=scope_type,
@@ -127,5 +127,5 @@ def test_update_no_scope_type_no_encoding():
     scope_type is None → _FQDN_SCOPE_TYPES check is False → value passes through.
     """
     row = ScopeRowUpdate(value="bücher.example")
-    # value is stored raw — no scope_type means no encoding context
+    # value is stored raw - no scope_type means no encoding context
     assert row.value == "bücher.example"

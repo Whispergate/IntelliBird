@@ -1,4 +1,4 @@
-"""Webhook dispatcher tests — unskipped by 07-03.
+"""Webhook dispatcher tests - unskipped by 07-03.
 
 Strategy: pure-function tests using in-process stubs.
 - FakeRedis: dict-backed stub that implements the Redis methods used by the dispatcher
@@ -11,13 +11,11 @@ Strategy: pure-function tests using in-process stubs.
 from __future__ import annotations
 
 import json
-import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock
 
-import pytest
 
 # ---------------------------------------------------------------------------
 # Helpers / stubs
@@ -121,17 +119,16 @@ def _make_preset(name: str = "test-preset") -> MagicMock:
 
 
 # ---------------------------------------------------------------------------
-# Import dispatcher under test (lazy, after env is set — tests don't need DB)
+# Import dispatcher under test (lazy, after env is set - tests don't need DB)
 # ---------------------------------------------------------------------------
 
-import importlib
-import os
+import os  # noqa: E402
 os.environ.setdefault("SECRET_KEY", "a" * 34)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
-import app.services.webhook_dispatcher as disp
+import app.services.webhook_dispatcher as disp  # noqa: E402
 
 
 # ===========================================================================
@@ -336,7 +333,7 @@ class TestRetry:
         # Find the execute call with the UPDATE
         assert session.execute.called
         call_args = session.execute.call_args
-        stmt = call_args[0][0]  # first positional arg is the text obj
+        call_args[0][0]  # first positional arg is the text obj
         params = call_args[0][1]  # second positional arg is the params dict
 
         # cf should be 5, disable should be True

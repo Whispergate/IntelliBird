@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AIProviderCard — Project AI Provider settings form (AI-01).
+ * AIProviderCard - Project AI Provider settings form (AI-01).
  * Surface 4 per 17-UI-SPEC.md.
  *
  * Form fields: provider Select, model_name Input, API key Input (hidden for Ollama),
@@ -83,7 +83,7 @@ export function AIProviderCard({ projectId, ollamaHealth = "unknown" }: Props) {
           credentials: "include",
         });
         if (res.status === 404) {
-          // No config yet — keep defaults
+          // No config yet - keep defaults
           return;
         }
         if (!res.ok) return;
@@ -96,7 +96,7 @@ export function AIProviderCard({ projectId, ollamaHealth = "unknown" }: Props) {
         setAiDigestEnabled(data.ai_digest_enabled);
         setDailyTokenCap(data.ai_daily_token_cap);
       } catch {
-        // Non-fatal — form keeps defaults
+        // Non-fatal - form keeps defaults
       }
     }
     loadConfig();
@@ -215,7 +215,7 @@ export function AIProviderCard({ projectId, ollamaHealth = "unknown" }: Props) {
             >
               <AlertTriangle size={16} className="mt-0.5 shrink-0" />
               <span>
-                Ollama responding slowly — phi3:mini or gemma2:2b recommended on CPU-only hosts.
+                Ollama responding slowly - phi3:mini or gemma2:2b recommended on CPU-only hosts.
               </span>
             </div>
           )}
@@ -226,7 +226,7 @@ export function AIProviderCard({ projectId, ollamaHealth = "unknown" }: Props) {
             >
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
               <span>
-                Ollama unreachable — run docker compose --profile ai up, or switch to OpenAI / Anthropic.
+                Ollama unreachable - run docker compose --profile ai up, or switch to OpenAI / Anthropic.
               </span>
             </div>
           )}
@@ -257,7 +257,7 @@ export function AIProviderCard({ projectId, ollamaHealth = "unknown" }: Props) {
             </div>
           )}
 
-          {/* API key — only for cloud providers */}
+          {/* API key - only for cloud providers */}
           {provider !== "ollama" && (
             <div>
               <Label htmlFor="ai-api-key">API key</Label>

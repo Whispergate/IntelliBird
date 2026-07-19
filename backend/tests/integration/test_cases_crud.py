@@ -1,4 +1,4 @@
-"""Integration tests for Case Management — CASE-01, CASE-02, CASE-03."""
+"""Integration tests for Case Management - CASE-01, CASE-02, CASE-03."""
 from __future__ import annotations
 
 import os
@@ -18,7 +18,7 @@ TEST_SIGNING_KEY = "j" * 64  # matches two_project.py fixture mint key
 
 
 # ---------------------------------------------------------------------------
-# Auth harness — mirrors test_prod01_cross_project_leakage._patch_auth
+# Auth harness - mirrors test_prod01_cross_project_leakage._patch_auth
 # ---------------------------------------------------------------------------
 
 
@@ -51,7 +51,7 @@ def _bearer(token: str) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# CASE-01: Case CRUD — create and retrieve a case
+# CASE-01: Case CRUD - create and retrieve a case
 # Tests POST /api/projects/{id}/cases and GET /api/projects/{id}/cases/{case_id}
 # ---------------------------------------------------------------------------
 

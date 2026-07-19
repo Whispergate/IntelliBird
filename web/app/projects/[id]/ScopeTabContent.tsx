@@ -18,7 +18,7 @@
  *   - DELETE /api/projects/{id}/scope/{row_id} → deleteScopeRow
  *
  * Delete flow uses native window.confirm per UI-SPEC §Destructive
- * confirmations — "Delete scope row \"<value>\"?" matches v1.5 precedent.
+ * confirmations - "Delete scope row \"<value>\"?" matches v1.5 precedent.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -94,7 +94,7 @@ export function ScopeTabContent({
 }) {
   const cfg = TAB_TO_SCOPE[tabKey];
 
-  // State hooks must be unconditional — declare before the early return.
+  // State hooks must be unconditional - declare before the early return.
   const [rows, setRows] = useState<ScopeRowResponse[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -108,7 +108,7 @@ export function ScopeTabContent({
       const all = await listScopeRows(project.id);
       setRows(all.filter((r) => r.scope_type === scopeType));
     } catch {
-      // Silent — toast would fire on every tab switch if the network is down.
+      // Silent - toast would fire on every tab switch if the network is down.
       // Add/delete handlers still toast on their own failures.
     } finally {
       setLoading(false);
@@ -127,7 +127,7 @@ export function ScopeTabContent({
     [rows],
   );
 
-  // Unknown tab key — defensive fallback for deep-links with a stale/bogus
+  // Unknown tab key - defensive fallback for deep-links with a stale/bogus
   // tab param. ProjectTabs only renders the 7 known keys, but the URL is
   // user-editable.
   if (!cfg) {
@@ -168,7 +168,7 @@ export function ScopeTabContent({
     row: ScopeRowResponse,
     patch: ScopeRowUpdateBody,
   ) {
-    // Pre-flight "at least one flag" invariant — matches backend CHECK
+    // Pre-flight "at least one flag" invariant - matches backend CHECK
     // constraint project_scope_rows_at_least_one_flag. Blocks the PATCH when
     // the resulting row would have both active_test_scope and intel_scope
     // false, avoiding a user-visible error round-trip.
@@ -177,7 +177,7 @@ export function ScopeTabContent({
       toast.error("Row must target at least intel or active test.");
       return;
     }
-    // Optimistic update — revert on failure via reload.
+    // Optimistic update - revert on failure via reload.
     setRows((prev) =>
       prev.map((r) => (r.id === row.id ? { ...r, ...patch } : r)),
     );

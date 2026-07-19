@@ -1,5 +1,5 @@
 /**
- * ProjectGraph.test.tsx — -03 (GRAPH-01 frontend)
+ * ProjectGraph.test.tsx - -03 (GRAPH-01 frontend)
  *
  * Tests that ProjectGraph renders:
  * 1. Empty state when zero events (no nodes, no edges)
@@ -15,7 +15,7 @@ import { ProjectGraph } from "@/app/projects/[id]/graph/ProjectGraph";
 // react-cytoscapejs is globally mocked in vitest.setup.ts to render
 // <div data-testid="cytoscape-graph" />. This file adds a per-file override
 // so the mock element carries the container's data-testid through.
-// The global mock in setup.ts is sufficient — we just import and use it.
+// The global mock in setup.ts is sufficient - we just import and use it.
 
 const emptyData = { nodes: [], edges: [], truncated: false };
 

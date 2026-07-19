@@ -1,4 +1,4 @@
-"""Integration tests for AI-05 GET /api/admin/ai-health — Plan 17-07.
+"""Integration tests for AI-05 GET /api/admin/ai-health - Plan 17-07.
 
 Covers:
   - GET /api/admin/ai-health returns 200 + {ollama_health, providers_configured_count}

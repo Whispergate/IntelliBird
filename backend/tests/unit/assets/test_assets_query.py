@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import uuid
 
-import pytest
 from sqlalchemy import Select
 from sqlalchemy.dialects import postgresql
 
@@ -65,14 +64,14 @@ def test_aggregation_group_by_clauses():
 
 
 def test_aggregation_select_does_not_reference_raw_bbot_column():
-    """Pitfall 1 — raw_bbot is drawer-only; must not land in list/summary SELECT."""
+    """Pitfall 1 - raw_bbot is drawer-only; must not land in list/summary SELECT."""
     compiled = _compile(build_assets_aggregation_select(uuid.uuid4()))
     assert "raw_bbot" not in compiled
 
 
 def test_load_stale_cutoff_sql_shape():
     """Compile the load_stale_cutoff inner select to assert SQL shape without hitting the DB."""
-    # We compile by reproducing the same statement construction as the function —
+    # We compile by reproducing the same statement construction as the function -
     # load_stale_cutoff itself is async; its internal stmt is what matters.
     from sqlalchemy import func, select
 

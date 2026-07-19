@@ -1,4 +1,4 @@
-"""resolve_geo STIX-location path —-01 target (MAP-05)."""
+"""resolve_geo STIX-location path --01 target (MAP-05)."""
 from __future__ import annotations
 
 import pytest
@@ -6,7 +6,6 @@ import pytest
 from app.services import geo as geo_module
 from app.services.geo import (
     _extract_ips_from_stix,
-    _extract_stix_location,
     resolve_geo,
 )
 
@@ -23,7 +22,7 @@ def _clear_lru_cache():
 
 
 def test_stix_location_preferred_over_ip(monkeypatch):
-    """STIX location SDO coordinates take priority — MaxMind must not be called."""
+    """STIX location SDO coordinates take priority - MaxMind must not be called."""
     call_count = [0]
 
     def _fake_reader():

@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * CompletionBadge — per-section completeness badge for the TIBER left sidebar.
+ * CompletionBadge - per-section completeness badge for the TIBER left sidebar.
  * UI-SPEC §"Section Completeness Badge Colour Map".
  *
  * States:
- *   complete   — green CheckCircle2, bg-green-500/15 text-green-300
- *   incomplete — red XCircle, bg-red-500/15 text-red-300; tooltip lists missing fields
- *   not-started — muted Circle (empty), bg-muted text-muted-foreground
+ *   complete   - green CheckCircle2, bg-green-500/15 text-green-300
+ *   incomplete - red XCircle, bg-red-500/15 text-red-300; tooltip lists missing fields
+ *   not-started - muted Circle (empty), bg-muted text-muted-foreground
  */
 
 import { CheckCircle2, Circle, XCircle } from "lucide-react";

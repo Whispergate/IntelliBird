@@ -160,7 +160,7 @@ async def test_header_ignored_when_claim_is_blue():
 
     with mock.patch("app.routers.graph.traverse_graph", side_effect=fake_traverse):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
-            # Send spoofed X-Dashboard-Role: red — must be ignored
+            # Send spoofed X-Dashboard-Role: red - must be ignored
             r = await c.get(
                 f"/api/events/{eid}/graph",
                 headers={"X-Dashboard-Role": "red"},
@@ -168,7 +168,7 @@ async def test_header_ignored_when_claim_is_blue():
 
     assert r.status_code == 404
     assert captured.get("dashboard_roles") == ["blue"], (
-        f"Expected ['blue'] from claim, got {captured.get('dashboard_roles')!r} — "
+        f"Expected ['blue'] from claim, got {captured.get('dashboard_roles')!r} - "
         "C-2 not closed: header is still influencing graph traversal role!"
     )
 

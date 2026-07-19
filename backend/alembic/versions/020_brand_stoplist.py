@@ -1,4 +1,4 @@
-"""Per-project brand stoplist terms table — BRAND-01.
+"""Per-project brand stoplist terms table - BRAND-01.
 
 Revision ID: 016_brand_stoplist
 Revises: 015_tiber
@@ -12,15 +12,15 @@ Creates brand_stoplist_terms:
   - created_by_user_id UUID FK users(id) ON DELETE SET NULL nullable
 
 Unique index: brand_stoplist_terms_term_lower_unique ON (project_id, lower(term))
-  — operator stores term as-typed; case-insensitive dedup enforced via lower().
+  - operator stores term as-typed; case-insensitive dedup enforced via lower().
 
 Regular index: ix_brand_stoplist_project ON (project_id) for scan_project load.
 
 Design notes:
-  * UNIQUE is expressed via functional index on lower(term) — plain UNIQUE
+  * UNIQUE is expressed via functional index on lower(term) - plain UNIQUE
     cannot express lower() expression (same pattern as migration 011 brand_terms).
-  * project_id ON DELETE CASCADE — row automatically removed when project deleted.
-  * created_by_user_id ON DELETE SET NULL — preserves history after user deletion.
+  * project_id ON DELETE CASCADE - row automatically removed when project deleted.
+  * created_by_user_id ON DELETE SET NULL - preserves history after user deletion.
 """
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Enrichment provider circuit breaker — ENRICH-03.
+"""Enrichment provider circuit breaker - ENRICH-03.
 
 Tracks consecutive 429 (quota-exceeded) responses from external providers.
 After CB_THRESHOLD failures within CB_WINDOW_TTL seconds, the breaker
@@ -29,8 +29,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-CB_OPEN_TTL: int = 3600    # 1 hour — breaker stays open this long
-CB_WINDOW_TTL: int = 300   # 5 minutes — failure counter window
+CB_OPEN_TTL: int = 3600    # 1 hour - breaker stays open this long
+CB_WINDOW_TTL: int = 300   # 5 minutes - failure counter window
 CB_THRESHOLD: int = 3      # consecutive failures before opening
 
 
@@ -77,7 +77,7 @@ async def record_quota_failure(redis, provider: str, project_scope: str) -> None
 async def record_success(redis, provider: str, project_scope: str) -> None:
     """Reset the failure counter after a successful provider response.
 
-    Does NOT close an already-open breaker — the breaker self-heals after
+    Does NOT close an already-open breaker - the breaker self-heals after
     CB_OPEN_TTL expires. This only prevents the failure window from
     accumulating across successful calls.
     """

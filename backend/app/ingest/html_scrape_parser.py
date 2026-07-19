@@ -11,7 +11,7 @@ operator-supplied CSS selectors. Reuses:
 
 Scope: server-rendered HTML only. Pages that require JavaScript to render the
 items selector will yield zero entries (a JS-rendering sidecar is out of scope
-for v1 — see docs/ops/html-scrape-sources.md).
+for v1 - see docs/ops/html-scrape-sources.md).
 
 Selector syntax: a trailing ``@attr`` extracts the attribute (``h2 a@href``);
 without it the selector returns ``element.text_content().strip()``.
@@ -45,7 +45,7 @@ def validate_scrape_config(cfg: dict | None) -> None:
     """Raise ValueError when required selector keys are missing or empty.
 
     Quick task 260426-aas: when ``cfg["mode"] == "auto"`` the selector check is
-    skipped (auto-discovery uses trafilatura — no operator selectors required).
+    skipped (auto-discovery uses trafilatura - no operator selectors required).
     Rows shipped 2026-04-25 (no ``mode`` key) fall through to manual validation
     so back-compat holds.
     """
@@ -169,7 +169,7 @@ def auto_discover_entries(
     Output rows are shaped exactly like the manual-selector path so
     ``_persist_event`` consumes them without branching.
     """
-    # Lazy import — manual-mode test runs should not load trafilatura.
+    # Lazy import - manual-mode test runs should not load trafilatura.
     from trafilatura import feeds as _trafilatura_feeds  # noqa: PLC0415
 
     cap = min(max(int(max_items or DEFAULT_MAX_ITEMS), 1), MAX_ITEMS_HARD_CAP)
@@ -220,7 +220,7 @@ def auto_discover_entries(
                     )
                     if pp is not None:
                         try:
-                            observed_at = datetime(*pp[:6], tzinfo=timezone.utc)
+                            observed_at = datetime(*pp[:6], tzinfo=timezone.utc)  # type: ignore[misc]
                         except Exception:  # noqa: BLE001
                             observed_at = None
                     if observed_at is None:
@@ -352,7 +352,7 @@ def normalise_scrape_entries(
         # Resolve relative URLs against the source's base URL.
         absolute_link = urljoin(base_url, link.strip())
         if not absolute_link.startswith(("http://", "https://")):
-            # file://, data:, javascript: etc — skip.
+            # file://, data:, javascript: etc - skip.
             continue
 
         observed_at: datetime | None = None

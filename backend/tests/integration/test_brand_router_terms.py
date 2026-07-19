@@ -1,4 +1,4 @@
-"""Integration tests for the brand router — terms CRUD + authority matrix (12-06)."""
+"""Integration tests for the brand router - terms CRUD + authority matrix (12-06)."""
 from __future__ import annotations
 
 import uuid
@@ -161,7 +161,7 @@ async def test_person_term_analyst_rejected_403(brand_app, db_session):
     )
     await db_session.commit()
 
-    # Analyst with Contributor-level project rank (not Lead) — must be 403 on person
+    # Analyst with Contributor-level project rank (not Lead) - must be 403 on person
     analyst = _make_auth_user(role="Analyst", project_id=pid, project_rank=2)
     app.dependency_overrides[require_auth] = lambda: analyst
 

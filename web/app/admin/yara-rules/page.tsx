@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /admin/yara-rules — YARA-01.
+ * /admin/yara-rules - YARA-01.
  * Admin CRUD for YARA rules: list, upload .yar content, toggle enabled, delete.
  * Access: Admin only (enforced server-side; page shows 403 toast on API error).
  */
@@ -151,7 +151,7 @@ export default function YaraRulesPage() {
                   onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Paste .yar file contents. Rule is compiled immediately — invalid syntax returns an error.
+                  Paste .yar file contents. Rule is compiled immediately - invalid syntax returns an error.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -205,7 +205,7 @@ export default function YaraRulesPage() {
               <TableRow key={rule.id}>
                 <TableCell className="font-medium font-mono text-sm">{rule.name}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {rule.family || "—"}
+                  {rule.family || "-"}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="text-xs">

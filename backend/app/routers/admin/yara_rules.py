@@ -1,9 +1,9 @@
 """
-YARA rule admin CRUD — YARA-01.
-POST /api/admin/yara-rules     — upload and compile a YARA rule (Admin only)
-GET  /api/admin/yara-rules     — list rules (with optional ?project_id, ?enabled filters)
-PATCH /api/admin/yara-rules/{id} — update name/family/enabled; recompiles if content changed
-DELETE /api/admin/yara-rules/{id} — delete rule (cascades to yara_matches)
+YARA rule admin CRUD - YARA-01.
+POST /api/admin/yara-rules     - upload and compile a YARA rule (Admin only)
+GET  /api/admin/yara-rules     - list rules (with optional ?project_id, ?enabled filters)
+PATCH /api/admin/yara-rules/{id} - update name/family/enabled; recompiles if content changed
+DELETE /api/admin/yara-rules/{id} - delete rule (cascades to yara_matches)
 """
 from __future__ import annotations
 import io
@@ -104,7 +104,7 @@ async def patch_yara_rule(
     if body.family is not None:
         row.family = body.family
     # content update requires recompile
-    # (YaraRulePatch does not expose content currently — add if needed in future)
+    # (YaraRulePatch does not expose content currently - add if needed in future)
     await db.commit()
     await db.refresh(row)
     return YaraRuleRead.model_validate(row)

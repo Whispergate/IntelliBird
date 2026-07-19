@@ -24,7 +24,7 @@ if (!dagreRegistered) {
     (Cytoscape as any).use(dagre);
     dagreRegistered = true;
   } catch {
-    // Plugin already registered — ignore.
+    // Plugin already registered - ignore.
   }
 }
 
@@ -35,7 +35,7 @@ if (!contextMenusRegistered) {
     (Cytoscape as any).use(contextMenus);
     contextMenusRegistered = true;
   } catch {
-    // Plugin already registered — ignore.
+    // Plugin already registered - ignore.
   }
 }
 
@@ -162,7 +162,7 @@ const NODE_STYLES = [
     style: { shape: "square" },
   },
   // ── Provenance border-style encoding ───────────────────
-  // MUST appear AFTER the shape selectors ( — order matters).
+  // MUST appear AFTER the shape selectors ( - order matters).
   {
     selector: "node[tag_source='analyst']",
     style: { "border-style": "solid", "border-width": 2, "border-opacity": 1.0 },
@@ -213,7 +213,7 @@ export function AttackGraphImpl({
 }: {
   eventId: string;
   height?: number;
-  /** Optional project UUID — enables multi-hop expand via right-click context menu. */
+  /** Optional project UUID - enables multi-hop expand via right-click context menu. */
   projectId?: string | null;
 }) {
   const role = useRole();

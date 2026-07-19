@@ -1,4 +1,4 @@
-"""Sigma Rule Engine — admin API tests (SIGMA-03)."""
+"""Sigma Rule Engine - admin API tests (SIGMA-03)."""
 from __future__ import annotations
 
 import os

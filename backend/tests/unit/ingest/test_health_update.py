@@ -1,4 +1,4 @@
-"""Exhaustive coverage of update_source_health — + VALID_STATUSES.
+"""Exhaustive coverage of update_source_health - + VALID_STATUSES.
 
  stub for 02-07. Complements test_canonical_mapper.py's
 spot-checks with full enum + success/failure matrix coverage.
@@ -49,7 +49,7 @@ def test_all_valid_statuses_accepted_with_succeeded_false(status: str) -> None:
 
 
 def test_ok_with_succeeded_false_is_nonsensical_but_allowed() -> None:
-    """API does not enforce semantic consistency — only the enum."""
+    """API does not enforce semantic consistency - only the enum."""
     session = MagicMock()
     update_source_health(session, uuid.uuid4(), status="ok", succeeded=False)
     stmt = session.execute.call_args[0][0]
@@ -93,7 +93,7 @@ def test_where_clause_targets_source_id() -> None:
 
 
 def test_no_cursor_column_touched() -> None:
-    """Health update MUST NOT touch last_cursor — cursor advance is a
+    """Health update MUST NOT touch last_cursor - cursor advance is a
  separate helper (per plans 02-04 and 02-06).
 """
     session = MagicMock()
@@ -104,7 +104,7 @@ def test_no_cursor_column_touched() -> None:
 
 
 def test_does_not_commit() -> None:
-    """Caller owns the transaction boundary — update_source_health only
+    """Caller owns the transaction boundary - update_source_health only
  executes the UPDATE statement.
 """
     session = MagicMock()

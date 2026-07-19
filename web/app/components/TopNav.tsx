@@ -39,7 +39,7 @@ async function onSignOut() {
   try {
     await fetch("/api/auth/logout", { method: "POST" });
   } catch {
-    // ignore — proceed to redirect
+    // ignore - proceed to redirect
   }
   window.location.href = "/login?reason=logged_out";
 }
@@ -82,7 +82,7 @@ export function TopNav() {
         window.localStorage.setItem("intellibird:last-role", target);
       }
     } catch {
-      // localStorage unavailable (Safari private mode, etc.) — navigation still works.
+      // localStorage unavailable (Safari private mode, etc.) - navigation still works.
     }
     router.push(`/${target}`);
   }
@@ -174,7 +174,7 @@ export function TopNav() {
         Events
       </Link>
 
-      {/* IOCs nav link — global cross-project IOC search */}
+      {/* IOCs nav link - global cross-project IOC search */}
       <Link
         href="/iocs"
         className={`${linkBase} ${pathname?.startsWith("/iocs") ? linkActiveClass : linkInactive}`}
@@ -263,7 +263,7 @@ export function TopNav() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* CircleUser user menu — to the right of role pill */}
+      {/* CircleUser user menu - to the right of role pill */}
       {user && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

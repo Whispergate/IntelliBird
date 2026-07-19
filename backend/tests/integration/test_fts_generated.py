@@ -1,22 +1,22 @@
-"""Integration tests for migration 004 — search_tsv backfill + GIN + filter_presets.
+"""Integration tests for migration 004 - search_tsv backfill + GIN + filter_presets.
 
 These tests run against the live stack (docker compose exec -T api...).
 They assume migration 004 has already been applied.
 
 Proves:
-1. GENERATED ALWAYS AS fires on INSERT — search_tsv is non-null and tokenised.
+1. GENERATED ALWAYS AS fires on INSERT - search_tsv is non-null and tokenised.
 2. GIN index ix_events_search_tsv is registered with am=gin in pg_indexes.
 3. filter_presets table accepts INSERT/SELECT round-trip.
 4. FTS @@ operator returns expected rows (smoke test for GIN usability).
 
-The downgrade integration test is explicitly deferred — rolling back a live
+The downgrade integration test is explicitly deferred - rolling back a live
 stack safely is out of scope for M1.
 """
 from __future__ import annotations
 
 import os
 
-# Required env vars for app.config.Settings — live stack normally supplies these.
+# Required env vars for app.config.Settings - live stack normally supplies these.
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
 os.environ.setdefault("SECRET_KEY", "x" * 48)
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
@@ -34,7 +34,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.usefixtures("_migrations_appl
 
 
 def _session_factory():
-    """Late-bound session factory — conftest rebuilds app.database.engine
+    """Late-bound session factory - conftest rebuilds app.database.engine
     session factory against the live container URL via autouse fixture."""
     from app import database as db_mod
     return db_mod.async_session_factory
@@ -47,7 +47,7 @@ def _session_factory():
 
 @pytest.mark.asyncio
 async def test_search_tsv_populated_on_existing_rows() -> None:
-    """Insert a row — confirm search_tsv is non-null immediately.
+    """Insert a row - confirm search_tsv is non-null immediately.
 
  This proves GENERATED ALWAYS AS computation fires on insert to the
  existing TimescaleDB hypertable without any explicit write to search_tsv.
@@ -97,7 +97,7 @@ async def test_search_tsv_populated_on_existing_rows() -> None:
         assert row is not None, "inserted row not found"
         tsv_text = row[0]
         assert tsv_text is not None, (
-            "search_tsv was NULL — GENERATED ALWAYS AS not firing on TimescaleDB hypertable"
+            "search_tsv was NULL - GENERATED ALWAYS AS not firing on TimescaleDB hypertable"
         )
         # Stemmed tokens from title + description should appear
         assert "apt28" in tsv_text.lower() or "'apt28'" in tsv_text.lower(), (
@@ -177,7 +177,7 @@ async def test_filter_presets_table_exists() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 4: FTS @@ operator smoke test — indexed lookup returns inserted row
+# Test 4: FTS @@ operator smoke test - indexed lookup returns inserted row
 # ---------------------------------------------------------------------------
 
 

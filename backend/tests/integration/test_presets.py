@@ -1,9 +1,9 @@
-"""Integration: /api/presets CRUD lifecycle — FIL-04."""
+"""Integration: /api/presets CRUD lifecycle - FIL-04."""
 from __future__ import annotations
 
 import os
 
-# Required env vars for app.config.Settings — live stack normally supplies these.
+# Required env vars for app.config.Settings - live stack normally supplies these.
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
 os.environ.setdefault("SECRET_KEY", "x" * 48)
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)

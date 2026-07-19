@@ -1,4 +1,4 @@
-"""Tests for app.services.dnstwist_parser — defensive key access + lookup_success derivation.
+"""Tests for app.services.dnstwist_parser - defensive key access + lookup_success derivation.
 
 Activated by plan 12-02 (Wave 2 service primitives).
 
@@ -13,18 +13,17 @@ os.environ.setdefault("SECRET_KEY", "x" * 64)
 os.environ.setdefault("JWT_SIGNING_KEY", "y" * 64)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 
-import pytest
 
 from app.services.dnstwist_parser import parse_dnstwist_output, parse_permutation
 
 
 # ---------------------------------------------------------------------------
-# Defensive key access — canonical `domain` + belt-and-braces hyphen/underscore
+# Defensive key access - canonical `domain` + belt-and-braces hyphen/underscore
 # ---------------------------------------------------------------------------
 
 
 def test_parse_permutation_handles_plain_domain_key():
-    # Canonical dnstwist 20250130 form — single `domain` key.
+    # Canonical dnstwist 20250130 form - single `domain` key.
     perm = {
         "fuzzer": "addition",
         "domain": "googleb.com",
@@ -59,7 +58,7 @@ def test_parse_permutation_handles_underscore_key():
 
 
 # ---------------------------------------------------------------------------
-# lookup_success derivation — has_a OR has_ns, treating !ServFail + '' as no-data
+# lookup_success derivation - has_a OR has_ns, treating !ServFail + '' as no-data
 # ---------------------------------------------------------------------------
 
 
@@ -78,7 +77,7 @@ def test_lookup_success_true_when_only_dns_ns():
 
 
 def test_lookup_success_false_when_only_dns_mx():
-    # MX-only is NOT enough — lookup_success requires A or NS per plan.
+    # MX-only is NOT enough - lookup_success requires A or NS per plan.
     perm = {"fuzzer": "addition", "domain": "x.com", "dns_mx": ["mx.x.com"]}
     out = parse_permutation(perm)
     assert out is not None
@@ -113,7 +112,7 @@ def test_lookup_success_treats_empty_string_as_no_data():
 
 
 # ---------------------------------------------------------------------------
-# Filtering — unregistered rows return None
+# Filtering - unregistered rows return None
 # ---------------------------------------------------------------------------
 
 
@@ -162,7 +161,7 @@ def test_extract_metadata_includes_fuzzer_dns_mx():
 
 
 # ---------------------------------------------------------------------------
-# Golden fixture — full-DNS / partial-DNS / all-ServFail
+# Golden fixture - full-DNS / partial-DNS / all-ServFail
 # ---------------------------------------------------------------------------
 
 
@@ -172,9 +171,9 @@ def test_parse_dnstwist_output_against_golden(golden_dnstwist_json):
     # All have DNS record keys so none are filtered out.
     assert len(out) == 3
     by_domain = {e["matched_value"]: e for e in out}
-    # googleb.com — full DNS → lookup_success=True
+    # googleb.com - full DNS → lookup_success=True
     assert by_domain["googleb.com"]["lookup_success"] is True
-    # googlec.com — A + NS only → lookup_success=True
+    # googlec.com - A + NS only → lookup_success=True
     assert by_domain["googlec.com"]["lookup_success"] is True
-    # google4.com — all !ServFail → lookup_success=False
+    # google4.com - all !ServFail → lookup_success=False
     assert by_domain["google4.com"]["lookup_success"] is False

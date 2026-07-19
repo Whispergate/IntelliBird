@@ -1,4 +1,4 @@
-"""Project export service — PRJ-07.
+"""Project export service - PRJ-07.
 
 Produces STIX 2.1 Bundle (via stix2 3.0.2) or CSV (via stdlib csv) for a project scope.
 Both formats are capped at 50k events; above the cap, the router returns 413.
@@ -6,8 +6,8 @@ Both formats are capped at 50k events; above the cap, the router returns 413.
 Filename convention: intellibird-project-<slug>-<YYYY-MM-DD>.<stix.json|csv>
 
 Locked decisions (CONTEXT.md §PRJ-07):
-- Sync response (no async job path — deferred to v2.1)
-- 50k event cap — 413 with hint to narrow scope
+- Sync response (no async job path - deferred to v2.1)
+- 50k event cap - 413 with hint to narrow scope
 - STIX Bundle uses Identity("IntelliBird") + Note SDO carrying
   x_intellibird_project + x_intellibird_scope_rows custom properties
 - CSV 10-column locked set (CONTEXT.md anchor, narrowed from RESEARCH.md 17-col draft)
@@ -45,7 +45,7 @@ STIX_BUNDLE_EVENT_CAP: int = 50_000
 CSV_EVENT_CAP: int = 50_000
 
 #: CSV locked column set (CONTEXT.md §PRJ-07 Claude's Discretion anchor).
-#: Order is load-bearing — test_csv_columns asserts header == CSV_COLUMNS exactly.
+#: Order is load-bearing - test_csv_columns asserts header == CSV_COLUMNS exactly.
 CSV_COLUMNS: list[str] = [
     "id",
     "observed_at",
@@ -121,7 +121,7 @@ async def fetch_scoped_events(
     """Load up to the cap's worth of scoped events for this project.
 
     Uses build_events_query so dashboard_roles / visibility gating is applied
-    consistently with the /events endpoint. Limit applied at query level —
+    consistently with the /events endpoint. Limit applied at query level -
     the 413 gate at the router must prevent cases where truncation would lose data.
     """
     scope_rows = await fetch_scope_rows_intel(session, project_id)
@@ -152,11 +152,11 @@ def build_stix_bundle(
     """Produce a STIX 2.1 Bundle string with project metadata + scope rows custom props.
 
     Bundle composition (RESEARCH.md §STIX 2.1 Bundle Composition):
-      - stix2.Identity("IntelliBird", system) — producer provenance
+      - stix2.Identity("IntelliBird", system) - producer provenance
       - stix2.Note SDO with x_intellibird_project + x_intellibird_scope_rows
         custom properties capturing project metadata + scope configuration
       - Every event.raw_stix parsed via stix2.parse(allow_custom=True) and appended;
-        malformed STIX is logged (warning) and skipped — never fatal.
+        malformed STIX is logged (warning) and skipped - never fatal.
 
     Returns a JSON string (bundle.serialize(pretty=False)) suitable for an HTTP
     application/json response.
@@ -195,7 +195,7 @@ def build_stix_bundle(
             obj = stix2.parse(e.raw_stix, allow_custom=True)
             stix_objects.append(obj)
         except Exception as exc:
-            # Malformed stored STIX — log + skip; not fatal to the bundle.
+            # Malformed stored STIX - log + skip; not fatal to the bundle.
             log.warning(
                 "stix_export_malformed_event",
                 event_id=str(e.id),
@@ -269,7 +269,7 @@ async def build_csv_bytes(
     session: AsyncSession,
     events: list[Event],
 ) -> bytes:
-    """Synchronous CSV builder — collects full output into bytes.
+    """Synchronous CSV builder - collects full output into bytes.
 
     Safe at the 50k cap: ~50k × ~1KB/row = ~50MB worst case, well within a single
     server response buffer. Streaming variant (build_csv_stream) remains an option

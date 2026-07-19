@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * IOCBulkImportDialog — (UI-SPEC §Surface 3).
+ * IOCBulkImportDialog - (UI-SPEC §Surface 3).
  *
  * 4-step stepper: Upload → Configure → Preview (dry-run) → Import (async polling).
  *
@@ -217,7 +217,7 @@ export function IOCBulkImportDialog({
         }
         if (Date.now() - startTs > POLL_TIMEOUT_MS) {
           toast.error(
-            "Import is taking longer than expected. Check IOCs tab — rows will appear when complete.",
+            "Import is taking longer than expected. Check IOCs tab - rows will appear when complete.",
           );
           onOpenChange(false);
           return;
@@ -276,7 +276,7 @@ export function IOCBulkImportDialog({
 
         <StepperBar step={step} />
 
-        {/* Step 1 — Upload */}
+        {/* Step 1 - Upload */}
         {step === 1 && (
           <div className="space-y-4">
             <label
@@ -330,7 +330,7 @@ export function IOCBulkImportDialog({
           </div>
         )}
 
-        {/* Step 2 — Configure */}
+        {/* Step 2 - Configure */}
         {step === 2 && (
           <div className="space-y-4">
             <div className="flex flex-col gap-2">
@@ -404,7 +404,7 @@ export function IOCBulkImportDialog({
           </div>
         )}
 
-        {/* Step 3 — Preview */}
+        {/* Step 3 - Preview */}
         {step === 3 && dryRunResult && (
           <div className="space-y-4">
             <div className="rounded-md border border-border bg-card p-4 grid grid-cols-4 gap-4">
@@ -474,7 +474,7 @@ export function IOCBulkImportDialog({
           </div>
         )}
 
-        {/* Step 4 — Import in progress / complete */}
+        {/* Step 4 - Import in progress / complete */}
         {step === 4 && (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             {importError ? (

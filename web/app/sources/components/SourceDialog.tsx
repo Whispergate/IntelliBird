@@ -136,7 +136,7 @@ function defaultValuesFor(
     scrape_summary_selector: sc?.summary_selector ?? "",
     scrape_max_items: sc?.max_items,
     // Quick task 260426-aas: derive mode from saved row. Pre-260426 rows have
-    // selectors but no `mode` key — show those as Manual to preserve operator
+    // selectors but no `mode` key - show those as Manual to preserve operator
     // mental model.
     scrape_mode:
       sc?.mode === "auto"
@@ -154,7 +154,7 @@ function defaultValuesFor(
  *
  * - Add mode: heading "Add Source", submit "Save Source"
  * - Edit mode: heading "Edit Source", submit "Save Changes", Type locked,
- * credential inputs show "(unchanged — type to replace)" placeholder
+ * credential inputs show "(unchanged - type to replace)" placeholder
  *
  * Test Connection button is NON-BLOCKING: Save button is never disabled by
  * test result. Probe failure shows amber alert with exact copy:
@@ -208,7 +208,7 @@ export function SourceDialog({
     let cancelled = false;
     fetchSourceTemplates()
       .then((t) => { if (!cancelled) setTemplates(t); })
-      .catch(() => { /* silent — operator can fill form manually*/ });
+      .catch(() => { /* silent - operator can fill form manually*/ });
     return () => { cancelled = true; };
   }, [mode]);
 
@@ -218,7 +218,7 @@ export function SourceDialog({
     const tpl = templates.find((t) => t.id === id);
     if (!tpl) return;
     // Prefill name, feed_type, url, poll interval. Do NOT overwrite
-    // credentials — operator fills their own. TAXII auth scheme set to
+    // credentials - operator fills their own. TAXII auth scheme set to
     // otx-apikey when template declares it.
     reset({
       ...defaultValuesFor("add"),
@@ -312,7 +312,7 @@ export function SourceDialog({
 
             <div className="flex flex-col gap-4 overflow-y-auto px-6 py-4 min-h-0 flex-1">
 
-            {/* Quick-add template picker — only visible in Add mode, hidden if no templates*/}
+            {/* Quick-add template picker - only visible in Add mode, hidden if no templates*/}
             {mode === "add" && templates.length > 0 && (
               <div className="flex flex-col gap-1">
                 <Label htmlFor="template">Quick-add preset</Label>
@@ -326,7 +326,7 @@ export function SourceDialog({
                   <SelectContent>
                     {templates.map((t) => (
                       <SelectItem key={t.id} value={t.id}>
-                        {t.name} — {t.feed_type.toUpperCase()}
+                        {t.name} - {t.feed_type.toUpperCase()}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -357,7 +357,7 @@ export function SourceDialog({
               )}
             </div>
 
-            {/* Field 2: Type (locked on edit —)*/}
+            {/* Field 2: Type (locked on edit -)*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="feed_type">Type</Label>
               <Select
@@ -451,7 +451,7 @@ export function SourceDialog({
             {/* Fields 6–7: Retention preset (includes hot_retention_days + archive_policy for Custom)*/}
             <RetentionPresetPicker />
 
-            {/* Test Connection inline result — NON-BLOCKING*/}
+            {/* Test Connection inline result - NON-BLOCKING*/}
             {testResult?.kind === "ok" && (
               <Alert className="border-green-700 bg-green-900/20 text-green-300">
                 <AlertDescription>
@@ -505,7 +505,7 @@ export function SourceDialog({
                 Cancel
               </Button>
               {/* Test Connection: type="button" so it never submits the form.
- Brand: Primary teal outline — secondary action*/}
+ Brand: Primary teal outline - secondary action*/}
               <Button
                 type="button"
                 variant="outline"
@@ -518,8 +518,8 @@ export function SourceDialog({
               >
                 {testing ? "Testing connection..." : "Test Connection"}
               </Button>
-              {/* Save button — disabled by test result never, but gated by OPSEC ack for dark-web types.
- Brand: Signal amber — primary CTA*/}
+              {/* Save button - disabled by test result never, but gated by OPSEC ack for dark-web types.
+ Brand: Signal amber - primary CTA*/}
               <Button
                 type="submit"
                 disabled={isDarkWebType && !opsecAuthorised}

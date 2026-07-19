@@ -187,12 +187,12 @@ export function CaseTableView({ cases, onFilterChange, projectId }: CaseTableVie
                     {c.severity}
                   </Badge>
                 ) : (
-                  <span className="text-muted-foreground text-xs">—</span>
+                  <span className="text-muted-foreground text-xs">-</span>
                 )}
               </TableCell>
               <TableCell>
                 <span className="text-sm text-muted-foreground">
-                  {c.assignee_user_sub ?? "—"}
+                  {c.assignee_user_sub ?? "-"}
                 </span>
               </TableCell>
               <TableCell>

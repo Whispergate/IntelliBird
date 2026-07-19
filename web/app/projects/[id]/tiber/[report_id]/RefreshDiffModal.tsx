@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * RefreshDiffModal — Surface 5: Refresh from project data diff modal.
+ * RefreshDiffModal - Surface 5: Refresh from project data diff modal.
  * UI-SPEC §Surface 5 verbatim.
  *
  * Opens when "Refresh from project data" is clicked on a section.
@@ -169,7 +169,7 @@ export function RefreshDiffModal({
             </p>
           )}
 
-          {/* Diff rows — UI-SPEC §Surface 5 verbatim grid layout */}
+          {/* Diff rows - UI-SPEC §Surface 5 verbatim grid layout */}
           {!loading && (
             <div className="max-h-[400px] overflow-y-auto">
               {rows.map((row, i) => {
@@ -190,7 +190,7 @@ export function RefreshDiffModal({
                   >
                     <div className="text-sm">
                       {currentDisplay ?? (
-                        <span className="text-muted-foreground italic">— empty —</span>
+                        <span className="text-muted-foreground italic">- empty -</span>
                       )}
                       <p className="text-xs text-muted-foreground/60 mt-0.5 brand-mono">
                         {row.field_path}
@@ -211,7 +211,7 @@ export function RefreshDiffModal({
                     </div>
                     <div className="text-sm">
                       {newDisplay ?? (
-                        <span className="text-muted-foreground italic">— empty —</span>
+                        <span className="text-muted-foreground italic">- empty -</span>
                       )}
                     </div>
                   </div>

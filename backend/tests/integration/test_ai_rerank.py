@@ -1,4 +1,4 @@
-"""Integration tests for SCR-04 ai_rescore_project routes — Plan 17-07.
+"""Integration tests for SCR-04 ai_rescore_project routes - Plan 17-07.
 
 Covers:
   - POST /api/projects/{id}/ai-rescore returns 202 + ai_rescore_project.send invoked
@@ -11,7 +11,6 @@ from __future__ import annotations
 import os
 import uuid
 from datetime import datetime, timezone
-from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock, patch
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
@@ -66,7 +65,7 @@ def _patch_auth(monkeypatch) -> None:
 
 
 # ---------------------------------------------------------------------------
-# test_enqueue — POST /api/projects/{id}/ai-rescore
+# test_enqueue - POST /api/projects/{id}/ai-rescore
 # ---------------------------------------------------------------------------
 
 
@@ -128,7 +127,7 @@ async def test_enqueue(monkeypatch) -> None:
 
 
 # ---------------------------------------------------------------------------
-# test_rerank_clamp_logic — unit-level clamp assertion
+# test_rerank_clamp_logic - unit-level clamp assertion
 # ---------------------------------------------------------------------------
 
 
@@ -155,10 +154,10 @@ def test_clamp_plus_minus_15() -> None:
 
 
 def test_does_not_modify_rule_score() -> None:
-    """AI rescore writes only to events.ai_score — events.score (rule-computed) is unchanged.
+    """AI rescore writes only to events.ai_score - events.score (rule-computed) is unchanged.
 
     This test verifies the actor contract by inspecting the UPDATE statement shape:
-    the actor uses update(Event).values(ai_score=...) — NOT values(score=...).
+    the actor uses update(Event).values(ai_score=...) - NOT values(score=...).
     """
     # Import the actor module and verify it only updates ai_score.
     # The actor uses: update(Event).values(ai_score=Decimal(...))
@@ -177,7 +176,7 @@ def test_does_not_modify_rule_score() -> None:
 
 
 # ---------------------------------------------------------------------------
-# test_rerank_writes_ai_score — conceptual test via actor structure
+# test_rerank_writes_ai_score - conceptual test via actor structure
 # ---------------------------------------------------------------------------
 
 

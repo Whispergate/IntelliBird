@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * ScoringTabContent — Admin scoring config page for /projects/[id]/scoring.
+ * ScoringTabContent - Admin scoring config page for /projects/[id]/scoring.
  * UI-SPEC §Surface 4.
  *
  * Four cards:
- *   Card 1 — Score Weights (4 number inputs + decay half-life + Save weights button)
- *   Card 2 — Tier Cutoffs (4 number inputs S/A/B/C + validation)
- *   Card 3 — Score Histogram (recharts BarChart, 10 buckets, coloured by tier)
- *   Card 4 — Rescore Status (last rescored + progress + Trigger rescore button)
+ *   Card 1 - Score Weights (4 number inputs + decay half-life + Save weights button)
+ *   Card 2 - Tier Cutoffs (4 number inputs S/A/B/C + validation)
+ *   Card 3 - Score Histogram (recharts BarChart, 10 buckets, coloured by tier)
+ *   Card 4 - Rescore Status (last rescored + progress + Trigger rescore button)
  *
  * API contracts (from plan 15-07):
  *   GET  /api/projects/{id}/scoring        → ScoringRulesRead
@@ -98,9 +98,9 @@ function relativeTime(iso: string | null): string {
  * Bucket → tier assignment (for histogram bar colouring, midpoint-based):
  *   90-100 → S  (midpoint ~95)
  *   80-89  → A  (midpoint ~85)
- *   70-79  → A  (midpoint ~75, straddles A/B cutoff — assign A for histogram simplicity)
+ *   70-79  → A  (midpoint ~75, straddles A/B cutoff - assign A for histogram simplicity)
  *   60-69  → B  (midpoint ~65)
- *   50-59  → B  (midpoint ~55, straddles B/C cutoff — assign B for histogram simplicity)
+ *   50-59  → B  (midpoint ~55, straddles B/C cutoff - assign B for histogram simplicity)
  *   40-49  → C  (midpoint ~45)
  *   30-39  → C  (midpoint ~35)
  *   20-29  → D
@@ -209,14 +209,14 @@ export function ScoringTabContent({
       );
       if (!res.ok) return;
       const data = await res.json();
-      // Events list returns { items: EventResponse[] } or similar — extract scores
+      // Events list returns { items: EventResponse[] } or similar - extract scores
       const items: Array<{ score?: number | null }> = Array.isArray(data)
         ? data
         : (data.items ?? data.events ?? []);
       const scores = items.map((e) => e.score ?? null);
       setHistogramData(buildBuckets(scores));
     } catch {
-      // Non-fatal — histogram stays empty
+      // Non-fatal - histogram stays empty
     }
   }, [projectId]);
 
@@ -252,7 +252,7 @@ export function ScoringTabContent({
       } else if (wasPollingActive.current) {
         // Was > 0, now 0 → rescore complete
         stopPolling();
-        toast.success(`Rescore complete — ${status.total_count} events updated.`);
+        toast.success(`Rescore complete - ${status.total_count} events updated.`);
         fetchHistogramData();
       }
     }, 3000);
@@ -313,7 +313,7 @@ export function ScoringTabContent({
       toast.success(
         `Scoring rules saved. Rescore queued for ${rescoreStatus?.total_count ?? saved.version ?? 0} events.`,
       );
-      // Backend auto-enqueues rescore on save — start polling immediately
+      // Backend auto-enqueues rescore on save - start polling immediately
       startPolling();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error.";
@@ -374,7 +374,7 @@ export function ScoringTabContent({
     <div className="max-w-2xl mx-auto pt-6 space-y-8">
 
       {/* ------------------------------------------------------------------ */}
-      {/* Card 1 — Score Weights                                              */}
+      {/* Card 1 - Score Weights                                              */}
       {/* ------------------------------------------------------------------ */}
       <Card>
         <CardHeader>
@@ -437,7 +437,7 @@ export function ScoringTabContent({
 
           {!weightsValid && (
             <p className="text-xs text-destructive mt-2">
-              Weights must sum to 100 — current total: {weightSum}
+              Weights must sum to 100 - current total: {weightSum}
             </p>
           )}
 
@@ -459,7 +459,7 @@ export function ScoringTabContent({
       </Card>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Card 2 — Tier Cutoffs                                               */}
+      {/* Card 2 - Tier Cutoffs                                               */}
       {/* ------------------------------------------------------------------ */}
       <Card>
         <CardHeader>
@@ -538,7 +538,7 @@ export function ScoringTabContent({
       </Card>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Card 3 — Score Distribution (histogram)                             */}
+      {/* Card 3 - Score Distribution (histogram)                             */}
       {/* ------------------------------------------------------------------ */}
       <Card>
         <CardHeader>
@@ -553,7 +553,7 @@ export function ScoringTabContent({
       </Card>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Card 4 — Rescore Status                                             */}
+      {/* Card 4 - Rescore Status                                             */}
       {/* ------------------------------------------------------------------ */}
       <Card>
         <CardHeader>
@@ -586,7 +586,7 @@ export function ScoringTabContent({
       </Card>
 
       {/* ------------------------------------------------------------------ */}
-      {/* Card 5 — AI Re-ranking (only when ai_rerank_enabled)                */}
+      {/* Card 5 - AI Re-ranking (only when ai_rerank_enabled)                */}
       {/* ------------------------------------------------------------------ */}
       <AIRerankCard projectId={projectId} aiRerankEnabled={aiRerankEnabled} />
 

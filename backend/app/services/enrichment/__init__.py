@@ -1,4 +1,4 @@
-"""Enrichment service package — ENRICH-01..05.
+"""Enrichment service package - ENRICH-01..05.
 
 Provides quota, circuit breaker, cache, provider resolver, and unified
 verdict aggregation for IOC enrichment. All external provider modules

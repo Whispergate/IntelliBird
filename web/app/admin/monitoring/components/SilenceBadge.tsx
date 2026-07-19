@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * SilenceBadge — SLA breach badge for source health monitoring.
+ * SilenceBadge - SLA breach badge for source health monitoring.
  * MON-04 dashboard requirement.
  *
  * Colours match brand severity palette (CONTEXT.md "Claude's Discretion"):
- *   - Red    — SLA fully breached (now - last_event_at > sla_seconds)
- *   - Amber  — Approaching SLA (within 80% consumed)
- *   - Green  — Within SLA
- *   - Grey   — No event data (last_event_at is null)
+ *   - Red    - SLA fully breached (now - last_event_at > sla_seconds)
+ *   - Amber  - Approaching SLA (within 80% consumed)
+ *   - Green  - Within SLA
+ *   - Grey   - No event data (last_event_at is null)
  */
 
 type SilenceBadgeProps = {

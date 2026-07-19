@@ -107,7 +107,7 @@ _DEMONYMS: dict[str, str] = {
     "OM": r"Oman|Omani",
 }
 
-# Long tail — canonical name only, no demonym (less cyber-attribution noise).
+# Long tail - canonical name only, no demonym (less cyber-attribution noise).
 _NAME_ONLY: dict[str, str] = {
     "AL": r"Albania",
     "AD": r"Andorra",

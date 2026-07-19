@@ -1,4 +1,4 @@
-"""TAXII bundle builder — TAXII-02, TAXII-04.
+"""TAXII bundle builder - TAXII-02, TAXII-04.
 
 Converts Event ORM rows to STIX 2.1 SDO dicts for outbound TAXII responses.
 TLP filtering happens at the SQL predicate layer (build_tlp_predicate), not here.
@@ -6,8 +6,8 @@ TLP filtering happens at the SQL predicate layer (build_tlp_predicate), not here
 Key design decisions (RESEARCH.md §Pattern 6):
   - Events with valid raw_stix are returned as-is (passthrough).
   - Events without raw_stix are wrapped as stix2.ObservedData with x_intellibird_*
-    custom properties. We do NOT build a proper SCO graph for RSS events — too expensive.
-  - Do NOT wrap objects in stix2.Bundle on the objects endpoint — TAXII spec §5.4
+    custom properties. We do NOT build a proper SCO graph for RSS events - too expensive.
+  - Do NOT wrap objects in stix2.Bundle on the objects endpoint - TAXII spec §5.4
     says the objects endpoint envelope contains raw SDOs, not a bundle.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ from app.models.markings import TlpMarking
 log = structlog.get_logger(__name__)
 
 # ---------------------------------------------------------------------------
-# TLP level ordering — RESEARCH.md §Pattern 5
+# TLP level ordering - RESEARCH.md §Pattern 5
 # ---------------------------------------------------------------------------
 
 TLP_LEVELS: dict[str, int] = {

@@ -1,19 +1,19 @@
-"""Dramatiq reports actors — TIBER-03.
+"""Dramatiq reports actors - TIBER-03.
 
 One actor on ``queue_name="reports"`` (isolated from ai / scoring / ingest queues):
 
-  generate_report_actor  — async export engine: MD / PDF / STIX dispatch,
+  generate_report_actor  - async export engine: MD / PDF / STIX dispatch,
                            BYTEA persistence, monotonic version_number.
 
-Per-loop async engine pattern (mandatory — see RESEARCH.md §"Pitfall 2"):
+Per-loop async engine pattern (mandatory - see RESEARCH.md §"Pitfall 2"):
     Each Dramatiq worker thread has its own asyncio event loop.  A module-global
     create_async_engine would bind to the FIRST loop it touches; subsequent calls
     from a different thread raise "Future attached to a different loop".
     Solution: create a fresh engine INSIDE each _async_* helper and await
-    engine.dispose() in a finally block — guarantees no connection leak.
+    engine.dispose() in a finally block - guarantees no connection leak.
 
 WeasyPrint subprocess isolation (H-5 RSS mitigation):
-    This module does NOT load weasyprint — PDF generation is delegated entirely to
+    This module does NOT load weasyprint - PDF generation is delegated entirely to
     app.services.tiber.exporters.pdf.generate_pdf_bytes which invokes the weasyprint
     CLI via subprocess. C library RSS is reclaimed on subprocess exit.
 
@@ -34,7 +34,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 log = logging.getLogger(__name__)
 
-# Extension map — must match report_format_enum values in migration 019.
+# Extension map - must match report_format_enum values in migration 019.
 EXT_MAP: dict[str, str] = {
     "markdown": "md",
     "pdf": "pdf",
@@ -49,7 +49,7 @@ EXT_MAP: dict[str, str] = {
 
 def _make_engine_and_session():
     """Build a fresh async engine + session factory inside the running loop."""
-    from app.config import settings  # noqa: PLC0415 — lazy import
+    from app.config import settings  # noqa: PLC0415 - lazy import
     engine = create_async_engine(
         settings.DATABASE_URL,
         pool_pre_ping=True,
@@ -64,7 +64,7 @@ def _make_engine_and_session():
 
 
 # ---------------------------------------------------------------------------
-# _async_generate — generate_report_actor implementation
+# _async_generate - generate_report_actor implementation
 # ---------------------------------------------------------------------------
 
 
@@ -75,7 +75,7 @@ async def _async_generate(
     user_id: str | None,
 ) -> None:
     """Per-loop async engine implementation for generate_report_actor."""
-    # Lazy imports — avoid hard-requiring env vars at module import time.
+    # Lazy imports - avoid hard-requiring env vars at module import time.
     from app.models.tiber import (  # noqa: PLC0415
         TiberReport, TiberActorProfile, TiberScenario, ReportExport,
     )
@@ -90,7 +90,7 @@ async def _async_generate(
     engine, session_factory = _make_engine_and_session()
     try:
         async with session_factory() as db:
-            # 1. Load report — enforce project_id scope boundary (PROD-01).
+            # 1. Load report - enforce project_id scope boundary (PROD-01).
             report = await db.get(TiberReport, UUID(tiber_report_id))
             if report is None or str(report.project_id) != project_id:
                 raise RuntimeError(
@@ -125,7 +125,7 @@ async def _async_generate(
                 # Render Markdown to UTF-8 string → convert to minimal HTML doc
                 # → hand to generate_pdf_bytes (subprocess; H-5 truncation applies
                 # inside render_markdown_export + the PDF exporter).
-                import mistune  # noqa: PLC0415 — subprocess isolation: import lazily
+                import mistune  # noqa: PLC0415 - subprocess isolation: import lazily
                 md_bytes = render_markdown_export(report, list(actors), list(scenarios))
                 md_text = md_bytes.decode("utf-8")
                 html_body = mistune.create_markdown(escape=True)(md_text)
@@ -169,7 +169,7 @@ async def _async_generate(
             ext = EXT_MAP[format_str]
             filename = f"{proj_slug}-tiber-{rep_slug}-v{next_version}-{date_str}.{ext}"
 
-            # 7. INSERT ReportExport row — snapshot report.state at export time.
+            # 7. INSERT ReportExport row - snapshot report.state at export time.
             row = ReportExport(
                 id=uuid4(),
                 tiber_report_id=report.id,

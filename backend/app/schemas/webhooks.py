@@ -1,9 +1,9 @@
-"""Pydantic v2 schemas for webhook CRUD + test-send — HOOK-01, HOOK-09."""
+"""Pydantic v2 schemas for webhook CRUD + test-send - HOOK-01, HOOK-09."""
 from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Annotated, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -24,14 +24,14 @@ _NAME_REGEX = r"^[a-z0-9_-]{1,64}$"
 
 
 class BearerAuth(BaseModel):
-    """Bearer token authentication — adds Authorization: Bearer <token> header."""
+    """Bearer token authentication - adds Authorization: Bearer <token> header."""
 
     type: Literal["bearer"] = "bearer"
     token: str = Field(min_length=1)
 
 
 class BasicAuth(BaseModel):
-    """HTTP Basic authentication — adds Authorization: Basic <base64> header."""
+    """HTTP Basic authentication - adds Authorization: Basic <base64> header."""
 
     type: Literal["basic"] = "basic"
     username: str = Field(min_length=1)
@@ -39,7 +39,7 @@ class BasicAuth(BaseModel):
 
 
 class HeaderAuth(BaseModel):
-    """Arbitrary custom header authentication — adds {name}: {value} header."""
+    """Arbitrary custom header authentication - adds {name}: {value} header."""
 
     type: Literal["header"] = "header"
     name: str = Field(min_length=1, max_length=100)
@@ -78,7 +78,7 @@ class WebhookCreate(BaseModel):
 class WebhookUpdate(BaseModel):
     """Payload to partially update a webhook.
 
- destination_type DELIBERATELY ABSENT — locked on edit.
+ destination_type DELIBERATELY ABSENT - locked on edit.
 """
 
     name: str | None = Field(default=None, pattern=_NAME_REGEX)
@@ -100,7 +100,7 @@ class WebhookUpdate(BaseModel):
 class WebhookResponse(BaseModel):
     """Webhook representation returned by CRUD endpoints.
 
- auth_enc DELIBERATELY ABSENT — SRC-04 parallel: credentials never returned
+ auth_enc DELIBERATELY ABSENT - SRC-04 parallel: credentials never returned
  in plaintext responses. bound_preset_names populated via join query in router
  (07-04); defaults to [] for schema-level tests.
 """
@@ -112,7 +112,7 @@ class WebhookResponse(BaseModel):
     project_id: uuid.UUID # included in responses
     destination_type: DestinationType
     url: str
-    # auth_enc DELIBERATELY ABSENT — SRC-04 parallel
+    # auth_enc DELIBERATELY ABSENT - SRC-04 parallel
     batching_window_sec: int
     enabled: bool
     last_dispatch_at: datetime | None
@@ -132,7 +132,7 @@ class WebhookResponse(BaseModel):
 class TestSendRequest(BaseModel):
     """Payload for the test-send endpoint.
 
- Client sends plaintext auth — backend encrypts for the round-trip.
+ Client sends plaintext auth - backend encrypts for the round-trip.
  Always returns HTTP 200; ok flag signals success/failure.
 """
 

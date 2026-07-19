@@ -1,6 +1,6 @@
 """Seed country / motivation / sophistication for known MITRE ATT&CK groups.
 
-Safe to re-run — uses UPDATE WHERE mitre_group_id = :mitre_group_id.
+Safe to re-run - uses UPDATE WHERE mitre_group_id = :mitre_group_id.
 Only updates rows that already exist (from seed_actors.py bootstrap).
 Rows without a mitre_group_id match are silently skipped.
 
@@ -87,7 +87,7 @@ ATTRIBUTIONS: list[dict[str, str]] = [
 
 
 def main() -> None:
-    from app.config import settings  # lazy import — avoids circular deps at module load
+    from app.config import settings  # lazy import - avoids circular deps at module load
 
     from sqlalchemy import create_engine, text
     from sqlalchemy.orm import Session
@@ -109,7 +109,7 @@ def main() -> None:
                 """),
                 entry,
             )
-            updated += result.rowcount
+            updated += result.rowcount  # type: ignore[attr-defined]
         session.commit()
 
     engine.dispose()

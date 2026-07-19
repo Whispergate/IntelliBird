@@ -1,4 +1,4 @@
-"""test_project_crud — PRJ-01 (plan 10-03 implementation).
+"""test_project_crud - PRJ-01 (plan 10-03 implementation).
 
 Exercises /api/projects CRUD: creator auto-join as Lead, Viewer 403 on create,
 soft archive + include_archived filter, legacy sentinel immutability.
@@ -6,7 +6,7 @@ soft archive + include_archived filter, legacy sentinel immutability.
 Uses AsyncClient + ASGITransport wired to the full app; overrides get_session
 so router writes land in the same testcontainer Postgres as the db_session
 fixture. AuthMiddleware helpers (_get_cached_token_version + _is_jti_revoked)
-are monkeypatched to bypass DB/Redis lookups — tokens come from users_matrix
+are monkeypatched to bypass DB/Redis lookups - tokens come from users_matrix
 fixture which minted them with the test JWT_SIGNING_KEY.
 """
 from __future__ import annotations
@@ -65,7 +65,7 @@ async def client(db_engine, monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# POST /api/projects — create + auto-Lead
+# POST /api/projects - create + auto-Lead
 # ---------------------------------------------------------------------------
 
 
@@ -97,7 +97,7 @@ async def test_create_auto_lead(client: AsyncClient, db_session, users_matrix):
 
 
 async def test_viewer_403(client: AsyncClient, users_matrix):
-    """Viewer POST /api/projects is forbidden — require_analyst_or_above gate."""
+    """Viewer POST /api/projects is forbidden - require_analyst_or_above gate."""
     viewer_token = users_matrix["tokens"]["observer"]
     r = await client.post(
         "/api/projects",
@@ -108,7 +108,7 @@ async def test_viewer_403(client: AsyncClient, users_matrix):
 
 
 # ---------------------------------------------------------------------------
-# POST /{id}/archive — soft delete + GET include_archived filter
+# POST /{id}/archive - soft delete + GET include_archived filter
 # ---------------------------------------------------------------------------
 
 
@@ -158,7 +158,7 @@ async def test_legacy_immutable(client: AsyncClient, users_matrix):
     """PATCH against the legacy sentinel project returns 403 legacy_project_immutable.
 
     Global Admin bypasses the membership gate, so the legacy guard itself must
-    reject the write — otherwise the sentinel could be renamed/unarchived.
+    reject the write - otherwise the sentinel could be renamed/unarchived.
     """
     admin_token = users_matrix["tokens"]["admin"]
     r = await client.patch(
@@ -179,7 +179,7 @@ async def test_admin_bypass_sees_all_projects(client: AsyncClient, users_matrix)
     """Global Admin sees every non-archived project even without membership."""
     analyst_token = users_matrix["tokens"]["analyst"]
     admin_token = users_matrix["tokens"]["admin"]
-    # Analyst creates a project — Admin is NOT a member.
+    # Analyst creates a project - Admin is NOT a member.
     created = (
         await client.post(
             "/api/projects",

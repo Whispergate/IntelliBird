@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/tiber/[report_id] — TIBER Report Editor page.
+ * /projects/[id]/tiber/[report_id] - TIBER Report Editor page.
  * UI-SPEC §Surface 2.
  *
  * Server component: fetches report + actors + scenarios, passes to TIBERReportEditor.

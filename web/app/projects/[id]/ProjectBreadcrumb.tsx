@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectBreadcrumb — Projects / <project name> / <section> nav strip.
+ * ProjectBreadcrumb - Projects / <project name> / <section> nav strip.
  *
  * Appears beneath the global TopNav (which stays rendered by root layout /
  * DashboardShell for /red and /blue routes) and above the 13-tab ProjectTabs
@@ -14,7 +14,7 @@
  *   - Default: "Overview"
  *
  * `<Link href="/projects">` is the only interactive element (returns to list).
- * Project name is plain text (non-interactive — clicking it would re-route to
+ * Project name is plain text (non-interactive - clicking it would re-route to
  * itself, which is confusing). Section is plain text (tab switch is the way
  * to change it).
  *

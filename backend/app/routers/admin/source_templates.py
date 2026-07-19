@@ -1,4 +1,4 @@
-"""Pre-configured source templates — operator picks a template and fills
+"""Pre-configured source templates - operator picks a template and fills
 credentials only. Static list for M1; could move to DB later.
 """
 from __future__ import annotations
@@ -87,7 +87,7 @@ TEMPLATES: list[SourceTemplate] = [
         name="CISA Known Exploited Vulnerabilities",
         feed_type="rss",
         url="https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.xml",
-        description="CISA KEV catalog — vulnerabilities actively exploited in the wild.",
+        description="CISA KEV catalog - vulnerabilities actively exploited in the wild.",
         auth_scheme=None,
         credential_fields=[],
         poll_interval_sec=21600,

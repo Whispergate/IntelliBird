@@ -1,4 +1,4 @@
-"""Article enrichment — regex-based extraction of explicit identifiers
+"""Article enrichment - regex-based extraction of explicit identifiers
 from event title + description prose.
 
 Extracts:
@@ -28,7 +28,7 @@ from dataclasses import dataclass, field
 from typing import Iterable
 
 
-# Regex patterns — compiled once.
+# Regex patterns - compiled once.
 _CVE_PATTERN = re.compile(r"\bCVE-(\d{4})-(\d{4,7})\b", re.IGNORECASE)
 _ATTACK_TECHNIQUE_PATTERN = re.compile(r"\b(T\d{4}(?:\.\d{3})?)\b")
 _IPV4_PATTERN = re.compile(
@@ -112,7 +112,7 @@ _TOOLING_PATTERN = re.compile(
     r")\b",
     re.IGNORECASE,
 )
-# Vendor advisories — drives Blue dashboard widget
+# Vendor advisories - drives Blue dashboard widget
 _VENDOR_ADVISORY_PATTERN = re.compile(
     r"\b("
     # Microsoft
@@ -143,13 +143,13 @@ _VENDOR_ADVISORY_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-# C2 / command-and-control mentions — bare `c2` tag for ActorInfra widget
+# C2 / command-and-control mentions - bare `c2` tag for ActorInfra widget
 _C2_PATTERN = re.compile(r"\b(C2|C&C|command[- ]and[- ]control)\b", re.IGNORECASE)
 
 # Country + keyword extraction: expanded to ISO 3166 (~210 countries) and a
 # curated security-domain wordlist. See country_data.py + keyword_data.py.
-from app.services.country_data import COUNTRY_PATTERNS, COUNTRY_PRIORITY
-from app.services.keyword_data import KEYWORD_PATTERNS
+from app.services.country_data import COUNTRY_PATTERNS, COUNTRY_PRIORITY  # noqa: E402
+from app.services.keyword_data import KEYWORD_PATTERNS  # noqa: E402
 
 _COUNTRY_COMPILED: list[tuple[re.Pattern[str], str]] = [
     (re.compile(rf"\b(?:{pattern})\b", re.IGNORECASE), cc)
@@ -290,7 +290,7 @@ def enrich_event(title: str | None, description: str | None) -> Enrichment:
         e.tags.add(cve_id.lower())
         e.tags.add("vulnerability")
 
-    # ATT&CK techniques — explicit IDs in body
+    # ATT&CK techniques - explicit IDs in body
     for tech in _ATTACK_TECHNIQUE_PATTERN.findall(text):
         e.attack_techniques.add(tech)
 
@@ -311,7 +311,7 @@ def enrich_event(title: str | None, description: str | None) -> Enrichment:
         e.tags.add("ioc")
         e.tags.add("malware")
 
-    # BTC / ETH — often ransomware / crypto-theft context
+    # BTC / ETH - often ransomware / crypto-theft context
     btc = set(_BTC_PATTERN.findall(text))
     eth = set(_ETH_PATTERN.findall(text))
     e.iocs["btc"].update(btc)
@@ -319,7 +319,7 @@ def enrich_event(title: str | None, description: str | None) -> Enrichment:
     if btc or eth:
         e.tags.add("ioc")
 
-    # Emails — often phishing / contact pivot
+    # Emails - often phishing / contact pivot
     emails = set(_EMAIL_PATTERN.findall(text))
     e.iocs["email"].update(e.lower() for e in emails)
 
@@ -353,7 +353,7 @@ def enrich_event(title: str | None, description: str | None) -> Enrichment:
         e.tags.add(sev)
 
     # Country mentions: collect ALL matches as `country:<CC>` tags + set.
-    # `country_code` field keeps a single value for the geo map pin —
+    # `country_code` field keeps a single value for the geo map pin -
     # priority list selects (US > RU > CN > KP > IR > UA ...); unranked
     # countries fall back to alpha-2 lex order so output is deterministic.
     for pattern, cc in _COUNTRY_COMPILED:
@@ -381,7 +381,7 @@ def merge_enrichment_into_event_row(
     """Merge enrichment into a dict representing an events row before INSERT.
 
  Mutates `event_row` in place. Caller handles attack_technique_tags separately
- (those are a different table — see `attack_technique_tag_rows`).
+ (those are a different table - see `attack_technique_tag_rows`).
 """
     # Tags union
     existing_tags = set(event_row.get("tags") or [])

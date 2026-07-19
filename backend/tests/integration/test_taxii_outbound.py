@@ -1,4 +1,4 @@
-"""Integration tests for TAXII 2.1 outbound server — TAXII-02..05.
+"""Integration tests for TAXII 2.1 outbound server - TAXII-02..05.
 
 Uses a real PostgreSQL testcontainer. Mirrors test_prod01_cross_project_leakage.py
 fixture pattern. Each test seeds its own TaxiiClient row and Event rows.
@@ -17,7 +17,6 @@ os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 import pytest
-import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -191,7 +190,7 @@ async def test_key_revocation_instant(db_session):
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as client:
-        # First request — should succeed
+        # First request - should succeed
         resp1 = await client.get(
             "/taxii2/api/collections/",
             headers={"X-TAXII-API-Key": raw_key},
@@ -205,7 +204,7 @@ async def test_key_revocation_instant(db_session):
         )
         await db_session.commit()
 
-        # Second request — must fail immediately (no caching)
+        # Second request - must fail immediately (no caching)
         resp2 = await client.get(
             "/taxii2/api/collections/",
             headers={"X-TAXII-API-Key": raw_key},
@@ -219,7 +218,7 @@ async def test_rate_limit(db_session):
 
     Note: This test requires Redis. Skip if Redis is not available.
     """
-    pytest.skip("Rate limit test requires running Redis — skip in CI without Redis")
+    pytest.skip("Rate limit test requires running Redis - skip in CI without Redis")
 
 
 @pytest.mark.integration

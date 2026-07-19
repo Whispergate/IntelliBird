@@ -23,7 +23,7 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # 1. ENUM extensions — must run outside transaction (autocommit_block pattern)
+    # 1. ENUM extensions - must run outside transaction (autocommit_block pattern)
     with op.get_context().autocommit_block():
         op.execute(
             "ALTER TYPE brand_match_source ADD VALUE IF NOT EXISTS 'certstream'"
@@ -103,4 +103,4 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table("misp_configs")
     op.drop_column("projects", "certstream_enabled")
-    # Note: ENUM value removal not supported in PostgreSQL — no-op for ENUM extensions
+    # Note: ENUM value removal not supported in PostgreSQL - no-op for ENUM extensions

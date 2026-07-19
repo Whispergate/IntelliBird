@@ -1,10 +1,9 @@
 """
-YARA-01 — POST /api/admin/yara-rules compiles rule, stores compiled_cache; invalid rule returns 422.
+YARA-01 - POST /api/admin/yara-rules compiles rule, stores compiled_cache; invalid rule returns 422.
 Implemented in: backend/app/routers/admin/yara_rules.py
 """
 import io
-import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -15,7 +14,7 @@ def mock_yara_rules_module():
     """Provide a mock yara module for compilation tests."""
     mock_yara = MagicMock()
     mock_rules = MagicMock()
-    mock_buf = io.BytesIO(b"compiled_bytes")
+    io.BytesIO(b"compiled_bytes")
 
     def fake_save(file):
         file.write(b"compiled_bytes")

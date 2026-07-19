@@ -20,7 +20,7 @@ import {
 } from "../lib/sourceSchema";
 
 /**
- * Retention Preset Picker — 5 radio options.
+ * Retention Preset Picker - 5 radio options.
  *
  * Selecting "Custom" reveals:
  * - Hot retention (days) number input

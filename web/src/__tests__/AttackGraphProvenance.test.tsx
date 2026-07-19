@@ -88,8 +88,8 @@ beforeEach(() => {
 
 // ── sessionStorage tests ──────────────────────────────────────────────────────
 
-describe("AttackGraphToolbar — sessionStorage / layout persistence", () => {
-  it("reads layout from sessionStorage on mount — Select receives persisted value", () => {
+describe("AttackGraphToolbar - sessionStorage / layout persistence", () => {
+  it("reads layout from sessionStorage on mount - Select receives persisted value", () => {
     window.sessionStorage.setItem("intellibird:graph-layout", "cose");
     render(<AttackGraphToolbar cy={null} />);
     // The Select mock renders with data-value reflecting what was passed in
@@ -148,7 +148,7 @@ describe("AttackGraphToolbar — sessionStorage / layout persistence", () => {
 
 // ── Provenance toggle tests ──────────────────────────────────────────────────
 
-describe("AttackGraphToolbar — provenance toggle", () => {
+describe("AttackGraphToolbar - provenance toggle", () => {
   it("does not call cy.elements on initial render (provenance off by default)", () => {
     const { cy, mocks } = makeFakeCy();
     render(<AttackGraphToolbar cy={cy} />);

@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * MatchDetailDrawer — (BRAND-02).
+ * MatchDetailDrawer - (BRAND-02).
  *
  * shadcn Sheet (right side, sm:max-w-xl) with three sections:
- *   1. Provenance  — 4-row dl (Detector badge / Raw input / Matched value / Similarity)
- *   2. History     — aggregate count badges + last-10 timeline (reverse-chrono)
- *   3. Actions     — Confirm / Dismiss / Watchlist + optional Note textarea (Lead+)
+ *   1. Provenance  - 4-row dl (Detector badge / Raw input / Matched value / Similarity)
+ *   2. History     - aggregate count badges + last-10 timeline (reverse-chrono)
+ *   3. Actions     - Confirm / Dismiss / Watchlist + optional Note textarea (Lead+)
  *                    Footer hidden for Observer role (via useProjectRole).
  *
  * Props pattern: details passed in (fetched by parent BrandDashboardClient on
@@ -40,7 +40,7 @@ import type {
 import { patchBrandMatch, fetchBrandMatchDetails } from "./lib/api";
 
 // ---------------------------------------------------------------------------
-// DetectorBadge — mirrors SourceChip colour map from MatchTable.tsx
+// DetectorBadge - mirrors SourceChip colour map from MatchTable.tsx
 // ---------------------------------------------------------------------------
 function DetectorBadge({ source }: { source: BrandSource | string }) {
   const labels: Record<string, string> = {
@@ -199,7 +199,7 @@ export function MatchDetailDrawer({
         const refreshed = await fetchBrandMatchDetails(projectId, match.id);
         setDetails(refreshed);
       } catch {
-        // Non-fatal — details may be stale but action succeeded
+        // Non-fatal - details may be stale but action succeeded
       }
 
       setNote("");
@@ -250,7 +250,7 @@ export function MatchDetailDrawer({
               Raw input
             </dt>
             <dd className="font-mono text-[12px] text-foreground break-all">
-              {provenance.raw_input ?? "—"}
+              {provenance.raw_input ?? "-"}
             </dd>
 
             <dt className="brand-caption text-muted-foreground self-start pt-0.5">
@@ -266,7 +266,7 @@ export function MatchDetailDrawer({
             <dd className="font-mono text-[12px] text-foreground">
               {provenance.similarity != null
                 ? `${(provenance.similarity * 100).toFixed(0)}%`
-                : "—"}
+                : "-"}
             </dd>
           </dl>
         </div>
@@ -294,7 +294,7 @@ export function MatchDetailDrawer({
           </div>
         </div>
 
-        {/* Actions footer — hidden for Observer */}
+        {/* Actions footer - hidden for Observer */}
         {!isObserver && (
           <div className="sticky bottom-0 bg-background border-t border-border px-6 py-4 space-y-3 shrink-0">
             {/* Note textarea */}

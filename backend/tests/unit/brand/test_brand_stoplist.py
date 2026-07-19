@@ -1,4 +1,4 @@
-"""Tests for app.services.brand_stoplist — DEFAULT_STOPLIST + env extras union + case-insensitive check.
+"""Tests for app.services.brand_stoplist - DEFAULT_STOPLIST + env extras union + case-insensitive check.
 
 Activated by plan 12-02 (Wave 2 service primitives).
 """
@@ -12,7 +12,6 @@ os.environ.setdefault("SECRET_KEY", "x" * 64)
 os.environ.setdefault("JWT_SIGNING_KEY", "y" * 64)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 
-import pytest
 
 from app.services.brand_stoplist import (
     DEFAULT_STOPLIST,

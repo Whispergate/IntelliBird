@@ -1,4 +1,4 @@
-"""Ollama startup health probe — AI-05.
+"""Ollama startup health probe - AI-05.
 
 Public API:
   probe_ollama(base_url, timeout) -> HealthStatus
@@ -9,10 +9,10 @@ on app.state.ollama_health.  Non-blocking: if Ollama is down, startup
 continues and the health endpoint surfaces "down".
 
 HealthStatus values:
-  "healthy" — HTTP 200 received in < 5 s
-  "slow"    — HTTP 200 received but elapsed >= 5 s (probe timeout is 10 s)
-  "down"    — non-200 response, connection error, or timeout
-  "unknown" — probe has not yet run (initial state)
+  "healthy" - HTTP 200 received in < 5 s
+  "slow"    - HTTP 200 received but elapsed >= 5 s (probe timeout is 10 s)
+  "down"    - non-200 response, connection error, or timeout
+  "unknown" - probe has not yet run (initial state)
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * IOC badge primitives — colour maps mirror 22-UI-SPEC §Color.
+ * IOC badge primitives - colour maps mirror 22-UI-SPEC §Color.
  * Used by IOC table, IOC detail drawer header, and EventDetailDrawer IOCs section.
  */
 

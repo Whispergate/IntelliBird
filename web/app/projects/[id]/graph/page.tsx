@@ -1,8 +1,8 @@
 /**
- * /projects/[id]/graph — Project-aggregate attack graph.
+ * /projects/[id]/graph - Project-aggregate attack graph.
  *
  * Server Component. Fetches the project graph from
- * GET /api/projects/{id}/graph via _apiFetch (CLAUDE.md convention — server-side
+ * GET /api/projects/{id}/graph via _apiFetch (CLAUDE.md convention - server-side
  * fetches MUST inject Bearer token; never use raw fetch(${API_BASE}/...)).
  *
  * Passes data to the <ProjectGraph> client component which renders:

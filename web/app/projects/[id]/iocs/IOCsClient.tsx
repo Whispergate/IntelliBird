@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * IOCsClient — (UI-SPEC §Surface 2).
+ * IOCsClient - (UI-SPEC §Surface 2).
  *
  * Header + filter bar + IOC table + cursor pagination + drawer triggers
  * + Bulk Import dialog launch + Backfill widget.
@@ -107,7 +107,7 @@ export function IOCsClient({ projectId, initialRows }: Props) {
   const sp = useSearchParams();
   const { isAdmin, isLead, isObserver } = useProjectRole();
 
-  // Filter state — initial from URL params
+  // Filter state - initial from URL params
   const [typeFilter, setTypeFilter] = useState<string>(sp.get("type") ?? "all");
   const [statusFilter, setStatusFilter] = useState<string>(
     sp.get("status") ?? "active",
@@ -199,7 +199,7 @@ export function IOCsClient({ projectId, initialRows }: Props) {
     ],
   );
 
-  // Refetch on filter change (skip first render — initialRows already populated)
+  // Refetch on filter change (skip first render - initialRows already populated)
   const skipFetchRef = useRef(true);
   useEffect(() => {
     if (skipFetchRef.current) {
@@ -367,7 +367,7 @@ export function IOCsClient({ projectId, initialRows }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Header — Surface 2a */}
+      {/* Header - Surface 2a */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex flex-col gap-1">
           <h1
@@ -393,7 +393,7 @@ export function IOCsClient({ projectId, initialRows }: Props) {
         </div>
       </div>
 
-      {/* Filter bar — Surface 2b */}
+      {/* Filter bar - Surface 2b */}
       <div className="flex items-center gap-3 flex-wrap p-3 rounded-md bg-card border border-border">
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="h-9 w-[140px]" aria-label="Type filter">
@@ -459,7 +459,7 @@ export function IOCsClient({ projectId, initialRows }: Props) {
         )}
       </div>
 
-      {/* Multi-select toolbar — appears when ≥1 row selected */}
+      {/* Multi-select toolbar - appears when ≥1 row selected */}
       {selectedRows.size >= 1 && (
         <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-muted/50 border border-border">
           <span className="text-sm text-muted-foreground">

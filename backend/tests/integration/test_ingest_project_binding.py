@@ -1,4 +1,4 @@
-"""Integration tests for project_id binding fan-out in ingest — Quick task 260429-tyq.
+"""Integration tests for project_id binding fan-out in ingest - Quick task 260429-tyq.
 
 Covers:
   1. One binding         → event lands in bound project (not LEGACY).
@@ -7,7 +7,7 @@ Covers:
   4. Per-project dedup   → second identical insert returns (0, 1).
   5. Unique index shape  → uq_events_source_content_hash leads with project_id.
 
-Pattern follows test_migration_012.py — module-scoped testcontainer with sync engine.
+Pattern follows test_migration_012.py - module-scoped testcontainer with sync engine.
 Tests target `_persist_event_for_bindings` directly (sync helper, sync session).
 """
 from __future__ import annotations
@@ -77,7 +77,7 @@ def db_session(live_db_head) -> Session:
     """
     engine = live_db_head
     with Session(engine) as session:
-        # Reset state — remove non-sentinel projects (cascades to project_sources,
+        # Reset state - remove non-sentinel projects (cascades to project_sources,
         # events). Events truncate is explicit because its FK is RESTRICT-style on
         # projects.id (not CASCADE).
         session.execute(text("TRUNCATE TABLE attack_technique_tags RESTART IDENTITY"))

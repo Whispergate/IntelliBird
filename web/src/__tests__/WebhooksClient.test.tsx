@@ -4,7 +4,7 @@ import { WebhookTable } from "../../app/webhooks/components/WebhookTable";
 import { WebhooksClient } from "../../app/webhooks/WebhooksClient";
 import type { Webhook } from "../../app/api-client";
 
-// Mock the api-client — all webhook fetchers used by WebhooksClient + WebhookTable
+// Mock the api-client - all webhook fetchers used by WebhooksClient + WebhookTable
 vi.mock("../../app/api-client", () => ({
   updateWebhook: vi.fn(),
   createWebhook: vi.fn(),

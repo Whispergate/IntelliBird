@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ActorProfilesSection — Section 3d: Threat Actor Profiles.
+ * ActorProfilesSection - Section 3d: Threat Actor Profiles.
  * UI-SPEC §3d.
  *
  * Auto-populated + manual. Card grid with ActorProfileCard per actor.
@@ -173,7 +173,7 @@ export function ActorProfilesSection({
         </div>
       )}
 
-      {/* Refresh diff modal — Surface 5 */}
+      {/* Refresh diff modal - Surface 5 */}
       {!readOnly && (
         <RefreshDiffModal
           open={refreshModalOpen}

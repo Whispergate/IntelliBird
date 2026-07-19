@@ -1,4 +1,4 @@
-"""— GDPR purge sweep integration tests (BRP-04 / L-3).
+"""- GDPR purge sweep integration tests (BRP-04 / L-3).
 
 Covers the must-have truth: `brand_gdpr_purge` DELETEs person-type brand_matches
 older than projects.gdpr_person_match_retention_days and leaves non-person
@@ -118,7 +118,7 @@ async def test_gdpr_purge_deletes_stale_person_matches_only(db_session):
     )
     await db_session.commit()
 
-    # Run the sync purge in a thread — avoids asyncio ↔ psycopg2 deadlock.
+    # Run the sync purge in a thread - avoids asyncio ↔ psycopg2 deadlock.
     await asyncio.to_thread(jobs_mod.brand_gdpr_purge_job)
 
     # Query survivors
@@ -145,7 +145,7 @@ async def test_gdpr_purge_is_noop_on_empty_dataset(db_session):
     table empty. Tests the commit-even-on-zero-rows path."""
     from app.scheduler import jobs as jobs_mod
 
-    # Wipe any residual brand data — db_session fixture TRUNCATEs projects
+    # Wipe any residual brand data - db_session fixture TRUNCATEs projects
     # cascading to brand_terms → brand_matches, but be explicit.
     await db_session.execute(text("DELETE FROM brand_matches"))
     await db_session.commit()

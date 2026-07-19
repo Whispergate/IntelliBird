@@ -1,6 +1,6 @@
 """POST /api/auth/login happy + 401 invalid + 429 lockout + /me + /logout
 
-Integration tests — AUTH-01/03. Activated by plan 09-03.
+Integration tests - AUTH-01/03. Activated by plan 09-03.
 
 Requires: testcontainers (Postgres + Redis). Skipped gracefully when Docker unavailable.
 """
@@ -27,7 +27,7 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
 @pytest.fixture(autouse=True)
 def _auth_disabled(monkeypatch):
-    """Bypass AuthMiddleware for this module — tokens are still validated elsewhere."""
+    """Bypass AuthMiddleware for this module - tokens are still validated elsewhere."""
     from app.config import settings
     monkeypatch.setattr(settings, "AUTH_ENABLED", False, raising=False)
 
@@ -60,7 +60,6 @@ async def auth_client(db_session, redis_url):
     from httpx import ASGITransport, AsyncClient
     from app.routers.auth import router
     from app.database import get_session
-    from app.config import settings
 
     app = FastAPI()
     app.include_router(router, prefix="")
@@ -157,7 +156,7 @@ async def test_login_invalid_password_401(auth_client, admin_user):
 
 @pytest.mark.asyncio
 async def test_login_nonexistent_user_401(auth_client):
-    """Non-existent user must return 401 (same code as wrong password — PITFALL 7)."""
+    """Non-existent user must return 401 (same code as wrong password - PITFALL 7)."""
     r = await auth_client.post("/auth/login", json={
         "username": "no-such-user",
         "password": "doesnt-matter-12",
@@ -220,7 +219,7 @@ async def test_login_success_clears_fails_counter(auth_client, admin_user, redis
     })
     assert r.status_code == 200
     # Counter should be gone
-    fails_key = f"login:fails:test-admin"
+    fails_key = "login:fails:test-admin"
     count = await redis_client.get(fails_key)
     assert count is None
 
@@ -269,7 +268,6 @@ async def test_me_returns_user_shape(auth_client, admin_user):
     app.dependency_overrides[require_auth] = override_require_auth
 
     # Point DB at our test container
-    import app.database as db_module
     from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
     from app.config import settings
 
@@ -298,7 +296,7 @@ async def test_me_returns_user_shape(auth_client, admin_user):
 @pytest.mark.asyncio
 async def test_logout_revokes_access_jti(auth_client, admin_user, redis_client):
     """Logout must blocklist the access token JTI."""
-    from app.security.jwt import mint_access_token, AuthUser
+    from app.security.jwt import AuthUser
     from app.config import settings
     from app.middleware.auth import require_auth
 

@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// vi.mock hoisted — factory must not reference module-level vars
+// vi.mock hoisted - factory must not reference module-level vars
 vi.mock("@/app/api-client", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/app/api-client")>();
   return {
@@ -70,7 +70,7 @@ describe("Map pin click (plan 06-04, MAP-02)", () => {
     } as never);
   });
 
-  it("test_pin_click_calls_router_replace — pin click invokes router.replace with ?event=<id>", async () => {
+  it("test_pin_click_calls_router_replace - pin click invokes router.replace with ?event=<id>", async () => {
     vi.mocked(apiClient.listEvents).mockResolvedValue({
       items: geoEvents,
       next_cursor: null,
@@ -108,7 +108,7 @@ describe("Map pin click (plan 06-04, MAP-02)", () => {
     expect(replaceMock).toHaveBeenCalledWith("/blue?event=evt-abc");
   });
 
-  it("test_cluster_click_awaits_expansion_zoom — cluster click calls map.easeTo with expansion zoom", async () => {
+  it("test_cluster_click_awaits_expansion_zoom - cluster click calls map.easeTo with expansion zoom", async () => {
     vi.mocked(apiClient.listEvents).mockResolvedValue({
       items: geoEvents,
       next_cursor: null,
@@ -161,7 +161,7 @@ describe("Map pin click (plan 06-04, MAP-02)", () => {
     });
   });
 
-  it("test_pin_click_uses_encodeURIComponent — special chars in event_id are URL-encoded", async () => {
+  it("test_pin_click_uses_encodeURIComponent - special chars in event_id are URL-encoded", async () => {
     vi.mocked(apiClient.listEvents).mockResolvedValue({
       items: geoEvents,
       next_cursor: null,

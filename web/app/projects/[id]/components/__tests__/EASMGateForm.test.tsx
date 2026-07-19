@@ -1,5 +1,5 @@
 /**
- * EASMGateForm tests — plan 11-10.
+ * EASMGateForm tests - plan 11-10.
  *
  * Tests Surface 2: Active-scan Gate Form (replaces EASMGatePreview on Settings tab).
  * Activated in plan 11-10 (was a Wave 0 stub referencing plan 11-11).

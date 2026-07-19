@@ -311,7 +311,7 @@ def _probe_server(target_key: str) -> dict[str, Any]:
             except Exception as e:  # noqa: BLE001
                 findings["added_after_behavior"] = f"error: {e}"
 
-            # Success — stop trying alternate URLs
+            # Success - stop trying alternate URLs
             break
 
         except Exception as e:  # noqa: BLE001

@@ -22,7 +22,7 @@ CONTEXT.md §Migration 007 shape locks the following:
   All three tables (events + filter_presets + webhooks) flip to NOT NULL post-backfill.
   No "global" row path.
 
-Three-step-plus pattern — avoids the compressed-chunk SET NOT NULL risk AND
+Three-step-plus pattern - avoids the compressed-chunk SET NOT NULL risk AND
 works with columnstore-enabled hypertables:
   1. INSERT sentinel row
   2a. ADD COLUMN project_id UUID NOT NULL DEFAULT sentinel::uuid
@@ -31,12 +31,12 @@ works with columnstore-enabled hypertables:
   2b. ADD CONSTRAINT ... FOREIGN KEY REFERENCES projects(id) ON DELETE RESTRICT
       (separated from 2a because TimescaleDB 2.26 rejects
        "ADD COLUMN ... REFERENCES" as a single statement on a hypertable whose
-       columnstore is enabled — spike finding from plan 10-01 live dry-run)
+       columnstore is enabled - spike finding from plan 10-01 live dry-run)
   3. ALTER COLUMN project_id DROP DEFAULT
      (every new row onward must pass project_id explicitly - M-6)
 
 No concurrent index creation here (TimescaleDB hypertables reject that form in a txn
-per STATE.md lock) — standard CREATE INDEX propagates to all chunks.
+per STATE.md lock) - standard CREATE INDEX propagates to all chunks.
 """
 from __future__ import annotations
 
@@ -255,7 +255,7 @@ def upgrade() -> None:
     # --- 6. Sentinel project row (must exist BEFORE FK-add on events etc) --
     # UUID literal '00000000-0000-0000-0000-000000000001' intentionally inlined
     # here (and in the 3 ADD COLUMN DEFAULTs below) rather than f-string
-    # interpolated — CONTEXT.md §Migration 007 shape mandates byte-for-byte
+    # interpolated - CONTEXT.md §Migration 007 shape mandates byte-for-byte
     # source readability, and the grep-check in plan 10-01 asserts exactly 4
     # literal occurrences.
     op.execute(
@@ -277,9 +277,9 @@ def upgrade() -> None:
     # --- 7. Three-step backfill: events.project_id -------------------------
     # Spike finding (plan 10-01 live dry-run, 2026-04-19): TimescaleDB 2.26
     # rejects `ADD COLUMN ... REFERENCES` in one statement on a hypertable with
-    # columnstore (compression) enabled — FeatureNotSupportedError: cannot add
+    # columnstore (compression) enabled - FeatureNotSupportedError: cannot add
     # column with constraints to a hypertable that has columnstore enabled.
-    # Mitigation: split into two statements — first ADD COLUMN NOT NULL DEFAULT
+    # Mitigation: split into two statements - first ADD COLUMN NOT NULL DEFAULT
     # (constant default backfills all chunks atomically per TS 2.11+ fast-path),
     # then ADD CONSTRAINT ... FOREIGN KEY. FK-only ALTER TABLE is permitted on
     # compressed hypertables.

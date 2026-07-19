@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetsTable — (UI-SPEC §Surface 5).
+ * AssetsTable - (UI-SPEC §Surface 5).
  *
  * 9-column locked layout:
  *   Type | Target | Scope | First seen | Last seen | Scans | Modules | Stale | Actions
@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
-// Types — mirror backend schema (12.1-02); generated api-client lands in 12.1-06.
+// Types - mirror backend schema (12.1-02); generated api-client lands in 12.1-06.
 // ---------------------------------------------------------------------------
 
 export type AssetScope = "in_scope" | "out_of_scope" | "unscoped";
@@ -104,7 +104,7 @@ function truncate(s: string, max: number): string {
 }
 
 // ---------------------------------------------------------------------------
-// Scope chip — locked tokens per UI-SPEC §Color
+// Scope chip - locked tokens per UI-SPEC §Color
 // ---------------------------------------------------------------------------
 
 function ScopeChip({ scope }: { scope: AssetScope }) {
@@ -181,7 +181,7 @@ function toggleSort(
 }
 
 // ---------------------------------------------------------------------------
-// Modules cell — truncate at 2, tooltip with full list
+// Modules cell - truncate at 2, tooltip with full list
 // ---------------------------------------------------------------------------
 
 function ModulesCell({ modules }: { modules: string[] }) {

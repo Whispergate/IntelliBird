@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * EnrichmentProvidersCard — per-provider reputation API key config.
+ * EnrichmentProvidersCard - per-provider reputation API key config.
  * ENRICH-01, ENRICH-04.
  *
  * Mirrors AIProviderCard.tsx structure.
@@ -135,7 +135,7 @@ export function EnrichmentProvidersCard({ projectId }: Props) {
         }
         setRows(map);
       } catch {
-        // Non-fatal — show defaults
+        // Non-fatal - show defaults
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -199,7 +199,7 @@ export function EnrichmentProvidersCard({ projectId }: Props) {
         </p>
       </CardHeader>
       <CardContent>
-        {/* OPSEC warning — shown when any provider is enabled */}
+        {/* OPSEC warning - shown when any provider is enabled */}
         {anyEnabled && (
           <div
             role="alert"
@@ -252,7 +252,7 @@ export function EnrichmentProvidersCard({ projectId }: Props) {
                     )}
                   </div>
 
-                  {/* API key input — hidden for keyless providers */}
+                  {/* API key input - hidden for keyless providers */}
                   {isKeyless ? (
                     <p className="text-xs text-muted-foreground">
                       (no API key required for free tier)
@@ -309,7 +309,7 @@ export function EnrichmentProvidersCard({ projectId }: Props) {
                     />
                   </div>
 
-                  {/* Save button — Lead+ only */}
+                  {/* Save button - Lead+ only */}
                   {isLead && (
                     <div className="flex justify-end">
                       <Button

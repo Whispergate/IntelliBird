@@ -1,10 +1,9 @@
-"""Integration: tor_html source lifecycle — DARK-02.
+"""Integration: tor_html source lifecycle - DARK-02.
 
 Uses a mock SOCKS5 responder (httpx mock transport) so tests run without
 a real Tor daemon. Verifies actor wiring, event persistence, source_health
 update, and feed_type='tor_html' stored on persisted events.
 """
-import pytest
 
 
 def test_poll_tor_html_impl_persists_events(db_session):

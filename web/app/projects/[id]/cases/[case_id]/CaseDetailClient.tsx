@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * CaseDetailClient — (CASE-04, CASE-05).
+ * CaseDetailClient - (CASE-04, CASE-05).
  *
  * Full-page 4-tab case detail:
- *   Overview  — summary_md as Markdown (pre fallback), AI Summarise polling
- *   Events    — attached events table + attach/detach
- *   IOCs      — attached IOCs table + attach/detach
- *   Activity  — read-only audit_log timeline
+ *   Overview  - summary_md as Markdown (pre fallback), AI Summarise polling
+ *   Events    - attached events table + attach/detach
+ *   IOCs      - attached IOCs table + attach/detach
+ *   Activity  - read-only audit_log timeline
  *
  * Poll pattern: POST summarise → GET case every 3s, max 20 polls (60s).
  */
@@ -77,7 +77,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 function SeverityBadge({ severity }: { severity: string | null }) {
-  if (!severity) return <span className="text-muted-foreground text-xs">—</span>;
+  if (!severity) return <span className="text-muted-foreground text-xs">-</span>;
   const cls = SEVERITY_COLORS[severity] ?? "bg-muted text-muted-foreground";
   return (
     <Badge className={`text-[11px] uppercase font-mono ${cls}`}>
@@ -87,7 +87,7 @@ function SeverityBadge({ severity }: { severity: string | null }) {
 }
 
 function fmtDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     return new Date(iso).toLocaleString(undefined, {
       day: "2-digit",
@@ -495,8 +495,8 @@ export function CaseDetailClient({ projectId, initialCase }: Props) {
     }
     // Timed out
     setIsPolling(false);
-    setPollError("Summary generation timed out — try again");
-    toast.error("Summary generation timed out — try again");
+    setPollError("Summary generation timed out - try again");
+    toast.error("Summary generation timed out - try again");
   }
 
   function handleSummarise() {
@@ -611,7 +611,7 @@ export function CaseDetailClient({ projectId, initialCase }: Props) {
     <div className="space-y-6 p-4 max-w-5xl mx-auto">
       {/* Page header */}
       <div className="flex items-start gap-4 flex-wrap">
-        {/* Title — inline editable */}
+        {/* Title - inline editable */}
         <div className="flex-1 min-w-0">
           {editingTitle ? (
             <div className="flex items-center gap-2">
@@ -788,7 +788,7 @@ export function CaseDetailClient({ projectId, initialCase }: Props) {
                       </td>
                       <td className="px-3 py-2 text-xs text-muted-foreground">{fmtDate(ev.attached_at)}</td>
                       <td className="px-3 py-2 text-xs text-muted-foreground font-mono">
-                        {ev.attached_by ?? "—"}
+                        {ev.attached_by ?? "-"}
                       </td>
                       <td className="px-3 py-2">
                         <Button
@@ -863,7 +863,7 @@ export function CaseDetailClient({ projectId, initialCase }: Props) {
                       </td>
                       <td className="px-3 py-2 text-xs text-muted-foreground">{fmtDate(ioc.attached_at)}</td>
                       <td className="px-3 py-2 text-xs text-muted-foreground font-mono">
-                        {ioc.attached_by ?? "—"}
+                        {ioc.attached_by ?? "-"}
                       </td>
                       <td className="px-3 py-2">
                         <Button

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MembershipsTabContent — Memberships tab orchestrator for /projects/[id]
+ * MembershipsTabContent - Memberships tab orchestrator for /projects/[id]
  * (PRJ-05).
  *
  * Owns:
@@ -58,7 +58,7 @@ export function MembershipsTabContent({
   }, [reload]);
 
   async function handleAdd(body: MembershipCreateBody) {
-    // Let MembershipDialog handle its own error surfacing — it throws on
+    // Let MembershipDialog handle its own error surfacing - it throws on
     // failure so the dialog stays open and the toast copy is close to the
     // user's action.
     await addMember(project.id, body);

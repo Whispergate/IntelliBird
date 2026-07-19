@@ -14,9 +14,9 @@ Creates EASM data foundation:
   - events gains easm_scan_id UUID NULL FK → easm_scans(id) ON DELETE SET NULL (L-4)
 
 L-4 closure: promoted events survive scan cleanup via ON DELETE SET NULL.
-H-4 pitfall: easm_findings is NOT a TimescaleDB hypertable — no time-series partitioning.
+H-4 pitfall: easm_findings is NOT a TimescaleDB hypertable - no time-series partitioning.
 M-4 dedup: UNIQUE(project_id, bbot_event_type, canonical_target) enforces cross-scan dedup.
-No CREATE INDEX CONCURRENTLY — TimescaleDB hypertables reject that form.
+No CREATE INDEX CONCURRENTLY - TimescaleDB hypertables reject that form.
 """
 from __future__ import annotations
 
@@ -104,14 +104,14 @@ def upgrade() -> None:
         sa.Column("error", sa.Text(), nullable=True),
         sa.Column("launched_by", sa.Text(), nullable=False),
     )
-    # Standard index — no CREATE INDEX CONCURRENTLY (TimescaleDB incompat)
+    # Standard index - no CREATE INDEX CONCURRENTLY (TimescaleDB incompat)
     op.create_index(
         "ix_easm_scans_project_started",
         "easm_scans",
         ["project_id", sa.text("started_at DESC")],
     )
 
-    # --- 3. easm_findings (NOT a hypertable — H-4) ----------------------------
+    # --- 3. easm_findings (NOT a hypertable - H-4) ----------------------------
     op.create_table(
         "easm_findings",
         sa.Column(
@@ -161,7 +161,7 @@ def upgrade() -> None:
             server_default="new",
         ),
         sa.Column("dismiss_until", sa.TIMESTAMP(timezone=True), nullable=True),
-        # M-4 dedup key — cross-scan deduplication: same target in any scan = one row
+        # M-4 dedup key - cross-scan deduplication: same target in any scan = one row
         sa.UniqueConstraint(
             "project_id", "bbot_event_type", "canonical_target",
             name="uq_easm_findings_dedup",
@@ -225,7 +225,7 @@ def upgrade() -> None:
         sa.Column("active_auth_confirmed_by", sa.Text(), nullable=True),
     )
 
-    # --- 6. events.easm_scan_id — L-4: ON DELETE SET NULL so promoted events  --
+    # --- 6. events.easm_scan_id - L-4: ON DELETE SET NULL so promoted events  --
     #        survive scan cleanup
     op.add_column(
         "events",

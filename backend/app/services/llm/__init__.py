@@ -1,4 +1,4 @@
-"""LLM service package — AI-04, AI-05, AI-06.
+"""LLM service package - AI-04, AI-05, AI-06.
 
 Public re-exports for convenience.  Callers may import directly from
 sub-modules or from this package.

@@ -1,4 +1,4 @@
-"""Integration tests for the brand router — matches + lifecycle + extend + suppression-review (12-06)."""
+"""Integration tests for the brand router - matches + lifecycle + extend + suppression-review (12-06)."""
 from __future__ import annotations
 
 import uuid
@@ -302,14 +302,14 @@ async def test_extend_let_resurface_resets_to_new(brand_app, db_session):
 async def test_suppression_review_returns_only_upcoming(brand_app, db_session):
     app, _factory, admin_user = brand_app
 
-    # Expiring in 3 days — SHOULD appear
+    # Expiring in 3 days - SHOULD appear
     pid, _tid, _mid = await _seed_project_term_match(
         db_session,
         admin_user.id,
         lifecycle="dismissed",
         dismiss_until=datetime.now(timezone.utc) + timedelta(days=3),
     )
-    # Same project — add another match expiring in 30 days (should NOT appear)
+    # Same project - add another match expiring in 30 days (should NOT appear)
     await db_session.execute(
         text(
             """

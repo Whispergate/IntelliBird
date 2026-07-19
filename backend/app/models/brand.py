@@ -1,4 +1,4 @@
-"""BrandTerm + BrandMatch ORM — BRP-01..BRP-05.
+"""BrandTerm + BrandMatch ORM - BRP-01..BRP-05.
 
 Maps to brand_terms and brand_matches tables created in migration 011.
 
@@ -99,7 +99,7 @@ class BrandMatch(Base):
         TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
     )
     match_metadata: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    # Soft reference (see note in migration 011) — no FK to events hypertable.
+    # Soft reference (see note in migration 011) - no FK to events hypertable.
     event_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     lifecycle_status: Mapped[str] = mapped_column(
         PgEnum(
@@ -118,7 +118,7 @@ class BrandMatch(Base):
 
 
 class BrandStoplistTerm(Base):
-    """Per-project stoplist term — BRAND-01.
+    """Per-project stoplist term - BRAND-01.
 
     Operator-managed additive union with global DEFAULT_STOPLIST + env extras.
     Uniqueness enforced case-insensitively via DB index on lower(term).

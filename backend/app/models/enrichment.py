@@ -1,8 +1,8 @@
-"""Enrichment ORM models — ENRICH-01, ENRICH-04.
+"""Enrichment ORM models - ENRICH-01, ENRICH-04.
 
 EnrichmentProvider: per-project (project_id NOT NULL) or global
   (project_id IS NULL) API key config. Mirrors AIProvider shape from
-  models/ai.py — same credentials_enc + credentials_key_version pattern.
+  models/ai.py - same credentials_enc + credentials_key_version pattern.
 
 IOCEnrichment: one row per (ioc_id, provider) result. raw_response_jsonb
   retains full API payload for future UI changes without re-fetching.
@@ -67,12 +67,12 @@ class EnrichmentProvider(Base):
 class IOCEnrichment(Base):
     """One enrichment result row per (ioc_id, provider).
 
-    raw_response_jsonb retains the full provider API payload — allows
+    raw_response_jsonb retains the full provider API payload - allows
     re-rendering with new UI logic without re-fetching. On re-enrichment
     (POST /api/iocs/{id}/enrich), existing row is updated in-place via
     ON CONFLICT DO UPDATE.
 
-    ioc_id FK CASCADE — deleting the IOC purges its enrichment rows.
+    ioc_id FK CASCADE - deleting the IOC purges its enrichment rows.
     """
 
     __tablename__ = "ioc_enrichments"

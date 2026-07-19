@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * TIBERReportEditor — Surface 2 three-column report editor shell.
+ * TIBERReportEditor - Surface 2 three-column report editor shell.
  * UI-SPEC §Surface 2.
  *
  * Layout:
@@ -183,7 +183,7 @@ export function TIBERReportEditor({
       s.procedure_text,
   );
   const selectedScenarioCount = selectedCompleteScenarios.length;
-  // Completeness gaps for ExportPanel tooltip — all incomplete section names
+  // Completeness gaps for ExportPanel tooltip - all incomplete section names
   const exportCompletenessGaps: string[] = Object.entries(completionStates)
     .filter(([, s]) => s !== "complete")
     .flatMap(([key]) => missingFields[key as SectionKey]);
@@ -240,7 +240,7 @@ export function TIBERReportEditor({
             <ReportStateBadge state={report.state} />
             {isPublished && (
               <Badge variant="outline" className="text-muted-foreground brand-caption shrink-0">
-                Published — read only
+                Published - read only
               </Badge>
             )}
           </div>
@@ -294,7 +294,7 @@ export function TIBERReportEditor({
           </div>
         </div>
 
-        {/* Export panel — Surface 7 (sticky Card above section content) */}
+        {/* Export panel - Surface 7 (sticky Card above section content) */}
         <div className="px-6 pt-4">
           <ExportPanel
             projectId={projectId}
@@ -368,7 +368,7 @@ export function TIBERReportEditor({
         </div>
       </div>
 
-      {/* Right history sidebar — Surface 8 */}
+      {/* Right history sidebar - Surface 8 */}
       <HistorySidebar
         projectId={projectId}
         reportId={report.id}

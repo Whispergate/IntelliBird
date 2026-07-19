@@ -1,13 +1,13 @@
 # HTML scrape sources
 
-Quick task 260425-ovt — turn any server-rendered webpage into an IntelliBird
+Quick task 260425-ovt - turn any server-rendered webpage into an IntelliBird
 source by specifying CSS selectors.
 
 ## When to use this
 
 Many high-value threat-intel sites (vendor research blogs, advisories) do not
 publish RSS or TAXII. The `custom` feed type lets an admin create a source from
-a regular HTML page — the worker fetches it on the normal poll schedule, runs
+a regular HTML page - the worker fetches it on the normal poll schedule, runs
 the CSS selectors you defined, and emits one event per matched item through
 the same ingest pipeline as RSS/TAXII/NVD.
 
@@ -21,7 +21,7 @@ the same ingest pipeline as RSS/TAXII/NVD.
 - Relative `href` values are resolved against the source URL via
   `urllib.parse.urljoin`.
 - Items are written via `_persist_event` with `stix_type="x-intellibird-html-scrape"`
-  and a `content_hash = sha256(source_id || link || title)` — identical to the
+  and a `content_hash = sha256(source_id || link || title)` - identical to the
   RSS hasher, so re-polling the same page dedups via the existing UNIQUE
   `(source_id, content_hash, observed_at)` index.
 
@@ -33,8 +33,8 @@ sidecar in v1.
 
 | Form              | Behaviour                                              |
 | ----------------- | ------------------------------------------------------ |
-| `h2 a`            | element text — `.text_content().strip()`               |
-| `h2 a@href`       | attribute extraction — `element.get("href")`           |
+| `h2 a`            | element text - `.text_content().strip()`               |
+| `h2 a@href`       | attribute extraction - `element.get("href")`           |
 | `time@datetime`   | `<time datetime="2026-04-25T10:00:00Z">` → ISO string  |
 
 A trailing `@attr` is the only extension over plain CSS. Everything before the
@@ -62,27 +62,27 @@ then walk the title / link / date selectors relative to that.
 
 | Key                | Required | Type     | Default                            | Notes                                    |
 | ------------------ | -------- | -------- | ---------------------------------- | ---------------------------------------- |
-| `item_selector`    | yes      | string   | —                                  | One node per emitted event.              |
-| `title_selector`   | yes      | string   | —                                  | Text or `selector@attr`.                 |
-| `link_selector`    | yes      | string   | —                                  | Resolved with `urljoin(base_url, …)`.    |
-| `date_selector`    | no       | string   | —                                  | Falls back to `datetime.now(UTC)` if absent or unparseable. |
+| `item_selector`    | yes      | string   | -                                  | One node per emitted event.              |
+| `title_selector`   | yes      | string   | -                                  | Text or `selector@attr`.                 |
+| `link_selector`    | yes      | string   | -                                  | Resolved with `urljoin(base_url, …)`.    |
+| `date_selector`    | no       | string   | -                                  | Falls back to `datetime.now(UTC)` if absent or unparseable. |
 | `date_format`      | no       | strptime | (auto ISO-8601)                    | Tried before `fromisoformat`.            |
-| `summary_selector` | no       | string   | —                                  | Optional description.                    |
+| `summary_selector` | no       | string   | -                                  | Optional description.                    |
 | `user_agent`       | no       | string   | `IntelliBird/1.0 (+self-hosted)`   | Override per source.                     |
 | `max_items`        | no       | integer  | 50 (hard-cap 200)                  | Server clamps `>200` to 200.             |
 
 ## Troubleshooting
 
-- **Test Connection returns 0 items** — the page is JS-rendered, the
+- **Test Connection returns 0 items** - the page is JS-rendered, the
   `item_selector` matches nothing, or the site blocks non-browser User-Agents.
   Try `view-source:` in the browser to confirm the markup is in the initial
   HTML response.
-- **Test Connection 4xx/5xx** — the upstream rejected the fetch. Some CDNs gate
+- **Test Connection 4xx/5xx** - the upstream rejected the fetch. Some CDNs gate
   by User-Agent; set a custom `user_agent` (e.g. mimic a recent Chrome UA) and
   retry.
-- **Events stop landing after a deploy** — the upstream restructured its DOM.
+- **Events stop landing after a deploy** - the upstream restructured its DOM.
   Update selectors via Edit Source. The next poll picks up the change.
-- **Source ingest stats** — `source_ingest_stats` rows record `parse_ok`,
+- **Source ingest stats** - `source_ingest_stats` rows record `parse_ok`,
   `parse_error`, `fetch_ok`, `fetch_error` per poll. Drift indicates a broken
   selector vs a network problem.
 
@@ -91,7 +91,7 @@ then walk the title / link / date selectors relative to that.
 - **No JavaScript rendering.** SPA-only pages won't work; consider running an
   RSS bridge service externally and pointing IntelliBird at that.
 - **No `robots.txt` enforcement.** The worker does not consult `robots.txt`.
-  Operator responsibility — only point this at sites whose terms allow
+  Operator responsibility - only point this at sites whose terms allow
   programmatic access.
 - **No SSRF guard.** This is an admin-only feature; specifying internal URLs
   causes the worker container to fetch them. If your worker container can reach

@@ -1,4 +1,4 @@
-"""Brand match severity scoring — pure function. No DB, no I/O.
+"""Brand match severity scoring - pure function. No DB, no I/O.
 
 Severity truth table (locked in 12-CONTEXT.md + 12-RESEARCH.md):
 

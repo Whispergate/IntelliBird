@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScanDetailClient — (UI-SPEC §Surface 6).
+ * ScanDetailClient - (UI-SPEC §Surface 6).
  *
  * Renders:
  *   - Breadcrumb: EASM / Scan History / <scan_id short>
@@ -26,7 +26,7 @@ import { listFindings, listScans } from "../../lib/api";
 // ---------------------------------------------------------------------------
 
 function fmtDatetime(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     const d = new Date(iso);
     const day = d.toLocaleDateString("en-GB", {
@@ -124,7 +124,7 @@ export function ScanDetailClient({
   }, [projectId, scanId]);
 
   // -----------------------------------------------------------------------
-  // Tab change handler — lazy-load diff
+  // Tab change handler - lazy-load diff
   // -----------------------------------------------------------------------
   function handleTabChange(value: string) {
     setActiveTab(value as "findings" | "diff");
@@ -281,7 +281,7 @@ export function ScanDetailClient({
           )}
         </TabsContent>
 
-        {/* Diff tab — lazy-loaded on first select */}
+        {/* Diff tab - lazy-loaded on first select */}
         <TabsContent value="diff" className="mt-4">
           {diffActivated ? (
             <DiffView projectId={projectId} scanId={scanId} />

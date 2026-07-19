@@ -1,7 +1,7 @@
-"""Tor-HTML scraping actor — DARK-02.
+"""Tor-HTML scraping actor - DARK-02.
 
 Structural clone of html_scrape.py with:
-  - httpx.AsyncClient through socks5h://tor:9050 (remote DNS — required for .onion)
+  - httpx.AsyncClient through socks5h://tor:9050 (remote DNS - required for .onion)
   - BFS crawl depth from scrape_config.crawl_depth (default 1, max 3)
   - queue_name="darkweb" so tor-worker handles this queue exclusively
 """
@@ -121,7 +121,7 @@ async def _async_crawl(
 
 
 def poll_tor_html_impl(source_id_str: str) -> None:
-    """Sync actor body — invoked directly by integration tests."""
+    """Sync actor body - invoked directly by integration tests."""
     source_id = uuid.UUID(source_id_str)
     inserted = 0
     deduped = 0

@@ -1,4 +1,4 @@
-// options.js — reads/writes chrome.storage.sync via webextension-polyfill
+// options.js - reads/writes chrome.storage.sync via webextension-polyfill
 document.addEventListener("DOMContentLoaded", async () => {
   const input = document.getElementById("url");
   const statusEl = document.getElementById("status");

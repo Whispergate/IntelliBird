@@ -1,4 +1,4 @@
-# IntelliBird Browser Extension — Operator Deployment Guide
+# IntelliBird Browser Extension - Operator Deployment Guide
 
 The IntelliBird Lookup extension adds a right-click context menu item that opens the IntelliBird IOC search page pre-filtered with any selected text.
 
@@ -9,7 +9,7 @@ The IntelliBird Lookup extension adds a right-click context menu item that opens
 
 ## Distribution
 
-The extension is distributed as `intellibird-extension.zip` (this directory). It is **not** published to the Chrome Web Store, Firefox AMO, or Microsoft Edge Add-ons store — it is operator-loaded only.
+The extension is distributed as `intellibird-extension.zip` (this directory). It is **not** published to the Chrome Web Store, Firefox AMO, or Microsoft Edge Add-ons store - it is operator-loaded only.
 
 ## Installation
 
@@ -47,7 +47,7 @@ After installing, configure the IntelliBird base URL:
 
 1. Right-click the IntelliBird extension icon in the browser toolbar
 2. Select **Options** (Chrome/Edge) or **Manage Extension → Preferences** (Firefox)
-3. Enter your IntelliBird base URL — for example:
+3. Enter your IntelliBird base URL - for example:
    - `https://intellibird.internal` (production with Caddy TLS)
    - `http://localhost:3000` (local development)
 4. Click **Save**
@@ -66,7 +66,7 @@ The URL is stored in `chrome.storage.sync` and persists across browser restarts.
 
 - Selected text is trimmed to **200 characters** before searching (prevents oversized URLs)
 - If no base URL has been configured, clicking the menu item opens the Options page instead of searching
-- The extension does **not** inject authentication tokens — it relies on the existing browser session cookie (`next-auth.session-token`) from your active IntelliBird login
+- The extension does **not** inject authentication tokens - it relies on the existing browser session cookie (`next-auth.session-token`) from your active IntelliBird login
 
 ## HTTPS / HTTP Notes
 
@@ -105,4 +105,4 @@ Chrome preserves `chrome.storage.sync` data across uninstall/reinstall on the sa
 | New tab opens login page | Not logged into IntelliBird | Sign in at `{base_url}/login` |
 | "Invalid URL" in Options | URL missing `http://` or `https://` prefix | Ensure URL starts with `http://` or `https://` |
 | Firefox context menu disappears after browser restart | Temporary add-on removed on restart | Reload via `about:debugging` or use Developer Edition |
-| `<all_urls>` permission warning on Firefox | Expected — broad host permission required for arbitrary IntelliBird origins | Accept the permission; the extension only opens tabs, it does not read page content |
+| `<all_urls>` permission warning on Firefox | Expected - broad host permission required for arbitrary IntelliBird origins | Accept the permission; the extension only opens tabs, it does not read page content |

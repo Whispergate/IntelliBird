@@ -1,4 +1,4 @@
-"""— Dramatiq actor integration tests.
+"""- Dramatiq actor integration tests.
 
 Covers the must-have truths from 12-05-PLAN.md:
   - Actor decorated with queue_name="brand-monitor"
@@ -9,7 +9,7 @@ Covers the must-have truths from 12-05-PLAN.md:
 
 The actor runs against the live testcontainer DB via the conftest-managed
 pg_url; we monkeypatch scan_project to avoid pulling in the full CT log /
-dnstwist subprocess dependency graph — this test validates the wiring of
+dnstwist subprocess dependency graph - this test validates the wiring of
 the actor, not the orchestrator (covered by Plan 04 unit tests).
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 
 import asyncio
 import uuid
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import pytest_asyncio
@@ -85,7 +85,7 @@ def test_actor_registered_via_broker_module():
 
 
 async def test_actor_invokes_scan_project_and_disposes_engine(seed_project):
-    """Happy path — actor calls scan_project with a real session and disposes
+    """Happy path - actor calls scan_project with a real session and disposes
     the per-loop engine. We capture the engine via monkeypatching
     create_async_engine to assert dispose was awaited."""
     from app.workers import brand as brand_mod
@@ -122,7 +122,7 @@ async def test_actor_invokes_scan_project_and_disposes_engine(seed_project):
 
     with patch.object(brand_mod, "create_async_engine", _tracking_create_engine), \
          patch.object(brand_mod, "scan_project", _fake_scan):
-        # Actor body calls asyncio.run() — dispatch via to_thread so the
+        # Actor body calls asyncio.run() - dispatch via to_thread so the
         # test's event loop is not clobbered (pytest-asyncio session-scoped loop).
         await asyncio.to_thread(brand_mod.brand_monitor_scan_project, str(pid))
 
@@ -133,7 +133,7 @@ async def test_actor_invokes_scan_project_and_disposes_engine(seed_project):
 
 
 async def test_actor_disposes_engine_on_exception(seed_project):
-    """Failure path — scan_project raises, actor re-raises, but engine.dispose
+    """Failure path - scan_project raises, actor re-raises, but engine.dispose
     MUST still run (finally block). This is the lesson's teeth."""
     from app.workers import brand as brand_mod
 
@@ -182,7 +182,7 @@ async def test_actor_disposes_engine_on_exception(seed_project):
 
 
 # ---------------------------------------------------------------------------
-# Noise-downgrade sweep (H-5) — exercised here because the plan asks for
+# Noise-downgrade sweep (H-5) - exercised here because the plan asks for
 # actor-path coverage of the sweep trigger.
 # ---------------------------------------------------------------------------
 
@@ -240,13 +240,13 @@ async def test_noise_downgrade_sweep_flips_noisy_term_to_watch_only(db_session):
     original_threshold = settings.BRAND_NOISE_THRESHOLD
     settings.BRAND_NOISE_THRESHOLD = 5  # type: ignore[assignment]
     try:
-        # Sweep is sync (psycopg2) — run in thread so we don't deadlock the
+        # Sweep is sync (psycopg2) - run in thread so we don't deadlock the
         # asyncio test loop against our asyncpg session.
         await asyncio.to_thread(jobs_mod.brand_noise_downgrade_sweep_job)
     finally:
         settings.BRAND_NOISE_THRESHOLD = original_threshold  # type: ignore[assignment]
 
-    # Re-read the term in the live session (use a raw read — session may cache).
+    # Re-read the term in the live session (use a raw read - session may cache).
     row = await db_session.execute(
         text("SELECT mode FROM brand_terms WHERE id = :tid"),
         {"tid": str(tid)},

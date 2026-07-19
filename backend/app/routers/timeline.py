@@ -1,8 +1,8 @@
-"""Timeline API — TIMELINE-01, TIMELINE-02, TIMELINE-03.
+"""Timeline API - TIMELINE-01, TIMELINE-02, TIMELINE-03.
 
 Endpoints:
-  GET /api/projects/{project_id}/timeline/series   — adaptive-bucket stacked area chart
-  GET /api/projects/{project_id}/timeline/heatmap  — hour × day-of-week activity heatmap
+  GET /api/projects/{project_id}/timeline/series   - adaptive-bucket stacked area chart
+  GET /api/projects/{project_id}/timeline/heatmap  - hour × day-of-week activity heatmap
 
 Both endpoints enforce project isolation via build_scope_predicate (TIMELINE-03).
 """
@@ -19,7 +19,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_session
-from app.models.events import Event
 from app.models.projects import ProjectRole
 from app.schemas.timeline import (
     BucketRow,

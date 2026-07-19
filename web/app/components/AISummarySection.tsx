@@ -2,7 +2,7 @@
 
 /**
  * AISummarySection
- * UI-SPEC §Surface 1 — EventDetailDrawer AI Summary section.
+ * UI-SPEC §Surface 1 - EventDetailDrawer AI Summary section.
  *
  * Responsibilities:
  *   - "Summarise" / "Re-summarise" / "Summarising…" button lifecycle
@@ -13,7 +13,7 @@
  *   - event: done → clears cursor, marks complete
  *   - event: error → shows inline error below streamed text
  *   - 429 → inline budget-exhausted message + sonner toast
- *   - Truncation footer detection (substring "— Content exceeded")
+ *   - Truncation footer detection (substring "- Content exceeded")
  *   - Below summary: AISuggestionChip strip from GET /api/events/{id}/ai/suggestions
  *   - Cleanup: EventSource.close() on unmount
  */
@@ -44,12 +44,12 @@ interface AISummarySectionProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const TRUNCATION_MARKER = "— Content exceeded";
+const TRUNCATION_MARKER = "- Content exceeded";
 
 function detectTruncation(text: string): { body: string; footer: string | null } {
   const idx = text.lastIndexOf(TRUNCATION_MARKER);
   if (idx === -1) return { body: text, footer: null };
-  // Split at the marker line — keep all text up to and including the footer
+  // Split at the marker line - keep all text up to and including the footer
   const footer = text.slice(idx).trim();
   const body = text.slice(0, idx).trimEnd();
   return { body, footer };
@@ -82,7 +82,7 @@ export function AISummarySection({
       const data: AISuggestion[] = await res.json();
       setSuggestions(data);
     } catch {
-      // Non-fatal — suggestions stay empty
+      // Non-fatal - suggestions stay empty
     } finally {
       setLoadingSuggestions(false);
     }
@@ -103,7 +103,7 @@ export function AISummarySection({
           setSummaryText(data.summary_text);
         }
       } catch {
-        // Non-fatal — user can click Summarise.
+        // Non-fatal - user can click Summarise.
       }
     }
     loadCached();
@@ -139,16 +139,16 @@ export function AISummarySection({
       });
 
       if (res.status === 429) {
-        // Budget exhausted — UI-SPEC §Surface 7 + §Copywriting Contract
+        // Budget exhausted - UI-SPEC §Surface 7 + §Copywriting Contract
         setBudgetExhausted(true);
         setIsStreaming(false);
-        toast.error("Daily AI budget exhausted — resets at 00:00 UTC.");
+        toast.error("Daily AI budget exhausted - resets at 00:00 UTC.");
         return;
       }
 
       if (!res.ok) {
         const text = await res.text().catch(() => "Unknown error.");
-        setStreamError(`— Error: ${text}`);
+        setStreamError(`- Error: ${text}`);
         setIsStreaming(false);
         return;
       }
@@ -176,7 +176,7 @@ export function AISummarySection({
         eventSourceRef.current = null;
         setIsStreaming(false);
         const errMsg = (event as MessageEvent).data ?? "Unknown error";
-        setStreamError(`— Error: ${errMsg}`);
+        setStreamError(`- Error: ${errMsg}`);
       });
 
       // Handle connection-level errors (network, etc.)
@@ -189,7 +189,7 @@ export function AISummarySection({
     } catch (err) {
       setIsStreaming(false);
       const msg = err instanceof Error ? err.message : "Unknown error";
-      setStreamError(`— Error: ${msg}`);
+      setStreamError(`- Error: ${msg}`);
     }
   }
 
@@ -225,14 +225,14 @@ export function AISummarySection({
           </Button>
         </div>
 
-        {/* Budget exhausted inline message — UI-SPEC §Surface 7 */}
+        {/* Budget exhausted inline message - UI-SPEC §Surface 7 */}
         {budgetExhausted && (
           <p className="text-destructive text-xs mt-1">
-            Budget exhausted — resets at 00:00 UTC
+            Budget exhausted - resets at 00:00 UTC
           </p>
         )}
 
-        {/* Summary body — shown once streaming starts or pre-loaded summary exists */}
+        {/* Summary body - shown once streaming starts or pre-loaded summary exists */}
         {(hasSummary || isStreaming) && (
           <div
             className="leading-relaxed text-foreground mt-2 rounded-md bg-card p-3 text-[13px]"
@@ -268,7 +268,7 @@ export function AISummarySection({
           </div>
         )}
 
-        {/* Truncation footer — UI-SPEC §1b */}
+        {/* Truncation footer - UI-SPEC §1b */}
         {footer && !isStreaming && (
           <p className="text-muted-foreground text-xs mt-2 border-t border-border pt-2">
             {footer}
@@ -280,7 +280,7 @@ export function AISummarySection({
           <p className="text-destructive text-xs mt-1">{streamError}</p>
         )}
 
-        {/* AI Suggestions strip — UI-SPEC §1c */}
+        {/* AI Suggestions strip - UI-SPEC §1c */}
         {!loadingSuggestions && suggestions.length > 0 && (
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2">

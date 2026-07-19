@@ -1,7 +1,7 @@
 /**
- * /projects/[id]/brand/terms — async server component.
+ * /projects/[id]/brand/terms - async server component.
  *
- * Surface 5 entry point — delegates the interactive list + dialog to
+ * Surface 5 entry point - delegates the interactive list + dialog to
  * `TermsClient`. No data fetch at the server level; the client owns the
  * list fetch so Observers / auth gates surface inside the rendered shell.
  */

@@ -98,7 +98,7 @@ export function EditUserDialog({ user, open, onOpenChange, onSaved }: Props) {
         </DialogHeader>
 
         <div className="flex flex-col gap-4 py-2">
-          {/* Username — read-only */}
+          {/* Username - read-only */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="edit-username">Username</Label>
             <Input

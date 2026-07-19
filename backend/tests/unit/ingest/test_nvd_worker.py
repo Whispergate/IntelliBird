@@ -1,4 +1,4 @@
-"""NVD parser + worker tests — INGC-01, INGC-02, INGC-03.
+"""NVD parser + worker tests - INGC-01, INGC-02, INGC-03.
 
 Parser-level (Task 1): pure normalise_cve + extract_attack_techniques
 against the captured nvd_cve_sample.json golden fixture.
@@ -171,8 +171,8 @@ def test_cve_hash_matches_helper() -> None:
 
 # ──────────────────────────── Worker-level (Task 2) ────────────────────────────
 
-from contextlib import contextmanager
-from unittest.mock import MagicMock
+from contextlib import contextmanager  # noqa: E402
+from unittest.mock import MagicMock  # noqa: E402
 
 
 @contextmanager
@@ -184,7 +184,7 @@ def _fake_session_ctx_nvd(*_args, **_kwargs):
 
 
 class _NvdError(Exception):
-    """Stand-in for nvdlib exception hierarchy — tests set.status_code."""
+    """Stand-in for nvdlib exception hierarchy - tests set.status_code."""
     def __init__(self, msg: str, status_code: int) -> None:
         super().__init__(msg)
         self.status_code = status_code

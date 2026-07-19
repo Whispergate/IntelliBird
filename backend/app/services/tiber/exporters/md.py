@@ -1,11 +1,11 @@
-"""TIBER Markdown/HTML exporter — TIBER-03.
+"""TIBER Markdown/HTML exporter - TIBER-03.
 
 Security invariants (enforced here + via Semgrep .semgrep.yml rules):
-  1. Jinja2 Environment autoescape=select_autoescape(['html', 'xml']) — MANDATORY
-  2. mistune HTMLRenderer(escape=True) — MANDATORY; prevents XSS via analyst input
+  1. Jinja2 Environment autoescape=select_autoescape(['html', 'xml']) - MANDATORY
+  2. mistune HTMLRenderer(escape=True) - MANDATORY; prevents XSS via analyst input
   3. Pre-rendered markdown HTML wrapped in markupsafe.Markup() before template context
      → template uses {{ var }} (autoescaped); pipe-safe filter is BANNED per Semgrep
-  4. File-based template only — no inline template strings (SSTI prevention)
+  4. File-based template only - no inline template strings (SSTI prevention)
   5. Template path: backend/app/templates/tiber/report.md.j2
 
 H-5: Event list truncated at EVENT_TRUNCATE_CAP (500) before template rendering.
@@ -27,13 +27,13 @@ from app.services.tiber.cbest import relabel_cif_to_cbs
 
 # ---------------------------------------------------------------------------
 # mistune: escape=True is explicit (default in 3.x but explicit for audit trail)
-# NEVER use escape=False — that passes raw HTML from analyst input to template.
+# NEVER use escape=False - that passes raw HTML from analyst input to template.
 # ---------------------------------------------------------------------------
 _md_renderer = mistune.HTMLRenderer(escape=True)
 _markdown = mistune.Markdown(renderer=_md_renderer)
 
 # ---------------------------------------------------------------------------
-# Jinja2 Environment — file-based loader, autoescape=True for HTML/XML.
+# Jinja2 Environment - file-based loader, autoescape=True for HTML/XML.
 # FileSystemLoader path: resolve from this file's location up to app/templates/tiber/
 # Depth: exporters/md.py → exporters/ → tiber/ → services/ → app/ + templates/tiber/
 # parents[0] = exporters/
@@ -71,7 +71,7 @@ def render_section_markdown(md_text: str) -> str:
     Returns:
         HTML string with special characters escaped (XSS-safe).
     """
-    return _markdown(md_text or "")
+    return _markdown(md_text or "")  # type: ignore[return-value]
 
 
 def render_markdown_export(
@@ -82,7 +82,7 @@ def render_markdown_export(
     """Render full 6-section TIBER report as Markdown bytes.
 
     Applies CBEST relabelling to all narrative text fields when report.cbest_mode=True.
-    Truncates report.tl_top_events at EVENT_TRUNCATE_CAP (500 rows) — H-5.
+    Truncates report.tl_top_events at EVENT_TRUNCATE_CAP (500 rows) - H-5.
     Pre-renders markdown narrative fields via mistune (escape=True) and wraps in
     Markup() so the Jinja2 template can output them without | safe.
 

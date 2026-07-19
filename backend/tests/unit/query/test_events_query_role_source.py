@@ -1,4 +1,4 @@
-"""events_query dashboard_roles claim-based visibility — AUTH-02 / C-2."""
+"""events_query dashboard_roles claim-based visibility - AUTH-02 / C-2."""
 from __future__ import annotations
 
 from app.services.events_query import EventsQueryParams, build_events_query, build_fts_query
@@ -55,7 +55,7 @@ def test_fts_query_same_visibility_semantics():
     sql_plain = str(stmt.compile(compile_kwargs={"literal_binds": False})).lower()
     assert "events.visibility in" in sql_plain
     # Verify the bound parameters contain the right values by using literal_binds only
-    # on the WHERE part — instead, compile the build_events_query equivalent to cross-check.
+    # on the WHERE part - instead, compile the build_events_query equivalent to cross-check.
     # The FTS path uses the same visibility logic; we validate via the non-FTS path's
     # literal-bind test above and trust the shared code path.
     # Additional check: build a non-FTS query and assert same structure:

@@ -1,5 +1,5 @@
 # Owned by: 12.1-04-PLAN
-"""Integration tests for /api/projects/{id}/assets READ surface — plan 12.1-04a.
+"""Integration tests for /api/projects/{id}/assets READ surface - plan 12.1-04a.
 
 Covers:
   - GET /assets (list): aggregation, filters (type/scope/stale/search), pagination
@@ -16,7 +16,7 @@ import os
 import uuid
 from datetime import datetime, timedelta, timezone
 
-# Settings env stubs — required before `app.config` import chain runs. The
+# Settings env stubs - required before `app.config` import chain runs. The
 # _patch_settings_for_integration autouse fixture later overwrites DATABASE_URL +
 # REDIS_URL with the live container URLs; SECRET_KEY + JWT_SIGNING_KEY remain.
 os.environ.setdefault("SECRET_KEY", "x" * 48)
@@ -197,7 +197,7 @@ def _set_user(app, user):
 
 
 # ---------------------------------------------------------------------------
-# test_list_and_summary — Tests 1-7 + promoted_events seed reuse
+# test_list_and_summary - Tests 1-7 + promoted_events seed reuse
 # ---------------------------------------------------------------------------
 
 
@@ -209,20 +209,20 @@ async def test_list_and_summary(assets_app, db_session):
     await _insert_project(db_session, project_id, admin_user.id)
     # Seed the finished scan WITH started_at before the findings' last_seen so
     # the stale cutoff (= MAX finished scan started_at) is older than every
-    # finding — none should be flagged stale.
+    # finding - none should be flagged stale.
     scan_started_at = datetime.now(timezone.utc) - timedelta(days=7)
     scan_id = await _insert_scan(
         db_session, project_id, admin_user.id, started_at=scan_started_at,
     )
 
     # Seed: 4 findings, 2 share (type, target) → 3 aggregated rows.
-    #   DNS_NAME / example.com   (2 findings, same canonical target — dedup-key
+    #   DNS_NAME / example.com   (2 findings, same canonical target - dedup-key
     #     collision prevented via distinct canonical_target below because of the
     #     DB unique constraint; use distinct targets per row instead.)
     # Unique constraint: (project_id, bbot_event_type, canonical_target).
     # Use 4 truly distinct rows to produce 4 aggregated assets, then assert >=3
     # per plan intent. We simulate "2 sharing type+target" via 2 scans on the
-    # same (type, target) — but the unique constraint collapses them. Instead
+    # same (type, target) - but the unique constraint collapses them. Instead
     # we use 3 distinct rows for a deterministic 3-asset result.
     now = datetime.now(timezone.utc)
     await _insert_finding(
@@ -301,7 +301,7 @@ async def test_list_and_summary(assets_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# test_list_filters_scope_and_stale — Tests 3 + 4
+# test_list_filters_scope_and_stale - Tests 3 + 4
 # ---------------------------------------------------------------------------
 
 
@@ -368,13 +368,13 @@ async def test_list_filters_scope_and_stale(assets_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# test_detail_and_note_patch — Tests 8, 9, 10, 16 (detail + promoted_events)
+# test_detail_and_note_patch - Tests 8, 9, 10, 16 (detail + promoted_events)
 # ---------------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
 async def test_detail_and_note_patch(assets_app, db_session):
-    """12.1-04-02: detail endpoint — findings list + promoted_events + note None.
+    """12.1-04-02: detail endpoint - findings list + promoted_events + note None.
 
     PATCH assertions are 04b's responsibility; this test only covers the READ
     surface of the detail endpoint (plus Test 16: promoted_events populated).
@@ -456,7 +456,7 @@ async def test_detail_and_note_patch(assets_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# test_membership_required — Tests 11, 12, 13, 14, 15
+# test_membership_required - Tests 11, 12, 13, 14, 15
 # ---------------------------------------------------------------------------
 
 
@@ -492,7 +492,7 @@ async def test_membership_required(assets_app, db_session):
         r = await client.get(f"/api/projects/{project_a}/assets")
         assert r.status_code == 403
 
-    # Test 12 (legacy): 422 — need membership so guard runs. Give global Admin
+    # Test 12 (legacy): 422 - need membership so guard runs. Give global Admin
     # (bypasses membership) and hit legacy sentinel.
     admin = _make_auth_user(role="Admin")
     _set_user(app, admin)
@@ -523,7 +523,7 @@ async def test_membership_required(assets_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# test_note_patch — 04b Tests 1-10 (PATCH upsert + authority matrix + 404/422)
+# test_note_patch - 04b Tests 1-10 (PATCH upsert + authority matrix + 404/422)
 # ---------------------------------------------------------------------------
 
 
@@ -674,7 +674,7 @@ async def test_note_patch(assets_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# test_export — 04b Tests 11-15 (CSV + JSON + 413 cap + 422 invalid + filter)
+# test_export - 04b Tests 11-15 (CSV + JSON + 413 cap + 422 invalid + filter)
 # ---------------------------------------------------------------------------
 
 
@@ -741,7 +741,7 @@ async def test_export(assets_app, db_session):
         )
         assert r.status_code == 422
 
-        # Test 15 (export respects filter — type=IP_ADDRESS only)
+        # Test 15 (export respects filter - type=IP_ADDRESS only)
         r = await client.get(
             f"/api/projects/{project_id}/assets/export",
             params={"format": "csv", "type": "IP_ADDRESS"},
@@ -754,7 +754,7 @@ async def test_export(assets_app, db_session):
 
     # Test 13 (export 413): monkey-patch EXPORT_ROW_CAP to a small value so we
     # don't need to seed 50_001 findings. The ASSET_ROW_CAP is read once per
-    # request — setattr on the router module flips the limit.
+    # request - setattr on the router module flips the limit.
     import app.routers.assets as assets_module
 
     original_cap = assets_module.EXPORT_ROW_CAP
@@ -778,7 +778,7 @@ async def test_export(assets_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# test_main_registration — asserts assets router visible via /openapi.json
+# test_main_registration - asserts assets router visible via /openapi.json
 # ---------------------------------------------------------------------------
 
 

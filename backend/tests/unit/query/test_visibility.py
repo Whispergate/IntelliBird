@@ -1,4 +1,4 @@
-"""Tests for dashboard_roles visibility filter — FIL-02 / AUTH-02.
+"""Tests for dashboard_roles visibility filter - FIL-02 / AUTH-02.
 
 Updated in plan 09-05: role: str | None -> dashboard_roles: list[str] | None.
 """
@@ -43,21 +43,21 @@ def test_visibility_absent_header_no_filter():
             compile_kwargs={"literal_binds": True}
         )
     ).lower()
-    # The SELECT projects events.visibility as a column — that's expected.
+    # The SELECT projects events.visibility as a column - that's expected.
     # The WHERE clause must NOT contain a visibility filter when no roles set.
     assert "events.visibility in" not in sql_lit
 
 
 def test_visibility_unknown_role_no_filter():
     # Unknown role string in list is not "red" or "blue" so only "shared" would be in allowed.
-    # But since the list is non-empty, the filter fires — this tests that unknown-only roles
+    # But since the list is non-empty, the filter fires - this tests that unknown-only roles
     # produce a shared-only filter (narrowest safe default rather than no filter).
     sql_lit = str(
         build_events_query(EventsQueryParams(), dashboard_roles=["purple"]).compile(
             compile_kwargs={"literal_binds": True}
         )
     ).lower()
-    # "purple" is not red or blue — only shared is allowed; visibility IN clause IS present
+    # "purple" is not red or blue - only shared is allowed; visibility IN clause IS present
     # but restricts to shared only. Check no red_only or blue_only leak.
     assert "red_only" not in sql_lit
     assert "blue_only" not in sql_lit

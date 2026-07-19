@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ReportStateBadge — displays TIBER report state (draft / published / archived).
+ * ReportStateBadge - displays TIBER report state (draft / published / archived).
  * UI-SPEC §"Report State Colour Map".
  */
 

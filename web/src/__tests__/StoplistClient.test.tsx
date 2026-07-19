@@ -1,5 +1,5 @@
 /**
- * StoplistClient.test.tsx — (BRAND-01 frontend).
+ * StoplistClient.test.tsx - (BRAND-01 frontend).
  *
  * Coverage:
  *   - Table renders with term/created_by/created_at columns (Lead role)
@@ -25,7 +25,7 @@ if (
 }
 
 // ---------------------------------------------------------------------------
-// Mocks — hoisted before component imports
+// Mocks - hoisted before component imports
 // ---------------------------------------------------------------------------
 
 vi.mock("sonner", () => ({
@@ -148,7 +148,7 @@ function renderWithRole(
   initialTerms: BrandStoplistTerm[] = [],
 ) {
   return render(
-    // @ts-expect-error — test mock accepts value prop
+    // @ts-expect-error - test mock accepts value prop
     <ProjectRoleProvider value={role}>
       <StoplistClient projectId="proj-1" initialTerms={initialTerms} />
     </ProjectRoleProvider>,

@@ -1,4 +1,4 @@
-"""MON-04 monitoring admin API — plan 16-06.
+"""MON-04 monitoring admin API - plan 16-06.
 
 Integration tests for the /api/admin/monitoring/sources REST endpoints:
 list shape, per-source monitoring_config PATCH, and the Admin-only 403 gate
@@ -84,7 +84,7 @@ async def test_admin_can_list_monitoring_sources(monkeypatch) -> None:
     """GET /api/admin/monitoring/sources returns 200 with source list for Admin JWT."""
     _patch_auth(monkeypatch)
 
-    # Patch DB to return empty sources list — no live DB required
+    # Patch DB to return empty sources list - no live DB required
     mock_result = MagicMock()
     mock_result.mappings.return_value.all.return_value = []
 

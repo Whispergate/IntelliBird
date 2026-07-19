@@ -1,7 +1,7 @@
-"""TaxiiClient ORM model — TAXII-03.
+"""TaxiiClient ORM model - TAXII-03.
 
 Stores per-partner API keys for the TAXII 2.1 outbound server.
-Raw API keys are NEVER stored — only SHA-256 hex digest.
+Raw API keys are NEVER stored - only SHA-256 hex digest.
 """
 from __future__ import annotations
 

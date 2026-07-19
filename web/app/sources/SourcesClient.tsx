@@ -37,7 +37,7 @@ export function SourcesClient({ initialSources }: { initialSources: Source[] }) 
       tableKeyRef.current += 1;
       setTableKey(tableKeyRef.current);
     } catch {
-      // swallow — table still shows stale rows
+      // swallow - table still shows stale rows
     }
   }
 

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /admin/monitoring — Source Health Dashboard.
+ * /admin/monitoring - Source Health Dashboard.
  * MON-04 dashboard requirement.
  *
  * Admin-only page. SWR-style refresh every 30s (CONTEXT.md "Claude's Discretion").
@@ -71,7 +71,7 @@ export default function MonitoringPage() {
     fetchSources();
   }
 
-  // Non-admin guard (client side mirror — backend enforces authoritatively)
+  // Non-admin guard (client side mirror - backend enforces authoritatively)
   if (user && user.role !== "Admin") {
     return (
       <div className="p-6">
@@ -83,7 +83,7 @@ export default function MonitoringPage() {
             color: "#fca5a5",
           }}
         >
-          403 — Admin access required.
+          403 - Admin access required.
         </div>
       </div>
     );
@@ -100,7 +100,7 @@ export default function MonitoringPage() {
             color: "#fca5a5",
           }}
         >
-          403 — Admin access required.
+          403 - Admin access required.
         </div>
       </div>
     );
@@ -122,7 +122,7 @@ export default function MonitoringPage() {
         )}
         {!loading && !error && (
           <span className="text-xs text-muted-foreground">
-            {rows.length} source{rows.length !== 1 ? "s" : ""} — refreshes every 30s
+            {rows.length} source{rows.length !== 1 ? "s" : ""} - refreshes every 30s
           </span>
         )}
       </div>

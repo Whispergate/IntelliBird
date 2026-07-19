@@ -117,7 +117,7 @@ const SAMPLE_IOC: IOCRead = {
   created_by: null,
 };
 
-describe("IOCsClient — badges", () => {
+describe("IOCsClient - badges", () => {
   it("renders 13-type ENUM badge map correctly", () => {
     const { container: c1 } = render(<TypeBadge type="ip" />);
     expect(c1.querySelector(".bg-teal-900\\/40")).not.toBeNull();
@@ -155,7 +155,7 @@ describe("IOCsClient", () => {
     const user = userEvent.setup();
     const triggers = screen.getAllByRole("combobox");
     expect(triggers.length).toBeGreaterThan(0);
-    // Click the status select (second in the bar after type filter — find by label proximity)
+    // Click the status select (second in the bar after type filter - find by label proximity)
     // We just ensure replace is called when a value changes via direct interaction.
     // Use the search input which is simpler to drive in jsdom.
     const search = screen.getByPlaceholderText(/Search IOC value/i);

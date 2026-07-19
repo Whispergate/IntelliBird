@@ -58,7 +58,7 @@ def test_tier_filter_D_bounds() -> None:
     """tier=['D']: WHERE clause should contain >= 0.0 and <= 29.99.
 
     This also covers the NULL/unscored rows path: COALESCE(score, 0) maps
-    unscored rows to 0, which falls in tier D — per RESEARCH.md Pitfall 3.
+    unscored rows to 0, which falls in tier D - per RESEARCH.md Pitfall 3.
     """
     params = EventsQueryParams(tier=["D"])
     sql = _compile(params)

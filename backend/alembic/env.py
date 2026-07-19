@@ -1,4 +1,4 @@
-"""Alembic environment — async SQLAlchemy + DATABASE_URL from env."""
+"""Alembic environment - async SQLAlchemy + DATABASE_URL from env."""
 from __future__ import annotations
 
 import asyncio
@@ -14,7 +14,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 from app.models.base import Base  # noqa: E402
-import app.models  # noqa: F401,E402 — ensures all tables are registered on Base.metadata
+import app.models  # noqa: F401,E402 - ensures all tables are registered on Base.metadata
 
 target_metadata = Base.metadata
 
@@ -31,7 +31,7 @@ def include_name(name, type_, parent_names):  # type: ignore[no-untyped-def]
 def get_url() -> str:
     url = os.environ.get("DATABASE_URL")
     if not url:
-        raise RuntimeError("DATABASE_URL not set — required by alembic/env.py")
+        raise RuntimeError("DATABASE_URL not set - required by alembic/env.py")
     return url
 
 

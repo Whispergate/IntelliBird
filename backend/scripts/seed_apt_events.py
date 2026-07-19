@@ -91,7 +91,7 @@ APT_EVENTS = [
     # ── Initial Access ────────────────────────────────────────────────────────
     {
         "delta_hours": -240,
-        "title": "Spearphishing Campaign Targeting CFO Office Staff — DPRK Nexus",
+        "title": "Spearphishing Campaign Targeting CFO Office Staff - DPRK Nexus",
         "description": (
             "High-confidence spearphishing campaign against CFO and treasury staff at 6 UK banks. "
             "Lure: 'Q4 Regulatory Reporting Requirements Update' PDF with embedded OLE object. "
@@ -121,7 +121,7 @@ APT_EVENTS = [
     # ── Execution ─────────────────────────────────────────────────────────────
     {
         "delta_hours": -216,
-        "title": "PowerShell Empire Framework Activity — Stage 2 Payload Execution",
+        "title": "PowerShell Empire Framework Activity - Stage 2 Payload Execution",
         "description": (
             "SIEM alert: Encoded PowerShell (-EncodedCommand) execution chain detected on "
             "compromised host. Base64 decoded payload downloads stage-2 from hxxps://cdn-update[.]net. "
@@ -151,7 +151,7 @@ APT_EVENTS = [
     # ── Persistence ──────────────────────────────────────────────────────────
     {
         "delta_hours": -200,
-        "title": "Registry Run Key Persistence — HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
+        "title": "Registry Run Key Persistence - HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",
         "description": (
             "Forensic artefact: malicious DLL registered under "
             "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run as 'WindowsUpdateService'. "
@@ -181,12 +181,12 @@ APT_EVENTS = [
     # ── Privilege Escalation ──────────────────────────────────────────────────
     {
         "delta_hours": -180,
-        "title": "Zerologon Exploitation (CVE-2020-1472) — Domain Controller Compromise",
+        "title": "Zerologon Exploitation (CVE-2020-1472) - Domain Controller Compromise",
         "description": (
             "Critical: CVE-2020-1472 (Zerologon) exploited against domain controller. "
             "Threat actor reset DC machine account password to empty string, authenticated as DC, "
             "extracted NTDS.dit and SYSTEM hive via VSS shadow copy. "
-            "Domain-wide krbtgt hash compromise confirmed — full domain takeover achieved. "
+            "Domain-wide krbtgt hash compromise confirmed - full domain takeover achieved. "
             "All Kerberos tickets invalidated. Emergency password reset initiated across 4,200 accounts."
         ),
         "source": "TAXII",
@@ -196,7 +196,7 @@ APT_EVENTS = [
     },
     {
         "delta_hours": -170,
-        "title": "Token Impersonation via Incognito — SYSTEM to Domain Admin Escalation",
+        "title": "Token Impersonation via Incognito - SYSTEM to Domain Admin Escalation",
         "description": (
             "Metasploit Incognito module used to list and impersonate available Kerberos tokens on "
             "compromised host. Domain admin token impersonated to access SYSVOL and deploy Group "
@@ -211,7 +211,7 @@ APT_EVENTS = [
     # ── Defense Evasion ───────────────────────────────────────────────────────
     {
         "delta_hours": -160,
-        "title": "AMSI Bypass via Reflection and ETW Patching — AV Evasion Confirmed",
+        "title": "AMSI Bypass via Reflection and ETW Patching - AV Evasion Confirmed",
         "description": (
             "PowerShell AMSI bypass using System.Management.Automation.AmsiUtils reflection "
             "to patch amsiInitFailed to $true. Followed by ETW (Event Tracing for Windows) "
@@ -226,7 +226,7 @@ APT_EVENTS = [
     # ── Credential Access ─────────────────────────────────────────────────────
     {
         "delta_hours": -148,
-        "title": "LSASS Memory Dump via MiniDump — Credential Harvesting at Scale",
+        "title": "LSASS Memory Dump via MiniDump - Credential Harvesting at Scale",
         "description": (
             "LSASS process memory dumped via comsvcs.dll MiniDump: "
             "'rundll32 C:\\windows\\system32\\comsvcs.dll, MiniDump lsass_pid lsass.dmp full'. "
@@ -241,7 +241,7 @@ APT_EVENTS = [
     },
     {
         "delta_hours": -140,
-        "title": "Kerberoasting Attack — 23 Service Account Hashes Extracted",
+        "title": "Kerberoasting Attack - 23 Service Account Hashes Extracted",
         "description": (
             "Kerberoasting detected via Rubeus: 'Rubeus.exe kerberoast /format:hashcat /outfile:hashes.txt'. "
             "23 service account SPNs targeted, hashes extracted for offline cracking. "
@@ -256,12 +256,12 @@ APT_EVENTS = [
     # ── Discovery ─────────────────────────────────────────────────────────────
     {
         "delta_hours": -130,
-        "title": "Internal Network Enumeration — BloodHound AD Recon Detected",
+        "title": "Internal Network Enumeration - BloodHound AD Recon Detected",
         "description": (
             "SharpHound collector executed from compromised host: 'SharpHound.exe -c All --zipfilename ad_data'. "
             "LDAP queries for all domain users, computers, groups, ACLs, and GPOs. "
             "BloodHound analysis identified shortest path to Domain Admin: 3 hops via nested group membership. "
-            "Also: nmap SYN scan of 10.0.0.0/16 range, port 443/445/3389/8443 — 847 live hosts identified."
+            "Also: nmap SYN scan of 10.0.0.0/16 range, port 443/445/3389/8443 - 847 live hosts identified."
         ),
         "source": "RSS",
         "tier": "B",
@@ -271,7 +271,7 @@ APT_EVENTS = [
     # ── Lateral Movement ──────────────────────────────────────────────────────
     {
         "delta_hours": -118,
-        "title": "Pass-the-Hash via SMB — Lateral Movement to SWIFT Application Server",
+        "title": "Pass-the-Hash via SMB - Lateral Movement to SWIFT Application Server",
         "description": (
             "Pass-the-Hash attack using harvested NTLM credentials to authenticate to SWIFT "
             "Alliance Access application server (10.10.5.45). Authentication via SMB using "
@@ -287,7 +287,7 @@ APT_EVENTS = [
     # ── Collection ────────────────────────────────────────────────────────────
     {
         "delta_hours": -100,
-        "title": "SWIFT Transaction Data Staged for Exfiltration — 6 Months of MT103 Messages",
+        "title": "SWIFT Transaction Data Staged for Exfiltration - 6 Months of MT103 Messages",
         "description": (
             "DLP alert: large archive operation on SWIFT application server. "
             "PowerShell script compressed 6 months of MT103 transaction logs (4.2GB) to "
@@ -304,10 +304,10 @@ APT_EVENTS = [
     # ── Command and Control ───────────────────────────────────────────────────
     {
         "delta_hours": -88,
-        "title": "HTTPS C2 Beacon — BLINDINGCAN RAT Communicating via Cloudflare CDN",
+        "title": "HTTPS C2 Beacon - BLINDINGCAN RAT Communicating via Cloudflare CDN",
         "description": (
             "Network traffic analysis: periodic HTTPS POST requests every 4±1 minutes to "
-            "cdn-update[.]net (104.21.x.x — Cloudflare). Payload encrypted with ChaCha20. "
+            "cdn-update[.]net (104.21.x.x - Cloudflare). Payload encrypted with ChaCha20. "
             "JA3 fingerprint matches known BLINDINGCAN RAT variants. "
             "DNS-over-HTTPS used for C2 domain resolution (bypassing DNS monitoring). "
             "Beacon commands observed include file upload/download, process execution, screenshot."
@@ -320,7 +320,7 @@ APT_EVENTS = [
     # ── Exfiltration ─────────────────────────────────────────────────────────
     {
         "delta_hours": -48,
-        "title": "Confirmed Exfiltration of SWIFT Transaction Archive — 4.2GB via HTTPS",
+        "title": "Confirmed Exfiltration of SWIFT Transaction Archive - 4.2GB via HTTPS",
         "description": (
             "Confirmed exfiltration event: 4.2GB archive (telemetry.cab) uploaded in 42 chunks "
             "of 100MB via BLINDINGCAN HTTPS C2 channel to cdn-update[.]net. "
@@ -354,7 +354,7 @@ async def seed(project_id: str) -> None:
                 f"{project_id}:{ev['title']}:{observed_at.isoformat()}".encode()
             ).hexdigest()
 
-            # Insert event — schema: stix_type (not null), content_hash (not null)
+            # Insert event - schema: stix_type (not null), content_hash (not null)
             await db.execute(
                 text("""
                     INSERT INTO events (
@@ -411,7 +411,7 @@ async def seed(project_id: str) -> None:
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print(f"Usage: uv run python {sys.argv[0]} <project_id>")
-        print(f"\nAvailable: P00055 External = 636d56b1-9209-4543-8267-efb54de7c24d")
+        print("\nAvailable: P00055 External = 636d56b1-9209-4543-8267-efb54de7c24d")
         sys.exit(1)
 
     asyncio.run(seed(sys.argv[1]))

@@ -3,7 +3,7 @@
 Design notes:
   * SUPPORTED_PROVIDERS is a Literal type used in SandboxConfigCreate to restrict
     provider values to the five supported integrations.
-  * compiled_cache is intentionally absent from YaraRuleRead — it is an internal
+  * compiled_cache is intentionally absent from YaraRuleRead - it is an internal
     binary blob that must never be returned to API clients.
   * SandboxReportRead exposes poll_attempts so the UI can show polling state to operators.
   * SandboxConfigRead deliberately omits api_key_enc (write-only credential field).
@@ -89,7 +89,7 @@ class YaraRuleCreate(BaseModel):
 
 
 class YaraRuleRead(BaseModel):
-    """Read-only view of a YARA rule. compiled_cache is NOT included — internal binary."""
+    """Read-only view of a YARA rule. compiled_cache is NOT included - internal binary."""
 
     id: uuid.UUID
     name: str
@@ -98,7 +98,7 @@ class YaraRuleRead(BaseModel):
     project_id: uuid.UUID | None
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    # NOTE: compiled_cache is intentionally absent — never sent to clients
+    # NOTE: compiled_cache is intentionally absent - never sent to clients
 
     model_config = {"from_attributes": True}
 

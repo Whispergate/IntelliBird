@@ -91,7 +91,7 @@ function DashboardBadge({ dashboard }: { dashboard: string }) {
 }
 
 function formatLastLogin(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
   const s = Math.floor((Date.now() - d.getTime()) / 1000);
   if (s < 60) return `${s}s ago`;
@@ -137,7 +137,7 @@ export default function AdminUsersPage() {
         const id = typeof me?.id === "string" ? me.id : null;
         if (!cancelled) setCurrentUserId(id);
       } catch {
-        // ignore — Delete button simply stays visible everywhere as a fallback;
+        // ignore - Delete button simply stays visible everywhere as a fallback;
         // backend still enforces cannot_delete_self.
       }
     })();

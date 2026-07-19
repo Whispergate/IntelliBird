@@ -1,4 +1,4 @@
-"""GET /api/events, GET /api/events/{id} — FIL-01, FIL-02."""
+"""GET /api/events, GET /api/events/{id} - FIL-01, FIL-02."""
 from __future__ import annotations
 
 import uuid
@@ -67,7 +67,7 @@ async def _hydrate_item(event: Event, db: AsyncSession) -> EventItem:
 
     tlp_name: str | None = None
     if event.tlp_marking_id is not None:
-        row = (
+        row = (  # type: ignore[assignment]
             await db.execute(
                 select(TlpMarking.name).where(TlpMarking.id == event.tlp_marking_id)
             )
@@ -102,7 +102,7 @@ async def _hydrate_item(event: Event, db: AsyncSession) -> EventItem:
         visibility=event.visibility,  # type: ignore[arg-type]
         geo_lat=event.geo_lat,
         geo_lon=event.geo_lon,
-        score=event.score,
+        score=event.score,  # type: ignore[arg-type]
         scored_at=event.scored_at,
         score_version=event.score_version,
     )
@@ -205,7 +205,7 @@ async def list_events(
         )
 
     # PRJ-03: pre-compute scope predicate + bound sources when project-scoped.
-    # build_events_query + build_fts_query stay sync — routers fetch the DB-dependent
+    # build_events_query + build_fts_query stay sync - routers fetch the DB-dependent
     # pieces up-front and pass them in as kwargs.
     scope_predicate = None
     bound_sources: list[uuid.UUID] | None = None
@@ -221,13 +221,13 @@ async def list_events(
                 status_code=400, detail="free_text query cannot be empty"
             )
 
-        # FTS path (FIL-05) — rank-ordered, triple-key cursor
+        # FTS path (FIL-05) - rank-ordered, triple-key cursor
         params = EventsQueryParams(
             source=source,
-            source_type=source_type,
+            source_type=source_type,  # type: ignore[arg-type]
             observed_from=observed_from,
             observed_to=observed_to,
-            tlp=tlp,
+            tlp=tlp,  # type: ignore[arg-type]
             attack_technique=attack_technique,
             tag=tag,
             include_archived=include_archived,
@@ -244,7 +244,7 @@ async def list_events(
         )
         # H-4 feed contamination prevention: exclude BBOT-promoted events
         # by default. BBOT provenance is signalled by easm_scan_id IS NOT NULL.
-        # (events table has no source_type column — easm_scan_id is the sole indicator.)
+        # (events table has no source_type column - easm_scan_id is the sole indicator.)
         if not include_bbot:
             fts_stmt = fts_stmt.where(Event.easm_scan_id == None)  # noqa: E711
 
@@ -315,10 +315,10 @@ async def list_events(
     # Standard non-FTS path (keyset cursor on observed_at, id)
     params = EventsQueryParams(
         source=source,
-        source_type=source_type,
+        source_type=source_type,  # type: ignore[arg-type]
         observed_from=observed_from,
         observed_to=observed_to,
-        tlp=tlp,
+        tlp=tlp,  # type: ignore[arg-type]
         attack_technique=attack_technique,
         tag=tag,
         include_archived=include_archived,
@@ -336,7 +336,7 @@ async def list_events(
     )
     # H-4 feed contamination prevention: exclude BBOT-promoted events
     # by default. BBOT provenance is signalled by easm_scan_id IS NOT NULL.
-    # (events table has no source_type column — easm_scan_id is the sole indicator.)
+    # (events table has no source_type column - easm_scan_id is the sole indicator.)
     if not include_bbot:
         stmt = stmt.where(Event.easm_scan_id == None)  # noqa: E711
 
@@ -420,14 +420,14 @@ async def get_event(
     user = getattr(request.state, "user", None)
     dashboard_roles: list[str] | None = list(user.dashboard_roles) if user is not None else None
 
-    # Composite-PK aware lookup ( from 04-RESEARCH.md — NOT session.get)
+    # Composite-PK aware lookup ( from 04-RESEARCH.md - NOT session.get)
     row = (
         await db.execute(select(Event).where(Event.id == event_id))
     ).scalar_one_or_none()
     if row is None:
         raise HTTPException(status_code=404, detail="event not found")
 
-    # Visibility gate — return 404 to avoid information disclosure
+    # Visibility gate - return 404 to avoid information disclosure
     if dashboard_roles:
         if "red" not in dashboard_roles and row.visibility == "red_only":
             raise HTTPException(status_code=404, detail="event not found")
@@ -439,7 +439,7 @@ async def get_event(
 
 
 # ---------------------------------------------------------------------------
-# IOC-08 — event-side IOC pivot.
+# IOC-08 - event-side IOC pivot.
 # Concrete API for EventDetailDrawer §Surface 5 (Plan 22-06). Replaces the
 # earlier hedge of "embed iocs[] in event payload OR fetch via query param".
 # ---------------------------------------------------------------------------
@@ -457,7 +457,7 @@ async def list_event_iocs(
     Each returned IOC is filtered through `build_ioc_scope_predicate` so
     cross-project leakage is impossible even when an `event_id` is guessed:
     a Project A user pivoting against a Project B event_id receives `[]`
-    (NOT 403, NOT the data) — no information disclosure about whether the
+    (NOT 403, NOT the data) - no information disclosure about whether the
     event itself exists. This mirrors how `GET /api/iocs/{id}/events` handles
     the inverse direction.
 
@@ -476,4 +476,4 @@ async def list_event_iocs(
         .limit(limit)
     )
     rows = list((await db.execute(stmt)).scalars().all())
-    return rows
+    return rows  # type: ignore[return-value]

@@ -1,4 +1,4 @@
-"""MON-05 monitoring event synthesis — plan 16-03.
+"""MON-05 monitoring event synthesis - plan 16-03.
 
 Tests that monitoring_synth.py produces deterministic content_hash values and
 correctly-shaped canonical event dicts for each alert type, using the sentinel
@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-import pytest
 
 from app.services.monitoring_synth import (
     SENTINEL_PROJECT_ID,
@@ -88,7 +87,7 @@ def test_build_parse_error_event_dict_shape() -> None:
     assert _REQUIRED_KEYS.issubset(result.keys())
     assert result["stix_type"] == "x-monitoring-alert"
     assert result["project_id"] == SENTINEL_PROJECT_ID
-    # error rate = 8/10 = 0.80 — description must mention it (formatted as 80.00%)
+    # error rate = 8/10 = 0.80 - description must mention it (formatted as 80.00%)
     assert "80.00%" in result["description"]
     assert "monitoring:parse_error_rate" in result["tags"]
     assert "source:s3" in result["tags"]

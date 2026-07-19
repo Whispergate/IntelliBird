@@ -22,7 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// TLP badge color map — matches DashboardEventsList / EventDetailDrawer pattern
+// TLP badge color map - matches DashboardEventsList / EventDetailDrawer pattern
 const TLP_STYLE: Record<string, { bg: string; fg: string; border: string }> = {
   clear: { bg: "rgba(136,135,128,0.15)", fg: "#888780", border: "#888780" },
   green: { bg: "rgba(29,158,117,0.15)", fg: "#9FE1CB", border: "#1D9E75" },
@@ -33,12 +33,12 @@ const TLP_STYLE: Record<string, { bg: string; fg: string; border: string }> = {
 
 const NULL_TLP_STYLE = { bg: "rgba(136,135,128,0.10)", fg: "#888780", border: "#888780" };
 
-// BbotProvenanceBadge — rendered when event.source_type === "bbot".
+// BbotProvenanceBadge - rendered when event.source_type === "bbot".
 // Height: h-4 (16px), horizontal padding: px-2 (8px), font-mono text-xs (12px).
 // Signal-amber left-border (border-l-2 border-[var(--brand-signal)]) per 11-UI-SPEC §Surface 7.
 function BbotProvenanceBadge({ event }: { event: EventItem }) {
   const tooltipText = event.easm_scan_id
-    ? `BBOT scan — ${new Date(event.observed_at).toLocaleDateString("en-GB", {
+    ? `BBOT scan - ${new Date(event.observed_at).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -80,7 +80,7 @@ type Props = {
   items: EventItem[];
   loading: boolean;
   onRowClick: (id: string) => void;
-  /** Optional multi-select support — provide both to enable checkboxes */
+  /** Optional multi-select support - provide both to enable checkboxes */
   selectedRows?: Set<string>;
   onToggleRow?: (id: string) => void;
 };
@@ -166,7 +166,7 @@ export function EventsTable({ items, loading, onRowClick, selectedRows, onToggle
                 {evt.score != null && (
                   <TierBadge
                     tier={classifyTier(evt.score)}
-                    tooltip={`Tier ${classifyTier(evt.score)} — score ${evt.score.toFixed(1)}`}
+                    tooltip={`Tier ${classifyTier(evt.score)} - score ${evt.score.toFixed(1)}`}
                   />
                 )}
               </div>

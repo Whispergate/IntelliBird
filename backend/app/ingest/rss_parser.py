@@ -2,7 +2,7 @@
 
 INGR-02: normalise into canonical STIX 2.1-aligned schema with
 source_id, observed_at, raw content reference, and extracted link.
-: Entries missing both link and id are dropped (returns None) —
+: Entries missing both link and id are dropped (returns None) -
 the caller logs a WARNING so operators see broken feeds.
 """
 from __future__ import annotations

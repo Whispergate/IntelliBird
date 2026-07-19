@@ -1,34 +1,34 @@
-"""TIBER report generation ORM models — TIBER-01..03, AI-08.
+"""TIBER report generation ORM models - TIBER-01..03, AI-08.
 
 Five models for the TIBER report editor and export subsystem:
 
-  TiberReport        — TTIR document row (6-section ECB TIBER-EU / CBEST structure).
+  TiberReport        - TTIR document row (6-section ECB TIBER-EU / CBEST structure).
                        state: draft → published → archived (app-layer state machine).
                        project_id FK CASCADE is the hard scope boundary for PROD-01.
 
-  TiberActorProfile  — Named threat actor profile row for Threat Actor Profiles section.
+  TiberActorProfile  - Named threat actor profile row for Threat Actor Profiles section.
                        Denormalised project_id FK CASCADE + tiber_report_id FK CASCADE,
                        mirroring the ai_suggestions dual-FK pattern (migration 014).
                        source_event_ids is a soft JSONB list (events is a hypertable
-                       and cannot be a FK target — same pattern as AISummary.event_id).
+                       and cannot be a FK target - same pattern as AISummary.event_id).
 
-  TiberScenario      — Scenario chain: actor → CIF/CBS → objective → TTP → procedure.
+  TiberScenario      - Scenario chain: actor → CIF/CBS → objective → TTP → procedure.
                        objective_type ENUM {availability, integrity, confidentiality}.
-                       actor_id FK (SET NULL) — actor deletion does not cascade-delete
+                       actor_id FK (SET NULL) - actor deletion does not cascade-delete
                        the scenario row.
                        ai_draft_metadata JSONB stores AI-drafted badge metadata (AI-08).
 
-  ProjectTiberState  — Per-project TIBER configuration singleton.
+  ProjectTiberState  - Per-project TIBER configuration singleton.
                        PK is project_id (one row per project).
 
-  ReportExport       — Binary export store (__tablename__ = 'reports').
+  ReportExport       - Binary export store (__tablename__ = 'reports').
                        One row per export action per format.
-                       content_bytea: LargeBinary (BYTEA) — 50MB cap enforced by DB CHECK
+                       content_bytea: LargeBinary (BYTEA) - 50MB cap enforced by DB CHECK
                        constraint ck_reports_bytea_size (migration 019). NOT included in
                        ExportRead schema (TOAST avoidance per H-5; schema in schemas/tiber.py).
                        report_state_at_export snapshots tiber_reports.state at export time.
 
-All ENUMs use create_type=False — migration 019_tiber.py owns the ENUM lifecycle
+All ENUMs use create_type=False - migration 019_tiber.py owns the ENUM lifecycle
 (CREATE TYPE in upgrade / DROP TYPE in downgrade). ORM must not attempt to re-create
 or drop them independently.
 
@@ -46,7 +46,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 # ---------------------------------------------------------------------------
-# Enum column type definitions — create_type=False because migration owns lifecycle
+# Enum column type definitions - create_type=False because migration owns lifecycle
 # ---------------------------------------------------------------------------
 
 _tiber_report_state = PgEnum(
@@ -102,10 +102,10 @@ class TiberReport(Base):
         nullable=False,
         server_default="draft",
     )
-    # Scope of Intelligence Research — engagement window dates
+    # Scope of Intelligence Research - engagement window dates
     engagement_window_start: Mapped[date | None] = mapped_column(Date, nullable=True)
     engagement_window_end: Mapped[date | None] = mapped_column(Date, nullable=True)
-    # Scope of Intelligence Research — asset lists
+    # Scope of Intelligence Research - asset lists
     in_scope_assets: Mapped[list] = mapped_column(
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )
@@ -125,7 +125,7 @@ class TiberReport(Base):
     tl_top_events_count: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default=text("20")
     )
-    # Scenario X — free-form analyst narrative
+    # Scenario X - free-form analyst narrative
     scenario_x_narrative: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
@@ -133,7 +133,7 @@ class TiberReport(Base):
     updated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
-    # FK (SET NULL) — preserves audit trail after user deletion
+    # FK (SET NULL) - preserves audit trail after user deletion
     created_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
@@ -166,7 +166,7 @@ class TiberActorProfile(Base):
     through tiber_reports (PROD-01 / H-4 mitigation; mirrors ai_suggestions
     dual-FK pattern from migration 014).
 
-    source_event_ids is a soft JSONB list of event UUIDs — no FK constraint
+    source_event_ids is a soft JSONB list of event UUIDs - no FK constraint
     because events is a TimescaleDB hypertable and CANNOT be a FK target
     (same pattern as AISummary.event_id, AISuggestion.event_id).
     """
@@ -192,7 +192,7 @@ class TiberActorProfile(Base):
     motivation: Mapped[str | None] = mapped_column(Text, nullable=True)
     capability_assessment: Mapped[str | None] = mapped_column(Text, nullable=True)
     relevance_to_target: Mapped[str | None] = mapped_column(Text, nullable=True)
-    # Soft list of event UUIDs — no FK to hypertable
+    # Soft list of event UUIDs - no FK to hypertable
     source_event_ids: Mapped[list] = mapped_column(
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )
@@ -240,7 +240,7 @@ class TiberScenario(Base):
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )
-    # FK (SET NULL) — actor deletion orphans the scenario rather than deleting it
+    # FK (SET NULL) - actor deletion orphans the scenario rather than deleting it
     actor_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("tiber_actor_profiles.id", ondelete="SET NULL"),
@@ -277,9 +277,9 @@ class ProjectTiberState(Base):
     """Per-project TIBER configuration singleton.
 
     TIBER-01. PK is project_id (one row per project).
-    default_top_events_n — project-level default for Threat Landscape auto-populate N.
+    default_top_events_n - project-level default for Threat Landscape auto-populate N.
     Individual reports can override via tiber_reports.tl_top_events_count.
-    tiber_phase — free-text engagement phase label (e.g. 'Preparation', 'Testing');
+    tiber_phase - free-text engagement phase label (e.g. 'Preparation', 'Testing');
     NULL until set by operator.
     """
 
@@ -306,13 +306,13 @@ class ReportExport(Base):
     """Binary export store row (__tablename__ = 'reports').
 
     TIBER-03. One row per export action per format.
-    version_number is monotonic per (tiber_report_id, format) — application layer
+    version_number is monotonic per (tiber_report_id, format) - application layer
     assigns next version = MAX(version_number) + 1 for the (report_id, format) pair
     before INSERT.
 
-    content_bytea: LargeBinary (BYTEA) — the actual export bytes.
+    content_bytea: LargeBinary (BYTEA) - the actual export bytes.
     50MB hard cap enforced by DB CHECK constraint ck_reports_bytea_size (migration 019).
-    NOT included in ExportRead schema — TOAST avoidance per H-5: listing the history
+    NOT included in ExportRead schema - TOAST avoidance per H-5: listing the history
     sidebar must NOT load BYTEA content; only the metadata row is read for the list.
     content_bytea is only fetched on explicit download requests.
 
@@ -344,14 +344,14 @@ class ReportExport(Base):
     version_number: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default=text("1")
     )
-    # BYTEA column — 50MB cap enforced by DB CHECK ck_reports_bytea_size.
+    # BYTEA column - 50MB cap enforced by DB CHECK ck_reports_bytea_size.
     # NOT read by ExportRead schema (TOAST avoidance / H-5).
     content_bytea: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
     filename: Mapped[str] = mapped_column(Text, nullable=False)
     generated_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
     )
-    # FK (SET NULL) — preserves audit trail after user deletion
+    # FK (SET NULL) - preserves audit trail after user deletion
     generated_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),

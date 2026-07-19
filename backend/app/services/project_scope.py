@@ -1,7 +1,7 @@
-"""Project scope intersection SQL builder — PRJ-03 + PRJ-05.
+"""Project scope intersection SQL builder - PRJ-03 + PRJ-05.
 
 Single reusable helper used by:
-  - events_query.build_events_query (intel view — /projects/[id]/intel)
+  - events_query.build_events_query (intel view - /projects/[id]/intel)
   - events_query.build_fts_query (FTS variant)
   - graph_traversal.traverse_graph (per-project graph BFS)
   - project_compare (cross-project shared-event queries, plan 10-07)
@@ -13,7 +13,7 @@ STIX indicators live inside `events.raw_stix -> objects[*].pattern` as text patt
 matching the STIX 2.1 pattern grammar (examples: `[ipv4-addr:value = '1.2.3.4']`,
 `[domain-name:value = 'evil.example.com']`). enrichment (backend/app/services/
 enrichment.py) populates `events.tags` (flat text array) + `events.country_code` +
-geo — but does NOT denormalise indicators into a dedicated JSONB column or top-level
+geo - but does NOT denormalise indicators into a dedicated JSONB column or top-level
 array. Scope-intersection therefore extracts indicators from the STIX pattern strings
 using PostgreSQL `jsonb_path_query_array` + regex substring extraction.
 
@@ -89,7 +89,7 @@ def _clause_domain(value: str, index: int) -> sa.sql.ColumnElement[bool]:
     Extracts domain indicators from raw_stix patterns via jsonb_path_query_array +
     regex substring. Pattern example: `[domain-name:value = 'evil.example.com']`.
     """
-    return sa.text(
+    return sa.text(  # type: ignore[return-value]
         "EXISTS ("
         "  SELECT 1 FROM jsonb_path_query_array("
         "    events.raw_stix, '$.objects[*].pattern'"
@@ -108,9 +108,9 @@ def _clause_ip_range(value: str, index: int) -> sa.sql.ColumnElement[bool]:
 
     Extracts IPv4 indicators from raw_stix patterns via jsonb_path_query_array +
     regex substring. Pattern example: `[ipv4-addr:value = '10.0.0.5']`.
-    CAST(:param AS cidr) form required — asyncpg rejects ::type shorthand.
+    CAST(:param AS cidr) form required - asyncpg rejects ::type shorthand.
     """
-    return sa.text(
+    return sa.text(  # type: ignore[return-value]
         "EXISTS ("
         "  SELECT 1 FROM jsonb_path_query_array("
         "    events.raw_stix, '$.objects[*].pattern'"
@@ -137,7 +137,7 @@ def _clause_as_number(value: str, index: int) -> sa.sql.ColumnElement[bool]:
 def _clause_service_whois_cert(value: str) -> sa.sql.ColumnElement[bool]:
     """service / whois / certificate scope -> FTS fallback.
 
-    Claude's Discretion per CONTEXT.md §Claude's Discretion §Scope-intersection SQL —
+    Claude's Discretion per CONTEXT.md §Claude's Discretion §Scope-intersection SQL -
     enrichment does not expose dedicated columns for these types.
     enrichment refactor may add them; update this clause when that happens.
     """
@@ -159,8 +159,8 @@ def _clause_for_row(row: ProjectScopeRow, index: int) -> sa.sql.ColumnElement[bo
         return _clause_as_number(row.value, index)
     if st in ("service", "whois", "certificate"):
         return _clause_service_whois_cert(row.value)
-    # Safety fallback — unknown scope_type (should be unreachable — ENUM bounded)
-    return sa.text("false")
+    # Safety fallback - unknown scope_type (should be unreachable - ENUM bounded)
+    return sa.text("false")  # type: ignore[return-value]
 
 
 # ---------------------------------------------------------------------------
@@ -172,7 +172,7 @@ def build_scope_predicate(
 ) -> sa.sql.ColumnElement[bool]:
     """Compose UNION-of-includes minus any-exclude-match into a single SQL predicate.
 
-    Returns sa.text("false") when the list is empty or contains only excludes — this
+    Returns sa.text("false") when the list is empty or contains only excludes - this
     is the empty-scope-empty-result invariant from CONTEXT.md §Scope-intersection
     query semantics.
 
@@ -180,7 +180,7 @@ def build_scope_predicate(
     fetch_scope_rows_intel). This builder does NOT re-check intel_scope.
     """
     if not scope_rows:
-        return sa.text("false")
+        return sa.text("false")  # type: ignore[return-value]
 
     include_clauses: list[sa.sql.ColumnElement[bool]] = []
     exclude_clauses: list[sa.sql.ColumnElement[bool]] = []
@@ -189,11 +189,11 @@ def build_scope_predicate(
         (exclude_clauses if row.exclude else include_clauses).append(clause)
 
     if not include_clauses:
-        return sa.text("false")
+        return sa.text("false")  # type: ignore[return-value]
 
     pred = sa.or_(*include_clauses)
     if exclude_clauses:
-        # NOT wrapping each exclude clause individually (AND-of-NOTs) — this
+        # NOT wrapping each exclude clause individually (AND-of-NOTs) - this
         # avoids the SA2 TextClause._negate limitation where sa.not_(sa.or_(
         # TextClause, ...)) raises AssertionError. Semantically equivalent:
         # NOT (e1 OR e2) == (NOT e1) AND (NOT e2) (De Morgan).
@@ -212,7 +212,7 @@ def _wrap_not(clause: sa.sql.ColumnElement[bool]) -> sa.sql.ColumnElement[bool]:
     we normalise via sa.func.bool_and over a subquery. Simpler path: rebuild as a
     SQL-level NOT against a text wrapper constructed from the clause's compiled form.
 
-    Implementation: sa.type_coerce on the clause then wrap — but that doesn't work
+    Implementation: sa.type_coerce on the clause then wrap - but that doesn't work
     with TextClause. The reliable path is to use sa.false() operator: `clause == False`
     coerces the boolean expression. But TextClause doesn't support ==.
 
@@ -245,7 +245,7 @@ async def apply_project_filter_to_stmt(
 
     Used by routers + compare/export helpers that want all three filters composed
     onto an existing Select. Routers typically pre-fetch + compose manually so that
-    build_events_query (sync, contract) stays sync — apply_project_filter_
+    build_events_query (sync, contract) stays sync - apply_project_filter_
     to_stmt is an async alternative for callers that have an AsyncSession handy.
     """
     stmt = stmt.where(Event.project_id == project_id)

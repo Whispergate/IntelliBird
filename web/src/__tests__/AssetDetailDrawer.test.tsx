@@ -181,7 +181,7 @@ describe("AssetDetailDrawer (12.1-05b)", () => {
       );
       expect(patchCallsBefore).toHaveLength(0);
 
-      // Advance past the 1500ms debounce window — fires the PATCH.
+      // Advance past the 1500ms debounce window - fires the PATCH.
       await act(async () => {
         await vi.advanceTimersByTimeAsync(1600);
       });

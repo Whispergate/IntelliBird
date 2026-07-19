@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectsClient — interactive shell for the /projects list.
+ * ProjectsClient - interactive shell for the /projects list.
  *
  * Owns:
  *   - Local projects array (seeded from server-fetched initialProjects)
@@ -56,7 +56,7 @@ export function ProjectsClient({
     try {
       setProjects(await listProjects({ includeArchived }));
     } catch {
-      // Silent — table keeps stale rows; mutation toasts already fired.
+      // Silent - table keeps stale rows; mutation toasts already fired.
     }
   }
 
@@ -96,7 +96,7 @@ export function ProjectsClient({
   }
 
   function handleRowClick(p: ProjectResponse) {
-    // Legacy sentinel is non-clickable per UI-SPEC — defence-in-depth, since
+    // Legacy sentinel is non-clickable per UI-SPEC - defence-in-depth, since
     // ProjectTable already elides onClick for that row.
     if (p.id === LEGACY_PROJECT_ID) return;
     router.push(`/projects/${p.id}`);

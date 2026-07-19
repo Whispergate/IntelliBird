@@ -1,4 +1,4 @@
-"""RED tests for AI attack path analysis — prompt constants and builder.
+"""RED tests for AI attack path analysis - prompt constants and builder.
 
 Plan 35-01 (TDD RED phase): These tests define the interface contract for
 SYSTEM_PROMPT_ATTACK_PATH_V1 and build_attack_path_messages.
@@ -11,7 +11,6 @@ import os
 import re
 import subprocess
 
-import pytest
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("SECRET_KEY", "s" * 64)
@@ -127,7 +126,7 @@ def test_no_fstring_event_interpolation_in_prompts_module():
     """C-3 compliance: no f-string with event. appears in prompts.py.
 
     Uses ripgrep (rg) to assert zero matches for the prompt-injection pattern.
-    rg returns exit code 1 when no matches found — that is the expected result.
+    rg returns exit code 1 when no matches found - that is the expected result.
     """
     import shutil
     prompts_path = os.path.join(
@@ -143,7 +142,7 @@ def test_no_fstring_event_interpolation_in_prompts_module():
             text=True,
         )
         # returncode 1 = no matches (which is what we want)
-        # returncode 0 = matches found (bad — prompt injection risk)
+        # returncode 0 = matches found (bad - prompt injection risk)
         assert result.returncode != 0, (
             f"Prompt injection risk: f-string with event. found in prompts.py:\n"
             f"{result.stdout}"

@@ -1,4 +1,4 @@
-"""OIDC groups -> role mapping unit tests — AUTH-01."""
+"""OIDC groups -> role mapping unit tests - AUTH-01."""
 from __future__ import annotations
 
 from app.security.oidc import map_groups_to_role

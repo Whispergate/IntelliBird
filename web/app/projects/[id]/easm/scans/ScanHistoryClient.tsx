@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScanHistoryClient — (UI-SPEC §Surface 5).
+ * ScanHistoryClient - (UI-SPEC §Surface 5).
  *
  * Scan history table at /projects/[id]/easm/scans.
  * Columns: Mode (100px) | Status (120px) | Started (140px) | Finished (140px) |
@@ -34,7 +34,7 @@ import { cancelScan, listScans } from "../lib/api";
 // ---------------------------------------------------------------------------
 
 function fmtDatetime(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   try {
     const d = new Date(iso);
     const day = d.toLocaleDateString("en-GB", {
@@ -325,7 +325,7 @@ export function ScanHistoryClient({
                     {fmtDatetime(scan.finished_at)}
                   </td>
 
-                  {/* Launched by — truncated, tooltip for full value */}
+                  {/* Launched by - truncated, tooltip for full value */}
                   <td className="py-2 px-3" style={{ width: "160px" }}>
                     <TooltipProvider>
                       <Tooltip>

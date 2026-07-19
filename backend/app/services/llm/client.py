@@ -1,4 +1,4 @@
-"""LiteLLM async wrapper — AI-04.
+"""LiteLLM async wrapper - AI-04.
 
 Public surface:
   resolve_provider(db, project_id) -> (model_str, api_base, api_key)
@@ -7,7 +7,7 @@ Public surface:
 
 Security invariants (enforced, not optional):
   - litellm.proxy_server is NEVER imported (C-5).
-  - api_key / api_base are ALWAYS per-call kwargs — never set on the module
+  - api_key / api_base are ALWAYS per-call kwargs - never set on the module
     attribute litellm.api_key or litellm.api_base (C-4 / credential isolation).
   - Ollama model strings carry the ollama_chat/ prefix (chat completions API),
     never the legacy ollama/ prefix.
@@ -18,7 +18,7 @@ from __future__ import annotations
 import os
 from typing import AsyncGenerator
 
-import litellm  # SDK only — NEVER import litellm.proxy_server (C-5)
+import litellm  # SDK only - NEVER import litellm.proxy_server (C-5)
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -40,7 +40,7 @@ DEFAULT_MAX_TOKENS_DIGEST: int = 2048
 
 async def resolve_provider(
     db: AsyncSession,
-    project_id,  # uuid.UUID | str — accept either
+    project_id,  # uuid.UUID | str - accept either
 ) -> tuple[str, str | None, str | None]:
     """Resolve LiteLLM model string, api_base, and api_key for a project.
 
@@ -62,7 +62,7 @@ async def resolve_provider(
         await db.execute(select(AIProvider).where(AIProvider.project_id == project_id))
     ).scalar_one_or_none()
 
-    # Fall back to the global default — the AIProvider row keyed to
+    # Fall back to the global default - the AIProvider row keyed to
     # LEGACY_PROJECT_ID is treated as the system-wide default and is editable
     # via /admin/ai-defaults. Avoid the fallback when project_id IS the legacy
     # sentinel (would loop on its own missing row).
@@ -81,7 +81,7 @@ async def resolve_provider(
         model_str = f"ollama_chat/{_split_models(row.model_name)[0]}"
         # Operator UI accepts arbitrary api_base. In compose, "localhost" /
         # "127.0.0.1" inside a worker container resolves to the worker itself,
-        # not the ollama service — silently rewrite to the compose DNS name.
+        # not the ollama service - silently rewrite to the compose DNS name.
         env_default = os.environ.get("OLLAMA_BASE_URL", "http://ollama:11434")
         api_base: str | None = row.api_base or env_default
         if api_base and ("localhost" in api_base or "127.0.0.1" in api_base):
@@ -92,7 +92,7 @@ async def resolve_provider(
         model_str = f"openai/{_split_models(row.model_name)[0]}"
         api_base = None
         api_key = (
-            decrypt_credentials(os.environ["SECRET_KEY"], row.credentials_enc)
+            decrypt_credentials(os.environ["SECRET_KEY"], row.credentials_enc)  # type: ignore[assignment]
             if row.credentials_enc
             else None
         )
@@ -101,7 +101,7 @@ async def resolve_provider(
         model_str = f"anthropic/{_split_models(row.model_name)[0]}"
         api_base = None
         api_key = (
-            decrypt_credentials(os.environ["SECRET_KEY"], row.credentials_enc)
+            decrypt_credentials(os.environ["SECRET_KEY"], row.credentials_enc)  # type: ignore[assignment]
             if row.credentials_enc
             else None
         )
@@ -124,7 +124,7 @@ async def resolve_provider_models(
 ) -> tuple[list[str], str | None, str | None]:
     """Same as resolve_provider but returns the FULL model list (round-robin pool).
 
-    `model_name` may be comma-separated — e.g. "gemma4:e2b,phi:latest" — to give
+    `model_name` may be comma-separated - e.g. "gemma4:e2b,phi:latest" - to give
     the worker multiple models to rotate across. Each entry is returned with the
     correct LiteLLM provider prefix. Single-model rows return a length-1 list.
 
@@ -160,7 +160,7 @@ async def resolve_provider_models(
             if row.credentials_enc
             else None
         )
-        return [f"openai/{n}" for n in names], None, api_key
+        return [f"openai/{n}" for n in names], None, api_key  # type: ignore[return-value]
 
     if row.provider_type == "anthropic":
         api_key = (
@@ -168,7 +168,7 @@ async def resolve_provider_models(
             if row.credentials_enc
             else None
         )
-        return [f"anthropic/{n}" for n in names], None, api_key
+        return [f"anthropic/{n}" for n in names], None, api_key  # type: ignore[return-value]
 
     raise ValueError(f"Unknown provider_type {row.provider_type!r}")
 
@@ -188,7 +188,7 @@ async def call_llm_streaming(
 ) -> AsyncGenerator[str, None]:
     """Async generator that yields token strings from a streaming LLM call.
 
-    Per-call credentials only — litellm.api_key is NEVER mutated here.
+    Per-call credentials only - litellm.api_key is NEVER mutated here.
     timeout is always forwarded (default 120s) to prevent hung calls.
     """
     kwargs: dict = {

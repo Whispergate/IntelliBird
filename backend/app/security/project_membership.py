@@ -1,4 +1,4 @@
-"""require_project_membership FastAPI dependency — PRJ-05.
+"""require_project_membership FastAPI dependency - PRJ-05.
 
 Three-path authorization:
   1. Global Admin (user.role == 'Admin')          -> ProjectRole.Lead  (bypass; no DB query)
@@ -6,12 +6,12 @@ Three-path authorization:
   3. Claim miss + pm_truncated=true                -> DB fallback query; else 403
 
 Claim miss + pm_truncated=false -> 403 immediately (the token was authoritatively
-empty for this pid — no need to re-query the DB).
+empty for this pid - no need to re-query the DB).
 
 Rank ordering (RESEARCH.md §Authority Matrix):
   Observer = 1; Contributor = 2; Lead = 3
 
-The dependency is a factory — call require_project_membership(ProjectRole.X) in a
+The dependency is a factory - call require_project_membership(ProjectRole.X) in a
 router signature to obtain the actual dep. The resolved ProjectRole is returned
 from the dep so routers can branch further on the caller's role.
 """
@@ -50,9 +50,9 @@ def require_project_membership(min_role: ProjectRole) -> Callable:
         user: AuthUser = Depends(require_auth),
         db: AsyncSession = Depends(get_session),
     ) -> ProjectRole:
-        # 1. Global Admin bypass — support and operations access without per-project
+        # 1. Global Admin bypass - support and operations access without per-project
         #    binding churn. Decision locked by CONTEXT.md §Project membership model
-        #    (Claude's Discretion — strong default adopted).
+        #    (Claude's Discretion - strong default adopted).
         if user.role == "Admin":
             return ProjectRole.Lead
 
@@ -180,7 +180,7 @@ def enforce_project_query_scope(
     Post-v2.0 gap closure for PROD-01 (see 13-01-SUMMARY.md GAP-1/GAP-2):
     endpoints like GET /api/events and GET /api/events/{id}/graph previously
     returned data without intersecting the caller's project_memberships claim
-    when project_id was omitted — a JWT scoped to Project A could see all
+    when project_id was omitted - a JWT scoped to Project A could see all
     projects' rows by dropping the query param.
 
     Semantics:

@@ -1,13 +1,13 @@
-"""Admin Monitoring Dashboard API — MON-04.
+"""Admin Monitoring Dashboard API - MON-04.
 
 Endpoints:
-  GET  /api/admin/monitoring/sources  — Dashboard table data: per-source health
+  GET  /api/admin/monitoring/sources  - Dashboard table data: per-source health
        metrics including silence SLA breach status, parse error rate, drift z-score,
        and a 168-bucket hourly sparkline.
-  PATCH /api/admin/monitoring/sources/{source_id} — Update per-source monitoring
+  PATCH /api/admin/monitoring/sources/{source_id} - Update per-source monitoring
        config JSONB. Sets last_changed_at = now() to restart the 7-day learning window.
 
-All endpoints require Admin role (Depends(require_admin) — 403 for non-admin).
+All endpoints require Admin role (Depends(require_admin) - 403 for non-admin).
 """
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.middleware.auth import require_admin
-from app.schemas.monitoring import DEFAULT_SLA_BY_FEED_TYPE, MonitoringConfig, resolve_sla
+from app.schemas.monitoring import MonitoringConfig, resolve_sla
 from app.security.jwt import AuthUser
 
 router = APIRouter(prefix="/admin/monitoring", tags=["admin"])
@@ -41,7 +41,7 @@ async def list_monitoring_sources(
     Response shape per source:
       id, name, feed_type, last_event_at, silence_sla_seconds, sla_breached (bool),
       silent_failure_count, parse_error_rate_1h (float 0-1), drift_z_score (float|None),
-      drift_severity (str|None), sparkline ([int]*168 — hourly event counts, last 7d)
+      drift_severity (str|None), sparkline ([int]*168 - hourly event counts, last 7d)
     """
     now = datetime.now(timezone.utc)
 

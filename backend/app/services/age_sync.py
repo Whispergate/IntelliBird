@@ -1,4 +1,4 @@
-"""AGE graph sync service — ENRICH-08.
+"""AGE graph sync service - ENRICH-08.
 
 Merges :DomainPivot vertices and :SHARES_INFRA edges into intellibird_graph
 after WHOIS + passive DNS enrichment completes for a domain IOC.
@@ -10,7 +10,7 @@ Security:
   - Cypher string values are sanitized before f-string interpolation.
     AGE does not support $1 parameterised Cypher (only outside $$...$$).
   - SHARES_INFRA edges are only merged between DomainPivot nodes with the
-    SAME project_id — no cross-project edge is ever created.
+    SAME project_id - no cross-project edge is ever created.
 """
 from __future__ import annotations
 
@@ -192,7 +192,7 @@ async def sync_domain_pivot(
     3. Ensure sibling DomainPivot nodes exist (MERGE).
     4. MERGE :SHARES_INFRA edges.
 
-    All edges are project-scoped — no cross-project edges created.
+    All edges are project-scoped - no cross-project edges created.
     AGE errors are caught and logged without propagating to the caller so that
     a graph sync failure never fails the enrichment worker.
     """
@@ -200,7 +200,7 @@ async def sync_domain_pivot(
         async with age_conn(session) as raw:
             await _merge_domain_pivot(raw, domain, ioc_id, project_id)
 
-        # Find siblings via SQL (outside AGE connection — uses regular session)
+        # Find siblings via SQL (outside AGE connection - uses regular session)
         siblings = await _find_sibling_domains_sql(session, domain, project_id)
 
         if siblings:
@@ -235,7 +235,7 @@ async def sync_domain_pivot(
             len(siblings),
         )
     except Exception as exc:  # noqa: BLE001
-        # AGE sync failure must NOT fail the enrichment worker — log and continue.
+        # AGE sync failure must NOT fail the enrichment worker - log and continue.
         logger.error("age_sync_error domain=%s error=%r", domain, exc)
 
 

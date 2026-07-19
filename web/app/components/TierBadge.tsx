@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { type Tier, TIER_COLORS } from "@/lib/scoring";
 
 // ---------------------------------------------------------------------------
-// TierBadge — S/A/B/C/D pill matching UI-SPEC §Surface 1 colour map.
+// TierBadge - S/A/B/C/D pill matching UI-SPEC §Surface 1 colour map.
 //
 // Shape: inline-flex items-center h-4 px-2 border-l-2 rounded-sm brand-caption
 // Mirrors BrandProvenanceBadge shape.

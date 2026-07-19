@@ -1,4 +1,4 @@
-"""Unit tests for — scheduler Redis pub/sub reload listener.
+"""Unit tests for - scheduler Redis pub/sub reload listener.
 
 Tests cover:
 - _reload_handler: remove_job dispatch, malformed entries, _load_source_jobs call
@@ -16,7 +16,7 @@ import json
 import os
 import time
 from typing import Any
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock
 
 # --- env setup MUST be before any app.* import ---
 os.environ.setdefault("SECRET_KEY", "a" * 48)
@@ -24,7 +24,6 @@ os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://x:x@localhost/test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
-import pytest
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -272,7 +271,7 @@ def test_start_reload_listener_returns_daemon_thread(monkeypatch):
     assert t.name == "sources-reload-listener"
     # Give the thread a moment to start
     time.sleep(0.05)
-    # Thread may have already finished (loop returns immediately) — that is fine
+    # Thread may have already finished (loop returns immediately) - that is fine
     # The important assertion is daemon=True
 
 

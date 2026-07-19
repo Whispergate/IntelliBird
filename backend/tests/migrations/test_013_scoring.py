@@ -1,4 +1,4 @@
-"""Migration 013 integration tests — scoring schema foundation.
+"""Migration 013 integration tests - scoring schema foundation.
 
 Verifies:
   - events table gains score numeric(5,2), scored_at timestamptz, score_version int (all NULL)
@@ -28,7 +28,6 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-import sqlalchemy as sa
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 
@@ -53,7 +52,7 @@ def live_db_013():
     the migration.
     """
     if not _testcontainers_importable():
-        pytest.skip("testcontainers unavailable — install or unset SKIP_TESTCONTAINERS")
+        pytest.skip("testcontainers unavailable - install or unset SKIP_TESTCONTAINERS")
 
     from testcontainers.postgres import PostgresContainer
 

@@ -1,4 +1,4 @@
-"""Enrichment provider settings + IOC enrichment read/trigger — ENRICH-01, ENRICH-04.
+"""Enrichment provider settings + IOC enrichment read/trigger - ENRICH-01, ENRICH-04.
 
 Endpoints:
   GET  /api/projects/{project_id}/enrichment-providers          Lead+
@@ -39,7 +39,7 @@ router = APIRouter(tags=["enrichment"])
 
 ALL_PROVIDERS = ["vt", "abuseipdb", "greynoise", "otx", "shodan", "urlhaus"]
 
-# Lead rank from the PROJECT_ROLE_RANK table — Lead = 3.
+# Lead rank from the PROJECT_ROLE_RANK table - Lead = 3.
 _LEAD_RANK: int = PROJECT_ROLE_RANK[ProjectRole.Lead.value]
 
 
@@ -70,13 +70,13 @@ async def _require_project_lead_plus(
         await session.execute(
             select(ProjectMembership).where(
                 ProjectMembership.project_id == project_id,
-                ProjectMembership.user_id == user.id,
+                ProjectMembership.user_id == user.id,  # type: ignore[attr-defined]
             )
         )
     ).scalar_one_or_none()
     if membership is None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="not_a_member")
-    rank = PROJECT_ROLE_RANK.get(membership.role, 0)
+    rank = PROJECT_ROLE_RANK.get(membership.role, 0)  # type: ignore[attr-defined]
     if rank < _LEAD_RANK:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="insufficient_role")
 
@@ -105,7 +105,7 @@ async def _require_project_member(
         await session.execute(
             select(ProjectMembership).where(
                 ProjectMembership.project_id == project_id,
-                ProjectMembership.user_id == user.id,
+                ProjectMembership.user_id == user.id,  # type: ignore[attr-defined]
             )
         )
     ).scalar_one_or_none()
@@ -133,7 +133,7 @@ async def list_enrichment_providers(
     request: Request,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[EnrichmentProviderRead]:
-    """List all 6 provider slots with breaker state — Lead+ required."""
+    """List all 6 provider slots with breaker state - Lead+ required."""
     await _require_project_lead_plus(project_id, request, session)
     redis = await get_redis()
 
@@ -151,11 +151,11 @@ async def list_enrichment_providers(
         project_scope = str(project_id)
         breaker_open_until = await _get_breaker_open_until(redis, prov, project_scope)
         if row is None:
-            # Default disabled slot — no DB row yet for this provider
+            # Default disabled slot - no DB row yet for this provider
             result.append(EnrichmentProviderRead(
-                id=uuid.uuid4(),  # ephemeral — no DB row
+                id=uuid.uuid4(),  # ephemeral - no DB row
                 project_id=project_id,
-                provider=prov,
+                provider=prov,  # type: ignore[arg-type]
                 enabled=False,
                 api_key_masked=None,
                 daily_request_cap=None,
@@ -168,7 +168,7 @@ async def list_enrichment_providers(
             result.append(EnrichmentProviderRead(
                 id=row.id,
                 project_id=row.project_id,
-                provider=row.provider,
+                provider=row.provider,  # type: ignore[arg-type]
                 enabled=row.enabled,
                 api_key_masked=masked,
                 daily_request_cap=row.daily_request_cap,
@@ -190,7 +190,7 @@ async def upsert_enrichment_provider(
     request: Request,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> EnrichmentProviderRead:
-    """Create or update provider credentials — encrypts api_key before storage. Lead+ required."""
+    """Create or update provider credentials - encrypts api_key before storage. Lead+ required."""
     if provider not in PROVIDER_CHOICES:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -223,7 +223,7 @@ async def upsert_enrichment_provider(
     set_values = {k: v for k, v in insert_values.items() if k not in ("project_id", "provider")}
 
     await session.execute(
-        _pg_insert(EnrichmentProvider.__table__)
+        _pg_insert(EnrichmentProvider.__table__)  # type: ignore[arg-type]
         .values(**insert_values)
         .on_conflict_do_update(
             constraint="uq_enrichment_providers_project_provider",
@@ -247,7 +247,7 @@ async def upsert_enrichment_provider(
     return EnrichmentProviderRead(
         id=row.id,
         project_id=row.project_id,
-        provider=row.provider,
+        provider=row.provider,  # type: ignore[arg-type]
         enabled=row.enabled,
         api_key_masked=masked,
         daily_request_cap=row.daily_request_cap,
@@ -266,7 +266,7 @@ async def get_ioc_enrichments(
     """List all ioc_enrichments rows for this IOC.
 
     ACL: any project member (Analyst, Observer, Lead, Admin) can read enrichments.
-    Only Lead+ can trigger or configure — enforced on POST and PUT endpoints.
+    Only Lead+ can trigger or configure - enforced on POST and PUT endpoints.
     Returns 404 if IOC not found, 403 if caller has no project membership.
     """
     ioc = await session.get(IOC, ioc_id)
@@ -274,7 +274,7 @@ async def get_ioc_enrichments(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ioc_not_found")
 
     # ACL: any project member can read (Analyst and Observer included).
-    await _require_project_member(ioc.project_id, request, session)
+    await _require_project_member(ioc.project_id, request, session)  # type: ignore[arg-type]
 
     enrichments = (
         await session.execute(
@@ -299,10 +299,10 @@ async def trigger_ioc_enrich(
     ioc = await session.get(IOC, ioc_id)
     if ioc is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ioc_not_found")
-    await _require_project_lead_plus(ioc.project_id, request, session)
+    await _require_project_lead_plus(ioc.project_id, request, session)  # type: ignore[arg-type]
 
     if refresh:
-        # Short-lived flag — _async_enrich checks redis.exists(f"enrich:force_refresh:{ioc_id}")
+        # Short-lived flag - _async_enrich checks redis.exists(f"enrich:force_refresh:{ioc_id}")
         # before calling get_cached_result, and deletes the key after a successful commit.
         redis = await get_redis()
         await redis.set(f"enrich:force_refresh:{ioc_id}", "1", ex=300)

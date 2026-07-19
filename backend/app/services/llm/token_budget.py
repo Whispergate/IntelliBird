@@ -1,4 +1,4 @@
-"""Atomic Redis token budget counter — AI-06.
+"""Atomic Redis token budget counter - AI-06.
 
 Implements a per-project, per-UTC-day token budget with Lua-based atomic
 check-and-increment to prevent the GET + INCRBY race condition that would
@@ -25,10 +25,10 @@ from datetime import datetime, timedelta, timezone
 # Constants
 # ---------------------------------------------------------------------------
 
-BUDGET_TTL_SECONDS: int = 172800  # 2 days — safety overlap across midnight
+BUDGET_TTL_SECONDS: int = 172800  # 2 days - safety overlap across midnight
 
 # ---------------------------------------------------------------------------
-# Lua script — atomic check-then-increment
+# Lua script - atomic check-then-increment
 # ---------------------------------------------------------------------------
 
 BUDGET_LUA: str = """
@@ -69,12 +69,12 @@ async def check_and_reserve_budget(
 ) -> tuple[bool, int]:
     """Atomically check and reserve tokens against the daily budget.
 
-    Uses a Lua script so the GET + INCRBY is executed atomically in Redis —
+    Uses a Lua script so the GET + INCRBY is executed atomically in Redis -
     no two concurrent callers can both pass the cap check and both increment.
 
     Args:
         redis:            Async redis.asyncio.Redis client.
-        project_id:       Project UUID (any type — coerced to str in key).
+        project_id:       Project UUID (any type - coerced to str in key).
         estimated_tokens: Pre-flight estimate from litellm.token_counter.
         cap:              Daily token cap (from projects.ai_daily_token_cap).
 

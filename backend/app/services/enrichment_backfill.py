@@ -1,4 +1,4 @@
-"""One-shot enrichment backfill actor — re-parses existing events' title +
+"""One-shot enrichment backfill actor - re-parses existing events' title +
 description and merges extracted tags / country_code / ATT&CK tags.
 
 Run manually via:
@@ -93,12 +93,12 @@ def backfill_enrichment(batch_size: int = 500) -> dict:
                 ):
                     try:
                         res = session.execute(
-                            pg_insert(AttackTechniqueTag.__table__)
+                            pg_insert(AttackTechniqueTag.__table__)  # type: ignore[arg-type]
                             .values(**tag_row)
                             .on_conflict_do_nothing()
                         )
-                        if res.rowcount:
-                            attack_tags_written += int(res.rowcount)
+                        if res.rowcount:  # type: ignore[attr-defined]
+                            attack_tags_written += int(res.rowcount)  # type: ignore[attr-defined]
                     except Exception:  # noqa: BLE001
                         session.rollback()
                         # reopen transaction

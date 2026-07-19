@@ -1,10 +1,10 @@
-"""Run the IOC backfill once at container start — IOC-07.
+"""Run the IOC backfill once at container start - IOC-07.
 
 Invoked by `ops/api-entrypoint.sh` AFTER `alembic upgrade head` so the
 freshly-shipped `iocs` schema is populated from the existing `events`
 corpus on first deploy.
 
-Idempotent — second invocation produces ~0 net new rows because
+Idempotent - second invocation produces ~0 net new rows because
 `backfill_iocs_for_project` upserts on `(project_id, type, normalized_value)
 NULLS NOT DISTINCT` and the SET clause preserves analyst-set confidence.
 

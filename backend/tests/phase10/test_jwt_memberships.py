@@ -1,4 +1,4 @@
-"""test_jwt_memberships — PRJ-05 JWT pm claim + cutoff pagination (plan 10-02).
+"""test_jwt_memberships - PRJ-05 JWT pm claim + cutoff pagination (plan 10-02).
 
 Activated by Wave 1 / plan 10-02. Exercises:
   - build_membership_claim + mint_access_token_with_pm on a user with 2 memberships

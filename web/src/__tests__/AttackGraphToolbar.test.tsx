@@ -47,7 +47,7 @@ vi.mock("@/components/ui/select", () => {
 
 import { AttackGraphToolbar } from "@/app/components/AttackGraphToolbar";
 
-describe("AttackGraphToolbar — rendering", () => {
+describe("AttackGraphToolbar - rendering", () => {
   it("renders Layout caption label", () => {
     render(<AttackGraphToolbar cy={null} />);
     expect(screen.getByText("Layout")).toBeInTheDocument();
@@ -55,8 +55,8 @@ describe("AttackGraphToolbar — rendering", () => {
 
   it("renders all three layout option labels in the Select content", () => {
     render(<AttackGraphToolbar cy={null} />);
-    expect(screen.getByText("Dagre — hierarchy")).toBeInTheDocument();
-    expect(screen.getByText("CoSE — force")).toBeInTheDocument();
+    expect(screen.getByText("Dagre - hierarchy")).toBeInTheDocument();
+    expect(screen.getByText("CoSE - force")).toBeInTheDocument();
     expect(screen.getByText("Breadth-first")).toBeInTheDocument();
   });
 

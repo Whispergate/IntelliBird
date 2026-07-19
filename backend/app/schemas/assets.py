@@ -3,7 +3,7 @@
 Project Asset Surface.
 
 Shape invariants (locked by CONTEXT.md + UI-SPEC.md):
-- asset_id = sha256(bbot_event_type || canonical_target).hexdigest() — 64 hex chars
+- asset_id = sha256(bbot_event_type || canonical_target).hexdigest() - 64 hex chars
 - AssetScope enum: in_scope | out_of_scope | unscoped
 - AssetExportFormat enum: csv | json
 - AssetNotePatch.note: str, max 10_000 chars, empty string allowed
@@ -53,7 +53,7 @@ SUMMARY_BUCKET_KEYS: tuple[str, ...] = (
 
 
 class AssetRow(BaseModel):
-    """One aggregated asset row — table display + list endpoint items."""
+    """One aggregated asset row - table display + list endpoint items."""
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,4 +1,4 @@
-"""structlog configuration — JSON lines for production.
+"""structlog configuration - JSON lines for production.
 
 Call configure_logging once at process startup. Downstream code uses:
  import structlog

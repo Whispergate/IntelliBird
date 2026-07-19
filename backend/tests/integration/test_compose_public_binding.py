@@ -6,7 +6,7 @@ Parses `docker compose -f ops/docker-compose.yml config --format json` and
 inspects the normalised `ports` array on each service.
 
 Skips cleanly if `docker compose` is unavailable (CI without docker). Does
-NOT skip if docker is present — a real failure of this test is a PROD-07
+NOT skip if docker is present - a real failure of this test is a PROD-07
 regression.
 """
 from __future__ import annotations

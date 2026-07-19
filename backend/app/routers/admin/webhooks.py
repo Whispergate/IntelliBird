@@ -1,4 +1,4 @@
-"""Admin Webhook Registry CRUD — HOOK-01, HOOK-02, HOOK-09.
+"""Admin Webhook Registry CRUD - HOOK-01, HOOK-02, HOOK-09.
 
 AUTH-02: every endpoint guarded by Depends(require_admin).
 Test-send endpoint registered BEFORE /{id} routes (FastAPI path order).
@@ -80,7 +80,7 @@ def _make_dummy_event() -> dict:
 def _build_auth_headers(auth) -> dict[str, str]:
     """Build Authorization / custom headers from plaintext AuthSpec for test-send.
 
- No DB round-trip — auth is supplied in the request body for test-send.
+ No DB round-trip - auth is supplied in the request body for test-send.
 """
     if auth is None:
         return {}
@@ -98,7 +98,7 @@ def _build_auth_headers(auth) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# test-send — MUST be registered BEFORE /{webhook_id} routes
+# test-send - MUST be registered BEFORE /{webhook_id} routes
 # FastAPI matches routes in declaration order; /test-send must come first or
 # FastAPI will try to cast "test-send" as a UUID and return 422.
 # ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ def test_webhook_send(
     _admin: AuthUser = Depends(require_admin),
 ) -> TestSendResponse:
     """Non-blocking test send.: always HTTP 200; ok flag in body signals result."""
-    # Email type cannot use HTTP test-send — return early with informative message.
+    # Email type cannot use HTTP test-send - return early with informative message.
     # Real SMTP test requires live credentials; callers should configure a real
     # SMTP destination and trigger a manual alert.
     if payload.destination_type == "email":
@@ -250,7 +250,7 @@ async def create_webhook(
     auth_enc = None
     if payload.auth is not None:
         auth_dict = _auth_to_dict(payload.auth)
-        auth_enc = encrypt_credentials(settings.SECRET_KEY, auth_dict)
+        auth_enc = encrypt_credentials(settings.SECRET_KEY, auth_dict)  # type: ignore[arg-type]
 
     wh = Webhook(
         id=uuid.uuid4(),

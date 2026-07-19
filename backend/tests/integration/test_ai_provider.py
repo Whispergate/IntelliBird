@@ -51,7 +51,7 @@ async def _make_project(db_session) -> uuid.UUID:
 
 
 # ---------------------------------------------------------------------------
-# Task 1: Migration 014 — table structure tests
+# Task 1: Migration 014 - table structure tests
 # ---------------------------------------------------------------------------
 
 
@@ -131,7 +131,7 @@ async def test_migration_014_ai_summaries_event_id_soft_fk(db_session) -> None:
     project_id = await _make_project(db_session)
     phantom_event_id = uuid.uuid4()  # does not exist in events table
 
-    # Insert a summary pointing at a non-existent event — must succeed (soft FK)
+    # Insert a summary pointing at a non-existent event - must succeed (soft FK)
     await db_session.execute(
         text(
             "INSERT INTO ai_summaries "
@@ -157,7 +157,7 @@ async def test_migration_014_ai_summaries_event_id_soft_fk(db_session) -> None:
 
 @pytest.mark.asyncio
 async def test_migration_014_events_ai_score_column(db_session) -> None:
-    """events.ai_score is numeric(5,2) NULL — added by migration 014."""
+    """events.ai_score is numeric(5,2) NULL - added by migration 014."""
     result = await db_session.execute(
         text(
             "SELECT data_type, numeric_precision, numeric_scale, is_nullable "
@@ -166,7 +166,7 @@ async def test_migration_014_events_ai_score_column(db_session) -> None:
         )
     )
     row = result.fetchone()
-    assert row is not None, "events.ai_score column missing — migration 014 not applied"
+    assert row is not None, "events.ai_score column missing - migration 014 not applied"
     data_type, precision, scale, nullable = row
     assert data_type == "numeric", f"ai_score type: expected numeric, got {data_type}"
     assert precision == 5, f"ai_score precision: expected 5, got {precision}"
@@ -423,7 +423,7 @@ async def test_rekey_skips_ai_provider_null_credentials(db_session, monkeypatch)
 
 
 # ---------------------------------------------------------------------------
-# HTTP endpoint tests — GET/PUT /api/projects/{id}/ai-provider + /test
+# HTTP endpoint tests - GET/PUT /api/projects/{id}/ai-provider + /test
 # ---------------------------------------------------------------------------
 
 TEST_SIGNING_KEY = "j" * 64
@@ -523,7 +523,7 @@ async def test_get_ai_provider_returns_masked_key(monkeypatch) -> None:
     body = r.json()
     assert body["provider_type"] == "openai"
     assert body["model_name"] == "gpt-4o"
-    # Key must be masked — never return plaintext.
+    # Key must be masked - never return plaintext.
     assert body["api_key_masked"] == "••••••••", (
         f"Expected masked key, got: {body.get('api_key_masked')!r}"
     )

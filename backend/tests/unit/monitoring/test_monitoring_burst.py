@@ -1,4 +1,4 @@
-"""MON-05 burst suppression — plan 16-03.
+"""MON-05 burst suppression - plan 16-03.
 
 Tests the burst suppression key shape generalisation for monitoring alerts:
 cap=5 alerts/source/hour using Redis ZSET sliding window with key
@@ -9,7 +9,6 @@ of using a FakeRedis stub rather than requiring a running Redis server).
 """
 from __future__ import annotations
 
-import time
 from typing import Any
 
 import pytest
@@ -98,7 +97,7 @@ def r() -> FakeRedisZSet:
 # ---------------------------------------------------------------------------
 
 def test_burst_not_suppressed_initially(r: FakeRedisZSet) -> None:
-    """No dispatches recorded — suppression check returns False."""
+    """No dispatches recorded - suppression check returns False."""
     key = "burst:source:test-source:hour"
     assert is_burst_suppressed_key(r, key, cap=5) is False
 
@@ -108,12 +107,12 @@ def test_burst_suppressed_after_cap(r: FakeRedisZSet) -> None:
     key = "burst:source:test-source:hour"
     for _ in range(5):
         record_dispatch_key(r, key)
-    # After 5 records, cap=5 is reached — next check is suppressed
+    # After 5 records, cap=5 is reached - next check is suppressed
     assert is_burst_suppressed_key(r, key, cap=5) is True
 
 
 def test_burst_not_suppressed_below_cap(r: FakeRedisZSet) -> None:
-    """4 dispatches under cap=5 — still not suppressed."""
+    """4 dispatches under cap=5 - still not suppressed."""
     key = "burst:source:test-source:hour"
     for _ in range(4):
         record_dispatch_key(r, key)

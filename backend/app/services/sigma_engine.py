@@ -1,6 +1,6 @@
-"""— Sigma rule evaluation engine.
+"""- Sigma rule evaluation engine.
 
-All functions are synchronous — called from _persist_event (sync Session path).
+All functions are synchronous - called from _persist_event (sync Session path).
 SECURITY: evaluate_sigma_rules wraps all eval in try/except so a bad rule
 never breaks event ingest.
 """
@@ -23,7 +23,7 @@ SIGMA_FIELD_MAP: dict[str, str] = {
     "title": "title",
     "description": "description",
     "keywords": "tags",
-    "threat_actor": "threat_actor",   # always None at ingest — see sigma-mapping.md
+    "threat_actor": "threat_actor",   # always None at ingest - see sigma-mapping.md
     "raw_stix_pattern": "raw_stix_pattern",
     "source": "source",
 }
@@ -135,7 +135,7 @@ def _value_matches(pattern_val: str, field_val: str, modifiers: list) -> bool:
 def _evaluate_detection_item(item: Any, event_dict: dict) -> bool:
     """Evaluate a single SigmaDetectionItem against the event dict."""
     if item.field is None:
-        # Keyword search — check any value in event_dict contains any pattern value
+        # Keyword search - check any value in event_dict contains any pattern value
         haystack = " ".join(
             str(v) if not isinstance(v, list) else " ".join(str(e) for e in v)
             for v in event_dict.values()
@@ -280,7 +280,7 @@ def evaluate_sigma_rules(
     Writes attack_technique_tags rows for each match, then dispatches
     rescore_project if any matches occurred.
 
-    SAFETY: Entire function is wrapped in try/except — a bad rule or
+    SAFETY: Entire function is wrapped in try/except - a bad rule or
     transient error never breaks event ingest.
     """
     try:

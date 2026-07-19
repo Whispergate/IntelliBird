@@ -1,4 +1,4 @@
-"""MaxMind reader + LRU cache tests —-01 target (MAP-05)."""
+"""MaxMind reader + LRU cache tests --01 target (MAP-05)."""
 from __future__ import annotations
 
 import pytest

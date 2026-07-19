@@ -17,9 +17,6 @@ from sqlalchemy import make_url, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from tests.fixtures.events_seed import (
-    SOURCE_NVD,
-    SOURCE_RSS,
-    SOURCE_TAXII,
     seed_50_events,
 )
 
@@ -160,7 +157,7 @@ async def test_unknown_event_returns_404(graph_client):
 
 @pytest.mark.asyncio
 async def test_default_depth_is_2(graph_client):
-    """Default (no ?depth=) equals depth=2 — node set should match."""
+    """Default (no ?depth=) equals depth=2 - node set should match."""
     c, factory = graph_client
     eid = await _event_with_t1190(factory)
     r_default = await c.get(f"/api/events/{eid}/graph")
@@ -177,7 +174,7 @@ async def test_response_shape_cytoscape_compatible(graph_client):
     body = r.json()
     assert set(body.keys()) >= {"nodes", "edges", "truncated"}
     # graph_traversal may add optional 'tag_source' to technique nodes
-    # (feed_asserted / stix_inferred / etc) — allow it alongside core keys.
+    # (feed_asserted / stix_inferred / etc) - allow it alongside core keys.
     core = {"id", "label", "type"}
     for n in body["nodes"]:
         keys = set(n["data"].keys())

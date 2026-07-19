@@ -13,7 +13,7 @@ export type GeoMapProps = {
   tilesUrl?: string;
 };
 
-// Module-level guard — ensures addProtocol is called at most once per page load
+// Module-level guard - ensures addProtocol is called at most once per page load
 // even if the component is mounted multiple times (dashboard + drawer).
 let pmtilesRegistered = false;
 
@@ -51,7 +51,7 @@ const TLP_COLOR_EXPRESSION = [
   "#C87912",
   "red",
   "hsl(0, 70%, 45%)",
-  "#888780", // default — unresolved
+  "#888780", // default - unresolved
 ];
 
 export function GeoMapImpl({
@@ -96,7 +96,7 @@ export function GeoMapImpl({
     };
   }, [role]);
 
-  // Map initialisation — runs once on mount.
+  // Map initialisation - runs once on mount.
   useEffect(() => {
     if (!containerRef.current) return;
     let cancelled = false;
@@ -260,7 +260,7 @@ export function GeoMapImpl({
         map.on("load", () => {
           if (cancelled) return;
 
-          // Snapshot events at load time via closure — the events-sync effect
+          // Snapshot events at load time via closure - the events-sync effect
           // keeps the source updated as state changes after load.
           const currentEvents = eventsSnapshot.current;
 
@@ -435,7 +435,7 @@ export function GeoMapImpl({
     >
       <div ref={containerRef} style={{ height: "100%", width: "100%" }} />
 
-      {/* overlayText prop — kept for backward compatibility with tests*/}
+      {/* overlayText prop - kept for backward compatibility with tests*/}
       {overlayText ? (
         <div
           data-testid="geomap-overlay"
@@ -454,7 +454,7 @@ export function GeoMapImpl({
         </div>
       ) : null}
 
-      {/* empty-state overlay — fires when 0 geo-resolved events after fetch*/}
+      {/* empty-state overlay - fires when 0 geo-resolved events after fetch*/}
       {eventsLoaded && events.length === 0 ? (
         <div
           data-testid="geomap-empty"

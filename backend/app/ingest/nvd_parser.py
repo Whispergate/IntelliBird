@@ -25,7 +25,7 @@ _EXPLOIT_TAGS: frozenset[str] = frozenset({"Exploit", "VDB Entry"})
 
 
 def _attr(obj: Any, name: str, default: Any = None) -> Any:
-    """Tolerant attribute/key access — NVD libs expose either shape."""
+    """Tolerant attribute/key access - NVD libs expose either shape."""
     if obj is None:
         return default
     try:
@@ -41,7 +41,7 @@ def _attr(obj: Any, name: str, default: Any = None) -> Any:
 def _parse_iso(ts: str | None) -> datetime | None:
     if not ts:
         return None
-    # NVD ISO strings lack timezone — treat as UTC.
+    # NVD ISO strings lack timezone - treat as UTC.
     s = ts.replace("Z", "+00:00")
     try:
         dt = datetime.fromisoformat(s)
@@ -110,7 +110,7 @@ def extract_attack_techniques(cve: Any) -> list[tuple[str, str]]:
     for ref in _attr(cve, "references", []) or []:
         url = _attr(ref, "url", "") or ""
         tags = set(_attr(ref, "tags", []) or [])
-        # URL match first — highest-confidence signal.
+        # URL match first - highest-confidence signal.
         m = _ATTACK_URL_PATTERN.search(url)
         if m:
             tid = m.group(1).upper()

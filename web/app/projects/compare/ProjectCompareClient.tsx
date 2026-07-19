@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectCompareClient — client component for /projects/compare.
+ * ProjectCompareClient - client component for /projects/compare.
  *
  * Contract (locked by .planning/phases/10-projects-foundation/10-UI-SPEC.md
  * §/projects/compare and 10-13-PLAN.md §must_haves):
@@ -11,7 +11,7 @@
  *     user can still compare an archived project by deep-linking with ?a/?b,
  *     but the picker only surfaces active projects).
  *   - Swap button between the pickers toggles the `a` and `b` query params
- *     via router.replace — aids the mental model when operators want to
+ *     via router.replace - aids the mental model when operators want to
  *     invert the direction.
  *   - When BOTH `a` and `b` are present in the query, fire
  *     `compareProjects(a, b)` via useEffect and render three CompareTable
@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/select";
 import { CompareTable, copyToClipboard } from "./components/CompareTable";
 
-// 500-row per-section cap — mirrors COMPARE_CAP on the backend
+// 500-row per-section cap - mirrors COMPARE_CAP on the backend
 // (backend/app/services/project_compare.py). Length === CAP is the signal to
 // render the truncation caption; we can't distinguish length === CAP from
 // "real" 500 without a separate COUNT(*) round-trip, so the UI-SPEC's

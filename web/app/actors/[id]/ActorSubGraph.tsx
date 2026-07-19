@@ -17,7 +17,7 @@ if (!coseBilkentRegistered) {
     (Cytoscape as any).use(coseBilkent);
     coseBilkentRegistered = true;
   } catch {
-    // Plugin already registered — ignore.
+    // Plugin already registered - ignore.
   }
 }
 

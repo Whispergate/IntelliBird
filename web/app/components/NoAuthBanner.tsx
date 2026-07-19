@@ -3,19 +3,19 @@ import type { SystemStatus } from "../api-client";
 type Props = { status: SystemStatus | null };
 
 /**
- * Pre-auth + credentials-health indicator banner — INFRA-03 + INFRA-04.
+ * Pre-auth + credentials-health indicator banner - INFRA-03 + INFRA-04.
  *
  * Three mutually-exclusive visible states (plus null when everything is green):
- *   1. Decrypt failure  — critical red #b00020, takes precedence over auth warning.
- *   2. Auth disabled + exposed beyond loopback — red #b00020.
- *   3. Auth disabled + loopback only — amber #8a6d00.
+ *   1. Decrypt failure  - critical red #b00020, takes precedence over auth warning.
+ *   2. Auth disabled + exposed beyond loopback - red #b00020.
+ *   3. Auth disabled + loopback only - amber #8a6d00.
  *
  * Not dismissible. Rendered at top of root layout above all page content.
  * Uses inline styles (not shadcn/ui Alert) so it paints before CSS bundles
- * load — deliberate, per UI-SPEC.
+ * load - deliberate, per UI-SPEC.
  */
 export function NoAuthBanner({ status }: Props) {
-  // 1. Decrypt failure — highest precedence.
+  // 1. Decrypt failure - highest precedence.
   if (status?.decrypt_check === "failed") {
     return (
       <div
@@ -71,7 +71,7 @@ export function NoAuthBanner({ status }: Props) {
     );
   }
 
-  // 2+3. Auth disabled — either exposed (red) or loopback-only (amber).
+  // 2+3. Auth disabled - either exposed (red) or loopback-only (amber).
   if (!status || status.auth_enabled === false) {
     const exposed = status && !status.host_loopback_only;
     const host = status?.host ?? "127.0.0.1";
@@ -115,6 +115,6 @@ export function NoAuthBanner({ status }: Props) {
     );
   }
 
-  // 4. Auth enabled and no decrypt failure — render nothing. steady state.
+  // 4. Auth enabled and no decrypt failure - render nothing. steady state.
   return null;
 }

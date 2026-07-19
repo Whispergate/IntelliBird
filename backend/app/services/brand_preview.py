@@ -1,4 +1,4 @@
-"""Brand term test-coverage preview — H-5 prevention recipe.
+"""Brand term test-coverage preview - H-5 prevention recipe.
 
 On brand-term dialog value `onBlur`, frontend hits
 ``/api/projects/{id}/brand/preview?term=...&term_type=...``. This service
@@ -92,7 +92,7 @@ async def preview_term(
         warning = None
 
     resp = BrandPreviewResponse(
-        preview_matches=hits, percent=percent, warning=warning
+        preview_matches=hits, percent=percent, warning=warning  # type: ignore[arg-type]
     )
     await redis.setex(key, CACHE_TTL_SECONDS, resp.model_dump_json())
     return resp

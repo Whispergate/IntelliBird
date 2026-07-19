@@ -1,17 +1,17 @@
 /**
- * /projects/[id]/intel — per-project intel view.
+ * /projects/[id]/intel - per-project intel view.
  *
  * Server component. Fetches project detail (parent layout.tsx already
  * validated access and would have redirected on 403/404) and delegates
  * rendering to the shared EventsClient with a `projectId` prop. The client
- * threads `project_id=<uuid>` into every `listEvents` call and — via the
- * nested EventDetailDrawer → AttackGraph chain — into every subsequent
+ * threads `project_id=<uuid>` into every `listEvents` call and - via the
+ * nested EventDetailDrawer → AttackGraph chain - into every subsequent
  * `/api/events/:id/graph?project_id=X` request.
  *
  * URL shape note:
  *   - Filter params (`?tag=`, `?tlp=`, `?observed_from=`, etc) serialise to
  *     the query string as usual. `project_id` is intentionally NOT part of
- *     the query string — the pinning lives in the route segment itself, and
+ *     the query string - the pinning lives in the route segment itself, and
  *     EventsClient's buildSearchParams omits it (see EventsClient.tsx for the
  *     lock reasoning).
  *   - The `?event=<id>` drawer param works the same as on /events; the

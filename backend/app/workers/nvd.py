@@ -1,22 +1,22 @@
-"""NVD/CVE polling actor — INGC-01, INGC-02, INGC-03.
+"""NVD/CVE polling actor - INGC-01, INGC-02, INGC-03.
 
 Cursor strategy:
  - last_cursor IS NULL → fetch last 30 days.
  - Otherwise → lastModStartDate = last_cursor + 1 second.
  - On success, advance last_cursor to (max lastModified seen) + 1 second.
- - On any failure, cursor is NOT advanced — re-poll covers the same window.
+ - On any failure, cursor is NOT advanced - re-poll covers the same window.
 
 Rate-limit handling:
  - 429 or 5xx: exponential backoff 30s → 60s → 120s (max 3 attempts).
  - After final failure: last_status='rate_limited' (429) or 'http_error' (5xx).
- - Other 4xx: fail fast — no retry, last_status='http_error'.
+ - Other 4xx: fail fast - no retry, last_status='http_error'.
 
 Event → cve_details / attack_technique_tags linkage:
  - Uses RETURNING id on the events insert to capture the server-generated UUID.
  - ON CONFLICT (source_id, content_hash, observed_at) DO NOTHING matches the
  3-column unique index from migration 002 (required by TimescaleDB hypertable).
  - Dependent writes (cve_details, attack_technique_tags) are skipped when the
- event row is a dedup conflict — they already exist from the original insert.
+ event row is a dedup conflict - they already exist from the original insert.
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
 from app.crypto import decrypt_credentials
-from app.ingest.normalise import _persist_event, update_source_health  # noqa: F401 — exposed for monkeypatching
+from app.ingest.normalise import _persist_event, update_source_health  # noqa: F401 - exposed for monkeypatching
 from app.services.source_health import update_silent_failure_count, bump_last_event_at, record_ingest_stats
 from app.ingest.nvd_parser import normalise_cve
 from app.models.cve_details import CveDetails
@@ -96,8 +96,8 @@ def _compute_start(last_cursor: str | None) -> datetime:
 
 
 def _write_cve_details(session: Session, event_id: uuid.UUID, row: dict) -> None:
-    """Idempotent insert keyed on event_id — skip silently if already present."""
-    stmt = pg_insert(CveDetails.__table__).values(event_id=event_id, **row)
+    """Idempotent insert keyed on event_id - skip silently if already present."""
+    stmt = pg_insert(CveDetails.__table__).values(event_id=event_id, **row)  # type: ignore[arg-type]
     stmt = stmt.on_conflict_do_nothing(index_elements=["event_id"])
     session.execute(stmt)
 
@@ -105,7 +105,7 @@ def _write_cve_details(session: Session, event_id: uuid.UUID, row: dict) -> None
 def _write_attack_tag(session: Session, event_id: uuid.UUID, technique_id: str,
                       url: str) -> None:
     session.execute(
-        pg_insert(AttackTechniqueTag.__table__).values(
+        pg_insert(AttackTechniqueTag.__table__).values(  # type: ignore[arg-type]
             event_id=event_id,
             technique_id=technique_id,
             tag_source="feed_asserted",
@@ -134,7 +134,7 @@ def _fetch_with_backoff(**kwargs: Any) -> list:
 
  Returns list of CVE objects on success, or raises the final exception.
 
- Backoff schedule: sleep 30s, 60s, 120s — one sleep per failed attempt
+ Backoff schedule: sleep 30s, 60s, 120s - one sleep per failed attempt
  (3 attempts total, 3 sleeps). 4xx non-429 fails fast without sleeping.
 """
     last_exc: BaseException | None = None
@@ -144,7 +144,7 @@ def _fetch_with_backoff(**kwargs: Any) -> list:
         except BaseException as e:  # noqa: BLE001
             code = _error_status_code(e)
             last_exc = e
-            # 4xx non-429: fail fast — no sleep, propagate immediately
+            # 4xx non-429: fail fast - no sleep, propagate immediately
             if code is not None and 400 <= code < 500 and code != 429:
                 raise
             # 429 or 5xx: sleep then retry (or give up after last attempt)
@@ -205,7 +205,7 @@ def poll_nvd_impl(source_id_str: str) -> None:
         latest_mod: datetime | None = None
         attack_written = 0
 
-        # Per-source project binding lookup — hoisted outside per-CVE loop.
+        # Per-source project binding lookup - hoisted outside per-CVE loop.
         # Zero bindings → fall back to LEGACY (preserves prior behaviour for
         # unbound sources). One+ bindings → fan out one event per project.
         # Quick task 260429-tyq.
@@ -262,7 +262,7 @@ def poll_nvd_impl(source_id_str: str) -> None:
                     for pid in project_ids:
                         per_event_row = {**event_row, "project_id": pid}
                         stmt = (
-                            pg_insert(Event.__table__)
+                            pg_insert(Event.__table__)  # type: ignore[arg-type]
                             .values(**per_event_row)
                             .on_conflict_do_nothing(
                                 index_elements=["project_id", "source_id", "content_hash", "observed_at"]
@@ -271,7 +271,7 @@ def poll_nvd_impl(source_id_str: str) -> None:
                         )
                         result_row = session.execute(stmt).fetchone()
                         if result_row is None:
-                            # Conflict — row already exists for this project; children too.
+                            # Conflict - row already exists for this project; children too.
                             continue
                         event_id = result_row[0]
                         inserted += 1

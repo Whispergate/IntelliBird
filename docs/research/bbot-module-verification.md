@@ -14,32 +14,32 @@ All were verified against live `docker run --rm blacklanternsecurity/bbot:stable
 
 | Module | Type | Needs API Key | Notes |
 |--------|------|---------------|-------|
-| `crt` | scan | No | Certificate transparency via crt.sh — confirmed present as `crt` (NOT `crt.sh`) |
+| `crt` | scan | No | Certificate transparency via crt.sh - confirmed present as `crt` (NOT `crt.sh`) |
 | `dnsdumpster` | scan | No | Confirmed present |
-| `otx` | scan | Yes | AlienVault OTX — confirmed present; **requires OTX API key** (research doc omitted this) |
-| `shodan_dns` | scan | Yes | Shodan passive DNS — confirmed present; requires SHODAN_API_KEY |
-| `wayback` | scan | No | archive.org — confirmed present |
-| `github_codesearch` | scan | Yes | GitHub code search — confirmed present; requires GITHUB_TOKEN |
-| `certspotter` | scan | No | Certspotter CT logs — confirmed present |
-| `hackertarget` | scan | No | hackertarget.com — confirmed present |
-| `anubisdb` | scan | No | jldc.me subdomain DB — confirmed present |
-| `bevigil` | scan | Yes | OSINT from mobile apps — confirmed present; requires BEVIGIL_API_KEY |
-| `chaos` | scan | Yes | ProjectDiscovery Chaos — confirmed present; requires CHAOS_API_KEY |
-| `urlscan` | scan | No | urlscan.io — confirmed present |
-| `securitytrails` | scan | Yes | SecurityTrails — confirmed present; requires SECURITYTRAILS_API_KEY |
-| `subdomaincenter` | scan | No | Passive subdomain enumeration — confirmed present (replaces `sublist3r` + `subdomains`) |
+| `otx` | scan | Yes | AlienVault OTX - confirmed present; **requires OTX API key** (research doc omitted this) |
+| `shodan_dns` | scan | Yes | Shodan passive DNS - confirmed present; requires SHODAN_API_KEY |
+| `wayback` | scan | No | archive.org - confirmed present |
+| `github_codesearch` | scan | Yes | GitHub code search - confirmed present; requires GITHUB_TOKEN |
+| `certspotter` | scan | No | Certspotter CT logs - confirmed present |
+| `hackertarget` | scan | No | hackertarget.com - confirmed present |
+| `anubisdb` | scan | No | jldc.me subdomain DB - confirmed present |
+| `bevigil` | scan | Yes | OSINT from mobile apps - confirmed present; requires BEVIGIL_API_KEY |
+| `chaos` | scan | Yes | ProjectDiscovery Chaos - confirmed present; requires CHAOS_API_KEY |
+| `urlscan` | scan | No | urlscan.io - confirmed present |
+| `securitytrails` | scan | Yes | SecurityTrails - confirmed present; requires SECURITYTRAILS_API_KEY |
+| `subdomaincenter` | scan | No | Passive subdomain enumeration - confirmed present (replaces `sublist3r` + `subdomains`) |
 
 ---
 
 ## Name corrections confirmed
 
-- **`sublist3r`** — **ABSENT** from BBOT 2.8.4 module registry (not present in `-l` output). Must NOT be included in `BBOT_STABLE_PASSIVE_MODULES`. PITFALLS §Pitfall 3 confirmed.
-- **`crt` vs `crt.sh`** — actual name in BBOT 2.8.4: **`crt`** (not `crt.sh`). `crt.sh` is the external service; the BBOT module is named `crt`.
-- **`subdomaincenter` vs `subdomains`** — actual name in BBOT 2.8.4: **`subdomaincenter`**. There is no `subdomains` module. There is also `subdomainradar` (requires API key) as an alternative.
+- **`sublist3r`** - **ABSENT** from BBOT 2.8.4 module registry (not present in `-l` output). Must NOT be included in `BBOT_STABLE_PASSIVE_MODULES`. PITFALLS §Pitfall 3 confirmed.
+- **`crt` vs `crt.sh`** - actual name in BBOT 2.8.4: **`crt`** (not `crt.sh`). `crt.sh` is the external service; the BBOT module is named `crt`.
+- **`subdomaincenter` vs `subdomains`** - actual name in BBOT 2.8.4: **`subdomaincenter`**. There is no `subdomains` module. There is also `subdomainradar` (requires API key) as an alternative.
 
 ### Additional correction from research doc
 
-- **`otx`** — Confirmed present but the research doc listed it as "confirmed" without noting it **requires an OTX API key** (`Yes` in Needs API Key column). BBOT will skip this module silently if no API key is configured.
+- **`otx`** - Confirmed present but the research doc listed it as "confirmed" without noting it **requires an OTX API key** (`Yes` in Needs API Key column). BBOT will skip this module silently if no API key is configured.
 
 ---
 
@@ -61,7 +61,7 @@ These were observed in the live output and may be worth adding to the safelist i
 | `leakix` | No | leakix.net passive subdomain |
 | `myssl` | No | myssl.com passive subdomain |
 | `rapiddns` | No | rapiddns.io passive |
-| `shodan_idb` | No | Shodan InternetDB — passive, no API key needed |
+| `shodan_idb` | No | Shodan InternetDB - passive, no API key needed |
 | `sitedossier` | No | sitedossier.com passive |
 | `subdomainradar` | Yes | Subdomain API passive |
 | `virustotal` | Yes | VirusTotal passive subdomain |
@@ -74,22 +74,22 @@ Decision on expanding the safelist is deferred to v2.1 per CONTEXT.md §Deferred
 
 ```python
 BBOT_STABLE_PASSIVE_MODULES: frozenset[str] = frozenset({
-    "crt",               # crt.sh certificate transparency — name is "crt" NOT "crt.sh"
+    "crt",               # crt.sh certificate transparency - name is "crt" NOT "crt.sh"
     "dnsdumpster",       # dnsdumpster.com passive DNS
-    "otx",               # AlienVault OTX — requires OTX_API_KEY credential
-    "shodan_dns",        # Shodan passive DNS — requires SHODAN_API_KEY credential
+    "otx",               # AlienVault OTX - requires OTX_API_KEY credential
+    "shodan_dns",        # Shodan passive DNS - requires SHODAN_API_KEY credential
     "wayback",           # archive.org Wayback Machine
-    "github_codesearch", # GitHub code search — requires GITHUB_TOKEN credential
+    "github_codesearch", # GitHub code search - requires GITHUB_TOKEN credential
     "certspotter",       # Certspotter CT logs
     "hackertarget",      # hackertarget.com API
     "anubisdb",          # jldc.me subdomain database
-    "bevigil",           # OSINT from mobile apps — requires BEVIGIL_API_KEY credential
-    "chaos",             # ProjectDiscovery Chaos — requires CHAOS_API_KEY credential
+    "bevigil",           # OSINT from mobile apps - requires BEVIGIL_API_KEY credential
+    "chaos",             # ProjectDiscovery Chaos - requires CHAOS_API_KEY credential
     "urlscan",           # urlscan.io
-    "securitytrails",    # SecurityTrails — requires SECURITYTRAILS_API_KEY credential
-    "subdomaincenter",   # subdomain.center API — replaces CONTEXT.md's "sublist3r"/"subdomains"
-    # "sublist3r"        # NOT in BBOT 2.8.4 — EXCLUDED (PITFALLS §Pitfall 3)
-    # "crt.sh"           # NOT a valid module name — actual name is "crt"
+    "securitytrails",    # SecurityTrails - requires SECURITYTRAILS_API_KEY credential
+    "subdomaincenter",   # subdomain.center API - replaces CONTEXT.md's "sublist3r"/"subdomains"
+    # "sublist3r"        # NOT in BBOT 2.8.4 - EXCLUDED (PITFALLS §Pitfall 3)
+    # "crt.sh"           # NOT a valid module name - actual name is "crt"
 })
 # NOTE: Modules requiring API keys degrade gracefully (BBOT skips them silently if key not set)
 # NOTE: BBOT_EXPERIMENTAL_OVERRIDE env var (comma-separated) unions additional modules at startup
@@ -155,4 +155,4 @@ Full output of `docker run --rm blacklanternsecurity/bbot:stable -l` (ANSI codes
 [... internal modules: cloudcheck, dnsresolve, aggregate, excavate, speculate, unarchive ...]
 ```
 
-(Full tabular output omitted for brevity — contains all scan/internal module rows. Key passive-safe modules shown above.)
+(Full tabular output omitted for brevity - contains all scan/internal module rows. Key passive-safe modules shown above.)

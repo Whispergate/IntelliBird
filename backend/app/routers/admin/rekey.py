@@ -1,4 +1,4 @@
-"""POST /api/admin/rekey-credentials — INFRA-02.
+"""POST /api/admin/rekey-credentials - INFRA-02.
 
 Re-encrypt every sources.credentials_enc blob from the OLD SECRET_KEY
 (settings.REKEY_FROM_SECRET) to the CURRENT SECRET_KEY (settings.SECRET_KEY).
@@ -114,13 +114,13 @@ async def rekey_credentials(
     for ep_row in ep_rows:
         # Idempotency: skip rows already encrypted under the current key
         try:
-            decrypt_credentials(settings.SECRET_KEY, ep_row.credentials_enc)
+            decrypt_credentials(settings.SECRET_KEY, ep_row.credentials_enc)  # type: ignore[arg-type]
             skipped_already_current.append(f"ep:{ep_row.id}")
             continue
         except Exception:
             pass
         try:
-            creds = decrypt_credentials(settings.REKEY_FROM_SECRET, ep_row.credentials_enc)
+            creds = decrypt_credentials(settings.REKEY_FROM_SECRET, ep_row.credentials_enc)  # type: ignore[arg-type]
         except Exception:
             failed_ids.append(f"ep:{ep_row.id}")
             continue
@@ -147,7 +147,7 @@ async def rekey_credentials(
         ep_row.credentials_enc = new_blob
         ep_row.credentials_key_version = (ep_row.credentials_key_version or 1) + 1
 
-    # --- sources.session_enc sweep (DARK-04 — Telethon session strings) ---
+    # --- sources.session_enc sweep (DARK-04 - Telethon session strings) ---
     sources_session_swept = 0
     session_rows = (
         await session.execute(
@@ -158,13 +158,13 @@ async def rekey_credentials(
     for src_row in session_rows:
         # Idempotency: skip rows already encrypted under the current key.
         try:
-            decrypt_credentials(settings.SECRET_KEY, src_row.session_enc)
+            decrypt_credentials(settings.SECRET_KEY, src_row.session_enc)  # type: ignore[arg-type]
             skipped_already_current.append(f"session:{src_row.id}")
             continue
         except Exception:  # noqa: BLE001
             pass
         try:
-            creds = decrypt_credentials(settings.REKEY_FROM_SECRET, src_row.session_enc)
+            creds = decrypt_credentials(settings.REKEY_FROM_SECRET, src_row.session_enc)  # type: ignore[arg-type]
         except Exception:  # noqa: BLE001
             failed_ids.append(f"session:{src_row.id}")
             continue

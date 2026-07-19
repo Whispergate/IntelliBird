@@ -1,4 +1,4 @@
-"""ATT&CK bootstrap — three-tier fallback coverage.
+"""ATT&CK bootstrap - three-tier fallback coverage.
 
 These tests use the bundled snapshots and httpx/TAXII monkeypatching;
 they do not require network access.
@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.integration
 
-from app.workers import bootstrap
+from app.workers import bootstrap  # noqa: E402
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def test_bundled_fallback(monkeypatch):
     """Both TAXII and GitHub fail → bundled snapshot used."""
     monkeypatch.setattr(bootstrap, "_fetch_taxii", lambda m, timeout=30.0: None)
     monkeypatch.setattr(bootstrap, "_fetch_github", lambda m, timeout=60.0: None)
-    # Real bundled file from Task 3.1 — must exist and be valid JSON
+    # Real bundled file from Task 3.1 - must exist and be valid JSON
     result = bootstrap.fetch_with_fallback("mobile")
     assert result is not None, "bundled mobile snapshot missing"
     assert result.get("type") == "bundle"

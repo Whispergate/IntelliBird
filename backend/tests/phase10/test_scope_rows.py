@@ -1,4 +1,4 @@
-"""test_scope_rows — PRJ-02 validators + persistence (plan 10-04).
+"""test_scope_rows - PRJ-02 validators + persistence (plan 10-04).
 
 Unit-level tests cover the validator functions in scope_validators.py directly
 (pure functions, no DB). The final `test_each_scope_type_persists` is the
@@ -7,14 +7,13 @@ each of the 7 scope types.
 """
 from __future__ import annotations
 
-import uuid as _uuid
 
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-# NO module-level pytestmark — validator unit tests are pure; the single
+# NO module-level pytestmark - validator unit tests are pure; the single
 # integration test marks itself explicitly.
 from app.services.scope_validators import (
     validate_as_number,
@@ -26,7 +25,7 @@ from app.services.scope_validators import (
 
 
 # ---------------------------------------------------------------------------
-# Unit tests — pure functions, no DB
+# Unit tests - pure functions, no DB
 # ---------------------------------------------------------------------------
 
 
@@ -122,7 +121,7 @@ def test_scope_type_dispatch() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Integration test — POST /api/projects/{id}/scope for each of the 7 types
+# Integration test - POST /api/projects/{id}/scope for each of the 7 types
 # ---------------------------------------------------------------------------
 
 

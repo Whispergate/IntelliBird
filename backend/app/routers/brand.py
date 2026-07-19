@@ -318,8 +318,8 @@ async def list_matches(
     the include_dismissed flag is ignored (explicit lifecycle wins).
 
     Response includes two banner flags:
-      * has_expiring_dismissals     — dismissals expiring in the next 7 days
-      * has_recent_auto_downgrade   — >0 terms flipped to watch_only recently
+      * has_expiring_dismissals     - dismissals expiring in the next 7 days
+      * has_recent_auto_downgrade   - >0 terms flipped to watch_only recently
     """
     filters: list[str] = ["bm.project_id = CAST(:pid AS uuid)"]
     params: dict[str, object] = {"pid": str(project_id)}
@@ -352,7 +352,7 @@ async def list_matches(
     rows = (await session.execute(sql, params)).mappings().all()
     matches = [BrandMatchRead(**dict(r)) for r in rows]
 
-    # has_expiring_dismissals — any dismissed row with dismiss_until in <7d
+    # has_expiring_dismissals - any dismissed row with dismiss_until in <7d
     exp_row = (
         await session.execute(
             text(
@@ -369,7 +369,7 @@ async def list_matches(
     ).mappings().one()
     has_expiring = (exp_row["cnt"] or 0) > 0
 
-    # has_recent_auto_downgrade — any active watch_only term in the project
+    # has_recent_auto_downgrade - any active watch_only term in the project
     dg_rows = (
         await session.execute(
             text(
@@ -531,7 +531,7 @@ async def patch_match(
 
 
 # ---------------------------------------------------------------------------
-# GET /matches/{match_id}/details — BRAND-02
+# GET /matches/{match_id}/details - BRAND-02
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -546,14 +546,14 @@ async def get_match_details(
 ) -> MatchDetailsResponse:
     """Provenance + aggregate lifecycle counts + last-10 activity timeline.
 
-    Observer+ read access. All queries scoped to (project_id, brand_term_id) —
+    Observer+ read access. All queries scoped to (project_id, brand_term_id) -
     no cross-project data is accessible.
 
     Provenance: detector label, best-available raw_input per detector tier,
     matched_value, similarity (always None for current detectors).
 
     Aggregate counts: GROUP BY lifecycle_status across ALL matches for the same
-    brand_term_id in this project (no lifecycle filter — includes dismissed).
+    brand_term_id in this project (no lifecycle filter - includes dismissed).
 
     Timeline: flatten match_metadata.history[] from all sibling matches (same
     project_id + brand_term_id), sort descending by acted_at, cap at 10.
@@ -598,7 +598,7 @@ async def get_match_details(
         similarity=None,
     )
 
-    # Fetch all sibling matches (same project_id + brand_term_id) — scoped query
+    # Fetch all sibling matches (same project_id + brand_term_id) - scoped query
     sibling_rows = (
         await session.execute(
             text(
@@ -663,7 +663,7 @@ async def extend_dismissal(
 
     Semantics:
       let_resurface=True  → lifecycle_status='new',    dismiss_until=NULL
-      extend_days=None    → dismiss_until=NULL   (Indefinite — status preserved)
+      extend_days=None    → dismiss_until=NULL   (Indefinite - status preserved)
       extend_days=N       → dismiss_until=NOW() + N days
     """
     _require_modifier(user, project_id)
@@ -738,7 +738,7 @@ async def suppression_review(
 ) -> list[BrandSuppressionRow]:
     """List dismissed matches whose dismiss_until falls within the next 7 days.
 
-    Drives the 'Suppression Review' widget on the brand dashboard — operators
+    Drives the 'Suppression Review' widget on the brand dashboard - operators
     get a short-horizon view of noise about to resurface.
     """
     rows = (
@@ -791,7 +791,7 @@ async def preview(
 
 
 # ---------------------------------------------------------------------------
-# GET /stoplist — BRAND-01
+# GET /stoplist - BRAND-01
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -815,7 +815,7 @@ async def list_stoplist(
 
 
 # ---------------------------------------------------------------------------
-# POST /stoplist — BRAND-01
+# POST /stoplist - BRAND-01
 # ---------------------------------------------------------------------------
 
 @router.post(
@@ -853,7 +853,7 @@ async def add_stoplist_term(
 
 
 # ---------------------------------------------------------------------------
-# DELETE /stoplist/{term_id} — BRAND-01
+# DELETE /stoplist/{term_id} - BRAND-01
 # ---------------------------------------------------------------------------
 
 @router.delete(

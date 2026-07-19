@@ -1,4 +1,4 @@
-"""Migration 005 partial geo index —-02 (MAP-05).
+"""Migration 005 partial geo index --02 (MAP-05).
 
 Tests verify:
 - upgrade to 005 creates idx_events_geo_coords with a WHERE clause
@@ -25,7 +25,7 @@ def live_db_004():
     """Start intellibird-db:m1, migrate to 004, yield (engine, env).
 
  The migration-005 tests need to control the exact revision they're on,
- so this fixture leaves the DB at 004 — tests can then upgrade to 005
+ so this fixture leaves the DB at 004 - tests can then upgrade to 005
  and downgrade back.
 """
     with PostgresContainer("intellibird-db:m1") as pg:

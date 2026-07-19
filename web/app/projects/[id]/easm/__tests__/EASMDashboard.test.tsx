@@ -1,5 +1,5 @@
 /**
- * EASMDashboard tests — plan 11-08.
+ * EASMDashboard tests - plan 11-08.
  *
  * Tests Surface 3: EASM Dashboard at /projects/[id]/easm.
  * Activated in plan 11-08 (was a Wave 0 stub referencing plan 11-09).
@@ -92,12 +92,12 @@ const FINDING_WATCHLIST: EASMFinding = {
   lifecycle_status: "watchlist",
 };
 
-// 6 days + 2 hours ago (> 6 days — banner should show)
+// 6 days + 2 hours ago (> 6 days - banner should show)
 const CONFIRMED_AT_OLD = new Date(
   Date.now() - (6 * 24 * 60 * 60 + 2 * 60 * 60) * 1000,
 ).toISOString();
 
-// 1 day ago (< 6 days — banner should NOT show)
+// 1 day ago (< 6 days - banner should NOT show)
 const CONFIRMED_AT_RECENT = new Date(
   Date.now() - 24 * 60 * 60 * 1000,
 ).toISOString();
@@ -261,7 +261,7 @@ describe("EASMDashboard", () => {
       expect(vi.mocked(listFindings)).toHaveBeenCalledTimes(1),
     );
 
-    // Open the Severity select (index 2 — Type, Module, Severity, Lifecycle)
+    // Open the Severity select (index 2 - Type, Module, Severity, Lifecycle)
     const selects = screen.getAllByRole("combobox");
     // Severity is the 3rd select (0-indexed: 2)
     const severitySelect = selects[2];
@@ -304,7 +304,7 @@ describe("EASMDashboard", () => {
       expect(screen.getByText("example.com")).toBeInTheDocument();
     });
 
-    // Open Actions select — find the combobox in the Actions column
+    // Open Actions select - find the combobox in the Actions column
     // The 5th combobox (0-indexed: 4) is the Actions Select after the 4 filter bar dropdowns
     const allComboboxes = screen.getAllByRole("combobox");
     // 4 filter bar selects + 1 actions select per row

@@ -70,7 +70,7 @@ def _fetch_bundled(matrix: str) -> dict | None:
 
 
 def fetch_with_fallback(matrix: str) -> dict | None:
-    """Public helper — exposed for tests to monkeypatch individual steps."""
+    """Public helper - exposed for tests to monkeypatch individual steps."""
     for loader in (_fetch_taxii, _fetch_github, _fetch_bundled):
         bundle = loader(matrix)
         if bundle is not None:

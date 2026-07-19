@@ -43,7 +43,7 @@ class GraphResult:
     truncated: bool = False
     _node_ids: set[str] = field(default_factory=set)
     _edge_keys: set[tuple[str, str, str]] = field(default_factory=set)
-    # Caps — callers that need different limits pass node_cap / edge_cap to __init__.
+    # Caps - callers that need different limits pass node_cap / edge_cap to __init__.
     # Defaults preserve existing per-event traverse_graph behaviour (NODE_CAP / EDGE_CAP).
     _node_cap: int = field(default=NODE_CAP)
     _edge_cap: int = field(default=EDGE_CAP)
@@ -115,7 +115,7 @@ async def traverse_graph(
  given project. When set:
    - Seed event must have seed.project_id == project_id (else return None)
    - Layer 3 cross-event expansion JOINs events with .where(project_id == X)
-     so no event from another project can leak into the result (H-3 closure —
+     so no event from another project can leak into the result (H-3 closure -
      never via AGE node properties).
    - Layers 1+2 are seed-scoped (no cross-event fetch) so no additional filter
      needed beyond the seed guard.
@@ -125,7 +125,7 @@ async def traverse_graph(
     if depth < MIN_DEPTH or depth > MAX_DEPTH:
         raise ValueError(f"depth must be {MIN_DEPTH}..{MAX_DEPTH}, got {depth}")
 
-    # Load seed event (composite PK — use where)
+    # Load seed event (composite PK - use where)
     seed = (await session.execute(
         select(Event).where(Event.id == event_id)
     )).scalar_one_or_none()
@@ -250,7 +250,7 @@ async def traverse_graph(
             other_q = select(Event).where(Event.id.in_(other_event_ids))
             # PRJ-04 / H-3: every cross-event expansion hop must
             # re-apply the project filter via JOIN-to-events. This is the
-            # enforcement point — seed-match at layer 0 is not sufficient.
+            # enforcement point - seed-match at layer 0 is not sufficient.
             if project_id is not None:
                 other_q = other_q.where(Event.project_id == project_id)
             other_events = (await session.execute(other_q)).scalars().all()
@@ -295,7 +295,7 @@ async def traverse_project(
     Security guarantee: event collection flows through build_events_query with
     project_id kwarg which applies `Event.project_id == project_id` at the SQL
     layer. This is the same scope-predicate chokepoint used by the events list
-    endpoint — cross-project leakage is structurally impossible.
+    endpoint - cross-project leakage is structurally impossible.
 
     Layers traversed per seed event:
       - Layer 1: AttackTechniqueTag JOIN (techniques used by the event)

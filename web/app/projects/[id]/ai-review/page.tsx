@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/ai-review — AI Suggestion Queue page.
+ * /projects/[id]/ai-review - AI Suggestion Queue page.
  * / UI-SPEC §Surface 2.
  *
  * Server component shell that hydrates the client AIReviewTable component.

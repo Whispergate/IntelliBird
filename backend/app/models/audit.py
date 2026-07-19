@@ -1,11 +1,11 @@
-"""AuditLog ORM model — AUDIT-01, AUDIT-02.
+"""AuditLog ORM model - AUDIT-01, AUDIT-02.
 
 Schema mirrors alembic 026_threat_actors_campaigns_audit.
 
 Design notes:
   * audit_log is a TimescaleDB hypertable partitioned by 'time'.
   * Composite PK (time, id): TimescaleDB requires the partition column to appear
-    in all unique constraints — same pattern as events (observed_at, id).
+    in all unique constraints - same pattern as events (observed_at, id).
   * project_id is a nullable FK so audit rows can exist without a project context
     (e.g. admin actions).
   * before_jsonb / after_jsonb carry the diff snapshot; the audit service helper
@@ -27,13 +27,13 @@ from app.models.base import Base
 class AuditLog(Base):
     """Append-only audit log row (TimescaleDB hypertable).
 
-    Never UPDATE or DELETE rows from this table — TimescaleDB retention policy
+    Never UPDATE or DELETE rows from this table - TimescaleDB retention policy
     handles expiry after 365 days.
     """
 
     __tablename__ = "audit_log"
 
-    # Composite PK — time first (partition column), then id.
+    # Composite PK - time first (partition column), then id.
     time: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), primary_key=True, server_default=func.now()
     )

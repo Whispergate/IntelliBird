@@ -1,4 +1,4 @@
-"""Integration tests — easm_promoter: events.easm_scan_id ON DELETE SET NULL survival (L-4).
+"""Integration tests - easm_promoter: events.easm_scan_id ON DELETE SET NULL survival (L-4).
 
 Plan 11-03 / EASM-06 / L-4.
 
@@ -13,18 +13,16 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any
 
 import pytest
-import pytest_asyncio
 from sqlalchemy import text
 
 pytestmark = pytest.mark.integration
 
 
 # ---------------------------------------------------------------------------
-# In-memory stubs — same shape as in unit tests
+# In-memory stubs - same shape as in unit tests
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -58,7 +56,7 @@ def _make_event_row(kwargs: dict[str, Any], project_id: uuid.UUID, scan_id: uuid
     row = dict(kwargs)
     # source_type is documentation metadata in the dict but not an ORM column
     row.pop("source_type", None)
-    # summary is not an Event ORM column either — it maps to 'description'
+    # summary is not an Event ORM column either - it maps to 'description'
     description = row.pop("summary", None)
     row["description"] = description
     # Ensure project_id is correct UUID (promoter returns finding.project_id which is already set)
@@ -207,7 +205,7 @@ async def test_scan_deletion_sets_events_easm_scan_id_null(db_session):
     assert before_row is not None, "Event row not found before scan deletion"
     assert before_row[0] == scan_id, f"Expected easm_scan_id={scan_id}, got {before_row[0]}"
 
-    # L-4: Delete the scan — easm_findings CASCADE, but events SET NULL
+    # L-4: Delete the scan - easm_findings CASCADE, but events SET NULL
     await db_session.execute(text("""
         DELETE FROM easm_scans WHERE id = CAST(:scan_id AS uuid)
     """), {"scan_id": str(scan_id)})
@@ -218,7 +216,7 @@ async def test_scan_deletion_sets_events_easm_scan_id_null(db_session):
         SELECT easm_scan_id FROM events WHERE stix_id = :stix_id
     """), {"stix_id": stix_id})
     after_row = after_result.fetchone()
-    assert after_row is not None, "Event row was deleted when scan was deleted — L-4 violation"
+    assert after_row is not None, "Event row was deleted when scan was deleted - L-4 violation"
     assert after_row[0] is None, (
         f"easm_scan_id should be NULL after scan deletion (L-4), but got {after_row[0]}"
     )
@@ -226,7 +224,7 @@ async def test_scan_deletion_sets_events_easm_scan_id_null(db_session):
 
 @pytest.mark.asyncio
 async def test_dns_name_finding_not_promoted(db_session):
-    """DNS_NAME findings must not be promoted — H-4 feed contamination prevention."""
+    """DNS_NAME findings must not be promoted - H-4 feed contamination prevention."""
     from app.services.easm_promoter import should_promote, promote_finding_to_event
 
     project_id = uuid.UUID("00000000-0000-0000-0000-000000000001")

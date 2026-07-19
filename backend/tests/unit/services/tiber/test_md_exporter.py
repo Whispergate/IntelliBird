@@ -1,10 +1,10 @@
-"""Unit tests for TIBER Markdown/HTML exporter — Jinja2 + mistune security.
+"""Unit tests for TIBER Markdown/HTML exporter - Jinja2 + mistune security.
 
-Wave 0 stubs — skip-marked pending Wave 3 service layer (18-03-PLAN).
+Wave 0 stubs - skip-marked pending Wave 3 service layer (18-03-PLAN).
 Each test documents the exact security invariants for app.services.tiber.exporters.md.
 
 Requirements covered:
-  TIBER-03 — secure HTML rendering pipeline; autoescape=True; | safe BANNED
+  TIBER-03 - secure HTML rendering pipeline; autoescape=True; | safe BANNED
 
 Security invariants enforced by these tests (and by .semgrep.yml rules):
   1. Jinja2 Environment autoescape resolves True for .html templates
@@ -12,14 +12,13 @@ Security invariants enforced by these tests (and by .semgrep.yml rules):
   3. jinja2.Markup() wrapping pattern avoids need for | safe filter
   4. Template lives at backend/app/templates/tiber/report.md.j2
 
-NOTE: No `import weasyprint` at module level — subprocess isolation requires
+NOTE: No `import weasyprint` at module level - subprocess isolation requires
 the long-lived worker process never import WeasyPrint directly.
 """
 from __future__ import annotations
 
-import pytest
 
-# No pytestmark — unit tests are the default (not integration-marked)
+# No pytestmark - unit tests are the default (not integration-marked)
 
 
 # ---------------------------------------------------------------------------
@@ -32,7 +31,7 @@ def test_jinja2_autoescape_enabled() -> None:
 
     The md exporter must configure autoescape=select_autoescape(['html', 'xml'])
     so that any variable interpolated into an HTML template is escaped by default.
-    autoescape=False is an SSTI/XSS risk — banned via Semgrep autoescape-off rule.
+    autoescape=False is an SSTI/XSS risk - banned via Semgrep autoescape-off rule.
 
     Test strategy:
       1. Import _jinja_env from app.services.tiber.exporters.md
@@ -49,7 +48,7 @@ def test_jinja2_autoescape_enabled() -> None:
         result = bool(autoescape_for_html)
 
     assert result is True, (
-        f"Jinja2 autoescape is {autoescape_for_html!r} — must be True for .html. "
+        f"Jinja2 autoescape is {autoescape_for_html!r} - must be True for .html. "
         "XSS risk: analyst-authored content would reach raw HTML without escaping."
     )
 
@@ -78,7 +77,7 @@ def test_mistune_escape_true_default() -> None:
     output = render_section_markdown(xss_payload)
 
     assert "<script>" not in output, (
-        f"XSS RISK: mistune escape=True failed — raw <script> tag in output: {output!r}. "
+        f"XSS RISK: mistune escape=True failed - raw <script> tag in output: {output!r}. "
         "HTMLRenderer(escape=True) must be used, not escape=False or create_markdown()."
     )
     # escaped form should appear in output (as visible text, not executable)
@@ -98,7 +97,7 @@ def test_markup_wrapping_avoids_safe_filter() -> None:
     When a section's analyst markdown is pre-rendered by mistune to HTML, the
     resulting HTML string must reach the Jinja2 template without double-escaping.
     The correct pattern: wrap in jinja2.Markup(rendered_html) and pass as context.
-    The template uses {{ section_content }} (no | safe) — autoescape respects Markup.
+    The template uses {{ section_content }} (no | safe) - autoescape respects Markup.
 
     Test strategy:
       1. Create a minimal Jinja2 Environment with autoescape=True
@@ -106,7 +105,7 @@ def test_markup_wrapping_avoids_safe_filter() -> None:
       3. Pass section_content = Markup('<p>Hello</p>')
       4. Assert the output contains <p>Hello</p> (NOT &lt;p&gt;)
       5. Pass section_content = '<p>Hello</p>' (plain string, no Markup)
-      6. Assert the output contains &lt;p&gt; (escaped — double encoding prevented)
+      6. Assert the output contains &lt;p&gt; (escaped - double encoding prevented)
     """
     from jinja2 import Environment, select_autoescape
     from markupsafe import Markup
@@ -131,7 +130,7 @@ def test_markup_wrapping_avoids_safe_filter() -> None:
         f"Plain string was NOT escaped by autoescape=True: {output_plain!r}"
     )
     assert "<p>Hello" not in output_plain, (
-        f"Plain string rendered as raw HTML — autoescape is broken: {output_plain!r}"
+        f"Plain string rendered as raw HTML - autoescape is broken: {output_plain!r}"
     )
 
 
@@ -149,10 +148,9 @@ def test_template_filename_template() -> None:
     Test strategy:
       1. Import _jinja_env from app.services.tiber.exporters.md
       2. Assert env.loader is a FileSystemLoader (not BaseLoader or DictLoader)
-      3. Call env.get_template("report.md.j2") — must not raise TemplateNotFound
+      3. Call env.get_template("report.md.j2") - must not raise TemplateNotFound
       4. Verify the template has at least one {{ variable }} or {% block %}
     """
-    import pathlib
     from jinja2 import FileSystemLoader
 
     from app.services.tiber.exporters.md import _jinja_env

@@ -1,4 +1,4 @@
-"""CertStream WebSocket consumer — CERT-01/02.
+"""CertStream WebSocket consumer - CERT-01/02.
 
 Long-lived asyncio process. Entry point: python -m app.workers.certstream_worker
 Connects to wss://certstream.calidog.io (or CERTSTREAM_URL env override).
@@ -126,11 +126,11 @@ async def _upsert_match(session: AsyncSession, domain: str, pattern: _ProjectPat
          event dict into events table
 
     This ensures ROADMAP criterion CERT-02 ('persist as brand-monitor events with
-    tag_source=certstream') is satisfied — brand_matches alone is insufficient.
+    tag_source=certstream') is satisfied - brand_matches alone is insufficient.
     """
     from sqlalchemy import text  # noqa: PLC0415
 
-    # Step 1 — upsert brand_matches row
+    # Step 1 - upsert brand_matches row
     result = await session.execute(
         text(_UPSERT_SQL),
         {
@@ -146,7 +146,7 @@ async def _upsert_match(session: AsyncSession, domain: str, pattern: _ProjectPat
         await session.commit()
         return
 
-    # Step 2 — build event dict using brand_synth (matches _maybe_synth in brand_monitor.py)
+    # Step 2 - build event dict using brand_synth (matches _maybe_synth in brand_monitor.py)
     match_dict = {
         "id": stored["id"],
         "project_id": pattern.project_id,
@@ -207,7 +207,7 @@ _CURRENT_PATTERNS: list[_ProjectPattern] = []
 
 
 async def _pattern_refresh_loop(session_factory: async_sessionmaker) -> None:
-    """Reload patterns from DB every 30s. Replace reference atomically — no mutation."""
+    """Reload patterns from DB every 30s. Replace reference atomically - no mutation."""
     global _CURRENT_PATTERNS  # noqa: PLW0603
     while True:
         try:
@@ -246,7 +246,7 @@ async def _certstream_loop(session_factory: async_sessionmaker) -> None:
                                 pattern.project_id,
                             )
         except Exception:  # noqa: BLE001
-            log.warning("certstream_connection_closed — reconnecting")
+            log.warning("certstream_connection_closed - reconnecting")
             continue
 
 

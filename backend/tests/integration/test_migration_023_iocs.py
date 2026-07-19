@@ -1,7 +1,7 @@
 """IOC-01 migration 023 round-trip introspection tests.
 
 Uses the PINNED `db_session` / `db_engine` fixtures from
-backend/tests/integration/conftest.py — do NOT invent any other fixture name
+backend/tests/integration/conftest.py - do NOT invent any other fixture name
 (see IntelliBird MEMORY.md `project_test_pollution` warning).
 
 `_migrations_applied` (autouse-by-dependency via `db_engine`) guarantees

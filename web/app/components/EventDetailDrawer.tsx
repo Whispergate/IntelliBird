@@ -31,7 +31,7 @@ import { SandboxReportSection } from "./EventDetailDrawer/SandboxReportSection";
 import { classifyTier, currentScore } from "@/lib/scoring";
 
 // ---------------------------------------------------------------------------
-// TLP badge (inline — no separate file required for a single-use primitive)
+// TLP badge (inline - no separate file required for a single-use primitive)
 // ---------------------------------------------------------------------------
 
 const TLP_STYLE: Record<string, { bg: string; fg: string; border: string }> = {
@@ -70,7 +70,7 @@ function TlpBadge({ tlp }: { tlp: TlpName | null }) {
         borderColor: style.border,
       }}
     >
-      {tlp ?? "—"}
+      {tlp ?? "-"}
     </Badge>
   );
 }
@@ -135,7 +135,7 @@ export function EventDetailDrawer({
     };
   }, [selectedEventId, role]);
 
-  // Keyboard navigation — ArrowLeft / ArrowRight (guarded: skip if focus inside input/textarea)
+  // Keyboard navigation - ArrowLeft / ArrowRight (guarded: skip if focus inside input/textarea)
   useEffect(() => {
     if (!selectedEventId) return;
     function handler(e: KeyboardEvent) {
@@ -171,7 +171,7 @@ export function EventDetailDrawer({
         className="w-[480px] sm:max-w-[480px] overflow-y-auto p-0"
         data-testid="event-detail-drawer"
       >
-        {/* Section 1 — Header (sticky)*/}
+        {/* Section 1 - Header (sticky)*/}
         <SheetHeader
           className="p-4 border-b sticky top-0 z-10"
           style={{ background: "hsl(var(--card))" }}
@@ -195,7 +195,7 @@ export function EventDetailDrawer({
               ) : null}
               <TlpBadge tlp={event.tlp} />
               <span className="text-xs text-muted-foreground">
-                {event.source_name ?? "—"} &middot;{" "}
+                {event.source_name ?? "-"} &middot;{" "}
                 {formatRelativeTime(event.observed_at)}
               </span>
             </div>
@@ -219,7 +219,7 @@ export function EventDetailDrawer({
             <div className="animate-pulse bg-muted rounded h-48 w-full" />
           </div>
         ) : error ? (
-          /* Error state — header still visible above*/
+          /* Error state - header still visible above*/
           <div className="p-4" data-testid="drawer-error">
             <p className="text-muted-foreground" style={{ fontSize: 16 }}>
               Failed to load event. Please try again.
@@ -227,7 +227,7 @@ export function EventDetailDrawer({
           </div>
         ) : event ? (
           <>
-            {/* Section 2 — Description*/}
+            {/* Section 2 - Description*/}
             <section
               data-testid="drawer-section-description"
               className="p-4 border-b"
@@ -240,7 +240,7 @@ export function EventDetailDrawer({
               </p>
             </section>
 
-            {/* Section 3 — Tags*/}
+            {/* Section 3 - Tags*/}
             <section
               data-testid="drawer-section-tags"
               className="p-4 border-b"
@@ -249,7 +249,7 @@ export function EventDetailDrawer({
               <TagEditor eventId={event.id} initialTags={event.tags} />
             </section>
 
-            {/* Section 3b — Score (visible only when score is non-null; hidden for pre-migration events) */}
+            {/* Section 3b - Score (visible only when score is non-null; hidden for pre-migration events) */}
             <section
               data-testid="drawer-section-score"
               className="p-4 border-b"
@@ -291,7 +291,7 @@ export function EventDetailDrawer({
                       <dt className="brand-caption text-muted-foreground w-28 shrink-0">Suppressed</dt>
                       <dd>
                         <span className="brand-caption text-orange-300">
-                          Suppressed — burst cluster in 1h window
+                          Suppressed - burst cluster in 1h window
                         </span>
                       </dd>
                     </div>
@@ -302,18 +302,18 @@ export function EventDetailDrawer({
               )}
             </section>
 
-            {/* Section 3b2 — IOCs (§Surface 5) */}
+            {/* Section 3b2 - IOCs (§Surface 5) */}
             <IOCsSection eventId={event.id} />
 
-            {/* Section 3b3 — Sandbox Report (SANDBOX-04) */}
+            {/* Section 3b3 - Sandbox Report (SANDBOX-04) */}
             {drawerProjectId && (
               <SandboxReportSection eventId={event.id} projectId={drawerProjectId} />
             )}
 
-            {/* Section 3c — AI Summary */}
+            {/* Section 3c - AI Summary */}
             <AISummarySection eventId={event.id} />
 
-            {/* Section 4 — ATT&CK techniques*/}
+            {/* Section 4 - ATT&CK techniques*/}
             <section
               data-testid="drawer-section-techniques"
               className="p-4 border-b"
@@ -350,7 +350,7 @@ export function EventDetailDrawer({
               )}
             </section>
 
-            {/* Section 5 — Geo
+            {/* Section 5 - Geo
  M1: EventDetail has no geo_lat/geo_lon fields (geo resolution lands via
  MAP-05). Always renders the fallback copy per-05 spec note.*/}
             <section
@@ -365,7 +365,7 @@ export function EventDetailDrawer({
               </p>
             </section>
 
-            {/* Section 6 — Attack Graph*/}
+            {/* Section 6 - Attack Graph*/}
             <section
               data-testid="drawer-section-graph"
               className="p-4 border-b"
@@ -376,7 +376,7 @@ export function EventDetailDrawer({
               <AttackGraph eventId={event.id} height={240} projectId={drawerProjectId} />
             </section>
 
-            {/* Section 7 — Raw STIX / CVE (collapsed by default)*/}
+            {/* Section 7 - Raw STIX / CVE (collapsed by default)*/}
             <section data-testid="drawer-section-raw" className="p-4">
               <details>
                 <summary

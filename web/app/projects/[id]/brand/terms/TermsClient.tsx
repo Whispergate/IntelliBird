@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * TermsClient — (UI-SPEC §Surface 5).
+ * TermsClient - (UI-SPEC §Surface 5).
  *
  * Owns:
  *   - Fetch of /brand/terms (with optional include_archived)
@@ -58,7 +58,7 @@ function fmtDate(iso: string): string {
 }
 
 function truncateSub(sub: string | null | undefined): string {
-  if (!sub) return "—";
+  if (!sub) return "-";
   return sub.length > 20 ? `${sub.slice(0, 20)}…` : sub;
 }
 
@@ -90,7 +90,7 @@ function ModeChip({ mode }: { mode: BrandTermMode }) {
 }
 
 // ---------------------------------------------------------------------------
-// Row-level mode Switch — optimistic flip + revert on error
+// Row-level mode Switch - optimistic flip + revert on error
 // ---------------------------------------------------------------------------
 
 interface ModeToggleProps {
@@ -160,7 +160,7 @@ function ModeToggle({ term, isObserver, onUpdate }: ModeToggleProps) {
 }
 
 // ---------------------------------------------------------------------------
-// Archive button — Tooltip + window.confirm + PATCH archived=true
+// Archive button - Tooltip + window.confirm + PATCH archived=true
 // ---------------------------------------------------------------------------
 
 interface ArchiveButtonProps {
@@ -219,9 +219,9 @@ function ArchiveButton({ term, onUpdate }: ArchiveButtonProps) {
 
 export interface TermsClientProps {
   projectId: string;
-  /** Test-only — override session-role detection (plan 12-10 wires real value). */
+  /** Test-only - override session-role detection (plan 12-10 wires real value). */
   isObserver?: boolean;
-  /** Project rank of current user — governs person-term radio gating (see dialog).
+  /** Project rank of current user - governs person-term radio gating (see dialog).
    *  Roles: "Admin" | "Analyst" | "Viewer" (global), and project rank integer.
    *  Exposed so plan 12-10 can wire session identity without refactor. */
   currentUserSub?: string;
@@ -341,7 +341,7 @@ export function TermsClient({
         </label>
       </div>
 
-      {/* Content — loading / error / empty / table */}
+      {/* Content - loading / error / empty / table */}
       {loading ? (
         <div className="rounded-md border border-border overflow-hidden">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -366,7 +366,7 @@ export function TermsClient({
           </Button>
         </div>
       ) : active.length === 0 && archived.length === 0 ? (
-        /* Empty state — UI-SPEC canonical copy */
+        /* Empty state - UI-SPEC canonical copy */
         <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
           <h2 className="text-[22px] font-medium leading-[1.3]">
             No brand terms yet.
@@ -462,7 +462,7 @@ export function TermsClient({
                                 />
                               </TooltipTrigger>
                               <TooltipContent>
-                                Flagged high noise risk — term is in default
+                                Flagged high noise risk - term is in default
                                 stoplist
                               </TooltipContent>
                             </Tooltip>
@@ -491,7 +491,7 @@ export function TermsClient({
                     </td>
                     {/* Matches 24h */}
                     <td className="py-2 px-3 text-right text-sm text-foreground">
-                      {term.matches_24h == null ? "—" : term.matches_24h}
+                      {term.matches_24h == null ? "-" : term.matches_24h}
                     </td>
                     {/* Created by */}
                     <td className="py-2 px-3 text-sm">
@@ -503,7 +503,7 @@ export function TermsClient({
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {term.created_by ?? "—"}
+                            {term.created_by ?? "-"}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>

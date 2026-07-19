@@ -1,6 +1,6 @@
-"""Webhook + WebhookPresetBinding ORM — maps to migration 006 tables.
+"""Webhook + WebhookPresetBinding ORM - maps to migration 006 tables.
 
-: auth_enc is Text (not LargeBinary) — app.crypto returns base64url str.
+: auth_enc is Text (not LargeBinary) - app.crypto returns base64url str.
 : webhook_preset_bindings is a join table; composite PK (webhook_id, preset_name).
 """
 from __future__ import annotations
@@ -16,7 +16,7 @@ from app.models.base import Base
 
 
 class Webhook(Base):
-    """Outbound webhook destination — maps to webhooks table (migration 006)."""
+    """Outbound webhook destination - maps to webhooks table (migration 006)."""
 
     __tablename__ = "webhooks"
 
@@ -26,7 +26,7 @@ class Webhook(Base):
         server_default=text("gen_random_uuid()"),
     )
     name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
-    # PRJ-01 — every webhook pins to a project. legacy rows
+    # PRJ-01 - every webhook pins to a project. legacy rows
     # carry LEGACY_PROJECT_ID; new rows must pass project_id explicitly.
     project_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -42,7 +42,7 @@ class Webhook(Base):
         nullable=False,
     )
     url: Mapped[str] = mapped_column(Text, nullable=False)
-    #: Text (base64url) — NOT LargeBinary.
+    #: Text (base64url) - NOT LargeBinary.
     # app.crypto.encrypt_credentials returns a base64url string. Matches
     # the sources.credentials_enc pattern exactly.
     auth_enc: Mapped[str | None] = mapped_column(Text, nullable=True)

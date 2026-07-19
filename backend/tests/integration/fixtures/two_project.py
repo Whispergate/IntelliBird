@@ -96,7 +96,7 @@ async def _seed_events(
                 "ch": content_hash,
             },
         )
-        # Tag event with technique — schema from migration 001. No FK on event_id
+        # Tag event with technique - schema from migration 001. No FK on event_id
         # (TimescaleDB hypertables can't be FK targets); tag_source NOT NULL.
         await session.execute(
             text(
@@ -129,7 +129,7 @@ async def _seed_age_actor_and_edges(
             f"AS (n ag_catalog.agtype)"
         )
 
-    # Actor vertex — id is a string UUID.
+    # Actor vertex - id is a string UUID.
     await raw.exec_driver_sql(_cypher_sql(
         f"CREATE (a:Actor {{id: '{shared_actor_id}'}}) RETURN a"
     ))
@@ -181,7 +181,7 @@ async def build_two_project_fixture(session: AsyncSession) -> SimpleNamespace:
 
     # Insert User rows so FK constraints from TIBER endpoints (tiber_reports.created_by_user_id)
     # and other endpoints that record user IDs are satisfied. Only user_a and admin_user
-    # need rows — user_b is only used for cross-project leak checks (no write operations).
+    # need rows - user_b is only used for cross-project leak checks (no write operations).
     await session.execute(
         text(
             "INSERT INTO users (id, username, role) VALUES (:id, :username, :role) "
@@ -197,7 +197,7 @@ async def build_two_project_fixture(session: AsyncSession) -> SimpleNamespace:
         {"id": admin_user_id, "username": "admin-fixture", "role": "Admin"},
     )
     await session.commit()
-    # jwt_a: Lead on project_a — Lead rank satisfies both intel (Contributor+) and
+    # jwt_a: Lead on project_a - Lead rank satisfies both intel (Contributor+) and
     # TIBER (Lead+) endpoint gates. Analyst global role; project membership is what gates.
     pm_a: list[list[Any]] = [[str(project_a_id), PROJECT_ROLE_RANK["Lead"]]]
     pm_b: list[list[Any]] = [[str(project_b_id), PROJECT_ROLE_RANK["Contributor"]]]
@@ -207,7 +207,7 @@ async def build_two_project_fixture(session: AsyncSession) -> SimpleNamespace:
     jwt_b, _ = mint_access_token_with_pm(
         user_b_id, "Analyst", ["red", "blue"], 0, signing_key, pm_b, False,
     )
-    # jwt_admin: Admin global role — no project_membership needed (Admin bypass).
+    # jwt_admin: Admin global role - no project_membership needed (Admin bypass).
     # Required by TIBER archive and restore endpoints (Admin-only transitions).
     jwt_admin, _ = mint_access_token_with_pm(
         admin_user_id, "Admin", ["red", "blue"], 0, signing_key, [], False,

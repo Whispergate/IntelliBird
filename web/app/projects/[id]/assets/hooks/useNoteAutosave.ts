@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * useNoteAutosave — (UI-SPEC §Surface 6, Note section).
+ * useNoteAutosave - (UI-SPEC §Surface 6, Note section).
  *
  * Debounced client-side autosave for the asset-detail note editor.
  *
@@ -12,7 +12,7 @@
  *   saving → (fetch fail) → error
  *   any → (user types again) → typing (cancels pending timer)
  *
- * Disabled for Viewer/Observer roles (per UI-SPEC Authority Matrix) — when
+ * Disabled for Viewer/Observer roles (per UI-SPEC Authority Matrix) - when
  * `disabled` is true the effect is a no-op; the textarea is expected to
  * render disabled at the call site.
  */

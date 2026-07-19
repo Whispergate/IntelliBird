@@ -1,6 +1,6 @@
 """POST /api/admin/setup SETUP_TOKEN gate + first-admin create + 409 on second call.
 
-Integration tests — AUTH-01. Activated by plan 09-04.
+Integration tests - AUTH-01. Activated by plan 09-04.
 
 Uses ASGITransport with the FastAPI app (no live DB required for token/validation tests;
 DB-touching tests require the db_session fixture from conftest).
@@ -134,7 +134,7 @@ async def test_setup_second_call_returns_409_setup_already_complete(db_session, 
     await db_session.commit()
 
     async with await _client() as c:
-        # First call — should succeed
+        # First call - should succeed
         r1 = await c.post(
             "/api/admin/setup",
             json=VALID_BODY,
@@ -142,7 +142,7 @@ async def test_setup_second_call_returns_409_setup_already_complete(db_session, 
         )
         assert r1.status_code == 201, r1.text
 
-        # Second call — should conflict
+        # Second call - should conflict
         r2 = await c.post(
             "/api/admin/setup",
             json={"username": "anotheradmin", "password": "anotherpassword99"},
@@ -168,7 +168,7 @@ async def test_setup_duplicate_username_returns_409(db_session, monkeypatch):
     await db_session.commit()
 
     # Seed one user so setup_already_complete fires first (count > 0)
-    # This test validates the 409 path — both setup_already_complete and username_exists
+    # This test validates the 409 path - both setup_already_complete and username_exists
     # produce 409; setup_already_complete fires first when count > 0
     seed = User(
         username="firstadmin",

@@ -1,4 +1,4 @@
-"""JWT encode/decode helpers — AUTH-03 + PRJ-05.
+"""JWT encode/decode helpers - AUTH-03 + PRJ-05.
 
 HS256 signing using settings.JWT_SIGNING_KEY. Token TTLs per CONTEXT.md:
   access  = 15 minutes  (900s)
@@ -13,7 +13,7 @@ Claim shape (access + refresh share structure except 'type'):
     "pm": [[project_id_str, role_rank_int], ...],
     "pm_truncated": <bool> }
 
-No username in claims — frontend fetches display info via GET /api/auth/me.
+No username in claims - frontend fetches display info via GET /api/auth/me.
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ ALGORITHM: str = "HS256"
 
 TokenType = Literal["access", "refresh"]
 
-#: Membership cutoff — >50 memberships triggers the truncation sentinel.
+#: Membership cutoff - >50 memberships triggers the truncation sentinel.
 #: See CONTEXT.md §Project membership model: 50 memberships × ~60 bytes ≈ 3KB claim,
 #: under the 8KB header limit. Above 50, client falls back to /api/auth/memberships.
 PM_CUTOFF: int = 50
@@ -59,7 +59,7 @@ class AuthUser:
     dashboard_roles: list[str]
     jti: str
     token_version: int
-    # additions — default to empty dict / False for tokens minted legacy.
+    # additions - default to empty dict / False for tokens minted legacy.
     project_memberships: dict[str, int] = field(default_factory=dict)
     pm_truncated: bool = False
 
@@ -109,7 +109,7 @@ def mint_access_token(
     token_version: int,
     signing_key: str,
 ) -> tuple[str, str]:
-    """Return (access_token, jti). 15-minute TTL. shape — no pm claim."""
+    """Return (access_token, jti). 15-minute TTL. shape - no pm claim."""
     return _mint(
         user_id,
         role,
@@ -128,7 +128,7 @@ def mint_refresh_token(
     token_version: int,
     signing_key: str,
 ) -> tuple[str, str]:
-    """Return (refresh_token, jti). 7-day TTL. shape — no pm claim."""
+    """Return (refresh_token, jti). 7-day TTL. shape - no pm claim."""
     return _mint(
         user_id,
         role,
@@ -189,12 +189,12 @@ def mint_refresh_token_with_pm(
 def decode_token(token: str, signing_key: str) -> dict[str, Any]:
     """Decode + verify signature + require canonical claims.
 
-    NOTE: "pm" + "pm_truncated" are NOT in the required-claims list — they are
+    NOTE: "pm" + "pm_truncated" are NOT in the required-claims list - they are
     optional additions; tokens minted legacy remain valid.
 
     Raises:
-      pyjwt.ExpiredSignatureError — exp in the past.
-      pyjwt.InvalidTokenError — signature failure, missing required claim, bad format.
+      pyjwt.ExpiredSignatureError - exp in the past.
+      pyjwt.InvalidTokenError - signature failure, missing required claim, bad format.
     """
     return pyjwt.decode(
         token,

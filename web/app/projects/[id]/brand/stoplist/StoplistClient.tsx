@@ -1,9 +1,9 @@
 "use client";
 
 /**
- * StoplistClient — (BRAND-01 frontend).
+ * StoplistClient - (BRAND-01 frontend).
  *
- * UI-SPEC §Surface 1 — Stoplist Tab.
+ * UI-SPEC §Surface 1 - Stoplist Tab.
  *
  * Role gating via useProjectRole:
  *   - Lead+ (isLead): sees Add form (Input + Button) + per-row Delete button
@@ -41,7 +41,7 @@ export interface BrandStoplistTerm {
 }
 
 // ---------------------------------------------------------------------------
-// Format helpers — mirrors TermsClient.tsx
+// Format helpers - mirrors TermsClient.tsx
 // ---------------------------------------------------------------------------
 
 function fmtDate(iso: string): string {
@@ -59,7 +59,7 @@ function fmtDate(iso: string): string {
 }
 
 function truncateEmail(email: string | null | undefined): string {
-  if (!email) return "—";
+  if (!email) return "-";
   return email.length > 20 ? `${email.slice(0, 20)}…` : email;
 }
 
@@ -175,7 +175,7 @@ export function StoplistClient({
         Brand dashboard
       </Link>
 
-      {/* Header — UI-SPEC §1a */}
+      {/* Header - UI-SPEC §1a */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <h1 className="font-medium leading-tight" style={{ fontSize: "32px" }}>
           Brand Stoplist
@@ -203,9 +203,9 @@ export function StoplistClient({
         )}
       </div>
 
-      {/* Content — UI-SPEC §1b */}
+      {/* Content - UI-SPEC §1b */}
       {terms.length === 0 ? (
-        /* Empty state — copy differs by role */
+        /* Empty state - copy differs by role */
         <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
           <h2 className="text-[22px] font-medium leading-[1.3]">
             No stoplist terms yet.
@@ -254,14 +254,14 @@ export function StoplistClient({
                   style={{ height: "44px" }}
                   data-testid={`stoplist-row-${term.id}`}
                 >
-                  {/* Term — monospace */}
+                  {/* Term - monospace */}
                   <td className="py-2 px-3">
                     <span className="font-mono text-[12px] text-foreground">
                       {term.term}
                     </span>
                   </td>
 
-                  {/* Created by — truncated 20ch with tooltip */}
+                  {/* Created by - truncated 20ch with tooltip */}
                   <td className="py-2 px-3">
                     <TooltipProvider>
                       <Tooltip>
@@ -271,7 +271,7 @@ export function StoplistClient({
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>
-                          {term.created_by_user_id ?? "—"}
+                          {term.created_by_user_id ?? "-"}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -282,7 +282,7 @@ export function StoplistClient({
                     {fmtDate(term.created_at)}
                   </td>
 
-                  {/* Actions — Lead+ only */}
+                  {/* Actions - Lead+ only */}
                   {isLead && (
                     <td className="py-2 px-3">
                       <Button

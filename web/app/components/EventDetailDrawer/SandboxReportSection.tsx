@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * SandboxReportSection — (SANDBOX-04).
+ * SandboxReportSection - (SANDBOX-04).
  * Collapsible section in EventDetailDrawer showing sandbox analysis results.
  * Renders: verdict badge, score bar, MITRE techniques list, network IOCs, process tree.
  * Fetches GET /api/projects/{projectId}/events/{eventId}/sandbox-report on mount.
@@ -39,9 +39,9 @@ export function SandboxReportSection({ eventId, projectId }: Props) {
       .catch((e) => setError(String(e)));
   }, [eventId, projectId]);
 
-  // Still loading — show nothing (no spinner to avoid layout shift)
+  // Still loading - show nothing (no spinner to avoid layout shift)
   if (report === undefined) return null;
-  // No report for this event — section hidden
+  // No report for this event - section hidden
   if (report === null) return null;
   if (error) return null;
 

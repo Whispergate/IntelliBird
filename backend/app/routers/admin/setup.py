@@ -1,11 +1,11 @@
-"""POST /api/admin/setup — first-admin bootstrap, SETUP_TOKEN-gated (pre-auth).
+"""POST /api/admin/setup - first-admin bootstrap, SETUP_TOKEN-gated (pre-auth).
 
 AUTH-01.
 
 Mirrors backend/app/routers/admin/rekey.py: same X-Setup-Token header gate so the operator
 flow is identical. Endpoint is pre-auth (EXEMPT_PATHS in AuthMiddleware).
 
-Idempotency: returns 409 when any user already exists — the "/setup" UI page also renders the
+Idempotency: returns 409 when any user already exists - the "/setup" UI page also renders the
 already-complete state when this 409 fires.
 """
 from __future__ import annotations
@@ -29,7 +29,7 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 def _require_setup_token(
     x_setup_token: str | None = Header(default=None, alias="X-Setup-Token"),
 ) -> None:
-    """Identical gate to rekey.py — symmetric operator UX."""
+    """Identical gate to rekey.py - symmetric operator UX."""
     if not settings.SETUP_TOKEN or x_setup_token != settings.SETUP_TOKEN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -43,7 +43,7 @@ def _require_setup_token(
     status_code=status.HTTP_201_CREATED,
     responses={
         403: {"description": "Invalid or missing X-Setup-Token"},
-        409: {"description": "Setup already complete — a user already exists"},
+        409: {"description": "Setup already complete - a user already exists"},
         422: {"description": "Body validation failure (password < 12 chars)"},
     },
 )
@@ -85,7 +85,7 @@ async def setup_first_admin(
     return SetupResponse(
         id=str(u.id),
         username=u.username,
-        role=u.role,
+        role=u.role,  # type: ignore[arg-type]
         dashboard_roles=list(u.dashboard_roles or []),
         must_change_password=u.must_change_password,
     )

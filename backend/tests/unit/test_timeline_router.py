@@ -1,5 +1,5 @@
 """
-TIMELINE-01..03 — Pattern-of-life timeline router returns bucketed series
+TIMELINE-01..03 - Pattern-of-life timeline router returns bucketed series
                   data and heatmap cells with correct structure and project
                   isolation.
 
@@ -38,7 +38,7 @@ def test_series_returns_bucket_structure(client):
     from unittest.mock import patch, MagicMock
 
     project_id = "00000000-0000-0000-0000-000000000001"
-    mock_db = MagicMock()
+    MagicMock()
 
     with patch.object(timeline_router, "_query_series_buckets", return_value=([], [])):
         response = client.get(
@@ -115,12 +115,10 @@ def test_project_isolation(client):
 
     The router must scope all DB queries by project_id from the path.
     """
-    from unittest.mock import patch, MagicMock
+    from unittest.mock import patch
 
     project_a = "aaaaaaaa-0000-0000-0000-000000000001"
-    project_b = "bbbbbbbb-0000-0000-0000-000000000002"
 
-    project_b_event_id = "evt-from-project-b"
     captured_calls = []
 
     def fake_query_series(session, project_id, range_days, **kwargs):

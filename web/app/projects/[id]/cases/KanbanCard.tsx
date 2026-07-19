@@ -36,7 +36,7 @@ export function KanbanCard({
       }`}
       onClick={() => onCardClick(caseRow.id)}
     >
-      {/* Drag handle area — separate from click */}
+      {/* Drag handle area - separate from click */}
       <div
         className="flex items-start justify-between gap-2 mb-2"
         {...attributes}

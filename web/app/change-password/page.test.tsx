@@ -1,5 +1,5 @@
 /**
- * Change-password page tests — AUTH-01.
+ * Change-password page tests - AUTH-01.
  *
  * Forced redirect on must_change_password; password length counter; error states.
  * Activated in plan 09-07.

@@ -12,7 +12,6 @@ Verifies GRAPH-01 / GRAPH-02 contract:
 from __future__ import annotations
 
 import os
-import uuid
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("SECRET_KEY", "s" * 64)
@@ -21,7 +20,6 @@ os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 import pytest
 from httpx import ASGITransport, AsyncClient
 
-from app.security.jwt import mint_access_token_with_pm
 from app.services.graph_traversal import traverse_project
 
 pytestmark = pytest.mark.integration

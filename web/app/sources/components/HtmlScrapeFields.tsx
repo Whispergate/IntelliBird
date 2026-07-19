@@ -13,7 +13,7 @@ type Props = {
 
 /**
  * Quick task 260425-ovt: HTML-scrape selector form (manual mode).
- * Quick task 260426-aas: Auto vs Manual mode toggle. Auto is the default —
+ * Quick task 260426-aas: Auto vs Manual mode toggle. Auto is the default -
  * paste a URL and the backend uses trafilatura to auto-discover articles
  * (RSS/Atom feed if present, otherwise main-content link extraction).
  * Manual remains as an escape hatch for pages where auto-discovery yields
@@ -30,7 +30,7 @@ export function HtmlScrapeFields(_props: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Mode toggle — Auto (recommended) vs Manual selectors */}
+      {/* Mode toggle - Auto (recommended) vs Manual selectors */}
       <div className="flex flex-col gap-1">
         <Label>Discovery mode</Label>
         <div className="flex gap-4 text-sm">
@@ -62,14 +62,14 @@ export function HtmlScrapeFields(_props: Props) {
             <code>/research</code> page). IntelliBird auto-discovers the
             page&apos;s RSS feed if present, otherwise extracts article links
             from the main content area. JavaScript-rendered pages may yield
-            zero results — switch to Manual selectors for those.
+            zero results - switch to Manual selectors for those.
           </AlertDescription>
         </Alert>
       ) : (
         <Alert>
           <AlertDescription className="text-xs">
             HTML scraping fetches the page and runs CSS selectors server-side.
-            Pages that require JavaScript to render content will not work — use
+            Pages that require JavaScript to render content will not work - use
             a feed-providing source instead. Use <code>selector@attr</code> to
             extract an attribute (e.g. <code>h2 a@href</code>); a plain selector
             extracts the element&apos;s text.

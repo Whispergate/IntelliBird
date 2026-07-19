@@ -64,7 +64,7 @@ export default function TaxiiClientsPage() {
       const list = await listTaxiiClients();
       setClients(list);
     } catch {
-      // silently ignore — admin may not have clients yet
+      // silently ignore - admin may not have clients yet
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-"""TIBER PDF exporter — TIBER-03.
+"""TIBER PDF exporter - TIBER-03.
 
 WeasyPrint subprocess isolation (H-5 RSS mitigation):
   NEVER import weasyprint at module level.
@@ -71,7 +71,7 @@ def generate_pdf_bytes(html_content: str, timeout: int = PDF_TIMEOUT_SECONDS) ->
 
     The HTML content should already have the event list truncated via
     prepare_report_data_for_pdf() before rendering. This function does NOT
-    re-check the truncation — it trusts the caller.
+    re-check the truncation - it trusts the caller.
 
     Args:
         html_content: Rendered HTML string (Jinja2 output, already autoescaped).

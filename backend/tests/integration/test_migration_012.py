@@ -1,4 +1,4 @@
-"""Migration 012 integration test — asset_notes table.
+"""Migration 012 integration test - asset_notes table.
 
 Owned by: 12.1-01-PLAN.
 ASSET-NOTE.
@@ -40,7 +40,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 def live_db_011():
     """Start intellibird-db:m1, migrate to 011, yield (engine, env).
 
-    Leaves the DB at 011 — tests upgrade to 012 and can downgrade back.
+    Leaves the DB at 011 - tests upgrade to 012 and can downgrade back.
     """
     with PostgresContainer("intellibird-db:m1") as pg:
         url = pg.get_connection_url()
@@ -96,7 +96,7 @@ def _downgrade_011(env) -> None:
 
 
 def _insert_project(conn) -> uuid.UUID:
-    """Minimal project insert — returns the id. Uses default-heavy shape so
+    """Minimal project insert - returns the id. Uses default-heavy shape so
     we don't couple this test to the full projects schema."""
     pid = uuid.uuid4()
     # Discover NOT NULL columns without defaults so we can supply placeholders.
@@ -107,7 +107,7 @@ def _insert_project(conn) -> uuid.UUID:
     )).all()
     required = [r.column_name for r in rows if r.column_default is None and r.column_name != "id"]
     # Build an insert that supplies a string placeholder for any text-ish
-    # required column. This is deliberately forgiving — real schema validation
+    # required column. This is deliberately forgiving - real schema validation
     # is covered by the projects-dedicated migrations.
     # Known enum columns need valid values (generic "x" violates DB enum constraint).
     _ENUM_DEFAULTS: dict[str, str] = {
@@ -234,7 +234,7 @@ def test_012_duplicate_tuple_raises_integrity_error(live_db_011):
 
 @pytest.mark.cross_file_pollution
 def test_012_fk_cascade_delete_removes_notes(live_db_011):
-    """Deleting a project row cascades — asset_notes rows disappear."""
+    """Deleting a project row cascades - asset_notes rows disappear."""
     engine, env = live_db_011
     # Ensure migration 012 is applied (this test may run without test_012_upgrade_creates_asset_notes_table
     # when selected via -m cross_file_pollution).

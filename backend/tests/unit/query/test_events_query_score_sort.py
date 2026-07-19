@@ -7,7 +7,6 @@ assert that the score sort expressions appear in the correct positions.
 """
 from __future__ import annotations
 
-import uuid
 
 import sqlalchemy as sa
 

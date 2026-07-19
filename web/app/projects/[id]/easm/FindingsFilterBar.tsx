@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * FindingsFilterBar — (UI-SPEC §Surface 3 §Filter bar).
+ * FindingsFilterBar - (UI-SPEC §Surface 3 §Filter bar).
  *
  * Four shadcn Select dropdowns inline:
  *   Type | Module | Severity | Lifecycle
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import type { FindingsFilters, LifecycleStatus, Severity } from "./lib/api";
 
-// UI-SPEC §Surface 3 §Filter bar — exact option lists
+// UI-SPEC §Surface 3 §Filter bar - exact option lists
 const TYPE_OPTIONS = [
   "DNS_NAME",
   "IP_ADDRESS",
@@ -62,7 +62,7 @@ export function FindingsFilterBar({
   onChange,
   availableModules,
 }: FindingsFilterBarProps) {
-  // Sentinel for "no filter applied" — Radix Select forbids empty string values.
+  // Sentinel for "no filter applied" - Radix Select forbids empty string values.
   const ALL = "__all__";
 
   function patch(partial: Partial<FindingsFilters>) {

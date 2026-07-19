@@ -84,8 +84,8 @@ export function AttackGraphToolbar({ cy }: Props) {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="dagre">Dagre — hierarchy</SelectItem>
-          <SelectItem value="cose">CoSE — force</SelectItem>
+          <SelectItem value="dagre">Dagre - hierarchy</SelectItem>
+          <SelectItem value="cose">CoSE - force</SelectItem>
           <SelectItem value="breadthfirst">Breadth-first</SelectItem>
         </SelectContent>
       </Select>

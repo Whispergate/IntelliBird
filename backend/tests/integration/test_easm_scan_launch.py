@@ -1,4 +1,4 @@
-"""Integration tests for EASM scan launch endpoint — plan 11-05.
+"""Integration tests for EASM scan launch endpoint - plan 11-05.
 
 Covers:
   - POST /api/projects/{id}/easm/scans (passive + active modes)
@@ -33,7 +33,7 @@ def _make_auth_user(
     role: str = "Admin",
     project_id: uuid.UUID | None = None,
     project_rank: int = 3,
-) -> "AuthUser":  # type: ignore[name-defined]
+) -> "AuthUser":  # type: ignore[name-defined]  # noqa: F821
     from app.security.jwt import AuthUser
 
     pm: dict[str, int] = {}
@@ -56,7 +56,6 @@ async def launch_app(db_engine, _migrations_applied):
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
     from app.database import get_session
-    from app.middleware.auth import require_auth
     from app.routers.easm import router as easm_router
     from app.routers.easm import safelist_router as easm_safelist_router
     from fastapi import FastAPI
@@ -113,7 +112,7 @@ async def _create_project(
 
 @pytest.mark.asyncio
 async def test_launch_passive_as_contributor_returns_202(launch_app, db_session):
-    """Contributor role can launch a passive scan — returns 202."""
+    """Contributor role can launch a passive scan - returns 202."""
     app, factory = launch_app
     project_id = uuid.uuid4()
     contributor_user = _make_auth_user(role="Viewer", project_id=project_id, project_rank=2)
@@ -239,7 +238,7 @@ async def test_launch_active_with_expired_gate_returns_403(launch_app, db_sessio
 
 @pytest.mark.asyncio
 async def test_launch_active_as_contributor_returns_403(launch_app, db_session):
-    """Contributor cannot launch active scans — only Lead or global Admin."""
+    """Contributor cannot launch active scans - only Lead or global Admin."""
     app, factory = launch_app
     project_id = uuid.uuid4()
     contributor_user = _make_auth_user(role="Viewer", project_id=project_id, project_rank=2)
@@ -289,7 +288,7 @@ async def test_launch_with_invalid_module_returns_422_with_invalid_names(launch_
 
 @pytest.mark.asyncio
 async def test_launch_with_sublist3r_returns_422(launch_app, db_session):
-    """modules=["sublist3r"] → 422 (PITFALLS §Pitfall 3 regression — removed in BBOT 2.8.x)."""
+    """modules=["sublist3r"] → 422 (PITFALLS §Pitfall 3 regression - removed in BBOT 2.8.x)."""
     app, factory = launch_app
     project_id = uuid.uuid4()
     admin_user = _make_auth_user(role="Admin")

@@ -1,4 +1,4 @@
-"""Settings validator rejects placeholders and short keys — FN / PITFALLS C-3."""
+"""Settings validator rejects placeholders and short keys - FN / PITFALLS C-3."""
 from __future__ import annotations
 
 import os
@@ -10,7 +10,7 @@ BACKEND_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _spawn_with_env(secret_key: str) -> subprocess.CompletedProcess[str]:
-    """Spawn a subprocess that imports app.config — lets us observe sys.exit(1)."""
+    """Spawn a subprocess that imports app.config - lets us observe sys.exit(1)."""
     # Inherit the current PATH and the interpreter's site-packages so that
     # pydantic_settings / structlog resolve whether we're running under uv
     # (sys.executable points at the venv) or a plain venv interpreter.
@@ -50,7 +50,7 @@ def test_rejects_placeholder() -> None:
 
 
 def test_rejects_short_key() -> None:
-    short = "a" * 31  # 31 chars — one below the threshold
+    short = "a" * 31  # 31 chars - one below the threshold
     result = _spawn_with_env(short)
     assert result.returncode == 1, (
         f"31-char SECRET_KEY must exit 1, got {result.returncode}\n"
@@ -61,7 +61,7 @@ def test_rejects_short_key() -> None:
 
 
 def test_accepts_valid_key() -> None:
-    # 64-hex-char key — what `openssl rand -hex 32` produces
+    # 64-hex-char key - what `openssl rand -hex 32` produces
     valid = "a" * 64
     result = _spawn_with_env(valid)
     assert result.returncode == 0, (

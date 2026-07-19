@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MonitoringConfigDrawer — per-source monitoring config slide-out panel.
+ * MonitoringConfigDrawer - per-source monitoring config slide-out panel.
  * MON-04 dashboard requirement.
  *
  * Fields: last_event_sla_seconds, drift_z_high, drift_z_medium
@@ -147,7 +147,7 @@ export function MonitoringConfigDrawer({
           </div>
           {source && (
             <p className="text-xs text-muted-foreground mt-1">
-              {source.feed_type.toUpperCase()} source — edit per-source monitoring overrides
+              {source.feed_type.toUpperCase()} source - edit per-source monitoring overrides
             </p>
           )}
         </SheetHeader>

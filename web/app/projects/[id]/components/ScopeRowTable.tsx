@@ -1,17 +1,17 @@
 "use client";
 
 /**
- * ScopeRowTable — with inline-PATCH toggle edit (post-ship fix).
+ * ScopeRowTable - with inline-PATCH toggle edit (post-ship fix).
  *
  * Per-scope-type row listing. Columns:
  *   - Value (monospace for ip_range / certificate, default text otherwise)
  *     Punycode domain/cert values (xn-- prefix) are wrapped in a shadcn Tooltip
  * showing the decoded unicode form (-03 UX-03).
  *   - Contact (optional contact string or em-dash)
- *   - Exclude   (Switch — inline PATCH on change)
- *   - Active test scope (Switch — inline PATCH on change)
- *   - Intel scope (Switch — inline PATCH on change)
- *   - Actions (Delete icon button — native window.confirm per UI-SPEC §ScopeRowTable)
+ *   - Exclude   (Switch - inline PATCH on change)
+ *   - Active test scope (Switch - inline PATCH on change)
+ *   - Intel scope (Switch - inline PATCH on change)
+ *   - Actions (Delete icon button - native window.confirm per UI-SPEC §ScopeRowTable)
  *
  * Parent supplies onToggle(row, patch) which PATCHes /api/projects/{id}/scope/{row_id}
  * and reloads. Parent enforces the "at least one of active_test/intel" invariant
@@ -58,9 +58,9 @@ export function ScopeRowTable({
 }: {
   rows: ScopeRowResponse[];
   scopeType: string;
-  /** Delete handler — parent runs native window.confirm + DELETE. */
+  /** Delete handler - parent runs native window.confirm + DELETE. */
   onDelete: (row: ScopeRowResponse) => Promise<void> | void;
-  /** Toggle handler — parent PATCHes and reloads. */
+  /** Toggle handler - parent PATCHes and reloads. */
   onToggle: (
     row: ScopeRowResponse,
     patch: ScopeRowUpdateBody,
@@ -126,7 +126,7 @@ export function ScopeRowTable({
               })()}
             </td>
             <td className="py-2 px-3 text-muted-foreground">
-              {row.contact || "—"}
+              {row.contact || "-"}
             </td>
             <td className="py-2 px-3">
               <Switch

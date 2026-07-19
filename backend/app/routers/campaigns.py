@@ -1,4 +1,4 @@
-"""Campaigns REST API — ACTOR-03.
+"""Campaigns REST API - ACTOR-03.
 
 Endpoints:
   GET    /api/campaigns                          list campaigns (project-scoped; Lead+ sees global too)
@@ -101,7 +101,7 @@ async def list_campaigns(
         next_cursor = str(rows[limit - 1].id)
         rows = rows[:limit]
 
-    return CampaignListResponse(items=rows, next_cursor=next_cursor)
+    return CampaignListResponse(items=rows, next_cursor=next_cursor)  # type: ignore[arg-type]
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=CampaignRead)

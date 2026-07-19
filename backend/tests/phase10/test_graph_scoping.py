@@ -1,12 +1,12 @@
-"""test_graph_scoping — PRJ-04 (plan 10-05).
+"""test_graph_scoping - PRJ-04 (plan 10-05).
 
 Graph BFS scoped by project_id via JOIN-to-events at every expansion step
-(H-3 mitigation — never via AGE node properties). Asserts no cross-project
+(H-3 mitigation - never via AGE node properties). Asserts no cross-project
 leakage, truncation cap honoured, shared-technique actors stay isolated.
 
 Note: tag_source values are bounded by the tag_source_enum (backend/app/
 models/tags.py): feed_asserted / analyst / auto. "manual" is NOT a valid
-enum value — use "analyst" for operator-authored tags in these tests.
+enum value - use "analyst" for operator-authored tags in these tests.
 """
 from __future__ import annotations
 
@@ -122,5 +122,5 @@ async def test_shared_technique_isolation(db_session):
     node_event_ids = {
         n["data"]["id"] for n in result.nodes if n["data"]["type"] == "event"
     }
-    # Only the seed — no B leakage
+    # Only the seed - no B leakage
     assert node_event_ids == {f"event:{seed.id}"}

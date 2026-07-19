@@ -1,4 +1,4 @@
-"""Unit tests for app.services.archiver — STO-01, STO-03, STO-04.
+"""Unit tests for app.services.archiver - STO-01, STO-03, STO-04.
 
 All tests use mocked sessions (no live DB required). The mock session
 captures execute calls so we can assert SQL shape and bind params.
@@ -6,10 +6,8 @@ captures execute calls so we can assert SQL shape and bind params.
 from __future__ import annotations
 
 import logging
-from types import SimpleNamespace
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
-import pytest
 
 
 # ---------------------------------------------------------------------------
@@ -272,8 +270,6 @@ class TestArchiveOnce:
 
         # Returns per policy: drop=10, move-to-cold=5, keep=0
         policy_returns = {"s1": 10, "s2": 5, "s3": 0, "s4": 0}
-        call_idx = [0]
-        sids_order = ["s1", "s2", "s3", "s4"]
 
         def _side_effect(sess, sid, days, policy):
             return policy_returns[sid]

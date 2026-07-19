@@ -1,4 +1,4 @@
-"""RED tests for AI attack path analysis — Pydantic schemas and parse helper.
+"""RED tests for AI attack path analysis - Pydantic schemas and parse helper.
 
 Plan 35-01 (TDD RED phase): These tests define the interface contract for
 AttackPathNode, AttackPathEdge, AttackPathRequest, AttackPathResponse schemas

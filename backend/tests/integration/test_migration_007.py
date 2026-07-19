@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import os
 import subprocess
-import uuid
 from pathlib import Path
 
 import pytest
@@ -28,7 +27,7 @@ CANARY_ID = "00000000-0000-0000-0000-000000000000"
 def live_db_006():
     """Start intellibird-db:m1, migrate to 006, yield (engine, env).
 
-    Leaves the DB at 006 — tests upgrade to 007 and can downgrade back.
+    Leaves the DB at 006 - tests upgrade to 007 and can downgrade back.
     """
     with PostgresContainer("intellibird-db:m1") as pg:
         url = pg.get_connection_url()

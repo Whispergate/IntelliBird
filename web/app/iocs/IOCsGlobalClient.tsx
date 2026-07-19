@@ -1,5 +1,5 @@
 /**
- * IOCsGlobalClient — cross-project IOC search client component.
+ * IOCsGlobalClient - cross-project IOC search client component.
  * Adapted from web/app/projects/[id]/iocs/IOCsClient.tsx.
  * Key difference: no projectId prop; buildParams() omits projectId entirely.
  * Backend ACL (build_ioc_scope_predicate) handles cross-project scope.
@@ -95,7 +95,7 @@ export function IOCsGlobalClient({ initialRows, initialQ = "" }: Props) {
   const pathname = usePathname();
   const sp = useSearchParams();
 
-  // Filter state — initial from URL params (fallback to initialQ for q)
+  // Filter state - initial from URL params (fallback to initialQ for q)
   const [typeFilter, setTypeFilter] = useState<string>(sp.get("type") ?? "all");
   const [statusFilter, setStatusFilter] = useState<string>(
     sp.get("status") ?? "active",
@@ -178,7 +178,7 @@ export function IOCsGlobalClient({ initialRows, initialQ = "" }: Props) {
     [typeFilter, statusFilter, ageFilter, minConfidence, debouncedSearch],
   );
 
-  // Refetch on filter change (skip first render — initialRows already populated)
+  // Refetch on filter change (skip first render - initialRows already populated)
   const skipFetchRef = useRef(true);
   useEffect(() => {
     if (skipFetchRef.current) {
@@ -276,7 +276,7 @@ export function IOCsGlobalClient({ initialRows, initialQ = "" }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Header — Global IOC Search */}
+      {/* Header - Global IOC Search */}
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-semibold">Global IOC Search</h1>
@@ -470,7 +470,7 @@ export function IOCsGlobalClient({ initialRows, initialQ = "" }: Props) {
         </div>
       )}
 
-      {/* Detail drawer — pass ioc.project_id for cross-project context */}
+      {/* Detail drawer - pass ioc.project_id for cross-project context */}
       {selectedIocId && (
         <IOCDetailDrawer
           iocId={selectedIocId}

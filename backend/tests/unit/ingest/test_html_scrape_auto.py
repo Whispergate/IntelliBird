@@ -25,12 +25,12 @@ SOURCE_ID = uuid.UUID("22222222-2222-2222-2222-222222222222")
 
 
 # ---------------------------------------------------------------------------
-# validate_scrape_config — mode dispatch
+# validate_scrape_config - mode dispatch
 # ---------------------------------------------------------------------------
 
 
 def test_validate_auto_mode_skips_required_keys() -> None:
-    # No selectors at all — auto mode bypasses the REQUIRED_KEYS check.
+    # No selectors at all - auto mode bypasses the REQUIRED_KEYS check.
     assert validate_scrape_config({"mode": AUTO_MODE}) is None
 
 
@@ -45,7 +45,7 @@ def test_validate_no_mode_back_compat() -> None:
 
 
 # ---------------------------------------------------------------------------
-# auto_discover_entries — fallback link extraction
+# auto_discover_entries - fallback link extraction
 # ---------------------------------------------------------------------------
 
 _PAGE_NO_FEED_HTML = """
@@ -81,7 +81,7 @@ def test_auto_discover_falls_back_to_link_extraction(monkeypatch: pytest.MonkeyP
 
 
 # ---------------------------------------------------------------------------
-# auto_discover_entries — feed-discovery path preferred
+# auto_discover_entries - feed-discovery path preferred
 # ---------------------------------------------------------------------------
 
 
@@ -114,7 +114,7 @@ def test_auto_discover_uses_feed_when_present(monkeypatch: pytest.MonkeyPatch) -
     )
     monkeypatch.setattr(parser_mod, "fetch_html", lambda *a, **kw: _ATOM_FEED_TWO_ENTRIES)
 
-    # Page anchors would yield different rows — assert feed wins.
+    # Page anchors would yield different rows - assert feed wins.
     rows = auto_discover_entries(_PAGE_NO_FEED_HTML, BASE_URL, SOURCE_ID)
     assert len(rows) == 2
     titles = [r["title"] for r in rows]

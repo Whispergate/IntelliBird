@@ -1,7 +1,7 @@
 """Defense-in-depth test: export endpoint returns 403 for Observer JWT.
 
 (UX-02): The frontend hides the Export button for Observers
-(UX polish). The backend enforces the gate independently — a direct API call
+(UX polish). The backend enforces the gate independently - a direct API call
 with an Observer JWT must receive 403 regardless of frontend state.
 
 Endpoint: POST /api/projects/{project_id}/export?format=stix
@@ -33,7 +33,7 @@ TEST_SIGNING_KEY = "j" * 64  # matches two_project.py fixture mint key
 
 
 # ---------------------------------------------------------------------------
-# Harness helpers — mirror test_prod01_cross_project_leakage pattern
+# Harness helpers - mirror test_prod01_cross_project_leakage pattern
 # ---------------------------------------------------------------------------
 
 
@@ -85,7 +85,7 @@ async def test_observer_export_returns_403(two_project_fixture, monkeypatch):
     """Observer JWT → 403 on export endpoint (backend defense-in-depth).
 
     The frontend hides the Export button for Observers; this test asserts the
-    backend gate independently — a direct API call must still return 403.
+    backend gate independently - a direct API call must still return 403.
 
     Min role for export is Contributor (require_project_membership(Contributor)).
     Observer rank=1 < Contributor rank=2 → 403.
@@ -139,7 +139,7 @@ async def test_contributor_export_succeeds(two_project_fixture, db_session, monk
             params={"format": "stix"},
         )
 
-    # Accept 200 (export ready) or 413 (event cap exceeded — test data may
+    # Accept 200 (export ready) or 413 (event cap exceeded - test data may
     # exceed cap in some setups). Both confirm the Contributor gate passed.
     # 403 would mean the gate incorrectly rejected a Contributor.
     assert r.status_code in (200, 413), (

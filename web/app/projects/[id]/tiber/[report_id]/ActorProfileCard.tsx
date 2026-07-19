@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ActorProfileCard — individual actor profile card with inline editing.
+ * ActorProfileCard - individual actor profile card with inline editing.
  * UI-SPEC §3d.
  *
  * View mode: displays name / motivation / capability / relevance.
@@ -126,7 +126,7 @@ export function ActorProfileCard({
               rows={2}
               value={capability}
               onChange={(e) => setCapability(e.target.value)}
-              placeholder="e.g. High — known zero-day exploitation capability"
+              placeholder="e.g. High - known zero-day exploitation capability"
             />
           </div>
           <div className="space-y-1">

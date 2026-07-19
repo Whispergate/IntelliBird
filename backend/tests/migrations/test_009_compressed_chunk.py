@@ -51,7 +51,7 @@ def live_db_009():
     migration.
     """
     if not _testcontainers_importable():
-        pytest.skip("testcontainers unavailable — install or unset SKIP_TESTCONTAINERS")
+        pytest.skip("testcontainers unavailable - install or unset SKIP_TESTCONTAINERS")
 
     from testcontainers.postgres import PostgresContainer
 

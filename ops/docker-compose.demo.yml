@@ -1,0 +1,57 @@
+# Demo overlay — pull prebuilt images from GHCR instead of building locally.
+#
+# Used on the host behind https://intellibird.whisperegate.org. The
+# deploy-demo GitHub workflow pushes intellibird-{api,web,db}:latest to GHCR on
+# every push to main; the host pulls and restarts with:
+#
+#   export GHCR_OWNER=<github-owner>          # lowercase, e.g. whisperegate
+#   docker compose -f ops/docker-compose.yml -f ops/docker-compose.demo.yml pull
+#   docker compose -f ops/docker-compose.yml -f ops/docker-compose.demo.yml up -d
+#
+# If the GHCR packages are private, `docker login ghcr.io` on the host first
+# (PAT with read:packages), or make the packages public.
+#
+# The `build:` sections in the base compose are ignored for these services
+# because an explicit `image:` is set here and we only ever `pull`/`up` (never
+# `build`) on the demo host.
+
+services:
+  db:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-db:latest
+
+  api:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-api:latest
+
+  worker:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-api:latest
+
+  scheduler:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-api:latest
+
+  certstream-worker:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-api:latest
+
+  tor-worker:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-api:latest
+
+  easm-worker:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-api:latest
+
+  ai-worker:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-api:latest
+
+  reports-worker:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-api:latest
+
+  web:
+    image: ghcr.io/${GHCR_OWNER}/intellibird-web:latest
+
+  # Serve the real demo hostname with an automatic Let's Encrypt cert instead of
+  # the `localhost` + `tls internal` dev config baked into ops/Caddyfile.
+  # Volumes are merged by mount target, so the Caddyfile bind is replaced while
+  # the caddy_data / caddy_config named volumes are restated unchanged.
+  caddy:
+    volumes:
+      - ./Caddyfile.demo:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config

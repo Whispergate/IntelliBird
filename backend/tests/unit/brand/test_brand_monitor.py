@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import os
 
-# Pydantic-settings singleton loads at import time — bootstrap required env vars
+# Pydantic-settings singleton loads at import time - bootstrap required env vars
 # before any app.* import to prevent ValidationError at collection time.
 os.environ.setdefault("SECRET_KEY", "x" * 64)
 os.environ.setdefault("JWT_SIGNING_KEY", "y" * 64)
@@ -25,14 +25,13 @@ import subprocess
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
 
 
 # ---------------------------------------------------------------------------
-# In-memory session fake — records executed SQL + returns queued rows.
+# In-memory session fake - records executed SQL + returns queued rows.
 # ---------------------------------------------------------------------------
 class _ResultShim:
     def __init__(self, rows: list[dict[str, Any]] | None = None, one_row: dict[str, Any] | None = None):
@@ -73,7 +72,7 @@ class FakeSession:
         self._scripted_upsert_returns.append(row)
 
     async def execute(self, stmt, params: dict[str, Any] | None = None):
-        # stmt is a sqlalchemy.text(...) clause — normalise to string for inspection
+        # stmt is a sqlalchemy.text(...) clause - normalise to string for inspection
         sql = str(stmt)
         self.executions.append((sql, params or {}))
 
@@ -144,7 +143,7 @@ async def test_scan_project_fts_branch_short_uses_title_stix_id_only(monkeypatch
 
     t = _term(value="api", term_type="keyword")
     session = FakeSession(terms=[t], fts_rows=[])
-    # Skip CT (keyword) and dnstwist (non-domain) — FTS only path
+    # Skip CT (keyword) and dnstwist (non-domain) - FTS only path
     await brand_monitor.scan_project(session, uuid4())
 
     fts_sqls = [sql for sql, _ in session.executions if "FROM events" in sql and "SELECT" in sql]
@@ -296,7 +295,7 @@ async def test_scan_project_dnstwist_timeout_skips_term(monkeypatch, caplog):
         stats = await brand_monitor.scan_project(session, uuid4())
 
     assert any("brand_dnstwist_timeout" in rec.message for rec in caplog.records)
-    # scan should complete (not raise) — stats returned
+    # scan should complete (not raise) - stats returned
     assert isinstance(stats, dict)
 
 

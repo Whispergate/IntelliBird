@@ -1,4 +1,4 @@
-"""Brand Protection — brand_terms + brand_matches + projects.gdpr_person_match_retention_days
+"""Brand Protection - brand_terms + brand_matches + projects.gdpr_person_match_retention_days
 
 Revision ID: 011
 Revises: 010_easm
@@ -9,21 +9,21 @@ BRP-01..BRP-05.
 Creates Brand Protection schema foundation:
   - 5 ENUMs: brand_term_type, brand_term_mode, brand_match_source,
              brand_match_severity, brand_match_lifecycle_status
-             (DO $$ EXCEPTION pattern — matches migration 010 precedent)
+             (DO $$ EXCEPTION pattern - matches migration 010 precedent)
   - 2 new tables: brand_terms, brand_matches
   - projects gains gdpr_person_match_retention_days INT NOT NULL DEFAULT 90
 
 Design notes:
-  * brand_matches.event_id is a soft UUID column with NO FK to events.id —
+  * brand_matches.event_id is a soft UUID column with NO FK to events.id -
     events is a TimescaleDB hypertable (see 001_initial_schema.py:171 precedent);
     hypertables cannot be FK targets (requires unique index including partition
     column). App enforces referential integrity. Same precedent as
     attack_technique_tags.event_id and cve_details.event_id.
   * Case-insensitive UNIQUE on brand_terms is expressed via functional index on
-    lower(value) — plain UNIQUE constraint cannot express lower() expression.
+    lower(value) - plain UNIQUE constraint cannot express lower() expression.
   * ix_brand_matches_dismiss_until is a partial index (WHERE lifecycle_status='dismissed')
     to keep the scheduler "find expiring dismissals" probe cheap.
-  * brand_matches is NOT a hypertable — project-scoped, not pure time-series
+  * brand_matches is NOT a hypertable - project-scoped, not pure time-series
     (H-4 pattern from easm_findings).
 """
 from __future__ import annotations
@@ -41,7 +41,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # --- 1. ENUMs (idempotent creation — DO $$ EXCEPTION pattern) ------------
+    # --- 1. ENUMs (idempotent creation - DO $$ EXCEPTION pattern) ------------
     op.execute("""
     DO $$ BEGIN
         CREATE TYPE brand_term_type AS ENUM ('keyword','domain','product','person');
@@ -161,7 +161,7 @@ def upgrade() -> None:
             server_default=sa.text("now()"),
         ),
         sa.Column("match_metadata", postgresql.JSONB(), nullable=True),
-        # NOTE: no FK to events.id — events is a TimescaleDB hypertable and
+        # NOTE: no FK to events.id - events is a TimescaleDB hypertable and
         # cannot be a FK target. Soft reference only; app enforces integrity.
         # Same precedent as attack_technique_tags.event_id (migration 001).
         sa.Column("event_id", postgresql.UUID(as_uuid=True), nullable=True),
@@ -183,7 +183,7 @@ def upgrade() -> None:
         "brand_matches",
         ["project_id", sa.text("last_seen DESC")],
     )
-    # Partial index — only rows awaiting resurface
+    # Partial index - only rows awaiting resurface
     op.execute("""
         CREATE INDEX ix_brand_matches_dismiss_until
         ON brand_matches (dismiss_until)

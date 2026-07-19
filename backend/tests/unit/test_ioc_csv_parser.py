@@ -25,7 +25,7 @@ def test_csv_collects_per_row_errors_with_line_numbers():
 
 
 def test_csv_parses_project_id_and_source_columns():
-    """CONTEXT.md §CSV columns — project_id 'global' → None; source carried through."""
+    """CONTEXT.md §CSV columns - project_id 'global' → None; source carried through."""
     from app.services.ioc_import.csv_parser import parse_csv_rows
     rows = list(parse_csv_rows(b"type,value,project_id,source\nip,1.2.3.4,global,csv\n"))
     assert len(rows) == 1

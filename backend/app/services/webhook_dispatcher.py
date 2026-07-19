@@ -1,20 +1,20 @@
-"""Webhook dispatcher service — core tick logic.
+"""Webhook dispatcher service - core tick logic.
 
 Fired every 60s by APScheduler via webhook_dispatch_tick actor.
 ..: per-webhook iteration -> build_events_query match ->
 Redis wh-batch:{id} accumulation -> dispatch via payload builder -> retry.
 
 : broad try/except around run_dispatch_tick body so Dramatiq
-max_retries=0 actually means "do not retry" — without the wrap, an
+max_retries=0 actually means "do not retry" - without the wrap, an
 uncaught exception still re-queues.
 
-: tolerate Redis key eviction between tick and drain —
+: tolerate Redis key eviction between tick and drain -
 always check LLEN > 0 before drain; missing key is not an error.
 
-: dashboard_roles=None for all build_events_query calls — dispatcher is
+: dashboard_roles=None for all build_events_query calls - dispatcher is
 an admin operation, not dashboard-scoped. All visibility classes delivered.
 
-Burst suppression (SCR-05 — Roadmap pitfall H-1):
+Burst suppression (SCR-05 - Roadmap pitfall H-1):
   HIGH-tier (S+A) events are subject to a per-project rolling-window cap of
   BURST_HIGH_CAP fires per BURST_WINDOW_SEC. Excess HIGH-tier events are:
     - tagged burst_cluster=true on the event row (still visible in /events list)
@@ -27,7 +27,6 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
-import logging
 import time
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -60,7 +59,7 @@ from app.services.webhook_payloads import build_payload_for_type
 log = structlog.get_logger(__name__)
 
 # ---- constants --------------------------------------------------------------
-RETRY_DELAYS: list[int] = [30, 60, 120]  # — 3 attempts, 2 inter-sleep gaps
+RETRY_DELAYS: list[int] = [30, 60, 120]  # - 3 attempts, 2 inter-sleep gaps
 CONNECT_TIMEOUT = 10.0
 READ_TIMEOUT = 20.0
 TOTAL_TIMEOUT = 30.0
@@ -144,7 +143,7 @@ def _process_webhook(
     # Collect matching events across all bound presets, dedup by event.id
     # all_matched: event_id str -> (event dict, first-matching FilterPreset)
     # pre-compute scope predicate + bound sources once per webhook
-    # (webhook.project_id is NOT NULL post-migration 009 — every webhook pins
+    # (webhook.project_id is NOT NULL post-migration 009 - every webhook pins
     # to exactly one project).
     scope_predicate, bound_sources = _fetch_project_scope_sync(
         session, webhook.project_id,
@@ -173,7 +172,7 @@ def _process_webhook(
     # the fan-out batch. Non-HIGH-tier and unscored events pass through unchanged.
     #
     # record_high_tier_dispatch is called INLINE as each HIGH-tier event is
-    # accepted into the surviving set — this ensures the 6th+ events see a
+    # accepted into the surviving set - this ensures the 6th+ events see a
     # count ≥ BURST_HIGH_CAP and are correctly suppressed, even though HTTP
     # delivery hasn't happened yet. The window counter is thus "reserved" for
     # events that will be dispatched. This is intentional: it prevents two
@@ -187,7 +186,7 @@ def _process_webhook(
         if score is not None and classify_tier(float(score)) in {"S", "A"}:
             # HIGH-tier event: consult sliding window
             if is_burst_suppressed(r, project_id_str):
-                # Cap reached — tag the event row and skip fan-out
+                # Cap reached - tag the event row and skip fan-out
                 _tag_burst_cluster(session, uuid.UUID(eid))
                 log.info(
                     "webhook_burst_suppressed",
@@ -197,7 +196,7 @@ def _process_webhook(
                     project_id=project_id_str,
                 )
                 continue  # advance iteration (cursor advances with the rest)
-            # Cap not yet reached — reserve a slot in the window and include
+            # Cap not yet reached - reserve a slot in the window and include
             # this event in the fan-out batch.
             record_high_tier_dispatch(r, project_id_str)
             _high_tier_dispatch_count += 1
@@ -237,7 +236,7 @@ def _process_webhook(
     ttl = _redis_ttl_for(webhook.batching_window_sec)
     now = datetime.now(timezone.utc)
 
-    existing = int(r.llen(batch_key) or 0)
+    existing = int(r.llen(batch_key) or 0)  # type: ignore[arg-type]
 
     if existing == 0:
         #: first event of window → immediate dispatch
@@ -256,7 +255,7 @@ def _process_webhook(
                 if isinstance(window_start_raw, bytes)
                 else window_start_raw
             )
-            window_start = datetime.fromisoformat(window_start_str)
+            window_start = datetime.fromisoformat(window_start_str)  # type: ignore[arg-type]
             if (now - window_start).total_seconds() >= webhook.batching_window_sec:
                 _drain_and_dispatch(webhook, r, session, primary_preset)
 
@@ -270,7 +269,7 @@ def _fetch_project_scope_sync(
     The dispatcher runs against a sync Session (APScheduler + Dramatiq worker);
     project_scope's async helpers would need an event loop. Inline sync SELECT
     returns (scope_predicate, bound_sources) ready to pass into build_events_query.
-    legacy webhooks point at LEGACY_PROJECT_ID sentinel — with zero scope
+    legacy webhooks point at LEGACY_PROJECT_ID sentinel - with zero scope
     rows the predicate is sa.text('false'), so those dispatches correctly match
     zero events going forward (M-6 enforcement).
     """
@@ -304,7 +303,7 @@ def _fetch_matching_events(
 : dashboard_roles=None (admin operation, no dashboard-scope gating).
 project_id + scope_predicate + bound_sources threaded through so
 per-webhook dispatch only surfaces events inside the webhook's project and
-scope. project_id is mandatory — post-migration-009 webhooks.project_id is
+scope. project_id is mandatory - post-migration-009 webhooks.project_id is
 NOT NULL.
 """
     if last_dispatch_at is None:
@@ -349,7 +348,7 @@ def _hydrate_event_dict(event: Event, session: SyncSession) -> dict:
 
     tlp_name = None
     if event.tlp_marking_id is not None:
-        row = session.execute(
+        row = session.execute(  # type: ignore[assignment]
             select(TlpMarking.name).where(TlpMarking.id == event.tlp_marking_id)
         ).one_or_none()
         if row:
@@ -382,7 +381,7 @@ def _hydrate_event_dict(event: Event, session: SyncSession) -> dict:
         # SCR-05: score included so burst suppression can classify tier
         # in _process_webhook before fan-out. None for pre-migration rows.
         "score": float(event.score) if event.score is not None else None,
-        # _project_id used for burst_cluster tagging — private field, stripped before
+        # _project_id used for burst_cluster tagging - private field, stripped before
         # Redis serialisation (not forwarded in webhook payload).
         "_project_id": str(event.project_id),
     }
@@ -398,11 +397,11 @@ def _tag_burst_cluster(session: SyncSession, event_id: uuid.UUID) -> None:
 
     Uses PostgreSQL array_append so the update is idempotent-safe even if
     burst_cluster is already present. The tags column is TEXT[] so duplicates
-    are not prevented at the DB level — callers should only invoke this once
+    are not prevented at the DB level - callers should only invoke this once
     per suppression decision. Mirrors the raw-SQL UPDATE approach from
     tags.py: SQLAlchemy ARRAY assignment has dialect quirks with asyncpg/sync.
 
-    Does NOT commit — caller (webhook tick) is responsible for session.commit().
+    Does NOT commit - caller (webhook tick) is responsible for session.commit().
     """
     session.execute(
         text(
@@ -421,7 +420,7 @@ def _build_email_body(events: list[dict]) -> str:
     One line per event: "{tier} | {title} | {observed_at}".
     Prefixed with an IntelliBird header.
     """
-    header = f"IntelliBird Alert Digest — {len(events)} event(s)\n{'=' * 50}\n"
+    header = f"IntelliBird Alert Digest - {len(events)} event(s)\n{'=' * 50}\n"
     lines = [
         f"{ev.get('tier', '?')} | {ev.get('title', '(no title)')} | {ev.get('observed_at', '')}"
         for ev in events
@@ -435,7 +434,7 @@ def _dispatch_email(
 ) -> tuple[bool, str | None]:
     """Send an email digest via SMTP using aiosmtplib.
 
-    URL format: smtp://host:port — port defaults to 587 if absent.
+    URL format: smtp://host:port - port defaults to 587 if absent.
     auth_enc must contain: username, password, from_addr, to_addr, use_starttls (bool).
 
     use_starttls=True  → STARTTLS (port 587): start_tls=True,  use_tls=False
@@ -448,7 +447,7 @@ def _dispatch_email(
         host = parsed.hostname or "localhost"
         port = parsed.port or 587
 
-        creds = decrypt_credentials(settings.SECRET_KEY, webhook.auth_enc)
+        creds = decrypt_credentials(settings.SECRET_KEY, webhook.auth_enc)  # type: ignore[arg-type]
         username = creds.get("username")
         password = creds.get("password")
         from_addr = creds.get("from_addr", username or "noreply@localhost")
@@ -456,7 +455,7 @@ def _dispatch_email(
         use_starttls: bool = bool(creds.get("use_starttls", True))
 
         body = _build_email_body(events)
-        subject = f"[IntelliBird] {len(events)} alert(s) — {webhook.name}"
+        subject = f"[IntelliBird] {len(events)} alert(s) - {webhook.name}"
         msg = MIMEText(body, "plain", "utf-8")
         msg["Subject"] = subject
         msg["From"] = from_addr
@@ -499,16 +498,16 @@ def _drain_and_dispatch(
 
     raw_items = r.lrange(batch_key, 0, MAX_DIGEST_EVENTS - 1) or []
     if not raw_items:
-        #: eviction tolerance — missing key is not an error
+        #: eviction tolerance - missing key is not an error
         log.debug("webhook_batch_empty_or_evicted", webhook_id=str(webhook.id))
         return
 
     events = [
-        json.loads(x.decode() if isinstance(x, bytes) else x) for x in raw_items
+        json.loads(x.decode() if isinstance(x, bytes) else x) for x in raw_items  # type: ignore[union-attr]
     ]
     max_observed = _max_observed_at(events)
 
-    # Email branch: SMTP dispatch — must return early before HTTP payload build.
+    # Email branch: SMTP dispatch - must return early before HTTP payload build.
     # Burst-suppression and auto-disable operate upstream; both apply equally to
     # email because _record_delivery_result + consecutive_failures are called here.
     if webhook.destination_type == "email":
@@ -566,7 +565,7 @@ def _drain_and_dispatch(
             event_count=len(events),
         )
     else:
-        #: cursor NOT advanced on failure — next tick re-attempts same window
+        #: cursor NOT advanced on failure - next tick re-attempts same window
         log.warning(
             "webhook_delivery_failed",
             webhook_id=str(webhook.id),
@@ -608,7 +607,7 @@ def _post_with_retry(
                 last_err = f"http_{resp.status_code}"
         except httpx.TimeoutException:
             last_err = "timeout"
-        except Exception as e:  # noqa: BLE001 — network errors
+        except Exception as e:  # noqa: BLE001 - network errors
             last_err = f"network_error: {e}"[:200]
 
         if i < attempts - 1:

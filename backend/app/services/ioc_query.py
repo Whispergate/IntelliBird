@@ -1,4 +1,4 @@
-"""IOC cross-project scope chokepoint — IOC-03 + IOC-08.
+"""IOC cross-project scope chokepoint - IOC-03 + IOC-08.
 
 Mirrors the role of `app.services.project_scope.build_scope_predicate` for the
 events table. Every SELECT against `iocs` MUST go through
@@ -6,14 +6,14 @@ events table. Every SELECT against `iocs` MUST go through
 
 ACL semantics (locked in 22-CONTEXT.md §Project scoping + sharing model):
 
-  * Admin (user.role == "Admin") — sees ALL per-project rows + ALL global rows
+  * Admin (user.role == "Admin") - sees ALL per-project rows + ALL global rows
     (project_id IS NULL).
-  * Observer / Analyst / Lead (non-admin) — sees own-project rows
+  * Observer / Analyst / Lead (non-admin) - sees own-project rows
     (`project_id IN (user.project_memberships)`) + ALL global rows.
 
 The membership lookup is done against the JWT `pm` claim that the
 AuthMiddleware unpacks into `AuthUser.project_memberships` (dict[str, int]
-of project_id_str → role_rank). No DB hit is required — claims are the
+of project_id_str → role_rank). No DB hit is required - claims are the
 source of truth on the request path. This matches how the events router
 threads `enforce_project_query_scope` (security/project_membership.py) and
 keeps the predicate sync.
@@ -42,8 +42,8 @@ def _is_admin(user: Any) -> bool:
 def _member_project_ids(user: Any) -> list[uuid.UUID]:
     """Extract project ids the user is a member of from the JWT pm claim.
 
-    The dict is `{project_id_str: role_rank_int}` — see app/security/jwt.py:54.
-    Invalid UUIDs (defensive — JWT shouldn't contain them but never trust input)
+    The dict is `{project_id_str: role_rank_int}` - see app/security/jwt.py:54.
+    Invalid UUIDs (defensive - JWT shouldn't contain them but never trust input)
     are dropped silently rather than raising, so a malformed claim cannot crash
     the read path.
     """
@@ -67,7 +67,7 @@ def build_ioc_scope_predicate(
         user: AuthUser instance from `request.state.user` (or any object exposing
             `.role` and `.project_memberships`). When `user` is None or the
             object lacks a role, the predicate falls through to the non-admin
-            branch with an empty membership list — i.e. "global rows only" —
+            branch with an empty membership list - i.e. "global rows only" -
             matching the AuthMiddleware behaviour where AUTH_ENABLED=false
             injects a stub Admin (so this branch only ever fires in tests
             that pass a bare object).
@@ -91,7 +91,7 @@ def build_ioc_scope_predicate(
         * `build_ioc_scope_predicate(observer_a, project_b)` →
             evaluates to `(IOC.project_id IN ({a}) OR IS NULL) AND
                           (IOC.project_id == project_b OR IS NULL)`
-            — observer-A asking for project_b sees only the global rows
+            - observer-A asking for project_b sees only the global rows
             (the per-project intersection is empty). The route layer is free
             to additionally raise 403 when the project_filter is not in the
             user's memberships; this predicate stays consistent regardless.
@@ -131,7 +131,7 @@ def apply_default_filters(
       * scope predicate = WHO can see WHICH rows (security)
       * default filters = WHICH lifecycle statuses are surfaced (UX)
 
-    Routes that explicitly filter on `status` should NOT call this helper —
+    Routes that explicitly filter on `status` should NOT call this helper -
     explicit `status='expired'` requests should not be silently dropped.
     """
     if not include_expired:

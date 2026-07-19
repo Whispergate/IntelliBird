@@ -80,7 +80,7 @@ async def test_aggregation_deduplicates_by_type_and_target(db_session):
     await _seed_scan(db_session, scan_a, project_id)
     await _seed_scan(db_session, scan_b, project_id)
 
-    # Two rows matching (DNS_NAME, api.example.com) across two scans — but UNIQUE
+    # Two rows matching (DNS_NAME, api.example.com) across two scans - but UNIQUE
     # constraint dedups on (project_id, bbot_event_type, canonical_target). Insert
     # once, then a different type/target, then a different target to produce two
     # aggregation groups.

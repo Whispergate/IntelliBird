@@ -1,19 +1,18 @@
 """Unit tests for source probe helpers and /test-connection endpoint (SRC-03).
 
-Probe helper tests (Task 1 — RED/GREEN):
+Probe helper tests (Task 1 - RED/GREEN):
  9 tests covering _probe_rss, _probe_nvd, _probe_taxii
 
-Endpoint tests (Task 2 — RED/GREEN):
+Endpoint tests (Task 2 - RED/GREEN):
  8 tests covering route contract, HTTP 200 on probe failure, arg forwarding
 
-Environment: tests run without a live Postgres/Redis — endpoint tests use a
+Environment: tests run without a live Postgres/Redis - endpoint tests use a
 mini FastAPI with only the sources router mounted.
 """
 from __future__ import annotations
 
 import os
 import uuid
-from typing import AsyncIterator
 from unittest.mock import MagicMock
 
 import pytest
@@ -187,13 +186,13 @@ class TestProbeTaxii:
 
 
 # ---------------------------------------------------------------------------
-# Endpoint tests — use a mini FastAPI with only the sources router
+# Endpoint tests - use a mini FastAPI with only the sources router
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture()
 def mini_app():
-    """Mini FastAPI with only the sources router — no DB required for test-connection."""
+    """Mini FastAPI with only the sources router - no DB required for test-connection."""
     from fastapi import FastAPI
     from app.routers.admin.sources import router
     from app.middleware.auth import require_admin, require_analyst_or_above, require_auth
@@ -329,7 +328,7 @@ class TestEndpointContract:
         assert resp.status_code == 422
 
     def test_endpoint_does_not_touch_db(self, monkeypatch, mini_app, test_client):
-        """test-connection handler has no DB dependency — get_session never called."""
+        """test-connection handler has no DB dependency - get_session never called."""
         import app.routers.admin.sources as _mod
         from app.database import get_session
 

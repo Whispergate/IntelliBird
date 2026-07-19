@@ -30,7 +30,7 @@ export function DashboardClient() {
     seedPresets(role);
   }, [role]);
 
-  // Fetch events list — owns the state so drawer can derive prev/next from it.
+  // Fetch events list - owns the state so drawer can derive prev/next from it.
   useEffect(() => {
     let cancelled = false;
     const presetName = `default-${role}`;
@@ -41,7 +41,7 @@ export function DashboardClient() {
           const preset = await getPreset(presetName);
           presetQuery = preset.query_params ?? {};
         } catch {
-          // preset seed is racing — proceed with empty query
+          // preset seed is racing - proceed with empty query
         }
         const res = await listEvents(
           { ...(presetQuery as object), limit: 25 },

@@ -1,4 +1,4 @@
-"""Unit tests for TAXII 2.1 router — TAXII-01, TAXII-05."""
+"""Unit tests for TAXII 2.1 router - TAXII-01, TAXII-05."""
 from __future__ import annotations
 
 import inspect
@@ -11,7 +11,6 @@ os.environ.setdefault("SECRET_KEY", "s" * 64)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 
-import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 

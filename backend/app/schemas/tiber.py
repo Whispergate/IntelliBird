@@ -1,32 +1,32 @@
-"""Pydantic v2 schemas for TIBER report editor API — TIBER-01..03, AI-08.
+"""Pydantic v2 schemas for TIBER report editor API - TIBER-01..03, AI-08.
 
 Exports:
-  ReportState          — str Enum: draft | published | archived
-  ReportFormat         — str Enum: markdown | pdf | stix
-  ObjectiveType        — str Enum: availability | integrity | confidentiality
+  ReportState          - str Enum: draft | published | archived
+  ReportFormat         - str Enum: markdown | pdf | stix
+  ObjectiveType        - str Enum: availability | integrity | confidentiality
 
-  TiberReportCreate    — POST /api/projects/{id}/tiber body
-  TiberReportPatch     — PATCH /api/projects/{id}/tiber/{report_id} body
-                         State transitions are NOT in patch shape — use POST /publish
+  TiberReportCreate    - POST /api/projects/{id}/tiber body
+  TiberReportPatch     - PATCH /api/projects/{id}/tiber/{report_id} body
+                         State transitions are NOT in patch shape - use POST /publish
                          and POST /archive endpoints. extra="forbid" blocks state in patch.
-  TiberReportRead      — GET /api/projects/{id}/tiber/{report_id} response
+  TiberReportRead      - GET /api/projects/{id}/tiber/{report_id} response
 
-  ActorProfileCreate   — POST /api/projects/{id}/tiber/{report_id}/actors body
-  ActorProfileRead     — actor row response
+  ActorProfileCreate   - POST /api/projects/{id}/tiber/{report_id}/actors body
+  ActorProfileRead     - actor row response
 
-  ScenarioPatch        — PATCH /api/projects/{id}/tiber/{report_id}/scenarios/{id} body
+  ScenarioPatch        - PATCH /api/projects/{id}/tiber/{report_id}/scenarios/{id} body
                          attack_technique_id validates ATT&CK ID format T[0-9]{4}(.[0-9]{3})?
-  ScenarioRead         — scenario row response (includes ai_draft_metadata)
+  ScenarioRead         - scenario row response (includes ai_draft_metadata)
 
-  ExportCreate         — POST /api/projects/{id}/tiber/{report_id}/exports body
-  ExportRead           — export metadata row response (NO content_bytea — H-5 TOAST avoidance)
+  ExportCreate         - POST /api/projects/{id}/tiber/{report_id}/exports body
+  ExportRead           - export metadata row response (NO content_bytea - H-5 TOAST avoidance)
 
-  RefreshDiffRow       — one field diff row in refresh modal
-  RefreshDiffResponse  — full diff response for a named section
-  RefreshDiffApply     — PATCH body: list of accepted field paths
+  RefreshDiffRow       - one field diff row in refresh modal
+  RefreshDiffResponse  - full diff response for a named section
+  RefreshDiffApply     - PATCH body: list of accepted field paths
 
-  CompletenessReport   — response for completeness gate endpoint
-  ScenarioGateReport   — response for scenario count gate endpoint
+  CompletenessReport   - response for completeness gate endpoint
+  ScenarioGateReport   - response for scenario count gate endpoint
 """
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 
 # ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ class ReportFormat(str, Enum):
 
 
 class ObjectiveType(str, Enum):
-    """ECB TIBER-EU Threat Scenarios — scenario objective type."""
+    """ECB TIBER-EU Threat Scenarios - scenario objective type."""
 
     availability = "availability"
     integrity = "integrity"
@@ -73,11 +73,11 @@ class ObjectiveType(str, Enum):
 
 
 class TiberReportCreate(BaseModel):
-    """POST /api/projects/{id}/tiber — create a new TIBER report draft.
+    """POST /api/projects/{id}/tiber - create a new TIBER report draft.
 
     title: 1–300 characters, non-empty.
     cbest_mode: when True, "CIF" is relabelled "Critical Business Service" in
-    exporter output and UI labels (surface-only — same DB columns).
+    exporter output and UI labels (surface-only - same DB columns).
     """
 
     title: str = Field(min_length=1, max_length=300)
@@ -85,7 +85,7 @@ class TiberReportCreate(BaseModel):
 
 
 class TiberReportPatch(BaseModel):
-    """PATCH /api/projects/{id}/tiber/{report_id} — partial update of report fields.
+    """PATCH /api/projects/{id}/tiber/{report_id} - partial update of report fields.
 
     State transitions are NOT part of this schema. State changes go through
     dedicated endpoints:
@@ -94,7 +94,7 @@ class TiberReportPatch(BaseModel):
       POST /tiber/{report_id}/clone     → creates new draft from published
 
     extra="forbid" ensures any attempt to pass `state` in the PATCH body
-    raises a ValidationError (422) — the router never sees a state change
+    raises a ValidationError (422) - the router never sees a state change
     through this path. This is the primary enforcement mechanism for the
     state machine at the schema layer.
 
@@ -118,11 +118,11 @@ class TiberReportPatch(BaseModel):
 
 
 class TiberReportRead(BaseModel):
-    """GET /api/projects/{id}/tiber/{report_id} — full report metadata response.
+    """GET /api/projects/{id}/tiber/{report_id} - full report metadata response.
 
     from_attributes=True enables construction from TiberReport ORM rows.
     tl_top_events is a list of event dicts (JSONB); populated by auto-populate
-    or refresh diff apply. Returned as-is (not sub-typed here — shape evolved
+    or refresh diff apply. Returned as-is (not sub-typed here - shape evolved
     by exporter).
 
     NOTE: actor_profiles and scenarios lists are intentionally omitted from this
@@ -158,7 +158,7 @@ class TiberReportRead(BaseModel):
 
 
 class ActorProfileCreate(BaseModel):
-    """POST /api/projects/{id}/tiber/{report_id}/actors — create an actor profile.
+    """POST /api/projects/{id}/tiber/{report_id}/actors - create an actor profile.
 
     name: 1+ character, non-empty.
     motivation, capability_assessment, relevance_to_target: optional text fields.
@@ -174,7 +174,7 @@ class ActorProfileCreate(BaseModel):
 class ActorProfileRead(BaseModel):
     """Actor profile row response.
 
-    source_event_ids: list of event UUID strings (soft refs — no FK to hypertable).
+    source_event_ids: list of event UUID strings (soft refs - no FK to hypertable).
     from_attributes=True enables construction from TiberActorProfile ORM rows.
     """
 
@@ -199,11 +199,11 @@ class ActorProfileRead(BaseModel):
 class ScenarioPatch(BaseModel):
     """PATCH /api/projects/{id}/tiber/{report_id}/scenarios/{id}.
 
-    All fields are optional — partial updates only. extra="forbid" prevents
+    All fields are optional - partial updates only. extra="forbid" prevents
     unknown fields being silently accepted.
 
     attack_technique_id: validated against ATT&CK ID format T[0-9]{4}(.[0-9]{3})?
-    Examples: T1566 (valid), T1566.001 (valid), T1566.1 (invalid — must be 3 digits),
+    Examples: T1566 (valid), T1566.001 (valid), T1566.1 (invalid - must be 3 digits),
     CVE-2021-1234 (invalid). NULL / None is allowed (clears the field).
 
     selected_for_inclusion: the scenario counts toward the 3-scenario gate when True
@@ -259,7 +259,7 @@ class ScenarioRead(BaseModel):
 
 
 class ExportCreate(BaseModel):
-    """POST /api/projects/{id}/tiber/{report_id}/exports — trigger export.
+    """POST /api/projects/{id}/tiber/{report_id}/exports - trigger export.
 
     format: one of markdown | pdf | stix.
     The export worker assigns version_number = MAX(version_number) + 1 for
@@ -336,7 +336,7 @@ class RefreshDiffApply(BaseModel):
 
     accepted_field_paths: list of field_path strings from RefreshDiffRow that
     the analyst has accepted. Only these paths will be written to the DB.
-    Unaccepted paths are discarded — no silent overwrite of analyst edits.
+    Unaccepted paths are discarded - no silent overwrite of analyst edits.
     """
 
     accepted_field_paths: list[str]

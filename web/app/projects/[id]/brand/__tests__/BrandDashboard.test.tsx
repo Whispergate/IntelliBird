@@ -1,5 +1,5 @@
 /**
- * BrandDashboard tests — plan 12-08.
+ * BrandDashboard tests - plan 12-08.
  *
  * Covers UI-SPEC §Surface 2 + §Surface 3:
  *   - Filter bar renders 4 controls (severity, source, lifecycle, include_dismissed)
@@ -189,7 +189,7 @@ describe("BrandDashboard", () => {
     await waitFor(() =>
       expect(
         screen.getByText(
-          /Term 'foo' auto-downgraded to watch-only — 42 matches in last 24h\. Review on the Terms tab\./,
+          /Term 'foo' auto-downgraded to watch-only - 42 matches in last 24h\. Review on the Terms tab\./,
         ),
       ).toBeInTheDocument(),
     );

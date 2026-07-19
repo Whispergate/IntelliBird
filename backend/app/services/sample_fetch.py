@@ -1,5 +1,5 @@
 """
-— Sample fetcher: MalwareBazaar (primary) -> VirusTotal Premium (fallback).
+- Sample fetcher: MalwareBazaar (primary) -> VirusTotal Premium (fallback).
 SECURITY: Sample bytes are NEVER written to disk. Caller must use in-memory only.
 """
 from __future__ import annotations
@@ -50,7 +50,7 @@ async def _fetch_malwarebazaar(client: httpx.AsyncClient, sha256: str) -> bytes 
         return None
     if resp.status_code != 200:
         return None
-    # MalwareBazaar returns JSON {"query_status": "file_not_found"} on miss — NOT a ZIP
+    # MalwareBazaar returns JSON {"query_status": "file_not_found"} on miss - NOT a ZIP
     if resp.content[:1] == b"{":
         return None
     try:

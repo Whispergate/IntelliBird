@@ -1,7 +1,7 @@
 """Per-type content_hash formulas for INGR-03 dedup.
 
 : RSS / STIX / NVD each have their own natural-identity hash.
-: Field separator is ASCII Unit Separator 0x1F — avoids injection via `|` or `:`.
+: Field separator is ASCII Unit Separator 0x1F - avoids injection via `|` or `:`.
 : Hash computed in Python before insert, stored as lowercase hex in events.content_hash.
 """
 from __future__ import annotations
@@ -9,7 +9,6 @@ from __future__ import annotations
 import hashlib
 import re
 
-import pytest
 
 from app.ingest.dedup import SEP, nvd_content_hash, rss_content_hash, taxii_content_hash
 
@@ -52,7 +51,7 @@ def test_hash_determinism() -> None:
     first = rss_content_hash(*inputs)
     for _ in range(100):
         assert rss_content_hash(*inputs) == first
-    # Order matters — swapping link and title produces a different hash
+    # Order matters - swapping link and title produces a different hash
     assert rss_content_hash("src", "title", "link") != first
 
 

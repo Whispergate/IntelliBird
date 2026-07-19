@@ -1,4 +1,4 @@
-"""Password hash + verify primitives — AUTH-01, AUTH-04.
+"""Password hash + verify primitives - AUTH-01, AUTH-04.
 
 pwdlib with Argon2id. Production params (OWASP 2024):
   time_cost=3, memory_cost=65536, parallelism=4 (~200ms/hash).
@@ -17,7 +17,7 @@ from __future__ import annotations
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 
-# Singleton — created once per process. conftest.argon2_fast fixture monkeypatches
+# Singleton - created once per process. conftest.argon2_fast fixture monkeypatches
 # this with weaker params for unit tests.
 password_hash: PasswordHash = PasswordHash((
     Argon2Hasher(time_cost=3, memory_cost=65536, parallelism=4),
@@ -35,7 +35,7 @@ def hash_password(plaintext: str) -> str:
 def verify_and_maybe_rehash(plaintext: str, stored_hash: str) -> tuple[bool, str | None]:
     """Returns (is_valid, new_hash_or_None).
 
-    Caller must persist new_hash_or_None when it is not None — this handles the
+    Caller must persist new_hash_or_None when it is not None - this handles the
     rehash-on-login pattern when Argon2 params drift (e.g. operator raises memory_cost
     after production hardening).
     """

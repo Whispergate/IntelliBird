@@ -1,0 +1,38 @@
+# IntelliBird demo edge — public hostname with automatic HTTPS.
+#
+# Mounted by ops/docker-compose.demo.yml in place of ops/Caddyfile (which is the
+# localhost / `tls internal` dev config). Caddy auto-provisions a Let's Encrypt
+# certificate for the hostname below on first boot, so ports 80 and 443 must be
+# publicly reachable and DNS for intellibird.whisperegate.org must point here.
+#
+# Set a contact email so ACME issues production certs (and expiry warnings go
+# somewhere). Uncomment the staging CA line while testing to avoid rate limits.
+
+{
+    email admin@whisperegate.org
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+intellibird.whisperegate.org {
+    encode zstd gzip
+
+    # PROD-03 / INFRA-04: strip the spoofable dashboard-role header at the edge.
+    request_header -X-Dashboard-Role
+
+    # Pre-auth liveness probe goes straight to the api container.
+    @healthz path /healthz
+    handle @healthz {
+        reverse_proxy api:8000
+    }
+
+    # All other traffic (including /api/*) goes to the web container, which
+    # injects the Auth.js bearer before forwarding to api:8000. Routing /api/*
+    # directly to api:8000 here would bypass that and 401 every request.
+    handle {
+        reverse_proxy web:3000 {
+            header_up Host {host}
+            header_up X-Forwarded-Host {host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+}

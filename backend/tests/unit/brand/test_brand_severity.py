@@ -1,4 +1,4 @@
-"""Tests for app.services.brand_severity.score — pure function truth table.
+"""Tests for app.services.brand_severity.score - pure function truth table.
 
 Activated by plan 12-02 (Wave 2 service primitives).
 """
@@ -22,7 +22,7 @@ def test_fts_returns_low():
 
 
 def test_fts_with_success_irrelevant_returns_low():
-    # FTS ignores the dnstwist_success flag — FTS hits are always low.
+    # FTS ignores the dnstwist_success flag - FTS hits are always low.
     assert score(match_source="fts", dnstwist_success=True) == "low"
 
 

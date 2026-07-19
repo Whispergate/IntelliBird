@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for enrichment endpoints — ENRICH-01, ENRICH-04."""
+"""Pydantic v2 schemas for enrichment endpoints - ENRICH-01, ENRICH-04."""
 from __future__ import annotations
 
 import uuid
@@ -12,7 +12,7 @@ ProviderName = Literal["vt", "abuseipdb", "greynoise", "otx", "shodan", "urlhaus
 
 
 class EnrichmentProviderRead(BaseModel):
-    """Response schema — never includes raw credentials_enc."""
+    """Response schema - never includes raw credentials_enc."""
 
     id: uuid.UUID
     project_id: uuid.UUID | None
@@ -32,7 +32,7 @@ class EnrichmentProviderWrite(BaseModel):
 
     enabled: bool = False
     api_key: str | None = Field(
-        default=None, description="Plaintext key — encrypted at router layer"
+        default=None, description="Plaintext key - encrypted at router layer"
     )
     daily_request_cap: int | None = None
 
@@ -52,7 +52,7 @@ class IOCEnrichmentRead(BaseModel):
 
 
 class UnifiedVerdictRead(BaseModel):
-    """Unified verdict across all providers — worst-case aggregation."""
+    """Unified verdict across all providers - worst-case aggregation."""
 
     verdict: VerdictType
     provider_count: int

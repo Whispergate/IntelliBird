@@ -1,14 +1,14 @@
-"""GET /api/admin/ai-jobs — list AI worker queue + per-job status from Redis.
+"""GET /api/admin/ai-jobs - list AI worker queue + per-job status from Redis.
 
 Admin-only operational view. Reads:
-  - dramatiq:ai             — pending message IDs (not yet picked up)
-  - dramatiq:ai.msgs        — message bodies (hash) for queued jobs
-  - ai:job:{job_id}:project — project association (set at enqueue)
-  - ai:job:{job_id}:chunks  — SSE chunk list (RPUSH'd by streaming actors)
-  - ai:job:{job_id}:done    — completion flag
-  - ai:job:{job_id}:cancelled — cancellation flag
-  - ai:rerank:in_progress:{project_id} — rerank lock
-  - dramatiq:__heartbeats__ — worker liveness ZSET
+  - dramatiq:ai             - pending message IDs (not yet picked up)
+  - dramatiq:ai.msgs        - message bodies (hash) for queued jobs
+  - ai:job:{job_id}:project - project association (set at enqueue)
+  - ai:job:{job_id}:chunks  - SSE chunk list (RPUSH'd by streaming actors)
+  - ai:job:{job_id}:done    - completion flag
+  - ai:job:{job_id}:cancelled - cancellation flag
+  - ai:rerank:in_progress:{project_id} - rerank lock
+  - dramatiq:__heartbeats__ - worker liveness ZSET
 """
 from __future__ import annotations
 
@@ -61,14 +61,14 @@ async def get_ai_jobs(
 
     redis = await get_redis()
 
-    queue_ids_raw = await redis.lrange("dramatiq:ai", 0, -1)
+    queue_ids_raw = await redis.lrange("dramatiq:ai", 0, -1)  # type: ignore[misc]
     queue_ids = [
         x.decode() if isinstance(x, bytes) else x for x in queue_ids_raw
     ]
 
     queued: list[AIQueuedJob] = []
     if queue_ids:
-        bodies = await redis.hmget("dramatiq:ai.msgs", queue_ids)
+        bodies = await redis.hmget("dramatiq:ai.msgs", queue_ids)  # type: ignore[misc]
         for body in bodies:
             if body is None:
                 continue
@@ -111,7 +111,7 @@ async def get_ai_jobs(
         proj_str = (
             proj.decode() if isinstance(proj, bytes) else proj
         ) if proj else None
-        chunk_len = await redis.llen(f"ai:job:{job_id}:chunks")
+        chunk_len = await redis.llen(f"ai:job:{job_id}:chunks")  # type: ignore[misc]
         is_done = await redis.exists(f"ai:job:{job_id}:done")
         is_cancelled = await redis.exists(f"ai:job:{job_id}:cancelled")
         if is_cancelled:
@@ -146,7 +146,7 @@ async def get_ai_jobs(
         if cursor == 0:
             break
 
-    # Worker heartbeats — count entries fresher than 60s.
+    # Worker heartbeats - count entries fresher than 60s.
     now_ms = time.time() * 1000.0
     hb_pairs = await redis.zrange(
         "dramatiq:__heartbeats__", 0, -1, withscores=True

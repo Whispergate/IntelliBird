@@ -1,9 +1,9 @@
-"""dnstwist JSON parser — defensive key access + derived lookup_success.
+"""dnstwist JSON parser - defensive key access + derived lookup_success.
 
 Key shape locked by docs/research/dnstwist-key-verification.md (dnstwist 20250130):
 - Canonical domain key = `domain` (single form; NOT domain-name / domain_name in this version).
 - DNS record keys snake_case: dns_a, dns_aaaa, dns_mx, dns_ns.
-- `lookup_success` is NOT emitted by dnstwist — parser derives it as:
+- `lookup_success` is NOT emitted by dnstwist - parser derives it as:
       has_a  = dns_a  non-empty AND dns_a[0]  not in {"!ServFail", ""}
       has_ns = dns_ns non-empty AND dns_ns[0] not in {"!ServFail", ""}
       lookup_success = has_a OR has_ns
@@ -20,7 +20,7 @@ from typing import Any
 # Values that indicate "DNS lookup returned no usable data".
 _NO_DATA_SENTINELS: frozenset[str] = frozenset({"!ServFail", ""})
 
-# Fuzzer label that indicates the ORIGINAL unmodified input — skip.
+# Fuzzer label that indicates the ORIGINAL unmodified input - skip.
 _ORIGINAL_FUZZER: str = "*original"
 
 
@@ -70,7 +70,7 @@ def parse_permutation(perm: dict[str, Any]) -> dict[str, Any] | None:
     dns_mx = _get_dns_list(perm, "mx")
     dns_ns = _get_dns_list(perm, "ns")
 
-    # Filter fully-unregistered rows — no DNS record keys whatsoever.
+    # Filter fully-unregistered rows - no DNS record keys whatsoever.
     if not (dns_a or dns_aaaa or dns_mx or dns_ns):
         return None
 

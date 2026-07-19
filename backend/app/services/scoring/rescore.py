@@ -1,4 +1,4 @@
-"""Per-project async rescore helper — SCR-02, SCR-03.
+"""Per-project async rescore helper - SCR-02, SCR-03.
 
 rescore_project_events(session, project_id) is the async workhorse called by
 the ``rescore_project`` Dramatiq actor (app.workers.scoring).
@@ -6,7 +6,7 @@ the ``rescore_project`` Dramatiq actor (app.workers.scoring).
 Algorithm:
   1. Verify project exists; early-return if deleted (race safety).
   2. Load ProjectScoringRules for the project; fall back to DEFAULT_SCORING_CONFIG.
-  3. Bump rules.version monotonically — this becomes the score_version for all
+  3. Bump rules.version monotonically - this becomes the score_version for all
      new override rows so the read path (ORDER BY score_version DESC LIMIT 1)
      resolves to this rescore.
   4. Iterate events scoped to project_id in batches of 1000.
@@ -56,7 +56,7 @@ def _weights_from_rules(rules_jsonb: dict) -> ScoringWeights:
             decay_half_life_days=float(decay),
         )
     except (ValueError, TypeError):
-        # Malformed JSONB — fall back to defaults
+        # Malformed JSONB - fall back to defaults
         return ScoringWeights()
 
 
@@ -75,8 +75,8 @@ async def rescore_project_events(
         ``{"events_scored": 0, "skipped": "project_deleted"}`` when project
         no longer exists (race between rule-save and project delete).
     """
-    # 1. Verify project exists — guard against project-deleted race (RESEARCH §Pitfall 4).
-    from app.models.projects import Project  # lazy import — avoids circular dep
+    # 1. Verify project exists - guard against project-deleted race (RESEARCH §Pitfall 4).
+    from app.models.projects import Project  # lazy import - avoids circular dep
 
     project_exists = await session.scalar(
         select(func.count()).where(Project.id == project_id)
@@ -91,7 +91,7 @@ async def rescore_project_events(
     )
 
     if rules_row is None:
-        # No custom rules — insert a default row so version is tracked.
+        # No custom rules - insert a default row so version is tracked.
         rules_row = ProjectScoringRules(
             project_id=project_id,
             version=1,
@@ -100,7 +100,7 @@ async def rescore_project_events(
         session.add(rules_row)
         await session.flush()  # populate rules_row.id / version without committing
 
-    # 3. Bump version monotonically — every rescore produces a new score_version.
+    # 3. Bump version monotonically - every rescore produces a new score_version.
     new_version = (rules_row.version or 1) + 1
     await session.execute(
         update(ProjectScoringRules)
@@ -112,7 +112,7 @@ async def rescore_project_events(
     weights = _weights_from_rules(rules_jsonb)
 
     # 4. Iterate events in batches of 1000.
-    # Select minimal columns — do NOT load full Event objects (avoid memory pressure).
+    # Select minimal columns - do NOT load full Event objects (avoid memory pressure).
     total_scored = 0
     offset = 0
     now_ts = datetime.now(timezone.utc)
@@ -168,7 +168,7 @@ async def rescore_project_events(
         # ON CONFLICT DO NOTHING for idempotent re-runs on same version.
         if batch:
             await session.execute(
-                pg_insert(EventScoreOverride.__table__)
+                pg_insert(EventScoreOverride.__table__)  # type: ignore[arg-type]
                 .values(batch)
                 .on_conflict_do_nothing()
             )
@@ -192,7 +192,7 @@ async def rescore_project_events(
 def _feed_type_from_stix_type(stix_type: str | None) -> str:
     """Approximate feed_type from event stix_type for source_confidence lookup.
 
-    Heuristic only — used in rescore path where source join is too expensive.
+    Heuristic only - used in rescore path where source join is too expensive.
     """
     if stix_type is None:
         return "rss"

@@ -1,8 +1,8 @@
-"""POST /api/admin/iocs/backfill — IOC-07.
+"""POST /api/admin/iocs/backfill - IOC-07.
 
 Admin-only async backfill trigger. Returns 202 + {job_id} immediately and
 enqueues `backfill_iocs_actor` on the `ingest` queue (per RESEARCH Pitfall 6
-— a synchronous backfill in the HTTP handler would risk timeouts and
+- a synchronous backfill in the HTTP handler would risk timeouts and
 worker starvation on the ~29k-event corpus).
 
 Job status is written to Redis under `job:{job_id}:status`; UI polls.
@@ -36,17 +36,17 @@ async def trigger_ioc_backfill(
     project_id: uuid.UUID | None = Query(
         default=None,
         description=(
-            "Optional — restrict backfill to a single project_id. "
+            "Optional - restrict backfill to a single project_id. "
             "Omit for an all-projects sweep (admin global run)."
         ),
     ),
 ) -> BackfillEnqueued:
     """Enqueue an async backfill. Returns 202 with the job_id.
 
-    NOT a synchronous service call — see RESEARCH Pitfall 6. The actor
+    NOT a synchronous service call - see RESEARCH Pitfall 6. The actor
     streams progress to Redis under `job:{job_id}:status`; UI polls.
     """
-    # Lazy imports — keep module-load cheap and avoid pulling Dramatiq
+    # Lazy imports - keep module-load cheap and avoid pulling Dramatiq
     # broker deps when this router is merely registered.
     from app.services.redis_client import get_redis  # noqa: PLC0415
     from app.workers.iocs import backfill_iocs_actor  # noqa: PLC0415

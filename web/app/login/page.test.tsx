@@ -1,5 +1,5 @@
 /**
- * Login page tests — AUTH-04.
+ * Login page tests - AUTH-04.
  *
  * Renders login form, disables submit until valid, shows 429 lockout, surfaces
  * "Invalid username or password" on 401. Activated in plan 09-07.

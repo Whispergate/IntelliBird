@@ -1,4 +1,4 @@
-"""Integration: migration 025_darkweb_sources round-trip — DARK-01..07.
+"""Integration: migration 025_darkweb_sources round-trip - DARK-01..07.
 
 Verifies:
   - feed_type_enum gains 'tor_html', 'paste', 'telegram' values
@@ -7,7 +7,6 @@ Verifies:
   - Confidence backfill UPDATE is idempotent (no-op on empty table)
   - down() cleanly removes columns and enum values (or documents skip if PG limitation)
 """
-import pytest
 
 
 def test_migration_025_adds_feed_type_enum_values():

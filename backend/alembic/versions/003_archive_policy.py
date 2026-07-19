@@ -6,7 +6,7 @@ Create Date: 2026-04-17
 
 - archive_policy_enum: new PostgreSQL enum type with values ('keep', 'drop', 'move-to-cold').
  Created idempotently via DO $$... EXCEPTION WHEN duplicate_object THEN NULL $$ to tolerate
- partial/repeat upgrades. ( — CREATE TYPE is not idempotent.)
+ partial/repeat upgrades. ( - CREATE TYPE is not idempotent.)
 - sources.archive_policy: enum column, NOT NULL, server_default 'drop'.
  Matches the archive_policy field in SourceCreate / SourceUpdate payloads (Plan 02).
  Archiver (Plan 05) switches per-source on this column.
@@ -28,7 +28,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # — idempotent enum creation
+    # - idempotent enum creation
     op.execute(
         "DO $$ BEGIN "
         "  CREATE TYPE archive_policy_enum AS ENUM ('keep', 'drop', 'move-to-cold'); "

@@ -35,12 +35,12 @@ Exhaustive key enumeration across all 2965 rows:
 ['dns_a', 'dns_aaaa', 'dns_mx', 'dns_ns', 'domain', 'fuzzer']
 ```
 
-No other keys appear in this version. No `whois_created`, no `whois_registrar`, no `geoip`, no `ssdeep_score` — those require `--whois` / `--geoip` / `--ssdeep` flags which does not pass.
+No other keys appear in this version. No `whois_created`, no `whois_registrar`, no `geoip`, no `ssdeep_score` - those require `--whois` / `--geoip` / `--ssdeep` flags which does not pass.
 
 ## Resolution
 
-- **Domain key:** `domain` (single canonical form — NOT `domain-name`, NOT `domain_name`; no hyphen variants observed in this version).
-- **DNS records keys:** `dns_a`, `dns_aaaa`, `dns_mx`, `dns_ns` — all snake_case; no hyphen variants (`dns-a`, etc.) observed.
+- **Domain key:** `domain` (single canonical form - NOT `domain-name`, NOT `domain_name`; no hyphen variants observed in this version).
+- **DNS records keys:** `dns_a`, `dns_aaaa`, `dns_mx`, `dns_ns` - all snake_case; no hyphen variants (`dns-a`, etc.) observed.
 - **Fuzzer key:** `fuzzer` (values include `*original`, `addition`, `homoglyph`, `bitsquatting`, etc.; the `*original` row must be filtered by the parser).
 - **`lookup_success` derivation:** `lookup_success` is NOT emitted by dnstwist. Parser derives it: `has_a = perm.get('dns_a') and perm['dns_a'][0] != '!ServFail'` AND/OR `has_ns = perm.get('dns_ns') and perm['dns_ns'][0] != '!ServFail'`. `lookup_success = has_a or has_ns`.
 - **ServFail sentinel:** Unresolved records appear as `["!ServFail"]` (single-element list with a literal `!ServFail` string). Empty records appear as `[""]` for MX sometimes. Parser must treat both `!ServFail` and empty-string as "no data".
@@ -50,10 +50,10 @@ No other keys appear in this version. No `whois_created`, no `whois_registrar`, 
 
 1. Parser reads JSON array from `dnstwist` subprocess stdout.
 2. Skip rows where `fuzzer == "*original"`.
-3. Access domain as `perm["domain"]` — the canonical key is `domain` per this verification. Defensive `.get("domain") or .get("domain-name") or .get("domain_name")` may still be added as a belt-and-braces guard per 12-RESEARCH.md implementation note, but the `golden_dnstwist_json` fixture asserts `domain`.
-4. DNS records accessed by `.get("dns_a", [])` etc. — all four (`dns_a`, `dns_aaaa`, `dns_mx`, `dns_ns`) use snake_case.
+3. Access domain as `perm["domain"]` - the canonical key is `domain` per this verification. Defensive `.get("domain") or .get("domain-name") or .get("domain_name")` may still be added as a belt-and-braces guard per 12-RESEARCH.md implementation note, but the `golden_dnstwist_json` fixture asserts `domain`.
+4. DNS records accessed by `.get("dns_a", [])` etc. - all four (`dns_a`, `dns_aaaa`, `dns_mx`, `dns_ns`) use snake_case.
 5. Treat any dns record whose first element is `"!ServFail"` or `""` as "no data" when computing `lookup_success`.
-6. Emit `lookup_success` as a derived bool in the parser's output dict — NOT read from dnstwist.
+6. Emit `lookup_success` as a derived bool in the parser's output dict - NOT read from dnstwist.
 
 ## Raw output archive
 

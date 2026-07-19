@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * EASMGateForm — (UI-SPEC §Surface 2).
+ * EASMGateForm - (UI-SPEC §Surface 2).
  *
  * Live two-factor active-scan gate form replacing 's read-only
  * EASMGatePreview scaffold. Rendered on the Settings tab.
@@ -22,7 +22,7 @@
  * 24h-remaining banner rendered ABOVE the card when gate IS set and
  * active_auth_confirmed_at > 6 days ago.
  *
- * Copy lock (UI-SPEC §Copywriting Contract — byte-exact):
+ * Copy lock (UI-SPEC §Copywriting Contract - byte-exact):
  *   "Active-scan authorisation" (caption header)
  *   "Type the project name to confirm scope acknowledgement" (field 1 label)
  *   "Type project name exactly" (field 1 placeholder)
@@ -33,7 +33,7 @@
  *   "Authorising…" (loading)
  *   "You do not have permission to authorise active scans. Lead or Admin role required." (403 toast)
  *   "Active scans authorised" (status chip)
- *   "Active-scan authorisation expires in less than 24 hours — re-confirm before launching more active scans." (24h banner)
+ *   "Active-scan authorisation expires in less than 24 hours - re-confirm before launching more active scans." (24h banner)
  *   "Revoke authorisation" (revoke button)
  *   "Active-scan authorisation revoked." (revoke success toast)
  *   "Active-scan authorisation can only be set or revoked by a project Lead or global Admin." (Observer caption)
@@ -246,13 +246,13 @@ export function EASMGateForm({
 
   return (
     <div className="space-y-3">
-      {/* 24h-remaining amber banner — rendered ABOVE the card */}
+      {/* 24h-remaining amber banner - rendered ABOVE the card */}
       {show24hBanner && (
         <div
           className="border-l-4 border-[var(--brand-signal)] bg-accent/10 px-4 py-3 rounded-sm text-sm"
           role="alert"
         >
-          Active-scan authorisation expires in less than 24 hours — re-confirm
+          Active-scan authorisation expires in less than 24 hours - re-confirm
           before launching more active scans.
         </div>
       )}
@@ -318,7 +318,7 @@ export function EASMGateForm({
           </div>
         )}
 
-        {/* Gate form — shown when gate NOT set, or always (user can re-confirm) */}
+        {/* Gate form - shown when gate NOT set, or always (user can re-confirm) */}
         {!project.active_scans_authorised && (
           <div className="space-y-4">
             {/* Field 1: scope acknowledgement text */}

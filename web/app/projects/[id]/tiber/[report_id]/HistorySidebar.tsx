@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * HistorySidebar — Surface 8: right 280px export history timeline.
+ * HistorySidebar - Surface 8: right 280px export history timeline.
  * UI-SPEC §Surface 8 verbatim.
  *
  * Reverse-chronological export history list with FormatBadge + version + download.
@@ -26,7 +26,7 @@ import { listExports, type ExportRead, type ReportFormat } from "../lib/api";
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Format absolute date as "YYYY-MM-DD HH:mm" — UI-SPEC §Surface 8 verbatim */
+/** Format absolute date as "YYYY-MM-DD HH:mm" - UI-SPEC §Surface 8 verbatim */
 function formatAbsoluteDate(iso: string): string {
   try {
     const d = new Date(iso);
@@ -77,7 +77,7 @@ export function HistorySidebar({ projectId, reportId, refreshTrigger }: HistoryS
         setExports(sorted);
       })
       .catch(() => {
-        // Non-fatal — sidebar just stays empty
+        // Non-fatal - sidebar just stays empty
       });
   }, [projectId, reportId, formatFilter, refreshTrigger]);
 
@@ -127,7 +127,7 @@ export function HistorySidebar({ projectId, reportId, refreshTrigger }: HistoryS
                   {exp.filename}
                 </p>
               </div>
-              {/* Download link — relative URL traverses proxy per CLAUDE.md convention */}
+              {/* Download link - relative URL traverses proxy per CLAUDE.md convention */}
               <a
                 href={`/api/projects/${projectId}/tiber/reports/${reportId}/exports/${exp.id}/download`}
                 download={exp.filename}

@@ -1,6 +1,6 @@
 """Synchronous Test Connection probes for SRC-03.
 
-These helpers run in the HTTP request handler path — they must be SHORT,
+These helpers run in the HTTP request handler path - they must be SHORT,
 never touch the DB, never dispatch Dramatiq actors. Return a 4-tuple
 (ok, latency_ms, item_count_sampled, error_detail).
 
@@ -43,7 +43,7 @@ def _probe_nvd(api_key: str | None) -> tuple[bool, int, int, str | None]:
 
     t0 = time.monotonic()
     try:
-        # Single-record probe — nvdlib returns a generator; materialise up to 1.
+        # Single-record probe - nvdlib returns a generator; materialise up to 1.
         results = list(nvdlib.searchCVE_V2(key=api_key, limit=1))  # type: ignore[attr-defined]
         return True, _elapsed_ms(t0), len(results), None
     except Exception as e:  # noqa: BLE001
@@ -58,7 +58,7 @@ def _probe_html_scrape(
     Validates the scrape_config, fetches the URL with a 10s timeout, runs the
     selectors, and returns (ok, latency_ms, item_count_sampled, error_detail).
 
-    Supports {mode: 'auto'} (quick task 260426-aas) for selectorless probing —
+    Supports {mode: 'auto'} (quick task 260426-aas) for selectorless probing -
     the underlying ``normalise_scrape_entries`` dispatches to trafilatura-based
     auto-discovery when the mode flag is set.
     """
@@ -81,7 +81,7 @@ def _probe_html_scrape(
         return False, _elapsed_ms(t0), 0, str(e)
 
     try:
-        # Probe with a placeholder source_id — we never persist these rows.
+        # Probe with a placeholder source_id - we never persist these rows.
         rows = normalise_scrape_entries(
             html_text, url, _uuid.UUID("00000000-0000-0000-0000-000000000000"),
             scrape_config or {},
@@ -109,7 +109,7 @@ def _probe_taxii(
 def _probe_taxii2(
     url: str, credentials: dict[str, Any] | None, t0: float
 ) -> tuple[bool, int, int, str | None]:
-    """TAXII 2.1 via taxii2client — MITRE CTI style."""
+    """TAXII 2.1 via taxii2client - MITRE CTI style."""
     from taxii2client.v21 import Server  # noqa: PLC0415
 
     kwargs: dict[str, Any] = {}
@@ -143,7 +143,7 @@ def _probe_taxii1_otx(
  (preferred) or `credentials.token`, or `credentials.type == "basic"` with
  password as the key (UI currently ships Basic auth for OTX).
 """
-    import requests  # noqa: PLC0415
+    import requests  # type: ignore[import-untyped]  # noqa: PLC0415
 
     key = ""
     if credentials:
@@ -151,7 +151,7 @@ def _probe_taxii1_otx(
         if ctype == "otx-apikey":
             key = credentials.get("key") or credentials.get("token") or ""
         elif ctype == "basic":
-            # Legacy shape — UI defaults to Basic; password IS the OTX API key
+            # Legacy shape - UI defaults to Basic; password IS the OTX API key
             key = credentials.get("password") or credentials.get("key") or ""
         elif ctype == "bearer":
             key = credentials.get("token") or credentials.get("key") or ""

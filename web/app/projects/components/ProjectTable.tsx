@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ProjectTable — /projects list table.
+ * ProjectTable - /projects list table.
  *
  * Columns (UI-SPEC §Interaction Contracts /projects list):
  *   - Name          (with "Created by you" caption badge + ArchivedBadge)
@@ -9,7 +9,7 @@
  *   - Members       (member_count)
  *   - Created by    (Authentik sub truncated to 8 chars + ellipsis, mono)
  *   - Created at    (YYYY-MM-DD, date-only)
- *   - Actions       (Edit + Archive/Restore icons — HIDDEN on legacy row)
+ *   - Actions       (Edit + Archive/Restore icons - HIDDEN on legacy row)
  *
  * Legacy sentinel rendering:
  *   - Detect via `project.id === LEGACY_PROJECT_ID`
@@ -18,7 +18,7 @@
  *   - Muted row background, "Legacy data" badge on Name column
  *   - Tooltip (title attr) explains why it exists
  *   - Row is non-clickable (no onClick navigation)
- *   - Actions cell renders em-dash — no edit/archive affordances
+ *   - Actions cell renders em-dash - no edit/archive affordances
  *
  * Empty state copy locked by UI-SPEC §Copywriting Contract.
  */
@@ -172,7 +172,7 @@ export function ProjectTable({
           </TableRow>
         ))}
 
-        {/* Legacy sentinel row — rendered last, non-clickable, no actions. */}
+        {/* Legacy sentinel row - rendered last, non-clickable, no actions. */}
         {legacy && (
           <TableRow
             key={legacy.id}
@@ -197,7 +197,7 @@ export function ProjectTable({
             <TableCell className="text-muted-foreground tabular-nums">
               {formatCreatedAt(legacy.created_at)}
             </TableCell>
-            <TableCell className="text-right text-muted-foreground">—</TableCell>
+            <TableCell className="text-right text-muted-foreground">-</TableCell>
           </TableRow>
         )}
       </TableBody>

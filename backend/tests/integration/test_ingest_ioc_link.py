@@ -1,4 +1,4 @@
-"""IOC-08 ingest-time IOC + link writer integration tests — Plan 22-04 Task 2.
+"""IOC-08 ingest-time IOC + link writer integration tests - Plan 22-04 Task 2.
 
 Verifies that `_persist_event` (sync) writes IOC rows + ioc_event_links rows
 for indicators discovered in title/description, and that re-ingesting an event

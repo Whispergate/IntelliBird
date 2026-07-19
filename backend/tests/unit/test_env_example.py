@@ -12,7 +12,7 @@ def test_env_example_exists() -> None:
 
 def test_secret_key_is_placeholder() -> None:
     """.env.example MUST ship a placeholder so the validator rejects a
- copy-without-edit — this is the guard rail that forces the operator
+ copy-without-edit - this is the guard rail that forces the operator
  to generate a real key.
 """
     content = ENV_EXAMPLE.read_text()
@@ -32,7 +32,7 @@ def test_env_example_has_openssl_hint() -> None:
 def test_env_example_uses_asyncpg_dsn() -> None:
     content = ENV_EXAMPLE.read_text()
     assert "postgresql+asyncpg://" in content, (
-        "DATABASE_URL must use the asyncpg driver — required by Alembic "
+        "DATABASE_URL must use the asyncpg driver - required by Alembic "
         "env.py and SQLAlchemy async engine."
     )
 

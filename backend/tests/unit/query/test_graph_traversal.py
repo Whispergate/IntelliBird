@@ -1,4 +1,4 @@
-"""Unit tests for traverse_graph — depth cap, node cap, BFS behavior."""
+"""Unit tests for traverse_graph - depth cap, node cap, BFS behavior."""
 from __future__ import annotations
 
 import uuid

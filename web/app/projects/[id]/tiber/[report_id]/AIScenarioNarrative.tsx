@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AIScenarioNarrative — Surface 6: per-scenario AI narrative streaming.
+ * AIScenarioNarrative - Surface 6: per-scenario AI narrative streaming.
  * UI-SPEC §Surface 6 verbatim.
  *
  * Mirrors AISummarySection.tsx exactly:
@@ -106,7 +106,7 @@ export function AIScenarioNarrative({
     eventSourceRef.current?.close();
 
     try {
-      // POST /draft-narrative — matches draftNarrative helper in lib/api.ts
+      // POST /draft-narrative - matches draftNarrative helper in lib/api.ts
       let jobId: string;
       try {
         const result = await draftNarrative({ projectId, reportId, scenarioId });
@@ -117,13 +117,13 @@ export function AIScenarioNarrative({
         if (msg.includes("429") || msg.toLowerCase().includes("budget")) {
           setBudgetExhausted(true);
           setIsStreaming(false);
-          toast.error("Daily AI budget exhausted — resets at 00:00 UTC.");
+          toast.error("Daily AI budget exhausted - resets at 00:00 UTC.");
           return;
         }
         throw e;
       }
 
-      // Open SSE stream — mirror AISummarySection pattern exactly
+      // Open SSE stream - mirror AISummarySection pattern exactly
       const es = new EventSource(`/api/ai/jobs/${jobId}/stream`);
       eventSourceRef.current = es;
 
@@ -148,7 +148,7 @@ export function AIScenarioNarrative({
               scenarioId,
               body: { ai_draft_narrative: text },
             }).catch(() => {
-              // Non-fatal — text is already shown
+              // Non-fatal - text is already shown
             });
             return text;
           });
@@ -162,7 +162,7 @@ export function AIScenarioNarrative({
         eventSourceRef.current = null;
         setIsStreaming(false);
         const errMsg = (event as MessageEvent).data ?? "Unknown error";
-        setStreamError(`— Error: ${errMsg}`);
+        setStreamError(`- Error: ${errMsg}`);
       });
 
       // Handle connection-level errors
@@ -175,14 +175,14 @@ export function AIScenarioNarrative({
     } catch (err) {
       setIsStreaming(false);
       const msg = err instanceof Error ? err.message : "Unknown error";
-      setStreamError(`— Error: ${msg}`);
+      setStreamError(`- Error: ${msg}`);
     }
   }
 
-  // Debounced PATCH on analyst edit — updates narrative + edit metadata
+  // Debounced PATCH on analyst edit - updates narrative + edit metadata
   function handleNarrativeEdit(value: string) {
     setNarrativeText(value);
-    // Mark as edited — update metadata
+    // Mark as edited - update metadata
     const now = new Date().toISOString();
     const updatedMeta: AIDraftMetadata = {
       ...draftMetadata,
@@ -236,14 +236,14 @@ export function AIScenarioNarrative({
         </Button>
       )}
 
-      {/* Budget exhausted inline message — UI-SPEC §Surface 6 */}
+      {/* Budget exhausted inline message - UI-SPEC §Surface 6 */}
       {budgetExhausted && (
         <p className="text-destructive text-xs mt-1">
-          Budget exhausted — resets at 00:00 UTC
+          Budget exhausted - resets at 00:00 UTC
         </p>
       )}
 
-      {/* Streaming display — brand-mono pattern from */}
+      {/* Streaming display - brand-mono pattern from */}
       {(hasNarrative || isStreaming) && !streamComplete && (
         <div
           className="brand-mono whitespace-pre-wrap leading-relaxed text-foreground mt-2 rounded-md bg-card p-3 text-xs"
@@ -262,10 +262,10 @@ export function AIScenarioNarrative({
         </div>
       )}
 
-      {/* Completed — editable Textarea with AI-drafted badge */}
+      {/* Completed - editable Textarea with AI-drafted badge */}
       {streamComplete && (
         <div className="mt-2">
-          {/* AI-drafted badge — UI-SPEC §Surface 6 verbatim */}
+          {/* AI-drafted badge - UI-SPEC §Surface 6 verbatim */}
           {hasDraftMetadata && (
             <div className="flex items-center gap-1.5 mb-1">
               <Badge

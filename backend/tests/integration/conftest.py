@@ -19,10 +19,10 @@ from testcontainers.redis import RedisContainer
 # "SQLAlchemy Async Engine Teardown Pattern" verbatim confirms this matches
 # the per-loop pattern used in app/workers/brand.py + scoring.py).
 # The only addition here is the _truncate_and_flush autouse
-# fixture (Task 2) — Redis FLUSHDB + DB TRUNCATE per test.
+# fixture (Task 2) - Redis FLUSHDB + DB TRUNCATE per test.
 # -------------------------------------------------------------------------------
 
-# Sentinel UUIDs — seeded by migrations, must survive per-test cleanup.
+# Sentinel UUIDs - seeded by migrations, must survive per-test cleanup.
 # projects: migration 009 legacy sentinel (_legacy); migration 016 monitoring sentinel (System Monitoring)
 # sources:  migration 007 rekey canary (_rekey_canary)
 _PROJECTS_LEGACY_SENTINEL_UUID = "00000000-0000-0000-0000-000000000001"
@@ -33,7 +33,7 @@ _SOURCES_CANARY_UUID = "00000000-0000-0000-0000-000000000000"
 # CASCADE handles FK chain. RESTART IDENTITY resets sequences. TimescaleDB
 # hypertables (events, source_ingest_stats, ai_summaries) work cleanly.
 # maintenance_windows is included: created_by_user_id FK is nullable (ON DELETE
-# SET NULL), so truncating users does NOT clear maintenance_windows rows —
+# SET NULL), so truncating users does NOT clear maintenance_windows rows -
 # explicit TRUNCATE required for hermetic state per test.
 _TRUNCATE_TABLES: tuple[str, ...] = (
     "users",
@@ -53,13 +53,13 @@ async def _truncate_and_flush(redis_url: str, db_engine):
     """Per-test data isolation. TEST-02 + TEST-03.
 
     - FLUSHDB on test Redis container (wipes JTI blocklist, lockout,
-      burst counters, AI buffers, monitoring sentinels — single call).
+      burst counters, AI buffers, monitoring sentinels - single call).
     - TRUNCATE non-bootstrap tables CASCADE on Postgres.
     - Preserve attack_techniques (~700 ATT&CK rows seeded by migration 002).
     - Preserve sentinel rows in projects (two: mig 009 + mig 016) / sources (mig 007).
 
     FLUSHDB safety: redis_url points to the testcontainer (DB 12 per
-    _patch_settings_for_integration) — never hits operator dev Redis.
+    _patch_settings_for_integration) - never hits operator dev Redis.
     """
     import redis.asyncio as aioredis
 
@@ -78,7 +78,7 @@ async def _truncate_and_flush(redis_url: str, db_engine):
                 text(f"TRUNCATE TABLE {tbl} RESTART IDENTITY CASCADE")
             )
         # Sentinel-preserving deletes for projects (preserve both legacy + monitoring sentinels)
-        # Note: use CAST(:param AS uuid) instead of :param::uuid — asyncpg named parameter
+        # Note: use CAST(:param AS uuid) instead of :param::uuid - asyncpg named parameter
         # binding does not support the Postgres :: cast operator adjacent to a bind param.
         await conn.execute(
             text(
@@ -100,7 +100,7 @@ async def _truncate_and_flush(redis_url: str, db_engine):
 
     yield
 
-    # No teardown reset — next test's setup phase handles it. This avoids
+    # No teardown reset - next test's setup phase handles it. This avoids
     # double-truncation cost. If a test pollutes the *final* test of a run,
     # the next session's first test cleans it.
 
@@ -151,14 +151,14 @@ def pg_url(pg_container: PostgresContainer) -> str:
 def redis_url(redis_container: RedisContainer) -> str:
     host = redis_container.get_container_host_ip()
     port = redis_container.get_exposed_port(6379)
-    return f"redis://{host}:{port}/12"  # DB 12 — isolate from phase10 DB 11
+    return f"redis://{host}:{port}/12"  # DB 12 - isolate from phase10 DB 11
 
 
 @pytest.fixture(scope="session", autouse=True)
 def _patch_settings_for_integration(pg_url: str, redis_url: str) -> Iterator[None]:
     """Point app.config.settings + os.environ at the live container URLs for the
     whole session. autouse so every integration-scoped test picks up a real DB
-    URL on import — the bare os.environ.setdefault() at the top of each test file
+    URL on import - the bare os.environ.setdefault() at the top of each test file
     falls through when these are already set by this fixture.
 
     Also rebuilds app.database.engine + async_session_factory because unit tests
@@ -222,7 +222,7 @@ def _migrations_applied(pg_url: str, _patch_settings_for_integration: None) -> N
 
 @pytest_asyncio.fixture
 async def db_engine(pg_url: str, _migrations_applied: None):
-    """Fresh async engine per test — avoids cross-loop Future leakage when tests
+    """Fresh async engine per test - avoids cross-loop Future leakage when tests
     run in different event loops (pytest-asyncio default is function-scoped loops).
     """
     from sqlalchemy.ext.asyncio import create_async_engine
@@ -282,12 +282,12 @@ async def db_session(db_engine) -> AsyncIterator[Any]:
 
 
 # ---------------------------------------------------------------------------
-# PROD fixtures — two-project seed with shared AGE Actor + JWTs.
+# PROD fixtures - two-project seed with shared AGE Actor + JWTs.
 # ---------------------------------------------------------------------------
 
 @pytest_asyncio.fixture
 async def two_project_fixture(db_session):
-    """PROD-01 two-project fixture — see tests/integration/fixtures/two_project.py."""
+    """PROD-01 two-project fixture - see tests/integration/fixtures/two_project.py."""
     from tests.integration.fixtures.two_project import build_two_project_fixture
 
     return await build_two_project_fixture(db_session)

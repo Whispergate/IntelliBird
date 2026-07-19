@@ -1,4 +1,4 @@
-"""GET /api/admin/ai-health — AI-05.
+"""GET /api/admin/ai-health - AI-05.
 
 Returns current Ollama health state (set by startup probe) and count of
 configured AI providers across all projects.
@@ -30,10 +30,10 @@ async def get_ai_health(
     """Return Ollama health + provider count.
 
     ollama_health: value set by the startup probe on app.state.ollama_health.
-      "healthy" — responded < 5s
-      "slow"    — responded >= 5s
-      "down"    — unreachable / error
-      "unknown" — probe not yet run
+      "healthy" - responded < 5s
+      "slow"    - responded >= 5s
+      "down"    - unreachable / error
+      "unknown" - probe not yet run
 
     providers_configured_count: total number of ai_providers rows across ALL
     projects. This is the count the admin dashboard displays to confirm

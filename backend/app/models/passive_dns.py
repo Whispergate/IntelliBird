@@ -1,4 +1,4 @@
-"""ORM models for passive DNS and WHOIS data — ENRICH-06..07."""
+"""ORM models for passive DNS and WHOIS data - ENRICH-06..07."""
 from __future__ import annotations
 
 import uuid
@@ -48,7 +48,7 @@ class WhoisCache(Base):
 
     fetched_at drives the 7-day refetch suppression gate:
         WHERE fetched_at + INTERVAL '7 days' > now()
-    means "still fresh — skip network call".
+    means "still fresh - skip network call".
     """
 
     __tablename__ = "whois_cache"

@@ -1,5 +1,5 @@
 /**
- * NoAuthBanner tests — AUTH-04.
+ * NoAuthBanner tests - AUTH-04.
  *
  * Null render when auth_enabled=true && decrypt_check !== 'failed'.
  * Activated in plan 09-07.

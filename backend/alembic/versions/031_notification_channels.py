@@ -1,4 +1,4 @@
-"""Extend destination_type_enum with email, pagerduty, opsgenie, ntfy — NOTIF-01.
+"""Extend destination_type_enum with email, pagerduty, opsgenie, ntfy - NOTIF-01.
 
 Revision ID: a3f8b2c
 Revises: 030_sigma_rules
@@ -33,6 +33,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    # PostgreSQL cannot remove ENUM values — downgrade is a no-op.
+    # PostgreSQL cannot remove ENUM values - downgrade is a no-op.
     # To fully revert: recreate the type without these values and cast the column.
     pass

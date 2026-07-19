@@ -14,7 +14,7 @@ from app.models.base import Base
 
 class Event(Base):
     __tablename__ = "events"
-    # Composite PK (id, observed_at) — TimescaleDB requires partition col in PK.
+    # Composite PK (id, observed_at) - TimescaleDB requires partition col in PK.
     __table_args__ = {}
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -22,11 +22,11 @@ class Event(Base):
     )
     stix_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     stix_type: Mapped[str] = mapped_column(Text, nullable=False)
-    # SYS-01 provenance columns — required on every event row:
+    # SYS-01 provenance columns - required on every event row:
     source_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("sources.id", ondelete="SET NULL"), nullable=True
     )
-    # PRJ-01 — every event carries a project_id. legacy rows
+    # PRJ-01 - every event carries a project_id. legacy rows
     # point at LEGACY_PROJECT_ID (app.models.projects); new rows must pass
     # project_id explicitly (migration 009 dropped the DEFAULT).
     project_id: Mapped[uuid.UUID] = mapped_column(
@@ -40,7 +40,7 @@ class Event(Base):
     raw_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
     observed_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, primary_key=True
-    )  # hypertable partition key — part of composite PK
+    )  # hypertable partition key - part of composite PK
     title: Mapped[str | None] = mapped_column(Text, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     confidence: Mapped[int | None] = mapped_column(Integer, nullable=True)
@@ -50,7 +50,7 @@ class Event(Base):
     geo_lat: Mapped[float | None] = mapped_column(Double, nullable=True)
     geo_lon: Mapped[float | None] = mapped_column(Double, nullable=True)
     country_code: Mapped[str | None] = mapped_column(String(2), nullable=True)
-    # H-9 Red/Blue isolation — enforce at query layer from day one:
+    # H-9 Red/Blue isolation - enforce at query layer from day one:
     visibility: Mapped[str] = mapped_column(
         Enum("red_only", "blue_only", "shared", name="visibility_enum", create_type=False),
         nullable=False, server_default="shared",
@@ -60,7 +60,7 @@ class Event(Base):
     # H-7 soft-delete for retention with attack-graph reference preservation:
     archived: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("false"))
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    # EASM-06: provenance FK — L-4: ON DELETE SET NULL so promoted events
+    # EASM-06: provenance FK - L-4: ON DELETE SET NULL so promoted events
     # survive scan cleanup (scan delete does NOT cascade to events).
     easm_scan_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
@@ -69,7 +69,7 @@ class Event(Base):
     )
     # SCR-01: composite score columns added by migration 013.
     # Nullable: pre-migration rows have NULL until the rescore_project actor runs.
-    # Read path: COALESCE(event_score_overrides.score, events.score) — NULL means
+    # Read path: COALESCE(event_score_overrides.score, events.score) - NULL means
     # "not yet scored" and is handled gracefully by the scoring service.
     score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     scored_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=True), nullable=True)

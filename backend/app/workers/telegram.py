@@ -1,4 +1,4 @@
-"""Telegram public-channel ingestion actor — DARK-04.
+"""Telegram public-channel ingestion actor - DARK-04.
 
 Uses Telethon StringSession stored encrypted in sources.session_enc.
 api_id and api_hash are stored encrypted in sources.scrape_config as
@@ -7,7 +7,7 @@ api_id and api_hash are stored encrypted in sources.scrape_config as
 PUBLIC CHANNELS ONLY. join_channel() is never called.
 FloodWaitError: sleep min(seconds, 60); persistent flood → status='error'.
 
-asyncio.run() wraps all Telethon async calls — Dramatiq actors are sync.
+asyncio.run() wraps all Telethon async calls - Dramatiq actors are sync.
 
 SESSION PERSISTENCE: _poll_telegram_async returns (messages, new_session_str)
 where new_session_str = client.session.save(). poll_telegram_impl re-encrypts
@@ -77,10 +77,10 @@ async def _poll_telegram_async(
     """Fetch recent messages from a public Telegram channel.
 
     Returns a tuple of (messages, new_session_str) where new_session_str is
-    the result of client.session.save() — caller must re-encrypt and persist
+    the result of client.session.save() - caller must re-encrypt and persist
     this to sources.session_enc so the next poll reconnects authenticated.
     """
-    from telethon import TelegramClient  # noqa: PLC0415 — lazy: only installed with darkweb profile
+    from telethon import TelegramClient  # noqa: PLC0415 - lazy: only installed with darkweb profile
     from telethon.errors import FloodWaitError  # noqa: PLC0415
     from telethon.sessions import StringSession  # noqa: PLC0415
 
@@ -111,7 +111,7 @@ async def _poll_telegram_async(
             )
             await asyncio.sleep(wait)
             if flood_count >= 2:
-                raise  # persistent flood — caller marks status='error'
+                raise  # persistent flood - caller marks status='error'
     finally:
         # Save session state before disconnecting so next poll reconnects authenticated.
         new_session_str = client.session.save()
@@ -143,7 +143,7 @@ def _build_event_row(msg: dict, source_id: uuid.UUID) -> dict | None:
 
 
 def poll_telegram_impl(source_id_str: str) -> None:
-    """Sync actor body — invoked directly by integration tests."""
+    """Sync actor body - invoked directly by integration tests."""
     source_id = uuid.UUID(source_id_str)
     inserted = 0
     deduped = 0
@@ -237,7 +237,7 @@ def poll_telegram_impl(source_id_str: str) -> None:
             return
 
         # Persist the updated session string so the next poll reconnects authenticated.
-        # Do this BEFORE processing messages — if message processing fails we still
+        # Do this BEFORE processing messages - if message processing fails we still
         # want the session saved.
         try:
             from app.config import settings  # noqa: PLC0415

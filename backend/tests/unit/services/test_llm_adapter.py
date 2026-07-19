@@ -1,4 +1,4 @@
-"""Unit tests for LiteLLM adapter — AI-04.
+"""Unit tests for LiteLLM adapter - AI-04.
 
 Covers:
   - call_llm_streaming yields token strings from streamed acompletion
@@ -9,7 +9,6 @@ Covers:
 """
 from __future__ import annotations
 
-import types
 import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -17,7 +16,7 @@ import pytest
 
 
 # ---------------------------------------------------------------------------
-# Helpers — async iterable mock
+# Helpers - async iterable mock
 # ---------------------------------------------------------------------------
 
 
@@ -115,7 +114,7 @@ async def test_ollama_chat_prefix_used() -> None:
     """resolve_provider returns ollama_chat/ prefix for Ollama providers."""
     from app.services.llm.client import resolve_provider
 
-    provider_id = uuid.uuid4()
+    uuid.uuid4()
     project_id = uuid.uuid4()
 
     # Build a minimal mock AIProvider row

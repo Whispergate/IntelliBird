@@ -1,4 +1,4 @@
-"""APScheduler per-source job registration — /.
+"""APScheduler per-source job registration - /.
 
 Uses testcontainers PG to seed sources rows, then invokes build_scheduler
 and introspects scheduler.get_jobs to verify one IntervalTrigger job per

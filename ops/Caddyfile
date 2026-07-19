@@ -1,4 +1,4 @@
-# IntelliBird v2.0 — Caddy reverse proxy (PROD-07)
+# IntelliBird v2.0 - Caddy reverse proxy (PROD-07)
 #
 # PROD-07: single public edge; api + web are compose-network-internal.
 # For production: replace `:443, :80` with a real hostname (e.g.
@@ -20,7 +20,7 @@
 localhost, 127.0.0.1 {
     encode zstd gzip
 
-    # All browser traffic — including /api/* — goes to the web container.
+    # All browser traffic - including /api/* - goes to the web container.
     # Web container handles:
     #   /api/auth/*   -> NextAuth v5 handler (app/api/auth/[...nextauth]/route.ts)
     #   /api/*        -> app/api/[...path]/route.ts runtime proxy that reads the

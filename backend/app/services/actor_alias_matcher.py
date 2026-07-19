@@ -1,11 +1,11 @@
 """Fuzzy alias matching for AI-extracted actor names.
 
 Thresholds (per 25-CONTEXT.md decision):
-  score >= 85  → "auto_link"  — write actor_event_links row directly
-  score 60–84  → "stage"      — create AISuggestion type='actor' for analyst review
-  score < 60   → "discard"    — drop silently
+  score >= 85  → "auto_link"  - write actor_event_links row directly
+  score 60–84  → "stage"      - create AISuggestion type='actor' for analyst review
+  score < 60   → "discard"    - drop silently
 
-Uses rapidfuzz.fuzz.token_sort_ratio — handles word-order permutations
+Uses rapidfuzz.fuzz.token_sort_ratio - handles word-order permutations
 (e.g. 'APT 29' vs 'APT29').
 """
 from __future__ import annotations
@@ -44,7 +44,7 @@ async def match_actor_name(
         for candidate in candidates:
             score = fuzz.token_sort_ratio(name_lower, candidate.lower())
             if score > best_score:
-                best_score = score
+                best_score = score  # type: ignore[assignment]
                 best_actor = actor
 
     if best_score >= _AUTO_LINK_THRESHOLD:

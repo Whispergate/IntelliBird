@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import os
 
-# Required env vars for app.config.Settings — set before any app imports run.
+# Required env vars for app.config.Settings - set before any app imports run.
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost:5432/test")
 os.environ.setdefault("SECRET_KEY", "x" * 48)
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
@@ -38,7 +38,7 @@ def test_refresh_endpoint_returns_202(monkeypatch):
     app.include_router(router)
 
     # AUTH-02: the endpoint is guarded by Depends(require_admin).
-    # This unit-ish integration test doesn't exercise the middleware chain —
+    # This unit-ish integration test doesn't exercise the middleware chain -
     # inject a fake admin principal via dependency_overrides so the 202-path
     # under test (actor.send) runs.
     def _fake_admin() -> AuthUser:

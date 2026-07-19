@@ -27,7 +27,7 @@ function Wrapper({
 // ---------------------------------------------------------------------------
 // 1. RSS mode renders no DOM nodes
 // ---------------------------------------------------------------------------
-describe("CredentialsField — RSS", () => {
+describe("CredentialsField - RSS", () => {
   it("RSS mode renders no DOM nodes", () => {
     const { container } = render(
       <Wrapper defaultValues={{ feed_type: "rss" }}>
@@ -41,7 +41,7 @@ describe("CredentialsField — RSS", () => {
 // ---------------------------------------------------------------------------
 // 2–3. NVD mode
 // ---------------------------------------------------------------------------
-describe("CredentialsField — NVD", () => {
+describe("CredentialsField - NVD", () => {
   it("NVD add mode renders single password input with autoComplete off", () => {
     render(
       <Wrapper defaultValues={{ feed_type: "nvd" }}>
@@ -54,7 +54,7 @@ describe("CredentialsField — NVD", () => {
     expect(input).toHaveAttribute("autoComplete", "off");
   });
 
-  it("NVD edit mode shows '(unchanged — type to replace)' placeholder", () => {
+  it("NVD edit mode shows '(unchanged - type to replace)' placeholder", () => {
     render(
       <Wrapper defaultValues={{ feed_type: "nvd" }}>
         <CredentialsField feed_type="nvd" mode="edit" />
@@ -63,7 +63,7 @@ describe("CredentialsField — NVD", () => {
     const input = screen.getByLabelText(/NVD API Key/i);
     expect(input).toHaveAttribute(
       "placeholder",
-      "(unchanged — type to replace)",
+      "(unchanged - type to replace)",
     );
   });
 });
@@ -71,7 +71,7 @@ describe("CredentialsField — NVD", () => {
 // ---------------------------------------------------------------------------
 // 4–8. TAXII mode
 // ---------------------------------------------------------------------------
-describe("CredentialsField — TAXII", () => {
+describe("CredentialsField - TAXII", () => {
   it("TAXII mode renders scheme Select and no password inputs for scheme=none", () => {
     render(
       <Wrapper defaultValues={{ feed_type: "taxii", taxii_scheme: "none" }}>
@@ -121,7 +121,7 @@ describe("CredentialsField — TAXII", () => {
     expect(passwordInputs).toHaveLength(1);
   });
 
-  it("TAXII edit mode shows '(unchanged — type to replace)' placeholder on all credential inputs", () => {
+  it("TAXII edit mode shows '(unchanged - type to replace)' placeholder on all credential inputs", () => {
     render(
       <Wrapper defaultValues={{ feed_type: "taxii", taxii_scheme: "basic" }}>
         <CredentialsField feed_type="taxii" mode="edit" />
@@ -132,7 +132,7 @@ describe("CredentialsField — TAXII", () => {
     );
     expect(passwordInputs).toHaveLength(2);
     for (const input of passwordInputs) {
-      expect(input.placeholder).toBe("(unchanged — type to replace)");
+      expect(input.placeholder).toBe("(unchanged - type to replace)");
     }
   });
 });
@@ -140,7 +140,7 @@ describe("CredentialsField — TAXII", () => {
 // ---------------------------------------------------------------------------
 // 9. All credential inputs have autoComplete="off" and spellCheck={false}
 // ---------------------------------------------------------------------------
-describe("CredentialsField — input attributes", () => {
+describe("CredentialsField - input attributes", () => {
   it("TAXII basic: all credential inputs have autoComplete=off", () => {
     render(
       <Wrapper defaultValues={{ feed_type: "taxii", taxii_scheme: "basic" }}>
@@ -170,7 +170,7 @@ describe("CredentialsField — input attributes", () => {
 // ---------------------------------------------------------------------------
 // 10. No input has type="text" in any credential context
 // ---------------------------------------------------------------------------
-describe("CredentialsField — type safety", () => {
+describe("CredentialsField - type safety", () => {
   it("no credential input has type='text' in TAXII basic mode", () => {
     render(
       <Wrapper defaultValues={{ feed_type: "taxii", taxii_scheme: "basic" }}>

@@ -8,8 +8,8 @@ Usage:
     inserted = await seed_events(conn, project_ids=[...], n_per_project=50_000)
 
 Key guarantees:
-    - Deterministic: seeded RNG (random.Random(seed)) — same inputs yield same rows.
-    - Memory-bounded: rows yielded in chunks of CHUNK_SIZE (10k) — does NOT
+    - Deterministic: seeded RNG (random.Random(seed)) - same inputs yield same rows.
+    - Memory-bounded: rows yielded in chunks of CHUNK_SIZE (10k) - does NOT
       materialise 500k rows at once.
     - Uses asyncpg.Connection.copy_records_to_table() → Postgres COPY FROM STDIN
       (orders of magnitude faster than ORM inserts).
@@ -54,7 +54,7 @@ def _event_records(
     rng: random.Random,
     now: datetime,
 ) -> Iterator[tuple]:
-    """Yield event records one at a time — does NOT materialise the whole list.
+    """Yield event records one at a time - does NOT materialise the whole list.
 
     Timestamps recent-skew via exponential distribution with mean 30 days
     across a 90-day window. RNG is caller-supplied (deterministic).
@@ -82,7 +82,7 @@ def _event_records(
 
 
 def _chunked(iterator: Iterator[tuple], size: int) -> Iterator[list[tuple]]:
-    """Yield lists of up to `size` records from `iterator` — bounds peak memory."""
+    """Yield lists of up to `size` records from `iterator` - bounds peak memory."""
     chunk: list[tuple] = []
     for row in iterator:
         chunk.append(row)

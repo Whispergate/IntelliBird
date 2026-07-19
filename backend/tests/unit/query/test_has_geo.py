@@ -1,8 +1,6 @@
-"""has_geo filter parameter —-03 target (MAP-01)."""
+"""has_geo filter parameter --03 target (MAP-01)."""
 from __future__ import annotations
 
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.services.events_query import EventsQueryParams, build_events_query, build_fts_query
 

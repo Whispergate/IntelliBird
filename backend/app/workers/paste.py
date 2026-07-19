@@ -1,4 +1,4 @@
-"""Paste-site polling actor — DARK-03.
+"""Paste-site polling actor - DARK-03.
 
 RSS-first polling for paste.ee, ghostbin, dpaste.com, rentry.co, controld,
 paste.rs. Falls back to trafilatura auto-mode HTML scraping when feedparser
@@ -58,11 +58,11 @@ def _fetch_source_row(session: Session, source_id: uuid.UUID) -> dict | None:
 
 def _robots_allowed(url: str) -> bool:
     """Check robots.txt for url; cached 24h in Redis. Returns True if allowed."""
-    from app.services.redis_client import get_redis_client  # noqa: PLC0415
+    from app.services.redis_client import get_sync_redis  # noqa: PLC0415
 
     parsed = urlparse(url)
     domain_key = f"robots:{parsed.netloc}"
-    redis = get_redis_client()
+    redis = get_sync_redis()
     cached = redis.get(domain_key)
     if cached is None:
         robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
@@ -78,12 +78,12 @@ def _robots_allowed(url: str) -> bool:
 
     rp = RobotFileParser()
     rp.set_url(f"{parsed.scheme}://{parsed.netloc}/robots.txt")
-    rp.parse(cached.splitlines())
+    rp.parse(cached.splitlines())  # type: ignore[union-attr]
     return rp.can_fetch(_ROBOTS_UA, url)
 
 
 def poll_paste_impl(source_id_str: str) -> None:
-    """Sync actor body — invoked directly by integration tests."""
+    """Sync actor body - invoked directly by integration tests."""
     source_id = uuid.UUID(source_id_str)
     inserted = 0
     deduped = 0
@@ -147,9 +147,8 @@ def poll_paste_impl(source_id_str: str) -> None:
             try:
                 from app.ingest.html_scrape_parser import auto_discover_entries, fetch_html  # noqa: PLC0415
 
-                cfg = {"mode": "auto"}
                 html_text = fetch_html(src["url"])
-                rows_direct = auto_discover_entries(html_text, src["url"], source_id, cfg)
+                rows_direct = auto_discover_entries(html_text, src["url"], source_id)
                 for row in rows_direct:
                     try:
                         rc, _ = _persist_event_for_bindings(session, row, source_id)
@@ -189,7 +188,7 @@ def poll_paste_impl(source_id_str: str) -> None:
         try:
             for entry in entries:
                 try:
-                    row = normalise_rss_entry(entry, source_id)
+                    row = normalise_rss_entry(entry, source_id)  # type: ignore[assignment]
                     if row is None:
                         rejected += 1
                         parse_error += 1

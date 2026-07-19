@@ -1,4 +1,4 @@
-"""007 Pre-auth infrastructure hardening — credentials_key_version column + rekey canary row.
+"""007 Pre-auth infrastructure hardening - credentials_key_version column + rekey canary row.
 
 Revision ID: 007_credentials_key_version
 Revises: 006_webhooks
@@ -8,7 +8,7 @@ INFRA-01, INFRA-03.
 
 - ADD COLUMN sources.credentials_key_version INT NOT NULL DEFAULT 1
   PG 11+ fast-path: server_default='1' on a non-null column updates every
-  existing row instantly via the column-default optimisation — no backfill
+  existing row instantly via the column-default optimisation - no backfill
   needed. (See Postgres 11 release notes: "fast ALTER TABLE ... ADD COLUMN
   with a non-null default".)
 
@@ -16,7 +16,7 @@ INFRA-01, INFRA-03.
   credentials_enc starts NULL. The FastAPI lifespan hook (Plan 08-03) seeds
   it with encrypt_credentials(settings.SECRET_KEY, {"canary": "intellibird-v1"})
   on first startup. Subsequent startups verify that decrypt round-trips under
-  the current SECRET_KEY — fail means SECRET_KEY has rotated without rekey.
+  the current SECRET_KEY - fail means SECRET_KEY has rotated without rekey.
 
 - ON CONFLICT (id) DO NOTHING guards re-running on an already-seeded DB.
 
@@ -39,7 +39,7 @@ CANARY_ID: str = "00000000-0000-0000-0000-000000000000"
 
 def upgrade() -> None:
     # 1. Add the key-version column. server_default="1" covers every existing row
-    #    instantly thanks to PG 11+ non-null-default fast path — no row rewrite.
+    #    instantly thanks to PG 11+ non-null-default fast path - no row rewrite.
     op.add_column(
         "sources",
         sa.Column(

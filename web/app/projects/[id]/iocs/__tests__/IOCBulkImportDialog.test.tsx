@@ -3,7 +3,7 @@
  *
  * Covers UI-SPEC §Surface 3:
  *   1. 4-step stepper advances Upload → Configure → Preview → Import.
- *   2. Lead+ role gate — IOCsClient does not render the dialog for Observer
+ *   2. Lead+ role gate - IOCsClient does not render the dialog for Observer
  *      (covered indirectly here via the open-prop contract: when not Lead+ the
  *      parent never sets `open=true`).
  *   3. dry-run preview renders insert/update/skip/error counts.
@@ -158,7 +158,7 @@ describe("IOCBulkImportDialog", () => {
     await user.click(screen.getByRole("button", { name: /Run dry-run/i }));
     await waitFor(() => expect(mockDryRun).toHaveBeenCalled());
 
-    // Stat values render in 4-up grid — use class scope to disambiguate
+    // Stat values render in 4-up grid - use class scope to disambiguate
     // from stepper-circle digit text.
     expect(await screen.findByText("12")).toBeInTheDocument();
     const insertLabels = screen.getAllByText(/^Insert$/i);

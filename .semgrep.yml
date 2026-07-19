@@ -9,7 +9,7 @@ rules:
   #
   # Correct pattern: pre-render analyst markdown with mistune HTMLRenderer(escape=True)
   # and wrap the result in jinja2.Markup(rendered_html). The template then uses
-  # {{ variable }} without | safe — autoescape respects the Markup wrapper.
+  # {{ variable }} without | safe - autoescape respects the Markup wrapper.
   #
   # See: 18-RESEARCH.md Pattern 2 + Pitfall 5
   # ---------------------------------------------------------------------------
@@ -22,7 +22,7 @@ rules:
         - "backend/app/templates/tiber/**/*.html"
     pattern-regex: '\|\s*safe(?![a-zA-Z_])'
     message: >
-      TIBER templates MUST NOT use `| safe` filter — pre-render markdown via
+      TIBER templates MUST NOT use `| safe` filter - pre-render markdown via
       mistune HTMLRenderer(escape=True) and wrap in jinja2.Markup() instead.
       See 18-RESEARCH.md Pitfall 5.
     severity: ERROR
@@ -65,7 +65,7 @@ rules:
           - pattern: Template($X).render(...)
     message: >
       TIBER service layer MUST NOT use render_template_string or
-      jinja2.Template(...) — SSTI risk. Use FileSystemLoader +
+      jinja2.Template(...) - SSTI risk. Use FileSystemLoader +
       autoescape=select_autoescape(['html']). See 18-RESEARCH.md Pattern 2.
     severity: ERROR
     metadata:

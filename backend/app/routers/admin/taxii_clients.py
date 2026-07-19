@@ -1,9 +1,9 @@
-"""Admin TAXII partner key management — TAXII-03.
+"""Admin TAXII partner key management - TAXII-03.
 
 Endpoints:
-  GET    /api/admin/taxii-clients/       — list all partner keys (no raw key exposed)
-  POST   /api/admin/taxii-clients/       — issue new partner key (raw key returned ONCE)
-  DELETE /api/admin/taxii-clients/{id}   — revoke partner key (sets revoked=True)
+  GET    /api/admin/taxii-clients/       - list all partner keys (no raw key exposed)
+  POST   /api/admin/taxii-clients/       - issue new partner key (raw key returned ONCE)
+  DELETE /api/admin/taxii-clients/{id}   - revoke partner key (sets revoked=True)
 
 Admin-only (require_admin). Raw API keys are never stored; only SHA-256 hex digest.
 """
@@ -61,7 +61,7 @@ async def create_taxii_client(
 ) -> TaxiiClientCreated:
     """Issue a new TAXII partner key.
 
-    The raw API key is returned ONCE in the response — it is not stored.
+    The raw API key is returned ONCE in the response - it is not stored.
     The caller must copy and securely distribute it to the partner.
     """
     from app.services.taxii_bundle import TLP_LEVELS
@@ -103,7 +103,7 @@ async def create_taxii_client(
         revoked=client.revoked,
         revoked_at=client.revoked_at,
         created_at=client.created_at,
-        raw_api_key=raw_key,  # shown ONCE — not stored
+        raw_api_key=raw_key,  # shown ONCE - not stored
     )
 
 

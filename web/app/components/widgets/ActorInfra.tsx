@@ -11,7 +11,7 @@ import { bucketByDay } from "./bucketByDay";
 const LABEL = "ACTOR INFRASTRUCTURE (24H)";
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// tag_mode: "any" — matches events tagged actor OR c2
+// tag_mode: "any" - matches events tagged actor OR c2
 const WIDGET_FILTER_STATIC: Omit<EventsQuery, "observed_from"> = {
   tag: ["actor", "c2"],
   tag_mode: "any",

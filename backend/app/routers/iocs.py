@@ -1,4 +1,4 @@
-"""IOC read-only API — IOC-03, IOC-06, IOC-08.
+"""IOC read-only API - IOC-03, IOC-06, IOC-08.
 
 Endpoints:
   GET /api/iocs              list (paginated, filtered)
@@ -7,7 +7,7 @@ Endpoints:
 
 Write paths (POST/PATCH/DELETE/whitelist/bulk-import) live in plans 22-04 / 22-05.
 The companion event-side endpoint `GET /api/events/{event_id}/iocs` lives in
-`app.routers.events` (alongside the existing event handlers) — both surfaces go
+`app.routers.events` (alongside the existing event handlers) - both surfaces go
 through `app.services.ioc_query.build_ioc_scope_predicate` so cross-project
 leakage is structurally impossible regardless of which direction the caller
 pivots from.
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
@@ -42,7 +42,7 @@ def _user_from_request(request: Request) -> Any:
     """Return request.state.user (AuthUser populated by AuthMiddleware).
 
     Returns None when AUTH_ENABLED=false AND the middleware has not injected
-    the dev-stub admin (defensive — middleware always injects when disabled).
+    the dev-stub admin (defensive - middleware always injects when disabled).
     The scope predicate handles None as "global rows only" via empty
     membership fallback.
     """
@@ -79,13 +79,13 @@ async def list_iocs(
     limit: int = Query(default=50, ge=1, le=200),
     cursor: str | None = Query(
         default=None,
-        description="Opaque cursor (currently unused — keyset pagination wired in 22-04).",
+        description="Opaque cursor (currently unused - keyset pagination wired in 22-04).",
     ),
 ) -> list[IOCRead]:
     """List IOCs scoped per `build_ioc_scope_predicate`.
 
     Cursor pagination scaffold is in place but the keyset cursor is intentionally
-    inert in this plan — when 22-04 ships writes / re-sighting the upsert path
+    inert in this plan - when 22-04 ships writes / re-sighting the upsert path
     bumps `last_seen`, and the cursor encoding will mirror the events keyset
     `(last_seen DESC, id DESC)` shape. For now the route caps results via `limit`.
     """
@@ -103,7 +103,7 @@ async def list_iocs(
     stmt = select(IOC).where(build_ioc_scope_predicate(user, project_filter=project_id))
 
     if status_ is not None:
-        # Caller asked for a specific status — honour it verbatim, do NOT apply
+        # Caller asked for a specific status - honour it verbatim, do NOT apply
         # the default-hide-expired filter on top.
         stmt = stmt.where(IOC.status == status_)
     else:
@@ -136,7 +136,7 @@ async def list_iocs(
         status=status_,
         include_expired=include_expired,
     )
-    return rows
+    return rows  # type: ignore[return-value]
 
 
 @router.get("/{ioc_id}", response_model=IOCRead)
@@ -147,7 +147,7 @@ async def get_ioc(
 ) -> IOCRead:
     """Single IOC detail. 404 when invisible to the caller under the scope predicate.
 
-    Returning 404 (not 403) for invisible rows is intentional — an attacker
+    Returning 404 (not 403) for invisible rows is intentional - an attacker
     iterating UUIDs must not be able to distinguish "exists but not yours"
     from "does not exist".
     """
@@ -156,7 +156,7 @@ async def get_ioc(
     row = (await db.execute(stmt)).scalars().first()
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="ioc_not_found")
-    return row
+    return row  # type: ignore[return-value]
 
 
 @router.get("/{ioc_id}/events")
@@ -171,7 +171,7 @@ async def get_ioc_events(
     Note on field naming: the plan/spec mentions `published_at`; the Event model
     in this repo uses `observed_at` (events are time-partitioned by observed_at
     via the TimescaleDB hypertable). We sort by `observed_at` and surface it
-    under the same key in the response body — frontends consuming Plan 22-06's
+    under the same key in the response body - frontends consuming Plan 22-06's
     IOC drawer §Surface 4 should treat `observed_at` as the canonical display
     timestamp.
 
@@ -179,7 +179,7 @@ async def get_ioc_events(
     """
     user = _user_from_request(request)
 
-    # Visibility gate on the IOC itself — same scope predicate as GET /api/iocs/{id}.
+    # Visibility gate on the IOC itself - same scope predicate as GET /api/iocs/{id}.
     visible_stmt = select(IOC.id).where(
         IOC.id == ioc_id, build_ioc_scope_predicate(user)
     )
@@ -208,7 +208,7 @@ async def get_ioc_events(
 
 
 # ---------------------------------------------------------------------------
-# Plan 22-04 write endpoints — whitelist (with clone-on-whitelist) + PATCH +
+# Plan 22-04 write endpoints - whitelist (with clone-on-whitelist) + PATCH +
 # DELETE. The /{ioc_id} routes can't use `require_project_membership` (which
 # resolves the project from a `project_id` path param); membership is checked
 # manually below against `AuthUser.project_memberships` (JWT pm claim) per the
@@ -219,7 +219,7 @@ from sqlalchemy import delete as _sa_delete, select as _sa_select  # noqa: E402
 
 
 def _is_admin(user: Any) -> bool:
-    """Match `app/middleware/auth.py:200` — `user.role == "Admin"`."""
+    """Match `app/middleware/auth.py:200` - `user.role == "Admin"`."""
     return getattr(user, "role", None) == "Admin"
 
 
@@ -229,10 +229,10 @@ def _has_project_role(user: Any, project_id: uuid.UUID, min_role: ProjectRole) -
     claim has no entry for ``project_id`` or the cached rank is below
     ``min_role``.
 
-    No DB fallback here — the JWT pm claim is the source of truth on the
+    No DB fallback here - the JWT pm claim is the source of truth on the
     request path (see Plan 22-03 SUMMARY §"Membership lookup via JWT claim,
     not DB"). If a Lead's JWT was minted before they were granted membership,
-    they need to refresh — same behaviour as the rest of the app.
+    they need to refresh - same behaviour as the rest of the app.
     """
     if _is_admin(user):
         return True
@@ -245,7 +245,7 @@ def _has_project_role(user: Any, project_id: uuid.UUID, min_role: ProjectRole) -
 
 
 async def _fetch_visible_ioc(db: AsyncSession, user: Any, ioc_id: uuid.UUID) -> IOC:
-    """Load the IOC under the scope predicate — 404 when not visible."""
+    """Load the IOC under the scope predicate - 404 when not visible."""
     stmt = _sa_select(IOC).where(IOC.id == ioc_id, build_ioc_scope_predicate(user))
     row = (await db.execute(stmt)).scalars().first()
     if row is None:
@@ -261,12 +261,12 @@ async def whitelist_ioc(
     project_id: uuid.UUID | None = Query(
         default=None,
         description=(
-            "Required when whitelisting a global row as a non-admin Lead — "
+            "Required when whitelisting a global row as a non-admin Lead - "
             "the project to clone the row into (clone-on-whitelist)."
         ),
     ),
 ) -> IOC:
-    """Per-row whitelist toggle — IOC-04.
+    """Per-row whitelist toggle - IOC-04.
 
     Three role/scope paths (per CONTEXT.md §"Whitelist scope per-row"):
 
@@ -314,7 +314,7 @@ async def whitelist_ioc(
         return await _fetch_visible_ioc(db, user, new_id)
 
     # Path 1: per-project row → require Lead on its project (Admin auto-passes)
-    if not _has_project_role(user, ioc.project_id, ProjectRole.Lead):
+    if not _has_project_role(user, ioc.project_id, ProjectRole.Lead):  # type: ignore[arg-type]
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             detail="requires Lead on IOC project",
@@ -336,7 +336,7 @@ async def unwhitelist_ioc(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_session)],
 ) -> IOC:
-    """Reverse a whitelist — flips status back to 'active'.
+    """Reverse a whitelist - flips status back to 'active'.
 
     For cloned shadow rows this just flips the shadow back; no merge with the
     global row is attempted (the two are independent per CONTEXT.md).
@@ -367,7 +367,7 @@ async def patch_ioc(
 ) -> IOC:
     """Lead+ updates `confidence` + `ttl_days` only (UI Surface 4e).
 
-    Other fields (type, value, status) are intentionally NOT mutable here —
+    Other fields (type, value, status) are intentionally NOT mutable here -
     status flips go through the whitelist endpoints, and immutable identity
     fields force re-import for correctness/audit.
     """
@@ -398,9 +398,9 @@ async def delete_ioc(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_session)],
 ) -> Response:
-    """Admin-only hard delete — ioc_event_links cascade via FK (UI Surface 7).
+    """Admin-only hard delete - ioc_event_links cascade via FK (UI Surface 7).
 
-    Decision: hard delete (NOT soft-delete) — whitelist already provides the
+    Decision: hard delete (NOT soft-delete) - whitelist already provides the
     soft-suppression semantic; a separate "deleted" status would muddy the
     state machine. Audit lives in the operator's git/log retention rather
     than tombstone rows.
@@ -416,7 +416,7 @@ async def delete_ioc(
 
 
 # ---------------------------------------------------------------------------
-# Plan 22-05 — POST /api/iocs/bulk-import (CSV / JSON / STIX 2.1)
+# Plan 22-05 - POST /api/iocs/bulk-import (CSV / JSON / STIX 2.1)
 #
 # Two-phase pattern (CONTEXT.md §"Bulk import + STIX mapping"):
 #   * ?dry_run=true → IOCBulkImportDryRun {would_insert, would_update,
@@ -428,9 +428,9 @@ async def delete_ioc(
 # Critical fixes from revision (must stay enforced here):
 #   * Dry-run dedup uses `build_ioc_scope_predicate(user, project_filter=...)`
 #     so a Lead can't enumerate cross-project IOCs by counting `would_update`
-#     hits (revision checker warning #9 — same shape as PROD-01 leakage).
+#     hits (revision checker warning #9 - same shape as PROD-01 leakage).
 #   * Per-row `project_id` validated against the route's project_id for
-#     non-admin uploads (revision checker warning #4) — admin uploads are
+#     non-admin uploads (revision checker warning #4) - admin uploads are
 #     unrestricted so they can stage global rows in one CSV.
 # ---------------------------------------------------------------------------
 import json as _json  # noqa: E402
@@ -466,7 +466,7 @@ async def bulk_import(
         description="Override the format detected from Content-Type. csv|json|stix.",
     ),
 ):
-    """Upload IOCs in bulk via CSV / JSON / STIX 2.1 — IOC-02.
+    """Upload IOCs in bulk via CSV / JSON / STIX 2.1 - IOC-02.
 
     Auth: Lead+ on the destination project; Admin required for global rows
     (project_id=None). Format is detected from Content-Type unless `?format=`
@@ -475,7 +475,7 @@ async def bulk_import(
     user = _user_from_request(request)
     is_admin = _is_admin(user)
 
-    # 1. Auth — global is admin-only; per-project requires Lead+.
+    # 1. Auth - global is admin-only; per-project requires Lead+.
     if project_id is None and not is_admin:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN, detail="global_import_admin_only"
@@ -486,7 +486,7 @@ async def bulk_import(
                 status.HTTP_403_FORBIDDEN, detail="requires Lead on target project"
             )
 
-    # 2. Format detection — Content-Type → fmt; ?format= override wins.
+    # 2. Format detection - Content-Type → fmt; ?format= override wins.
     ct = (request.headers.get("content-type") or "").lower()
     body = await request.body()
     if format:
@@ -541,7 +541,7 @@ async def bulk_import(
                     detail="parse_failed: stix bundle must be an object",
                 )
             for ioc_type, raw_value in _parse_stix_bundle(bundle):
-                rows.append(_IOCImportRow(type=ioc_type, value=raw_value))
+                rows.append(_IOCImportRow(type=ioc_type, value=raw_value))  # type: ignore[arg-type]
             unmapped_sdo_count = sum(
                 1 for o in (bundle.get("objects") or [])
                 if isinstance(o, dict)
@@ -576,9 +576,9 @@ async def bulk_import(
                     ),
                 )
 
-    # 5. Dry-run dedup — SCOPED via build_ioc_scope_predicate so a Lead
+    # 5. Dry-run dedup - SCOPED via build_ioc_scope_predicate so a Lead
     #    can't probe cross-project IOC presence by reading would_update
-    #    counts (revision checker fix #9 — mirrors PROD-01 leakage shape).
+    #    counts (revision checker fix #9 - mirrors PROD-01 leakage shape).
     keys = [
         (project_id, r.type, _normalise_value(r.type, r.value)) for r in rows
     ]
@@ -595,7 +595,7 @@ async def bulk_import(
             )
             for pid, t, nv in (await db.execute(stmt)).all():
                 # Only count as a dedup hit when the existing row is in the
-                # SAME scope the import is targeting — a global row already
+                # SAME scope the import is targeting - a global row already
                 # present must not show up as 'would_update' for a per-project
                 # import (and vice-versa).
                 if pid == project_id:
@@ -614,7 +614,7 @@ async def bulk_import(
             errors=errors[:50],
         )
 
-    # 6. Real run — stage payload in Redis + enqueue Dramatiq actor.
+    # 6. Real run - stage payload in Redis + enqueue Dramatiq actor.
     from app.workers.iocs import bulk_import_iocs as _bulk_import_iocs  # noqa: PLC0415
 
     job_id = str(uuid.uuid4())

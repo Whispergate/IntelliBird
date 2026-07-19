@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MembershipTable — per-project member roster with in-row role dropdown +
+ * MembershipTable - per-project member roster with in-row role dropdown +
  * destructive-confirm remove dialog (PRJ-05).
  *
  * UI-SPEC §/projects/[id] detail §Memberships tab locks:

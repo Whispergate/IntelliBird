@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for TAXII 2.1 outbound server — TAXII-01..05.
+"""Pydantic v2 schemas for TAXII 2.1 outbound server - TAXII-01..05.
 
 Naming follows OASIS TAXII 2.1 spec §4-§6 resource names exactly.
 """
@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # ---------------------------------------------------------------------------
 
 class DiscoveryResource(BaseModel):
-    """OASIS TAXII 2.1 §4.1 — Discovery Resource."""
+    """OASIS TAXII 2.1 §4.1 - Discovery Resource."""
     model_config = ConfigDict(populate_by_name=True)
 
     title: str
@@ -26,7 +26,7 @@ class DiscoveryResource(BaseModel):
 
 
 class ApiRootResource(BaseModel):
-    """OASIS TAXII 2.1 §5.1 — API Root Resource."""
+    """OASIS TAXII 2.1 §5.1 - API Root Resource."""
     title: str
     description: str | None = None
     versions: list[str] = Field(default_factory=lambda: ["application/taxii+json;version=2.1"])
@@ -38,7 +38,7 @@ class ApiRootResource(BaseModel):
 # ---------------------------------------------------------------------------
 
 class CollectionResource(BaseModel):
-    """OASIS TAXII 2.1 §5.2 — Collection Resource."""
+    """OASIS TAXII 2.1 §5.2 - Collection Resource."""
     model_config = ConfigDict(populate_by_name=True)
 
     id: str                   # UUID string matching project UUID
@@ -52,7 +52,7 @@ class CollectionResource(BaseModel):
 
 
 class CollectionsResource(BaseModel):
-    """OASIS TAXII 2.1 §5.2 — Collections wrapper."""
+    """OASIS TAXII 2.1 §5.2 - Collections wrapper."""
     collections: list[CollectionResource] = Field(default_factory=list)
 
 
@@ -61,10 +61,10 @@ class CollectionsResource(BaseModel):
 # ---------------------------------------------------------------------------
 
 class TaxiiEnvelope(BaseModel):
-    """OASIS TAXII 2.1 §5.4 — Objects response envelope.
+    """OASIS TAXII 2.1 §5.4 - Objects response envelope.
 
     'more' MUST be present even when False.
-    'next' MUST be omitted (not null) when more=False — use model_post_init exclusion.
+    'next' MUST be omitted (not null) when more=False - use model_post_init exclusion.
     """
     model_config = ConfigDict(populate_by_name=True)
 
@@ -108,5 +108,5 @@ class TaxiiClientRead(BaseModel):
 
 
 class TaxiiClientCreated(TaxiiClientRead):
-    """Response for POST /api/admin/taxii-clients — includes raw key once."""
+    """Response for POST /api/admin/taxii-clients - includes raw key once."""
     raw_api_key: str  # shown once; not stored

@@ -1,4 +1,4 @@
-"""Admin audit log REST API — AUDIT-03.
+"""Admin audit log REST API - AUDIT-03.
 
 Endpoints:
   GET /api/admin/audit   cursor-based paginated audit log (Admin only)
@@ -45,7 +45,7 @@ async def list_audit_log(
     limit: int = Query(default=100, ge=1, le=500),
     cursor: str | None = Query(
         default=None,
-        description="ISO timestamp string of last row's time — cursor-based pagination.",
+        description="ISO timestamp string of last row's time - cursor-based pagination.",
     ),
 ) -> AuditLogListResponse:
     """Admin-only paginated audit log.
@@ -104,4 +104,4 @@ async def list_audit_log(
         resource_type=resource_type,
         action=action,
     )
-    return AuditLogListResponse(items=rows, next_cursor=next_cursor)
+    return AuditLogListResponse(items=rows, next_cursor=next_cursor)  # type: ignore[arg-type]

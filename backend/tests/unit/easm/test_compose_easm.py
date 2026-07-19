@@ -1,4 +1,4 @@
-"""Regression tests for ops/docker-compose.yml — easm-worker isolation.
+"""Regression tests for ops/docker-compose.yml - easm-worker isolation.
 
 Guards PITFALLS §Pitfall 7: /var/run/docker.sock MUST be scoped to easm-worker only.
 Two-layer defence (YAML structure + service-by-service check) so an accidental
@@ -37,7 +37,7 @@ def test_easm_worker_mounts_docker_sock():
     compose = _load_compose()
     volumes = compose["services"]["easm-worker"].get("volumes", [])
     assert any(DOCKER_SOCK in str(v) for v in volumes), (
-        f"easm-worker missing {DOCKER_SOCK} mount — cannot launch BBOT subprocess"
+        f"easm-worker missing {DOCKER_SOCK} mount - cannot launch BBOT subprocess"
     )
 
 

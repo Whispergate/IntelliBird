@@ -1,10 +1,9 @@
-"""Unit tests for dark-web IOC extraction patterns — DARK-05.
+"""Unit tests for dark-web IOC extraction patterns - DARK-05.
 
 Tests the credential pair regex, .onion domain pass-through, and BTC/ETH
 patterns applied to dark-web event content via Enrichment.iocs().
 """
-import pytest
-from app.services.enrichment import Enrichment, _CRED_PAIR_PATTERN, enrich_event
+from app.services.enrichment import enrich_event
 from app.services.enrichment._text_extraction import _DOMAIN_PATTERN
 
 
@@ -52,7 +51,7 @@ def test_multiple_credential_pairs_all_extracted():
 
 
 def test_onion_url_not_filtered_by_extension_exclusion_list():
-    """'onion' TLD is NOT in the extension exclusion list — must not be silently dropped"""
+    """'onion' TLD is NOT in the extension exclusion list - must not be silently dropped"""
     m = _DOMAIN_PATTERN.search("abc12345.onion")
     assert m is not None, ".onion domain was not matched by _DOMAIN_PATTERN"
     assert m.group(1).endswith(".onion"), f"unexpected match: {m.group(1)}"

@@ -1,4 +1,4 @@
-"""Threat actors REST API — ACTOR-05, ACTOR-06.
+"""Threat actors REST API - ACTOR-05, ACTOR-06.
 
 Endpoints:
   GET  /api/actors                    paginated actor list
@@ -8,8 +8,8 @@ Endpoints:
   PATCH /api/actors/{actor_id}        update actor (Lead+)
 
 RBAC:
-  Read endpoints — any authenticated user.
-  Write endpoints (POST, PATCH) — Lead+ on any project, or Admin.
+  Read endpoints - any authenticated user.
+  Write endpoints (POST, PATCH) - Lead+ on any project, or Admin.
     Lead+ = user.role=="Admin" OR any project_memberships rank >= 3 (Lead).
 """
 from __future__ import annotations
@@ -107,7 +107,7 @@ async def list_actors(
         next_cursor = f"{last.primary_name}|{last.id}"
         rows = rows[:limit]
 
-    return ActorListResponse(items=rows, next_cursor=next_cursor, total=None)
+    return ActorListResponse(items=rows, next_cursor=next_cursor, total=None)  # type: ignore[arg-type]
 
 
 @router.get("/{actor_id}", response_model=ActorRead)

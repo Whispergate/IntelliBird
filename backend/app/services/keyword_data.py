@@ -1,7 +1,7 @@
 """Curated security-domain keyword wordlist.
 
 Used by `enrichment.py` to extract topic mentions from event text and emit
-`keyword:<term>` tags. Deterministic regex match — matches M1 enrichment
+`keyword:<term>` tags. Deterministic regex match - matches M1 enrichment
 philosophy (no NLP inference per PROJECT.md key decision).
 
 Term canonical form is the dict key (kebab-case). Pattern accepts common

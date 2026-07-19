@@ -1,4 +1,4 @@
-"""test_authority_matrix — PRJ-05 authority gates (plan 10-02 dep layer + 10-03 last-Lead).
+"""test_authority_matrix - PRJ-05 authority gates (plan 10-02 dep layer + 10-03 last-Lead).
 
 Plan 10-02 seeded tests:
   test_admin_bypass           -> Global Admin resolves to Lead with no DB query
@@ -108,7 +108,7 @@ async def test_contributor_scope_only(db_session, users_matrix, two_projects):
 
 
 # ---------------------------------------------------------------------------
-# Plan 10-03 additions — last-Lead protection (real HTTP round-trips)
+# Plan 10-03 additions - last-Lead protection (real HTTP round-trips)
 # ---------------------------------------------------------------------------
 
 
@@ -165,16 +165,15 @@ def _mint_token_with_pm(user, pm, jwt_key: str, *, truncated: bool = False) -> s
 async def test_last_lead_protection(client: AsyncClient, users_matrix, jwt_settings):
     """Sole Lead on a project cannot demote or remove themselves (409).
 
-    Uses Admin to drive the membership ops — Admin bypasses the membership gate
+    Uses Admin to drive the membership ops - Admin bypasses the membership gate
     so we do not need to re-mint the Analyst token after project creation. The
     last-Lead check itself runs inside the router (not the auth dep), so Admin
     still triggers the 409.
     """
-    from app.security.jwt import PROJECT_ROLE_RANK
     analyst_token = users_matrix["tokens"]["analyst"]
     admin_token = users_matrix["tokens"]["admin"]
 
-    # Analyst creates project — creator auto-joins as sole Lead.
+    # Analyst creates project - creator auto-joins as sole Lead.
     r_create = await client.post(
         "/api/projects",
         json={"name": "Solo Lead", "engagement_type": "internal"},
@@ -194,8 +193,8 @@ async def test_last_lead_protection(client: AsyncClient, users_matrix, jwt_setti
     assert memberships[0]["project_role"] == "Lead"
     mid = memberships[0]["id"]
 
-    # Admin attempts to demote the sole Lead — 409 cannot_remove_last_lead.
-    # The last-Lead check is a router invariant — not bypassed by Admin.
+    # Admin attempts to demote the sole Lead - 409 cannot_remove_last_lead.
+    # The last-Lead check is a router invariant - not bypassed by Admin.
     r_patch = await client.patch(
         f"/api/projects/{proj_id}/memberships/{mid}",
         json={"project_role": "Contributor"},
@@ -204,7 +203,7 @@ async def test_last_lead_protection(client: AsyncClient, users_matrix, jwt_setti
     assert r_patch.status_code == 409, r_patch.text
     assert r_patch.json()["detail"] == "cannot_remove_last_lead"
 
-    # Admin attempts DELETE of the sole Lead — also 409.
+    # Admin attempts DELETE of the sole Lead - also 409.
     r_del = await client.delete(
         f"/api/projects/{proj_id}/memberships/{mid}",
         headers={"Authorization": f"Bearer {admin_token}"},
@@ -298,7 +297,7 @@ async def test_legacy_memberships_write_forbidden(client: AsyncClient, users_mat
     """POST /api/projects/{LEGACY}/memberships returns 403 legacy_project_immutable."""
     from app.models.projects import LEGACY_PROJECT_ID
     admin_token = users_matrix["tokens"]["admin"]
-    # Need an existing user_sub to add — use the admin's own id
+    # Need an existing user_sub to add - use the admin's own id
     r = await client.post(
         f"/api/projects/{LEGACY_PROJECT_ID}/memberships",
         json={

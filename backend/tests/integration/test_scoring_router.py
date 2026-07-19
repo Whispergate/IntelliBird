@@ -2,17 +2,17 @@
 """Integration tests for scoring routes.
 
 Covers:
-  GET  /api/projects/{id}/scoring  — returns default or persisted rules
-  PUT  /api/projects/{id}/scoring  — validates weights/tiers, persists, enqueues actor
-  POST /api/projects/{id}/rescore  — manual trigger, 202
-  GET  /api/projects/{id}/rescore/status  — shape test
+  GET  /api/projects/{id}/scoring  - returns default or persisted rules
+  PUT  /api/projects/{id}/scoring  - validates weights/tiers, persists, enqueues actor
+  POST /api/projects/{id}/rescore  - manual trigger, 202
+  GET  /api/projects/{id}/rescore/status  - shape test
 
 Auth harness mirrors test_prod01_cross_project_leakage.py: real JWT middleware +
 pinned signing key + stubbed token_version / jti lookups.
 
 Two JWT variants seeded per project:
-  lead_jwt   — pm=[[project_id, 3]]  (Lead rank = 3 per PROJECT_ROLE_RANK)
-  observer_jwt — pm=[[project_id, 1]]  (Observer rank = 1)
+  lead_jwt   - pm=[[project_id, 3]]  (Lead rank = 3 per PROJECT_ROLE_RANK)
+  observer_jwt - pm=[[project_id, 1]]  (Observer rank = 1)
 """
 from __future__ import annotations
 
@@ -218,7 +218,7 @@ async def test_put_scoring_rejects_non_descending_cutoffs(db_session, monkeypatc
     bad_payload = {
         "weights": {"cvss": 50, "recency": 20, "source": 15, "relevance": 15},
         "decay_half_life_days": 14,
-        "tier_cutoffs": {"S": 80, "A": 85, "B": 55, "C": 30},  # S < A — not descending
+        "tier_cutoffs": {"S": 80, "A": 85, "B": 55, "C": 30},  # S < A - not descending
     }
 
     async with await _client() as c:
@@ -324,7 +324,7 @@ async def test_unmembered_user_gets_403(db_session, monkeypatch):
     """GET /scoring with a JWT that has no membership for this project returns 403."""
     _patch_auth(monkeypatch)
     project_id = await _seed_project(db_session)
-    other_project_id = uuid.uuid4()  # a different project — user has no membership for project_id
+    other_project_id = uuid.uuid4()  # a different project - user has no membership for project_id
     unrelated_jwt = _mint_observer(other_project_id)
 
     async with await _client() as c:
@@ -340,16 +340,16 @@ async def test_unmembered_user_gets_403(db_session, monkeypatch):
 # -10 gap closure: score fields surfaced through GET /api/events
 # ---------------------------------------------------------------------------
 
-from datetime import UTC, datetime as _datetime
-from decimal import Decimal as _Decimal
-from sqlalchemy import text as _text
+from datetime import UTC, datetime as _datetime  # noqa: E402
+from decimal import Decimal as _Decimal  # noqa: E402
+from sqlalchemy import text as _text  # noqa: E402
 
 
 async def _seed_permissive_scope(db_session, project_id: uuid.UUID, keyword: str) -> None:
     """Insert a permissive keyword scope row so build_scope_predicate does NOT
     short-circuit to false (the empty-scope → empty-result guard requires at
     least one intel_scope=true row per project for GET /api/events to return
-    rows — see events_query.py / project_scope.py).
+    rows - see events_query.py / project_scope.py).
     """
     await db_session.execute(
         _text(
@@ -376,7 +376,7 @@ async def _insert_event(
     Uses raw SQL to avoid ORM model import complications and to match the
     explicit kwargs pattern used in test_prod01_cross_project_leakage.py.
 
-    The title includes "scoretest" — a single unambiguous FTS token — which
+    The title includes "scoretest" - a single unambiguous FTS token - which
     matches the permissive scope keyword seeded by _seed_permissive_scope.
     """
     event_id = uuid.uuid4()
@@ -413,7 +413,7 @@ async def test_events_list_returns_score_fields(db_session, monkeypatch):
     """GET /api/events returns score/scored_at/score_version for scored events
     and null for unscored events.
 
-    Gap closure: -10 SC-1 BLOCKER — EventItem schema previously omitted
+    Gap closure: -10 SC-1 BLOCKER - EventItem schema previously omitted
     these fields; _hydrate_item did not pass them. This test would FAIL if Task 1
     changes (schema + hydration) were reverted.
     """
@@ -426,7 +426,7 @@ async def test_events_list_returns_score_fields(db_session, monkeypatch):
     # the event titles seeded below.
     await _seed_permissive_scope(db_session, project_id, "scoretest")
 
-    # Arrange — one scored event, one unscored event.
+    # Arrange - one scored event, one unscored event.
     # Both titles contain "scoretest" so they match the scope keyword via FTS.
     score_ts = _datetime(2026, 4, 1, 12, 0, 0, tzinfo=UTC)
     scored_event_id = await _insert_event(
@@ -474,7 +474,7 @@ async def test_events_list_returns_score_fields(db_session, monkeypatch):
 async def test_event_detail_returns_score_fields(db_session, monkeypatch):
     """GET /api/events/{id} returns score/scored_at/score_version for a scored event.
 
-    Gap closure: -10 SC-5 PARTIAL → VERIFIED — EventDetail inherits from
+    Gap closure: -10 SC-5 PARTIAL → VERIFIED - EventDetail inherits from
     EventItem and model_dump() propagates the new fields through the detail route.
     This test would FAIL if Task 1 changes were reverted.
     """
@@ -560,7 +560,7 @@ async def test_rescore_status_reports_inprogress_when_flag_set(db_session, monke
     """rescore_status returns in_progress_count=1 when flag set, 0 when absent.
 
     Directly manipulates the Redis flag and asserts the route handler reads it.
-    (Plan 15-11 / SCR-02 advisory gap closure — the "Rescoring..." spinner UX)
+    (Plan 15-11 / SCR-02 advisory gap closure - the "Rescoring..." spinner UX)
     """
     _patch_auth(monkeypatch)
     project_id = await _seed_project(db_session)

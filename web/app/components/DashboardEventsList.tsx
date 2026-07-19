@@ -81,14 +81,14 @@ export function DashboardEventsList(props: Props = {}) {
       try {
         // Two-step pattern: fetch preset then merge into events query.
         // The events API (/api/events) does NOT accept a preset_name param (confirmed by
-        // inspecting backend/app/routers/events.py — no preset_name in Query declaration).
+        // inspecting backend/app/routers/events.py - no preset_name in Query declaration).
         // This two-step approach is safe and avoids server-side coupling.
         let presetQuery: Record<string, unknown> = {};
         try {
           const preset = await getPreset(presetName);
           presetQuery = preset.query_params ?? {};
         } catch {
-          // Preset not yet seeded — proceed with empty query; list will still render.
+          // Preset not yet seeded - proceed with empty query; list will still render.
         }
         const res = await listEvents(
           { ...(presetQuery as object), limit: 25 },

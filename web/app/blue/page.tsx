@@ -2,7 +2,7 @@ import { DashboardShell } from "@/app/components/DashboardShell";
 import { DashboardClient } from "@/app/components/DashboardClient";
 
 export const metadata = {
-  title: "Blue Team Dashboard — IntelliBird",
+  title: "Blue Team Dashboard - IntelliBird",
   description: "Blue Team Dashboard",
 };
 

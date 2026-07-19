@@ -1,4 +1,4 @@
-"""RSS/Atom polling actor — INGR-01, INGR-02, INGR-03.
+"""RSS/Atom polling actor - INGR-01, INGR-02, INGR-03.
 
 poll_rss(source_id) is the Dramatiq actor entrypoint. It delegates to
 poll_rss_impl so integration tests can invoke the implementation
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 @contextmanager
 def _open_session() -> Iterator[Session]:
-    """Sync-engine session per poll — mirrors app.workers.attack_writer pattern.
+    """Sync-engine session per poll - mirrors app.workers.attack_writer pattern.
 
  Lazily imports settings so `import app.workers.rss` stays cheap
 .
@@ -51,7 +51,7 @@ def _fetch_source_row(session: Session, source_id: uuid.UUID) -> dict | None:
 
 
 def poll_rss_impl(source_id_str: str) -> None:
-    """Actor body — sync implementation. Called by `poll_rss.send(...)` or
+    """Actor body - sync implementation. Called by `poll_rss.send(...)` or
  directly by integration tests.
 """
     source_id = uuid.UUID(source_id_str)

@@ -1,9 +1,9 @@
-"""IOC services: per-type normalisation + TTL defaults — IOC-01.
+"""IOC services: per-type normalisation + TTL defaults - IOC-01.
 
 Single source of truth for canonical-value transforms. Reused by:
-  * ingest hook (Plan 22-04) — auto-IOC writes from event extraction
-  * bulk import parsers (Plan 22-05) — CSV / JSON / STIX
-  * backfill (Plan 22-04) — admin endpoint over historical events
+  * ingest hook (Plan 22-04) - auto-IOC writes from event extraction
+  * bulk import parsers (Plan 22-05) - CSV / JSON / STIX
+  * backfill (Plan 22-04) - admin endpoint over historical events
 
 Normalisation contract (per 22-CONTEXT.md "Claude's Discretion"):
   * IPs → ipaddress canonical compressed form (IPv6 collapses)
@@ -14,7 +14,7 @@ Normalisation contract (per 22-CONTEXT.md "Claude's Discretion"):
   * btc / eth / mutex / filename / registry_key → trimmed; case preserved
     (registry keys are case-sensitive on Windows; preserve)
 
-The function NEVER raises — malformed input falls back to `value.strip().lower()`
+The function NEVER raises - malformed input falls back to `value.strip().lower()`
 or `value.strip()` (for case-preserving types). This keeps backfill / bulk-import
 robust on imperfect partner-shared data; analyst can fix or whitelist later.
 """
@@ -25,7 +25,7 @@ from urllib.parse import urlparse
 
 import idna
 
-# Locked at migration 023 — the ENUM and this tuple must stay in sync.
+# Locked at migration 023 - the ENUM and this tuple must stay in sync.
 IOC_TYPE_ENUM_VALUES: tuple[str, ...] = (
     "ip", "ipv6", "domain", "url",
     "sha256", "sha1", "md5",
@@ -46,7 +46,7 @@ IOC_TTL_DEFAULTS: dict[str, int] = {
 def normalise(ioc_type: str, value: str) -> str:
     """Return the canonical-form normalized_value for storage and dedup.
 
-    Never raises — malformed input falls back to a lowercased trim
+    Never raises - malformed input falls back to a lowercased trim
     (case-preserved for btc / eth / mutex / filename / registry_key).
     """
     v = (value or "").strip()
@@ -97,7 +97,7 @@ def normalise(ioc_type: str, value: str) -> str:
     if ioc_type == "email":
         return v.lower()
 
-    # btc / eth / mutex / filename / registry_key — case preserved
+    # btc / eth / mutex / filename / registry_key - case preserved
     return v
 
 
@@ -105,7 +105,7 @@ def normalise(ioc_type: str, value: str) -> str:
 # Plan 22-04 additions: upsert + expire + backfill + clone-on-whitelist
 #
 # `upsert_ioc_for_event_sync` services the ingest hook (`_persist_event` is a
-# SYNC function — the existing helpers in `app/ingest/normalise.py` use a sync
+# SYNC function - the existing helpers in `app/ingest/normalise.py` use a sync
 # Session, so the IOC writer must too). The async variant is used by the
 # Dramatiq backfill actor and the seed_iocs CLI.
 #
@@ -117,17 +117,17 @@ def normalise(ioc_type: str, value: str) -> str:
 #   confidence + ttl_days are NEVER in the SET clause. Whitelist state stays.
 # ---------------------------------------------------------------------------
 
-import uuid as _uuid
-from datetime import datetime as _dt, timezone as _tz
-from decimal import Decimal as _Decimal
-from typing import Any as _Any
+import uuid as _uuid  # noqa: E402
+from datetime import datetime as _dt, timezone as _tz  # noqa: E402
+from decimal import Decimal as _Decimal  # noqa: E402
+from typing import Any as _Any  # noqa: E402
 
-from sqlalchemy import select as _select, text as _text
-from sqlalchemy.dialects.postgresql import insert as _pg_insert
-from sqlalchemy.ext.asyncio import AsyncSession as _AsyncSession
-from sqlalchemy.orm import Session as _SyncSession
+from sqlalchemy import select as _select, text as _text  # noqa: E402
+from sqlalchemy.dialects.postgresql import insert as _pg_insert  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession as _AsyncSession  # noqa: E402
+from sqlalchemy.orm import Session as _SyncSession  # noqa: E402
 
-from app.models.iocs import IOC as _IOC, IOCEventLink as _IOCLink
+from app.models.iocs import IOC as _IOC, IOCEventLink as _IOCLink  # noqa: E402
 
 # Map enrichment.py 'hash' bucket → sha256/sha1/md5 by char length.
 _HASH_LEN_MAP: dict[int, str] = {64: "sha256", 40: "sha1", 32: "md5"}
@@ -262,15 +262,15 @@ def upsert_ioc_for_event_sync(
             res = session.execute(stmt)
             ioc_id = res.scalar_one()
         except Exception:  # noqa: BLE001
-            # Best-effort — never break ingest on a single bad IOC row.
+            # Best-effort - never break ingest on a single bad IOC row.
             continue
         iocs_upserted += 1
 
         # Enqueue enrichment immediately after successful IOC upsert.
-        # The whitelisted/type check happens inside _async_enrich — always enqueue.
+        # The whitelisted/type check happens inside _async_enrich - always enqueue.
         # Cache absorbs re-sights at worker level (no quota burn per RESEARCH.md §Pitfall 3).
         try:
-            from app.workers.iocs import enrich_ioc as _enrich_ioc  # noqa: PLC0415 — lazy, avoids circular
+            from app.workers.iocs import enrich_ioc as _enrich_ioc  # noqa: PLC0415 - lazy, avoids circular
             _enrich_ioc.send(str(ioc_id))
         except Exception as _enq_exc:  # noqa: BLE001
             import logging as _logging  # noqa: PLC0415
@@ -301,7 +301,7 @@ def upsert_ioc_for_event_sync(
         )
         try:
             link_res = session.execute(link_stmt)
-            links_inserted += link_res.rowcount or 0
+            links_inserted += link_res.rowcount or 0  # type: ignore[attr-defined]
         except Exception:  # noqa: BLE001
             continue
 
@@ -316,7 +316,7 @@ async def upsert_ioc_for_event(
     source: str = "event",
     confidence_override: _Decimal | None = None,
 ) -> tuple[int, int]:
-    """Async variant — used by the backfill path."""
+    """Async variant - used by the backfill path."""
     pairs = _classify_enrichment_iocs(enrichment)
     if not pairs:
         return 0, 0
@@ -381,7 +381,7 @@ async def upsert_ioc_for_event(
         )
         try:
             link_res = await session.execute(link_stmt)
-            links_inserted += link_res.rowcount or 0
+            links_inserted += link_res.rowcount or 0  # type: ignore[attr-defined]
         except Exception:  # noqa: BLE001
             continue
 
@@ -402,7 +402,7 @@ async def expire_iocs(session: _AsyncSession) -> int:
         )
     )
     await session.commit()
-    return result.rowcount or 0
+    return result.rowcount or 0  # type: ignore[attr-defined]
 
 
 async def backfill_iocs_for_project(
@@ -410,7 +410,7 @@ async def backfill_iocs_for_project(
     project_id: _uuid.UUID | None = None,
     batch_size: int = 1000,
 ) -> dict[str, int]:
-    """Re-runnable backfill over `events`. Idempotent — second run produces
+    """Re-runnable backfill over `events`. Idempotent - second run produces
     ~0 net new IOC rows because the upsert preserves confidence on conflict.
 
     Confidence inheritance (CONTEXT.md §Backfill strategy):
@@ -517,7 +517,7 @@ async def clone_global_to_project_whitelisted(
 # The bulk-import Dramatiq actor needs to know whether each row was an INSERT
 # or an UPDATE so it can populate `inserted/updated/skipped` in the Redis job
 # status. The system-column-based introspection approach was rejected on
-# revision (checker warning #7) — replaced here with a deterministic
+# revision (checker warning #7) - replaced here with a deterministic
 # SELECT-then-upsert pattern: the existence check runs in the SAME transaction
 # as the upsert, so it sees the actor's prior batch writes and never
 # double-counts.
@@ -537,7 +537,7 @@ async def upsert_ioc_row(
     Implementation: SELECT the existence of `(project_id, type, normalized_value)`
     against the same predicate as the UNIQUE NULLS NOT DISTINCT index, then
     perform the upsert. The pre-SELECT shares the actor's transaction so it
-    sees prior batch writes — no system-column introspection needed (per
+    sees prior batch writes - no system-column introspection needed (per
     IntelliBird revision; checker warning #7).
 
     Re-sighting semantics preserved: confidence + ttl_days are NEVER in the
@@ -569,7 +569,7 @@ async def upsert_ioc_row(
     existing = (await session.execute(existence_stmt)).scalars().first()
     outcome = "updated" if existing is not None else "inserted"
 
-    # Step 2: upsert (re-sighting safe — confidence/ttl_days unchanged on conflict).
+    # Step 2: upsert (re-sighting safe - confidence/ttl_days unchanged on conflict).
     stmt = (
         _pg_insert(_IOC)
         .values(

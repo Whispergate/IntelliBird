@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * CreateWindowForm — react-hook-form + zod form to POST /api/admin/maintenance-window.
+ * CreateWindowForm - react-hook-form + zod form to POST /api/admin/maintenance-window.
  * H-7 maintenance window management.
  *
  * Fields:
- *   start_at  — datetime-local (required)
- *   end_at    — datetime-local (required, must be after start_at)
- *   reason    — textarea (optional, max 1000 chars)
+ *   start_at  - datetime-local (required)
+ *   end_at    - datetime-local (required, must be after start_at)
+ *   reason    - textarea (optional, max 1000 chars)
  *
  * Client-side validation via zod. Toast on success/failure.
  * Calls onSuccess() after successful POST so parent can refresh the list.

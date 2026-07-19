@@ -1,17 +1,17 @@
-"""Dramatiq AI actors — AI-06, AI-07, SCR-04.
+"""Dramatiq AI actors - AI-06, AI-07, SCR-04.
 
 Three actors all on ``queue_name="ai"`` (isolated from ingest / scoring queues):
 
-  ai_summarise_event  — on-demand event summary with SSE Redis-buffer protocol
-  ai_rescore_project  — AI reranking ±15 clamp, writes events.ai_score only
-  ai_digest_project   — daily top-10 digest, writes ai_summaries with summary_type='digest'
+  ai_summarise_event  - on-demand event summary with SSE Redis-buffer protocol
+  ai_rescore_project  - AI reranking ±15 clamp, writes events.ai_score only
+  ai_digest_project   - daily top-10 digest, writes ai_summaries with summary_type='digest'
 
-Per-loop async engine pattern (mandatory — see RESEARCH.md §"Pitfall 2"):
+Per-loop async engine pattern (mandatory - see RESEARCH.md §"Pitfall 2"):
     Each Dramatiq worker thread has its own asyncio event loop.  A module-global
     create_async_engine would bind to the FIRST loop it touches; subsequent calls
     from a different thread raise "Future attached to a different loop".
     Solution: create a fresh engine INSIDE each _async_* helper and await
-    engine.dispose() in a finally block — guarantees no connection leak.
+    engine.dispose() in a finally block - guarantees no connection leak.
 
 SSE Redis protocol owned by this plan:
   ai:job:{job_id}:chunks    List, RPUSHed per token chunk, EX=3600
@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 # SSE Redis key constants
 # ---------------------------------------------------------------------------
 
-CHUNKS_TTL: int = 3600  # 1 hour — generous reconnect window
+CHUNKS_TTL: int = 3600  # 1 hour - generous reconnect window
 DONE_TTL: int = 3600
 CANCELLED_TTL: int = 300  # SSE generator sets this on disconnect
 
@@ -47,7 +47,7 @@ CANCELLED_TTL: int = 300  # SSE generator sets this on disconnect
 
 def _make_engine_and_session():
     """Build a fresh async engine + session factory inside the running loop."""
-    from app.config import settings  # noqa: PLC0415 — lazy import
+    from app.config import settings  # noqa: PLC0415 - lazy import
     engine = create_async_engine(
         settings.DATABASE_URL,
         pool_pre_ping=True,
@@ -62,7 +62,7 @@ def _make_engine_and_session():
 
 
 # ---------------------------------------------------------------------------
-# _async_summarise — ai_summarise_event implementation
+# _async_summarise - ai_summarise_event implementation
 # ---------------------------------------------------------------------------
 
 
@@ -80,7 +80,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
         redis = await get_redis()
 
         async with session_factory() as db:
-            # Lazy imports — avoid hard-requiring env vars at module import time.
+            # Lazy imports - avoid hard-requiring env vars at module import time.
             from app.models.events import Event  # noqa: PLC0415
             from app.models.projects import Project  # noqa: PLC0415
             from app.services.llm.client import (  # noqa: PLC0415
@@ -92,8 +92,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
             )
             from app.services.llm.prompts import (  # noqa: PLC0415
                 build_summary_messages, build_meta_messages, build_suggestion_messages,
-                EVENT_SUMMARY_PROMPT_V1, META_SUMMARY_PROMPT_V1,
-                SUGGESTION_EXTRACTION_PROMPT_V1,
+                EVENT_SUMMARY_PROMPT_V1,
             )
             from app.services.llm.suggestion_validator import (  # noqa: PLC0415
                 validate_and_stage_suggestions,
@@ -110,7 +109,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
 
             if event_row is None:
                 err_payload = json.dumps({"error": f"event {event_id} not found"})
-                await redis.rpush(chunks_key, err_payload)
+                await redis.rpush(chunks_key, err_payload)  # type: ignore[misc]
                 await redis.expire(chunks_key, CHUNKS_TTL)
                 await redis.set(done_key, "1", ex=DONE_TTL)
                 return
@@ -121,7 +120,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
 
             if project_row is None:
                 err_payload = json.dumps({"error": f"project {project_id} not found"})
-                await redis.rpush(chunks_key, err_payload)
+                await redis.rpush(chunks_key, err_payload)  # type: ignore[misc]
                 await redis.expire(chunks_key, CHUNKS_TTL)
                 await redis.set(done_key, "1", ex=DONE_TTL)
                 return
@@ -144,18 +143,20 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
             estimated = estimate_input_tokens(model_str, messages)
             estimated_with_buffer = int(estimated * 1.2)
 
-            # 5. Context window check — hierarchical chunking if > 80%.
+            # 5. Context window check - hierarchical chunking if > 80%.
             use_chunking = False
             try:
                 import litellm  # noqa: PLC0415
                 model_info = litellm.get_model_info(model_str)
-                context_window = model_info.get("max_input_tokens") or model_info.get(
-                    "max_tokens", 4096
+                context_window = (
+                    model_info.get("max_input_tokens")
+                    or model_info.get("max_tokens")
+                    or 4096
                 )
                 if estimated > context_window * 0.8:
                     use_chunking = True
             except Exception:  # noqa: BLE001
-                pass  # Best-effort — proceed without chunking if metadata unavailable
+                pass  # Best-effort - proceed without chunking if metadata unavailable
 
             # 6. Budget pre-flight check.
             cap = project_row.ai_daily_token_cap or 100_000
@@ -165,9 +166,9 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
             if not allowed:
                 err_payload = json.dumps({
                     "event": "error",
-                    "data": "Daily AI token budget exhausted — resets at 00:00 UTC",
+                    "data": "Daily AI token budget exhausted - resets at 00:00 UTC",
                 })
-                await redis.rpush(chunks_key, err_payload)
+                await redis.rpush(chunks_key, err_payload)  # type: ignore[misc]
                 await redis.expire(chunks_key, CHUNKS_TTL)
                 await redis.set(done_key, "1", ex=DONE_TTL)
                 return
@@ -209,7 +210,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
                         return
                     summary_text += chunk_text
                     actual_tokens += len(chunk_text.split())
-                    await redis.rpush(chunks_key, chunk_text)
+                    await redis.rpush(chunks_key, chunk_text)  # type: ignore[misc]
                     await redis.expire(chunks_key, CHUNKS_TTL)
 
             else:
@@ -226,7 +227,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
                         return
                     summary_text += chunk_text
                     actual_tokens += len(chunk_text.split())
-                    await redis.rpush(chunks_key, chunk_text)
+                    await redis.rpush(chunks_key, chunk_text)  # type: ignore[misc]
                     await redis.expire(chunks_key, CHUNKS_TTL)
 
             # 8. Persist AISummary row.
@@ -244,7 +245,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
             db.add(summary_row)
             await db.flush()  # get summary_row.id
 
-            # 9. Suggestion extraction pass — second LLM call.
+            # 9. Suggestion extraction pass - second LLM call.
             # Round-robin + failover across the configured model pool.
             # Validated attack technique IDs are also auto-attached to the event
             # via attack_technique_tags(tag_source='auto') so the graph + tag UI
@@ -305,7 +306,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
                     if cleaned.endswith("```"):
                         cleaned = cleaned[:-3]
                     cleaned = cleaned.strip()
-                # Sometimes the model emits prose then a JSON object — extract
+                # Sometimes the model emits prose then a JSON object - extract
                 # the first balanced {...} block.
                 if not cleaned.startswith("{"):
                     start = cleaned.find("{")
@@ -339,7 +340,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
                     )
 
                 # Auto-attach validated ATT&CK techniques as tags. Each
-                # technique_id is re-validated against the catalog (cheap —
+                # technique_id is re-validated against the catalog (cheap -
                 # already-cached lookup). Unknown IDs are skipped silently;
                 # they remain in ai_suggestions for analyst review.
                 attached = 0
@@ -360,7 +361,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
                     try:
                         if await validate_attack_technique(db, tech_id):
                             await db.execute(
-                                _pg_insert(AttackTechniqueTag.__table__)
+                                _pg_insert(AttackTechniqueTag.__table__)  # type: ignore[arg-type]
                                 .values(
                                     event_id=event_uuid,
                                     technique_id=tech_id,
@@ -452,7 +453,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
         try:
             if redis is not None:
                 err_payload = json.dumps({"event": "error", "data": str(exc)})
-                await redis.rpush(chunks_key, err_payload)
+                await redis.rpush(chunks_key, err_payload)  # type: ignore[misc]
                 await redis.expire(chunks_key, CHUNKS_TTL)
                 await redis.set(done_key, "1", ex=DONE_TTL)
         except Exception:  # noqa: BLE001
@@ -463,7 +464,7 @@ async def _async_summarise(job_id: str, event_id: str, project_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# _async_rescore — ai_rescore_project implementation
+# _async_rescore - ai_rescore_project implementation
 # ---------------------------------------------------------------------------
 
 
@@ -471,7 +472,7 @@ async def _async_rescore(project_id: str) -> None:
     """Per-loop async engine implementation for ai_rescore_project (SCR-04).
 
     Clamp rule: ai_score = max(0.0, min(100.0, rule_score + max(-15, min(15, adjustment))))
-    Writes to events.ai_score ONLY — never touches events.score.
+    Writes to events.ai_score ONLY - never touches events.score.
     """
     from app.services.redis_client import get_redis  # noqa: PLC0415
 
@@ -500,7 +501,7 @@ async def _async_rescore(project_id: str) -> None:
                 log.warning("ai_rescore_project_not_found project_id=%s", project_id)
                 return
 
-            # Resolve provider — full model pool for round-robin + failover.
+            # Resolve provider - full model pool for round-robin + failover.
             from app.services.llm.client import resolve_provider_models  # noqa: PLC0415
             models, api_base, api_key = await resolve_provider_models(db, project_uuid)
 
@@ -617,7 +618,7 @@ async def _async_rescore(project_id: str) -> None:
                 clamped_adjustment = max(-15, min(15, raw_adjustment))
                 ai_score_value = max(0.0, min(100.0, float(rule_score) + clamped_adjustment))
 
-                # Write ai_score — UPDATE only (events is a hypertable; most recent
+                # Write ai_score - UPDATE only (events is a hypertable; most recent
                 # 24h rows are uncompressed and support UPDATE).  NEVER touch score.
                 try:
                     await db.execute(
@@ -648,7 +649,7 @@ async def _async_rescore(project_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# _async_digest — ai_digest_project implementation
+# _async_digest - ai_digest_project implementation
 # ---------------------------------------------------------------------------
 
 
@@ -681,7 +682,7 @@ async def _async_digest(project_id: str) -> None:
                 log.warning("ai_digest_project_not_found project_id=%s", project_id)
                 return
 
-            # Window count M — total events in last 48h for project.
+            # Window count M - total events in last 48h for project.
             m_result = await db.execute(
                 select(Event.id)
                 .where(
@@ -733,7 +734,7 @@ async def _async_digest(project_id: str) -> None:
 
             digest_messages = build_digest_messages(events_payload)
 
-            # Non-streaming acompletion — digest is page-only delivery.
+            # Non-streaming acompletion - digest is page-only delivery.
             digest_kwargs: dict = {
                 "model": model_str,
                 "messages": digest_messages,
@@ -793,9 +794,9 @@ def ai_summarise_event(job_id: str, event_id: str, project_id: str) -> None:
         project_id: UUID string of the owning project.
 
     SSE Redis keys (owned by this actor):
-        ai:job:{job_id}:chunks    — RPUSH token chunks here, EX=3600
-        ai:job:{job_id}:done      — SET "1" on completion, EX=3600
-        ai:job:{job_id}:cancelled — checked between chunk yields; set by SSE on disconnect
+        ai:job:{job_id}:chunks    - RPUSH token chunks here, EX=3600
+        ai:job:{job_id}:done      - SET "1" on completion, EX=3600
+        ai:job:{job_id}:cancelled - checked between chunk yields; set by SSE on disconnect
     """
     try:
         asyncio.run(_async_summarise(job_id, event_id, project_id))
@@ -809,7 +810,7 @@ def ai_summarise_event(job_id: str, event_id: str, project_id: str) -> None:
 
 @dramatiq.actor(queue_name="ai", max_retries=1, min_backoff=5_000, max_backoff=30_000)
 def ai_rescore_project(project_id: str) -> None:
-    """AI reranking pass — clamps adjustment to ±15, writes events.ai_score only.
+    """AI reranking pass - clamps adjustment to ±15, writes events.ai_score only.
 
     Args:
         project_id: UUID string of the project to rerank.
@@ -824,7 +825,7 @@ def ai_rescore_project(project_id: str) -> None:
 
 @dramatiq.actor(queue_name="ai", max_retries=1, min_backoff=10_000, max_backoff=60_000)
 def ai_digest_project(project_id: str) -> None:
-    """Daily digest actor — top-10 events by COALESCE(ai_score, score), writes digest row.
+    """Daily digest actor - top-10 events by COALESCE(ai_score, score), writes digest row.
 
     Args:
         project_id: UUID string of the project to generate a digest for.
@@ -838,7 +839,7 @@ def ai_digest_project(project_id: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# _async_draft_scenario_narrative — ai_draft_scenario_narrative implementation
+# _async_draft_scenario_narrative - ai_draft_scenario_narrative implementation
 # ---------------------------------------------------------------------------
 
 
@@ -851,10 +852,10 @@ async def _async_draft_scenario_narrative(
     """Per-loop async engine implementation for ai_draft_scenario_narrative (AI-08).
 
     SSE Redis protocol (mirrors ai_summarise_event):
-      ai:job:{job_id}:chunks    — RPUSH token chunks here, EX=600
-      ai:job:{job_id}:done      — SET "1" on completion, EX=600
-      ai:job:{job_id}:error     — SET reason string on terminal error, EX=600
-      ai:job:{job_id}:cancelled — checked between chunk yields; set by SSE on disconnect
+      ai:job:{job_id}:chunks    - RPUSH token chunks here, EX=600
+      ai:job:{job_id}:done      - SET "1" on completion, EX=600
+      ai:job:{job_id}:error     - SET reason string on terminal error, EX=600
+      ai:job:{job_id}:cancelled - checked between chunk yields; set by SSE on disconnect
     """
     from datetime import datetime, timezone  # noqa: PLC0415
 
@@ -865,7 +866,7 @@ async def _async_draft_scenario_narrative(
     cancelled_key = f"ai:job:{job_id}:cancelled"
     error_key = f"ai:job:{job_id}:error"
 
-    NARRATIVE_TTL: int = 600  # 10 minutes — generous SSE reconnect window
+    NARRATIVE_TTL: int = 600  # 10 minutes - generous SSE reconnect window
 
     engine, session_factory = _make_engine_and_session()
     redis = None
@@ -892,13 +893,13 @@ async def _async_draft_scenario_narrative(
             scenario = await db.get(TiberScenario, UUID(scenario_id))
             if scenario is None or str(scenario.project_id) != project_id:
                 err_msg = json.dumps({"event": "error", "data": "scenario_not_found_or_project_mismatch"})
-                await redis.rpush(chunks_key, err_msg)
+                await redis.rpush(chunks_key, err_msg)  # type: ignore[misc]
                 await redis.expire(chunks_key, NARRATIVE_TTL)
                 await redis.set(error_key, "scenario_not_found_or_project_mismatch", ex=NARRATIVE_TTL)
                 await redis.set(done_key, "1", ex=NARRATIVE_TTL)
                 return
 
-            # 2. Load related report and actor (actor may be NULL — SET NULL FK).
+            # 2. Load related report and actor (actor may be NULL - SET NULL FK).
             report = await db.get(TiberReport, scenario.tiber_report_id)
             actor = (
                 await db.get(TiberActorProfile, scenario.actor_id)
@@ -913,7 +914,7 @@ async def _async_draft_scenario_narrative(
 
             model_str, api_base, api_key = await resolve_provider(db, UUID(project_id))
 
-            # 4. Build structural prompt (C-3 compliant — no f-string of raw user content).
+            # 4. Build structural prompt (C-3 compliant - no f-string of raw user content).
             messages = tiber_scenario_narrative_messages(scenario, actor, report)
 
             # 5. Token budget pre-flight check (AI-06 token budget gate).
@@ -926,15 +927,15 @@ async def _async_draft_scenario_narrative(
             if not allowed:
                 err_msg = json.dumps({
                     "event": "error",
-                    "data": "Daily AI token budget exhausted — resets at 00:00 UTC",
+                    "data": "Daily AI token budget exhausted - resets at 00:00 UTC",
                 })
-                await redis.rpush(chunks_key, err_msg)
+                await redis.rpush(chunks_key, err_msg)  # type: ignore[misc]
                 await redis.expire(chunks_key, NARRATIVE_TTL)
                 await redis.set(error_key, "budget_exhausted", ex=NARRATIVE_TTL)
                 await redis.set(done_key, "1", ex=NARRATIVE_TTL)
                 return
 
-            # 6. Stream narrative — push each token chunk to Redis.
+            # 6. Stream narrative - push each token chunk to Redis.
             actual_tokens = 0
             full_text_parts: list[str] = []
 
@@ -950,7 +951,7 @@ async def _async_draft_scenario_narrative(
                     return
                 full_text_parts.append(chunk_text)
                 actual_tokens += len(chunk_text.split())
-                await redis.rpush(chunks_key, chunk_text)
+                await redis.rpush(chunks_key, chunk_text)  # type: ignore[misc]
                 await redis.expire(chunks_key, NARRATIVE_TTL)
 
             # 7. Persist final narrative text + metadata JSONB to tiber_scenarios row.
@@ -986,7 +987,7 @@ async def _async_draft_scenario_narrative(
         try:
             if redis is not None:
                 err_msg = json.dumps({"event": "error", "data": str(exc)})
-                await redis.rpush(chunks_key, err_msg)
+                await redis.rpush(chunks_key, err_msg)  # type: ignore[misc]
                 await redis.expire(chunks_key, NARRATIVE_TTL)
                 await redis.set(error_key, str(exc)[:200], ex=NARRATIVE_TTL)
                 await redis.set(done_key, "1", ex=NARRATIVE_TTL)
@@ -1022,10 +1023,10 @@ def ai_draft_scenario_narrative(
         user_id:     UUID string of the requesting user, or None.
 
     SSE Redis keys (owned by this actor):
-        ai:job:{job_id}:chunks    — RPUSH token chunks here, EX=600
-        ai:job:{job_id}:done      — SET "1" on completion, EX=600
-        ai:job:{job_id}:error     — SET reason on terminal error, EX=600
-        ai:job:{job_id}:cancelled — checked between chunk yields; set by SSE on disconnect
+        ai:job:{job_id}:chunks    - RPUSH token chunks here, EX=600
+        ai:job:{job_id}:done      - SET "1" on completion, EX=600
+        ai:job:{job_id}:error     - SET reason on terminal error, EX=600
+        ai:job:{job_id}:cancelled - checked between chunk yields; set by SSE on disconnect
     """
     try:
         asyncio.run(
@@ -1040,7 +1041,7 @@ def ai_draft_scenario_narrative(
 
 
 # ---------------------------------------------------------------------------
-# _async_summarise_case — ai_summarise_case implementation (CASE-05)
+# _async_summarise_case - ai_summarise_case implementation (CASE-05)
 # ---------------------------------------------------------------------------
 
 
@@ -1048,7 +1049,7 @@ async def _async_summarise_case(case_id: str, project_id: str) -> None:
     """Narrative roll-up of all events linked to a case.
 
     Clones _async_digest pattern (non-streaming acompletion, writes to row field).
-    Output: cases.summary_md — frontend polls GET /api/projects/{id}/cases/{id}.
+    Output: cases.summary_md - frontend polls GET /api/projects/{id}/cases/{id}.
     No SSE keys needed (poll-based per CONTEXT.md decision).
     """
     from uuid import UUID as _UUID  # noqa: PLC0415
@@ -1268,7 +1269,7 @@ def ai_summarise_case(case_id: str, project_id: str) -> None:
         project_id: UUID string of the owning project.
 
     Frontend polls: GET /api/projects/{id}/cases/{id} every 3s until summary_md != null.
-    No SSE keys — poll-based per CONTEXT.md decision.
+    No SSE keys - poll-based per CONTEXT.md decision.
     """
     try:
         asyncio.run(_async_summarise_case(case_id, project_id))

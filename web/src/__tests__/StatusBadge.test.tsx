@@ -12,7 +12,7 @@ const BASE_PROPS = {
 
 // Brand-aligned tests: label (semantic) + title (ISO) are the stable contract.
 // Color encoding is validated visually against the brand book, not via brittle
-// class-name or hex-string grep — jsdom's style-attribute serialization drops
+// class-name or hex-string grep - jsdom's style-attribute serialization drops
 // some values and normalises hex→rgb.
 
 describe("StatusBadge", () => {

@@ -10,7 +10,7 @@ credentials. See `.planning/phases/08-pre-auth-infra-hardening/` for the design.
 - After any developer/operator leaves a trusted role.
 
 You can detect that rotation was skipped by checking the UI banner
-(**CREDENTIAL DECRYPTION FAILURE** — red `#b00020`) or by curl:
+(**CREDENTIAL DECRYPTION FAILURE** - red `#b00020`) or by curl:
 
 ```bash
 curl -s http://127.0.0.1:8000/api/system/status | jq .decrypt_check
@@ -85,7 +85,7 @@ never had credentials_enc.
 
 ### 5. Unset the transient env vars and restart
 
-Both `REKEY_FROM_SECRET` and `SETUP_TOKEN` are one-shot — remove them so the
+Both `REKEY_FROM_SECRET` and `SETUP_TOKEN` are one-shot - remove them so the
 rekey endpoint returns 403 for anyone who later sets `X-Setup-Token`:
 
 ```bash
@@ -114,7 +114,7 @@ docker compose -f ops/docker-compose.yml logs api | grep -E "startup_(canary_see
 
 Expected lines (one of):
 
-- `startup_decrypt_check_ok` on second restart — canary round-trips cleanly
+- `startup_decrypt_check_ok` on second restart - canary round-trips cleanly
 - `startup_canary_seeded` on very first start after migration 007
 
 If you see `startup_decrypt_check_failed`, rekey did NOT run or did not
@@ -138,8 +138,8 @@ complete. Return to step 4.
 The rekey endpoint is transaction-atomic. If it returns 500 with
 `{"error": "decrypt_failed", "source_ids": ["<uuid>", ...]}`:
 
-1. The transaction rolled back — stored blobs are UNCHANGED under the OLD key.
-2. Investigate the failing rows — they were encrypted under a key that is
+1. The transaction rolled back - stored blobs are UNCHANGED under the OLD key.
+2. Investigate the failing rows - they were encrypted under a key that is
    neither your current `SECRET_KEY` nor the `REKEY_FROM_SECRET` you supplied.
    Common causes: the row was manually inserted with a bad blob, or a past
    rekey was interrupted.
@@ -163,19 +163,19 @@ longer decrypt them.
 ## interaction
 
 The rekey endpoint is deliberately exempt from `AuthMiddleware` (see
-`backend/app/middleware/auth.py` — `EXEMPT_PATHS`). It remains callable when
-`AUTH_ENABLED=true`. The `X-Setup-Token` gate is the only auth it enforces —
+`backend/app/middleware/auth.py` - `EXEMPT_PATHS`). It remains callable when
+`AUTH_ENABLED=true`. The `X-Setup-Token` gate is the only auth it enforces -
 keep `SETUP_TOKEN` unset in normal operation so the endpoint returns 403 for
 all callers.
 
 ## See also
 
-- `ops/.env.example` — env var reference
-- `backend/app/routers/admin/rekey.py` — endpoint implementation
-- `backend/app/main.py` — lifespan canary check
-- `backend/app/scripts/verify_sources_decrypt.py` — full-table read-back verifier (PROD-04)
-- `backend/tests/integration/test_rekey_router.py` — regression coverage for the endpoint
-- `.planning/research/PITFALLS.md` §C-1 — threat-model rationale
+- `ops/.env.example` - env var reference
+- `backend/app/routers/admin/rekey.py` - endpoint implementation
+- `backend/app/main.py` - lifespan canary check
+- `backend/app/scripts/verify_sources_decrypt.py` - full-table read-back verifier (PROD-04)
+- `backend/tests/integration/test_rekey_router.py` - regression coverage for the endpoint
+- `.planning/research/PITFALLS.md` §C-1 - threat-model rationale
 
 ---
 
@@ -215,7 +215,7 @@ curl -sf $INTELLIBIRD_URL/api/system/status | jq '.decrypt_check'
 # expected: "ok"
 ```
 
-If any of the above fails, STOP — do not rotate. Fix the failure or the
+If any of the above fails, STOP - do not rotate. Fix the failure or the
 rehearsal evidence will be unusable for rollback.
 
 ## Rotate
@@ -241,7 +241,7 @@ curl -fsS -X POST $INTELLIBIRD_URL/api/admin/rekey-credentials \
 ```
 
 If the endpoint returns 500 with `{"error": "decrypt_failed", "source_ids": [...]}`,
-the transaction rolled back — stored blobs are UNCHANGED. See the
+the transaction rolled back - stored blobs are UNCHANGED. See the
 `Rollback` section below for the decision path.
 
 ## Read-Back Verify
@@ -261,7 +261,7 @@ curl -s $INTELLIBIRD_URL/api/system/status | jq '{decrypt_check, warning}'
 ```
 
 If the script exits non-zero, STOP and proceed to `Rollback`. Do not
-remove `REKEY_FROM_SECRET` — you may need to retry.
+remove `REKEY_FROM_SECRET` - you may need to retry.
 
 ## Clean Up
 
@@ -285,13 +285,13 @@ Two rollback contracts, depending on how far the drill progressed.
 **A. Rekey endpoint returned non-2xx (no blobs mutated):**
 
 ```bash
-# Restore pre-rotation env — SECRET_KEY returns to OLD_KEY.
+# Restore pre-rotation env - SECRET_KEY returns to OLD_KEY.
 mv ops/.env.bak-<YYYYMMDD> ops/.env
 docker compose -f ops/docker-compose.yml restart api
 curl -s $INTELLIBIRD_URL/api/system/status | jq '.decrypt_check'  # "ok"
 ```
 
-No DB restore needed — the rekey router is transaction-atomic.
+No DB restore needed - the rekey router is transaction-atomic.
 
 **B. Rekey succeeded but read-back or downstream checks fail (blobs now
 under new key, but something is wrong):**
@@ -328,8 +328,8 @@ record for PROD-04 evidence._
 - Environment: <local | staging | prod>
 - Sources rotated: <N>
 - Pre-flight baseline: <N_with_creds>/<N_total>
-- Rekey endpoint: <2xx | 4xx | 5xx — paste /tmp/rekey-response.json>
-- Read-back (verify_sources_decrypt): <OK N/N | FAIL — paste stderr>
+- Rekey endpoint: <2xx | 4xx | 5xx - paste /tmp/rekey-response.json>
+- Read-back (verify_sources_decrypt): <OK N/N | FAIL - paste stderr>
 - system/status decrypt_check: <ok | failed>
 - Rollback exercised: <yes: path A | yes: path B | no>
 - Cleanup completed (REKEY_FROM_SECRET + SETUP_TOKEN removed): <yes | no>

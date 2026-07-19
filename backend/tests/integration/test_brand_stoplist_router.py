@@ -1,4 +1,4 @@
-"""Integration tests for brand stoplist CRUD routes — BRAND-01.
+"""Integration tests for brand stoplist CRUD routes - BRAND-01.
 
 Tests the per-project brand stoplist: GET (Observer+), POST (Lead+), DELETE (Lead+).
 
@@ -56,7 +56,7 @@ def _make_auth_user(
 
 
 # ---------------------------------------------------------------------------
-# App fixture — minimal FastAPI with brand router + session override
+# App fixture - minimal FastAPI with brand router + session override
 # ---------------------------------------------------------------------------
 
 @pytest_asyncio.fixture
@@ -67,7 +67,6 @@ async def stoplist_app(db_engine, _migrations_applied):
     from fastapi import FastAPI
 
     from app.database import get_session
-    from app.middleware.auth import require_auth
     from app.routers.brand import router as brand_router
 
     factory = async_sessionmaker(db_engine, expire_on_commit=False, class_=AsyncSession)
@@ -142,7 +141,7 @@ async def test_list_stoplist_returns_empty_for_fresh_project(stoplist_app):
     app, factory = stoplist_app
     lead_id = str(uuid.uuid4())
     pid = await _seed_project(factory, lead_id)
-    # Observer rank on this project — Observer can read, cannot write
+    # Observer rank on this project - Observer can read, cannot write
     observer = _make_auth_user(role="Analyst", project_id=pid, project_rank=_OBSERVER_RANK, user_id=lead_id)
     _patch_auth(app, observer)
 
@@ -159,7 +158,7 @@ async def test_add_term_lead_returns_201(stoplist_app):
     app, factory = stoplist_app
     lead_id = str(uuid.uuid4())
     pid = await _seed_project(factory, lead_id)
-    # Lead auth — same user_id as seeded in DB so FK is satisfied
+    # Lead auth - same user_id as seeded in DB so FK is satisfied
     lead = _make_auth_user(role="Analyst", project_id=pid, project_rank=_LEAD_RANK, user_id=lead_id)
     _patch_auth(app, lead)
 
@@ -188,7 +187,7 @@ async def test_add_term_contributor_returns_403(stoplist_app):
     app, factory = stoplist_app
     user_id = str(uuid.uuid4())
     pid = await _seed_project(factory, user_id)
-    # Contributor rank — should be rejected before FK matters
+    # Contributor rank - should be rejected before FK matters
     contributor = _make_auth_user(role="Analyst", project_id=pid, project_rank=_CONTRIBUTOR_RANK, user_id=user_id)
     _patch_auth(app, contributor)
 
@@ -206,7 +205,7 @@ async def test_add_term_observer_returns_403(stoplist_app):
     app, factory = stoplist_app
     user_id = str(uuid.uuid4())
     pid = await _seed_project(factory, user_id)
-    # Observer rank — should be rejected before FK matters
+    # Observer rank - should be rejected before FK matters
     observer = _make_auth_user(role="Analyst", project_id=pid, project_rank=_OBSERVER_RANK, user_id=user_id)
     _patch_auth(app, observer)
 
@@ -286,7 +285,7 @@ async def test_delete_term_contributor_returns_403(stoplist_app):
         assert r.status_code == 201
         term_id = r.json()["id"]
 
-    # Attempt delete as Contributor — Contributor's user_id doesn't need to exist
+    # Attempt delete as Contributor - Contributor's user_id doesn't need to exist
     # since the 403 fires before the route body runs
     contributor_id = str(uuid.uuid4())
     contributor = _make_auth_user(role="Analyst", project_id=pid, project_rank=_CONTRIBUTOR_RANK, user_id=contributor_id)

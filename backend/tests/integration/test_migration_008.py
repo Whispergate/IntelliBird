@@ -1,4 +1,4 @@
-"""Migration 008 integration test — users table + user_role enum + indexes.
+"""Migration 008 integration test - users table + user_role enum + indexes.
 
 AUTH-01. Activated by plan 09-01.
 
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 import sqlalchemy as sa
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.engine import make_url
 from testcontainers.postgres import PostgresContainer
 
@@ -27,7 +27,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 def live_db_007():
     """Start intellibird-db:m1, migrate to 007, yield (engine, env).
 
-    Leaves the DB at 007 — tests upgrade to 008 and can downgrade back.
+    Leaves the DB at 007 - tests upgrade to 008 and can downgrade back.
     """
     with PostgresContainer("intellibird-db:m1") as pg:
         url = pg.get_connection_url()

@@ -1,4 +1,4 @@
-"""Cases REST API — Case Management — CASE-01, CASE-02, CASE-03, CASE-05.
+"""Cases REST API - Case Management - CASE-01, CASE-02, CASE-03, CASE-05.
 
 Endpoints:
   GET    /api/projects/{project_id}/cases                         paginated list
@@ -21,8 +21,8 @@ Endpoints:
   POST   /api/projects/{project_id}/cases/{case_id}/summarise/regenerate  clear + re-enqueue
 
 RBAC:
-  Read endpoints  — Observer+
-  Write endpoints — Contributor+
+  Read endpoints  - Observer+
+  Write endpoints - Contributor+
 
 CASE-05 mandate: Every query against `cases` MUST include `Case.project_id == project_id`
 to prevent cross-project data leakage.
@@ -99,7 +99,7 @@ async def list_cases(
     offset: int = Query(default=0, ge=0),
 ) -> CaseListResponse:
     """Paginated case list scoped to project_id (CASE-05)."""
-    # Base filter — MANDATORY project scope guard (CASE-05)
+    # Base filter - MANDATORY project scope guard (CASE-05)
     base = select(Case).where(Case.project_id == project_id)  # CASE-05 scope guard
 
     if status_filter is not None:
@@ -115,7 +115,7 @@ async def list_cases(
     items_stmt = base.order_by(Case.created_at.desc()).offset(offset).limit(limit)
     items = list((await db.execute(items_stmt)).scalars().all())
 
-    return CaseListResponse(items=items, total=total)
+    return CaseListResponse(items=items, total=total)  # type: ignore[arg-type]
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=CaseRead)
@@ -164,7 +164,7 @@ async def get_case(
     db: Annotated[AsyncSession, Depends(get_session)],
     _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
 ) -> Case:
-    """Fetch single case — scoped to project_id (CASE-05)."""
+    """Fetch single case - scoped to project_id (CASE-05)."""
     return await _get_case_or_404(db, project_id, case_id)
 
 
@@ -275,7 +275,7 @@ async def attach_events(
     db: Annotated[AsyncSession, Depends(get_session)],
     _role: ProjectRole = Depends(require_project_membership(ProjectRole.Contributor)),
 ) -> dict:
-    """Bulk-attach events to a case. Idempotent — skips already-attached event_ids."""
+    """Bulk-attach events to a case. Idempotent - skips already-attached event_ids."""
     case = await _get_case_or_404(db, project_id, case_id)  # CASE-05 scope guard
 
     user_sub = getattr(request.state.user, "sub", None) or getattr(request.state.user, "id", None)
@@ -352,7 +352,7 @@ async def list_case_events(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ) -> list[CaseEvent]:
-    """List events attached to a case — scoped to project_id (CASE-05)."""
+    """List events attached to a case - scoped to project_id (CASE-05)."""
     case = await _get_case_or_404(db, project_id, case_id)  # CASE-05 scope guard
 
     stmt = (
@@ -379,7 +379,7 @@ async def attach_iocs(
     db: Annotated[AsyncSession, Depends(get_session)],
     _role: ProjectRole = Depends(require_project_membership(ProjectRole.Contributor)),
 ) -> dict:
-    """Bulk-attach IOCs to a case. Idempotent — skips already-attached ioc_ids."""
+    """Bulk-attach IOCs to a case. Idempotent - skips already-attached ioc_ids."""
     case = await _get_case_or_404(db, project_id, case_id)  # CASE-05 scope guard
 
     user_sub = getattr(request.state.user, "sub", None) or getattr(request.state.user, "id", None)
@@ -456,7 +456,7 @@ async def list_case_iocs(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ) -> list[CaseIOC]:
-    """List IOCs attached to a case — scoped to project_id (CASE-05)."""
+    """List IOCs attached to a case - scoped to project_id (CASE-05)."""
     case = await _get_case_or_404(db, project_id, case_id)  # CASE-05 scope guard
 
     stmt = (
@@ -481,7 +481,7 @@ async def get_case_activity(
     db: Annotated[AsyncSession, Depends(get_session)],
     _role: ProjectRole = Depends(require_project_membership(ProjectRole.Observer)),
 ) -> list[AuditLog]:
-    """Return last 100 audit_log rows for this case — scoped to project_id (CASE-05)."""
+    """Return last 100 audit_log rows for this case - scoped to project_id (CASE-05)."""
     # Verify case belongs to project first (CASE-05 scope guard)
     await _get_case_or_404(db, project_id, case_id)
 
@@ -513,7 +513,7 @@ async def summarise_case(
     """Enqueue AI summarise actor for this case. Returns 202 immediately."""
     case = await _get_case_or_404(db, project_id, case_id)  # CASE-05 scope guard
 
-    # Lazy import — ai_summarise_case is implemented in plan 31-04 (same wave).
+    # Lazy import - ai_summarise_case is implemented in plan 31-04 (same wave).
     # Module-level import would cause ImportError if cases.py is loaded first.
     from app.workers.ai import ai_summarise_case  # noqa: PLC0415
 
@@ -550,7 +550,7 @@ async def regenerate_case_summary(
     case.summary_md = None
     await db.commit()
 
-    # Lazy import — ai_summarise_case is implemented in plan 31-04 (same wave).
+    # Lazy import - ai_summarise_case is implemented in plan 31-04 (same wave).
     # Module-level import would cause ImportError if cases.py is loaded first.
     from app.workers.ai import ai_summarise_case  # noqa: PLC0415
 

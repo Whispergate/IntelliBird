@@ -1,5 +1,5 @@
 """
-DISINFO-01 — Social post normaliser produces canonical event dicts for
+DISINFO-01 - Social post normaliser produces canonical event dicts for
              Mastodon, 4chan, and Reddit posts.
 
 Implemented in: backend/app/ingest/social_normalise.py

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ExportDialog — PRJ-07 per-project export surface.
+ * ExportDialog - PRJ-07 per-project export surface.
  *
  * UI-SPEC §Export flow PRJ-07 locks:
  *   - RadioGroup: "STIX 2.1 Bundle (.stix.json)" / "CSV (.csv)"
@@ -11,14 +11,14 @@
  *   - On submit: POST /api/projects/{id}/export?format=X → response streamed
  *     as a Blob; browser triggers download via Object URL + <a download>
  *   - On 413: toast.error with the EXACT UI-SPEC copy
- *     "Export exceeds 50,000 event cap — narrow the date range or scope and
+ *     "Export exceeds 50,000 event cap - narrow the date range or scope and
  *     retry."
  *   - On success: toast "Export ready: <filename>" + close dialog
  *
  * Filename convention (UI-SPEC §Export flow):
  *   Backend is the SOLE source of truth. Plan 10-08 locked exportProject() to
  *   return `{ blob, filename }` by parsing the Content-Disposition response
- *   header. We destructure and use `filename` directly — NEVER re-slug
+ *   header. We destructure and use `filename` directly - NEVER re-slug
  *   project.name client-side. A client-side slug() helper here would create
  *   silent drift if backend slug rules ever change (e.g., transliteration,
  *   length cap, Unicode normalisation). The backend-authoritative filename
@@ -32,9 +32,9 @@
  *   export permission. Dialog surfaces the 403 as a toast. Full client-side
  *   hide-for-Observer behaviour is a v2.1 follow-up once the frontend has a
  *   ready path to a project-role prop threaded from the JWT claim. UI-SPEC
- *   notes "defence-in-depth" — the backend 403 is authoritative.
+ *   notes "defence-in-depth" - the backend 403 is authoritative.
  *
- * Date range is currently advisory — plan 10-07 shipped the export endpoint
+ * Date range is currently advisory - plan 10-07 shipped the export endpoint
  * with a 50k event hard cap and no per-range narrowing. The date inputs are
  * included to lock the UI shape for when the cap becomes tighter
  * for now the dialog prints a small note explaining this.
@@ -59,7 +59,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 // NOTE: no client-side slug() helper. Backend is the sole source of truth for
 // the export filename (intellibird-project-<slug>-<date>.<ext>). exportProject()
 // returns {blob, filename} by parsing the Content-Disposition response header
-// — see web/app/projects/lib/api.ts. Duplicating the slug regex here would
+// - see web/app/projects/lib/api.ts. Duplicating the slug regex here would
 // create silent drift if backend rules ever change.
 
 type Format = "stix" | "csv";
@@ -78,7 +78,7 @@ export function ExportDialog({
   const [toDate, setToDate] = useState<string>("");
   const [busy, setBusy] = useState(false);
 
-  // Reset form when the dialog opens — matches ProjectDialog / MembershipDialog
+  // Reset form when the dialog opens - matches ProjectDialog / MembershipDialog
   // reset-on-open convention from plans 10-08 + 10-11 Task 1.
   useEffect(() => {
     if (open) {
@@ -123,7 +123,7 @@ export function ExportDialog({
         msg.toLowerCase().includes("export_too_large")
       ) {
         toast.error(
-          "Export exceeds 50,000 event cap — narrow the date range or scope and retry.",
+          "Export exceeds 50,000 event cap - narrow the date range or scope and retry.",
         );
       } else if (status === 403 || msg.includes("403")) {
         toast.error(
@@ -160,7 +160,7 @@ export function ExportDialog({
                   <span className="brand-mono text-muted-foreground">
                     (.stix.json)
                   </span>{" "}
-                  — events + project metadata + scope rows as a STIX bundle
+                  - events + project metadata + scope rows as a STIX bundle
                 </Label>
               </div>
               <div className="flex items-center gap-2">
@@ -170,7 +170,7 @@ export function ExportDialog({
                   <span className="brand-mono text-muted-foreground">
                     (.csv)
                   </span>{" "}
-                  — one row per event, flattened for spreadsheet analysis
+                  - one row per event, flattened for spreadsheet analysis
                 </Label>
               </div>
             </RadioGroup>
@@ -200,7 +200,7 @@ export function ExportDialog({
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Date-range filtering is advisory in — the export endpoint
+            Date-range filtering is advisory in - the export endpoint
             currently returns all in-scope events up to the 50,000-event cap.
             If the cap is reached, narrow the project scope and retry. Async
             large-export jobs are a v2.1 candidate.

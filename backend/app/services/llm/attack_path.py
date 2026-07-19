@@ -1,4 +1,4 @@
-"""AI attack path analysis service — ATK-01..ATK-05.
+"""AI attack path analysis service - ATK-01..ATK-05.
 
 Public surface:
   parse_attack_path_response(text: str) -> AttackPathResponse
@@ -58,8 +58,8 @@ async def analyse_attack_path(
     """Fetch latest 50 events, build compact payload, call LLM, return structured graph.
 
     Raises:
-        ValueError("No events in window") — zero events in requested window
-        ValueError("No AI provider ...") — resolve_provider raises (propagated)
+        ValueError("No events in window") - zero events in requested window
+        ValueError("No AI provider ...") - resolve_provider raises (propagated)
     """
     # 1. Resolve LLM provider (raises ValueError if not configured)
     model_str, api_base, api_key = await resolve_provider(db, project_id)
@@ -112,7 +112,7 @@ async def analyse_attack_path(
         "project_days_window": days,
     }
 
-    # 5. Call LLM — collect streaming tokens into a single string
+    # 5. Call LLM - collect streaming tokens into a single string
     messages = build_attack_path_messages(payload)
     token_estimate = estimate_input_tokens(model_str, messages)
     log.info(

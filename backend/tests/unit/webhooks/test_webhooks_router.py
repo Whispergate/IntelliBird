@@ -1,4 +1,4 @@
-"""Webhook CRUD router tests — schema tests unskipped by 07-01; router tests unskipped by 07-04.
+"""Webhook CRUD router tests - schema tests unskipped by 07-01; router tests unskipped by 07-04.
 
 Uses httpx.AsyncClient + ASGITransport with an in-memory aiosqlite DB.
 SQLite-compatible DDL avoids PG-specific types (ENUM, UUID, JSONB).
@@ -8,11 +8,9 @@ from __future__ import annotations
 
 import os
 import uuid
-from datetime import datetime, timezone
 from typing import AsyncIterator
-from unittest.mock import MagicMock
 
-# Settings env must be set BEFORE any app import — config.Settings() runs at import time.
+# Settings env must be set BEFORE any app import - config.Settings() runs at import time.
 os.environ.setdefault("SECRET_KEY", "s" * 64)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
@@ -35,7 +33,7 @@ from app.security.jwt import AuthUser
 
 
 def _fake_admin() -> AuthUser:
-    """Admin override for require_admin/require_auth dependency — bypasses JWT middleware chain."""
+    """Admin override for require_admin/require_auth dependency - bypasses JWT middleware chain."""
     return AuthUser(
         id="00000000-0000-0000-0000-000000000000",
         role="Admin",
@@ -190,7 +188,7 @@ def test_auth_enc_never_returned_in_response():
 
 
 def test_feed_type_locked_on_update():
-    """WebhookUpdate must NOT include destination_type field (locked on edit —)."""
+    """WebhookUpdate must NOT include destination_type field (locked on edit -)."""
     assert "destination_type" not in WebhookUpdate.model_fields, (
         "destination_type must be absent from WebhookUpdate (locked on edit per D-35)"
     )
@@ -257,7 +255,7 @@ async def test_create_webhook_persists_project_id(client, db_session):
         text("SELECT project_id FROM webhooks WHERE name='proj-hook'")
     )
     persisted = row.scalar_one()
-    # SQLite UUID(as_uuid=True) stores UUIDs without dashes — normalise for compare
+    # SQLite UUID(as_uuid=True) stores UUIDs without dashes - normalise for compare
     expected_nohyphen = str(LEGACY_PROJECT_ID).replace("-", "")
     assert persisted.replace("-", "") == expected_nohyphen, (
         f"expected project_id {LEGACY_PROJECT_ID}, got {persisted}"
@@ -274,7 +272,7 @@ async def test_update_webhook_keeps_existing_auth_on_null(client, db_session):
     assert create_resp.status_code == 201
     hook_id = create_resp.json()["id"]
 
-    # SQLite UUID(as_uuid=True) stores UUIDs without dashes — use REPLACE to normalise
+    # SQLite UUID(as_uuid=True) stores UUIDs without dashes - use REPLACE to normalise
     hook_id_nohyphen = hook_id.replace("-", "")
 
     # Fetch original auth_enc
@@ -285,7 +283,7 @@ async def test_update_webhook_keeps_existing_auth_on_null(client, db_session):
     original_enc = row.scalar_one()
     assert original_enc is not None
 
-    # PATCH without auth field — auth_enc must remain unchanged
+    # PATCH without auth field - auth_enc must remain unchanged
     patch_resp = await client.patch(f"/admin/webhooks/{hook_id}", json={"enabled": False})
     assert patch_resp.status_code == 200
 
@@ -318,7 +316,7 @@ async def test_delete_webhook_cascades_bindings(client, db_session):
     assert create_resp.status_code == 201
     hook_id = create_resp.json()["id"]
 
-    # SQLite's UUID(as_uuid=True) stores UUIDs without dashes — strip for raw queries
+    # SQLite's UUID(as_uuid=True) stores UUIDs without dashes - strip for raw queries
     hook_id_nohyphen = hook_id.replace("-", "")
 
     # Verify 2 binding rows exist (SQLite stores UUID without hyphens)
@@ -429,7 +427,7 @@ async def test_bind_presets_persists_join_rows(client, db_session):
     assert resp.status_code == 201
     hook_id = resp.json()["id"]
 
-    # SQLite UUID(as_uuid=True) stores UUIDs without dashes — use REPLACE to normalise
+    # SQLite UUID(as_uuid=True) stores UUIDs without dashes - use REPLACE to normalise
     hook_id_nohyphen = hook_id.replace("-", "")
     cnt = await db_session.execute(
         text("SELECT COUNT(*) FROM webhook_preset_bindings WHERE REPLACE(webhook_id,'-','')=:id"),

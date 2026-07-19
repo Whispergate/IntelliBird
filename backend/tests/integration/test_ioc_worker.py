@@ -1,4 +1,4 @@
-"""IOC-02 Dramatiq bulk_import_iocs actor integration tests — Plan 22-05 Task 2.
+"""IOC-02 Dramatiq bulk_import_iocs actor integration tests - Plan 22-05 Task 2.
 
 Covers:
   * `_async_bulk_import` writes rows + flips Redis status from running → complete
@@ -123,7 +123,7 @@ async def test_bulk_import_iocs_actor_writes_rows_and_flips_status(db_session):
 async def test_upsert_ioc_row_distinguishes_insert_vs_update(db_session):
     """`upsert_ioc_row` returns 'inserted' on first call, 'updated' on second.
 
-    No xmax inspection — the determination is made by an in-transaction SELECT
+    No xmax inspection - the determination is made by an in-transaction SELECT
     against (project_id, type, normalized_value) before the upsert runs.
     """
     from app.schemas.iocs import IOCImportRow

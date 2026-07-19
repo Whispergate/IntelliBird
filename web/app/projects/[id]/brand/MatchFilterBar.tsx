@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MatchFilterBar — (UI-SPEC §Surface 2 §Filter bar).
+ * MatchFilterBar - (UI-SPEC §Surface 2 §Filter bar).
  *
  * Four controls inline: Severity Select | Source Select | Lifecycle Select +
  * Include-dismissed Switch. Mirrors FindingsFilterBar shape.

@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * DiffView — (UI-SPEC §Surface 6 §"Diff vs previous").
+ * DiffView - (UI-SPEC §Surface 6 §"Diff vs previous").
  *
  * Lazy-loaded by ScanDetailClient only when Diff tab is first selected.
  * Calls getScanDiff(projectId, scanId) on mount.
  *
  * Three shadcn Collapsible sections (default expanded):
- *   NEW     — bg-green-500/10 border-l-4 border-green-500
- *   CHANGED — "Changed" label in text-orange-500; two-column old/new raw_bbot display
- *   RESOLVED — bg-muted/40; "Resolved" label in text-muted-foreground
+ *   NEW     - bg-green-500/10 border-l-4 border-green-500
+ *   CHANGED - "Changed" label in text-orange-500; two-column old/new raw_bbot display
+ *   RESOLVED - bg-muted/40; "Resolved" label in text-muted-foreground
  *
  * Empty section copy byte-exact per UI-SPEC §Copywriting Contract.
  */

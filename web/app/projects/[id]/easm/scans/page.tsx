@@ -1,5 +1,5 @@
 /**
- * Scan History page — (UI-SPEC §Surface 5).
+ * Scan History page - (UI-SPEC §Surface 5).
  *
  * Server component rendering ScanHistoryClient.
  */
@@ -12,7 +12,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: "Scan History — IntelliBird",
+  title: "Scan History - IntelliBird",
 };
 
 export default async function ScanHistoryPage({ params }: PageProps) {

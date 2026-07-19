@@ -1,4 +1,4 @@
-"""PRJ-06 cross-project compare integration tests — plan 10-14.
+"""PRJ-06 cross-project compare integration tests - plan 10-14.
 
 Covers:
   * test_shared_actors: actor name intersection across two projects
@@ -145,7 +145,7 @@ async def test_shared_actors(client, db_session, users_matrix, jwt_settings) -> 
     assert resp.status_code == 200, resp.text
     data = resp.json()
     assert "apt28" in data["shared_actors"], f"expected apt28 in {data['shared_actors']}"
-    assert "apt99" not in data["shared_actors"], f"apt99 should not be shared"
+    assert "apt99" not in data["shared_actors"], "apt99 should not be shared"
 
 
 async def test_shared_techniques(client, db_session, users_matrix, jwt_settings) -> None:
@@ -190,7 +190,7 @@ async def test_shared_techniques(client, db_session, users_matrix, jwt_settings)
     assert resp.status_code == 200, resp.text
     data = resp.json()
     assert "T1059" in data["shared_techniques"], f"T1059 missing: {data['shared_techniques']}"
-    assert "T1566" not in data["shared_techniques"], f"T1566 should not be shared"
+    assert "T1566" not in data["shared_techniques"], "T1566 should not be shared"
 
 
 async def test_shared_iocs(client, db_session, users_matrix, jwt_settings) -> None:
@@ -240,7 +240,7 @@ async def test_shared_iocs(client, db_session, users_matrix, jwt_settings) -> No
     data = resp.json()
     ioc_values = [i["value"] for i in data["shared_iocs"]]
     assert "10.0.0.1" in ioc_values, f"10.0.0.1 missing: {ioc_values}"
-    assert "8.8.8.8" not in ioc_values, f"8.8.8.8 should not be shared"
+    assert "8.8.8.8" not in ioc_values, "8.8.8.8 should not be shared"
 
 
 async def test_auth_both_sides(client, db_session, users_matrix, jwt_settings) -> None:

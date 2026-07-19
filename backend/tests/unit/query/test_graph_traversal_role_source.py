@@ -1,4 +1,4 @@
-"""graph_traversal dashboard_roles claim-based visibility — AUTH-02 / C-2."""
+"""graph_traversal dashboard_roles claim-based visibility - AUTH-02 / C-2."""
 from __future__ import annotations
 
 from app.services.graph_traversal import _visibility_ok

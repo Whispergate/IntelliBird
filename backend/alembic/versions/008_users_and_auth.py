@@ -15,7 +15,7 @@ Creates the users table (local + OIDC accounts in a single table per CONTEXT.md)
   - must_change_password BOOL for admin-temp-password -> forced-reset flow
 
 Enum creation uses raw DO-block (CREATE TYPE IF NOT EXISTS does not exist in PostgreSQL;
-DO $$ ... EXCEPTION WHEN duplicate_object ... $$ is the idempotent pattern — established
+DO $$ ... EXCEPTION WHEN duplicate_object ... $$ is the idempotent pattern - established
 in migration 003 per STATE.md).
 """
 from __future__ import annotations

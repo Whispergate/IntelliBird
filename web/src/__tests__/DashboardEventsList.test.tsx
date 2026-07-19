@@ -174,7 +174,7 @@ describe("DashboardEventsList", () => {
     await waitFor(() => {
       expect(screen.getAllByTestId("events-row").length).toBe(1);
     });
-    // em dash U+2014 — rendered in the ATT&CK cell
+    // em dash U+2014 - rendered in the ATT&CK cell
     const emDashes = screen.getAllByText("\u2014");
     expect(emDashes.length).toBeGreaterThan(0);
   });

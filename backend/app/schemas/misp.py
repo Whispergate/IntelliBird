@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for MISP config — MISP-01."""
+"""Pydantic v2 schemas for MISP config - MISP-01."""
 from __future__ import annotations
 
 import uuid
@@ -20,7 +20,7 @@ class MispConfigBase(BaseModel):
 
 
 class MispConfigCreate(MispConfigBase):
-    """Create request — requires api_key plaintext (will be encrypted at rest)."""
+    """Create request - requires api_key plaintext (will be encrypted at rest)."""
 
     api_key: str = Field(..., description="MISP API key (stored encrypted, never returned)")
 
@@ -35,7 +35,7 @@ class MispConfigCreate(MispConfigBase):
 
 
 class MispConfigUpdate(BaseModel):
-    """Partial update — all fields optional."""
+    """Partial update - all fields optional."""
 
     url: str | None = None
     api_key: str | None = Field(default=None, description="Provide to rotate the API key")
@@ -46,7 +46,7 @@ class MispConfigUpdate(BaseModel):
 
 
 class MispConfigRead(MispConfigBase):
-    """Response schema — api_key_enc replaced with masked indicator."""
+    """Response schema - api_key_enc replaced with masked indicator."""
 
     model_config = ConfigDict(from_attributes=True)
 

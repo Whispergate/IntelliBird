@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * SectionSidebar — left 240px nav for TIBER report editor.
+ * SectionSidebar - left 240px nav for TIBER report editor.
  * UI-SPEC §2b.
  *
  * Six section items in fixed ECB order with CompletionBadge per item.

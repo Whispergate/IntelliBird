@@ -1,4 +1,4 @@
-"""025 — dark-web source types: tor_html, paste, telegram.
+"""025 - dark-web source types: tor_html, paste, telegram.
 
 DARK-01..07.
 
@@ -49,7 +49,7 @@ def upgrade() -> None:
     )
 
     # 3. Confidence backfill for any pre-existing dark-web rows (idempotent no-op
-    #    when no such rows exist — safe on fresh DB).
+    #    when no such rows exist - safe on fresh DB).
     op.execute(
         """
         UPDATE sources
@@ -63,7 +63,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     # Drop the two new columns.
     # NOTE: PostgreSQL does not support DROP VALUE from an ENUM; the three new
-    # feed_type_enum values are left in place on downgrade. This is safe — the
+    # feed_type_enum values are left in place on downgrade. This is safe - the
     # enum values are unused after downgrade and will be re-added as no-ops on
     # the next upgrade.
     op.drop_column("sources", "session_enc")

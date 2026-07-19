@@ -1,11 +1,11 @@
 """Unit tests for TIBER STIX 2.1 bundle exporter.
 
-Wave 0 stubs — skip-marked pending Wave 3 service layer (18-03-PLAN).
+Wave 0 stubs - skip-marked pending Wave 3 service layer (18-03-PLAN).
 Each test documents the exact STIX compliance requirements for
 app.services.tiber.exporters.stix.
 
 Requirements covered:
-  TIBER-03 — STIX 2.1 Report SDO + Bundle; parse(strict=True) CI gate
+  TIBER-03 - STIX 2.1 Report SDO + Bundle; parse(strict=True) CI gate
 
 Key STIX 2.1 invariants tested:
   - bundle.objects contains Identity + ThreatActor[] + AttackPattern[] + Report SDO
@@ -16,9 +16,8 @@ Key STIX 2.1 invariants tested:
 """
 from __future__ import annotations
 
-import pytest
 
-# No pytestmark — unit tests are the default (not integration-marked)
+# No pytestmark - unit tests are the default (not integration-marked)
 
 
 # ---------------------------------------------------------------------------
@@ -30,7 +29,7 @@ def test_bundle_strict_roundtrip() -> None:
     """stix2.parse(bundle.serialize(), strict=True, allow_custom=True) succeeds.
 
     Bundle composition requirements (per RESEARCH.md Pattern 3):
-      - Identity SDO (name="IntelliBird", identity_class="system") — producer
+      - Identity SDO (name="IntelliBird", identity_class="system") - producer
       - ThreatActor SDOs for each actor profile (>=1)
       - AttackPattern SDOs for each ATT&CK technique (>=1)
       - Report SDO with:
@@ -64,7 +63,7 @@ def test_bundle_strict_roundtrip() -> None:
         SimpleNamespace(
             name="APT-Finance-01",
             motivation="Financial gain via data exfiltration",
-            capability_assessment="High — nation-state affiliated",
+            capability_assessment="High - nation-state affiliated",
         )
     ]
     scenarios = [
@@ -85,10 +84,10 @@ def test_bundle_strict_roundtrip() -> None:
     )
 
     # Round-trip: allow_custom=True (stix2.parse validates referential integrity internally)
-    # Note: stix2 v3.0.2 does not expose a `strict=` parameter — validation is always
+    # Note: stix2 v3.0.2 does not expose a `strict=` parameter - validation is always
     # applied by parse(); allow_custom=True permits x_intellibird_* custom properties.
     parsed = stix2.parse(bundle_json, allow_custom=True)
-    assert parsed is not None, "stix2.parse returned None — bundle invalid"
+    assert parsed is not None, "stix2.parse returned None - bundle invalid"
 
     # Extract bundle objects
     bundle_objects = list(parsed.objects) if hasattr(parsed, "objects") else []
@@ -120,7 +119,7 @@ def test_bundle_strict_roundtrip() -> None:
     for ref in report_sdo.object_refs:
         assert str(ref) in bundle_ids, (
             f"Report SDO object_refs contains dangling ref {ref!r} not in bundle objects. "
-            "strict=True would have caught this — check build_tiber_stix_bundle implementation."
+            "strict=True would have caught this - check build_tiber_stix_bundle implementation."
         )
 
     # Identity SDO must be present

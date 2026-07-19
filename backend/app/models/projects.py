@@ -1,4 +1,4 @@
-"""Project + ProjectScopeRow + ProjectSource + ProjectMembership ORM — PRJ-01, PRJ-02, PRJ-05.
+"""Project + ProjectScopeRow + ProjectSource + ProjectMembership ORM - PRJ-01, PRJ-02, PRJ-05.
 
 Exports the LEGACY_PROJECT_ID constant used by migration 009 and every downstream
 test/router that needs to reference the sentinel row.
@@ -8,7 +8,7 @@ role (Admin/Analyst/Viewer). Effective access = intersection. A user has exactly
 one global role and zero-or-more project_memberships rows.
 
 user_sub is TEXT (Authentik sub identifier) with NO FK to the users table. This
-matches CONTEXT.md §Project membership model lock — Authentik is the sole user
+matches CONTEXT.md §Project membership model lock - Authentik is the sole user
 store.
 """
 from __future__ import annotations
@@ -31,7 +31,7 @@ LEGACY_PROJECT_ID: uuid.UUID = uuid.UUID("00000000-0000-0000-0000-000000000001")
 
 
 class EngagementType(str, enum.Enum):
-    """Project engagement classification — matches engagement_type PG ENUM."""
+    """Project engagement classification - matches engagement_type PG ENUM."""
 
     red_team = "red_team"
     tiber = "tiber"
@@ -41,7 +41,7 @@ class EngagementType(str, enum.Enum):
 
 
 class ScopeType(str, enum.Enum):
-    """Scope-row category — matches scope_type PG ENUM (7 values, locked order)."""
+    """Scope-row category - matches scope_type PG ENUM (7 values, locked order)."""
 
     keyword = "keyword"
     service = "service"
@@ -53,7 +53,7 @@ class ScopeType(str, enum.Enum):
 
 
 class ProjectRole(str, enum.Enum):
-    """Per-project role axis — orthogonal to global user role.
+    """Per-project role axis - orthogonal to global user role.
 
     Lead ≈ project-Admin, Contributor ≈ project-Analyst, Observer ≈ project-Viewer.
     """
@@ -64,7 +64,7 @@ class ProjectRole(str, enum.Enum):
 
 
 class Project(Base):
-    """Project ORM — maps to projects table created in migration 009."""
+    """Project ORM - maps to projects table created in migration 009."""
 
     __tablename__ = "projects"
 
@@ -82,7 +82,7 @@ class Project(Base):
         nullable=False,
     )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    # Authentik sub, not FK — Authentik is sole user store per CONTEXT.md.
+    # Authentik sub, not FK - Authentik is sole user store per CONTEXT.md.
     created_by: Mapped[str] = mapped_column(Text, nullable=False)
     archived: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false"),
@@ -96,7 +96,7 @@ class Project(Base):
     active_auth_confirmed_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True), nullable=True,
     )
-    # EASM-04: gate-audit column — records Authentik sub who confirmed auth
+    # EASM-04: gate-audit column - records Authentik sub who confirmed auth
     active_auth_confirmed_by: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # BRP-04: GDPR per-project retention for person-type brand matches.
@@ -114,7 +114,7 @@ class Project(Base):
         Boolean, nullable=False, server_default=text("false"), default=False,
     )
     # Quick task: auto-summarise every newly-ingested event when an Ollama
-    # provider is configured. Off by default — bulk ingest (e.g. NVD initial
+    # provider is configured. Off by default - bulk ingest (e.g. NVD initial
     # backfill) would otherwise queue thousands of summary jobs.
     ai_auto_summary_enabled: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false"), default=False,
@@ -209,7 +209,7 @@ class ProjectSource(Base):
 
 
 class ProjectMembership(Base):
-    """Per-project user role — user_sub is Authentik sub (no FK to users)."""
+    """Per-project user role - user_sub is Authentik sub (no FK to users)."""
 
     __tablename__ = "project_memberships"
 

@@ -1,4 +1,4 @@
-"""Tests for FTS query builder — FIL-05.
+"""Tests for FTS query builder - FIL-05.
 
 Updated in plan 09-05: role: str | None -> dashboard_roles: list[str] | None.
 """

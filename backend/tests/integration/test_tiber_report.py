@@ -1,15 +1,15 @@
 """Integration tests for TIBER report generation.
 
-Wave 0 stubs — skip-marked pending Wave 3+ service layer and migration 015.
+Wave 0 stubs - skip-marked pending Wave 3+ service layer and migration 015.
 Each test documents exact integration behaviour; stubs flip green once the
 corresponding service code and DB migration land.
 
 Requirements covered:
-  TIBER-01 — migration 015, report CRUD, scenario count gate
-  TIBER-02 — scenario count gate
-  TIBER-03 — BYTEA 50MB cap, history list excludes content_bytea
-  TIBER-04 — auto-populate no cross-project leakage, threat landscape scoped
-  AI-08   — AI draft badge metadata persists after edit
+  TIBER-01 - migration 015, report CRUD, scenario count gate
+  TIBER-02 - scenario count gate
+  TIBER-03 - BYTEA 50MB cap, history list excludes content_bytea
+  TIBER-04 - auto-populate no cross-project leakage, threat landscape scoped
+  AI-08   - AI draft badge metadata persists after edit
 
 Restore state machine tests (per CONTEXT.md §Report state machine):
   - Admin can restore archived → draft
@@ -28,7 +28,7 @@ pytestmark = pytest.mark.integration
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="Wave 3 — TIBER service layer pending")
+@pytest.mark.skip(reason="Wave 3 - TIBER service layer pending")
 @pytest.mark.asyncio
 async def test_migration_015(db_session, monkeypatch) -> None:
     """Migration 015 up/down/up cycles cleanly inside testcontainer.
@@ -132,7 +132,7 @@ async def test_report_crud(two_project_fixture, db_session, monkeypatch) -> None
         r_patch = await c.patch(
             f"/api/projects/{project_id}/tiber/reports/{report_id}",
             headers=_bearer(fx.jwt_a),
-            json={"title": "Q1 2026 TIBER Engagement — Updated"},
+            json={"title": "Q1 2026 TIBER Engagement - Updated"},
         )
         assert r_patch.status_code == 200
 
@@ -155,7 +155,7 @@ async def test_report_crud(two_project_fixture, db_session, monkeypatch) -> None
                 f"Failed to create scenario {i}: {r_sc.status_code} {r_sc.text}"
             )
 
-        # Publish (requires min 3 selected scenarios — now satisfied)
+        # Publish (requires min 3 selected scenarios - now satisfied)
         r_publish = await c.post(
             f"/api/projects/{project_id}/tiber/reports/{report_id}/publish",
             headers=_bearer(fx.jwt_a),
@@ -323,7 +323,7 @@ async def test_bytea_size_cap(two_project_fixture, db_session, monkeypatch) -> N
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="Wave 3 — TIBER service layer pending")
+@pytest.mark.skip(reason="Wave 3 - TIBER service layer pending")
 @pytest.mark.asyncio
 async def test_auto_populate_no_leakage(two_project_fixture, db_session, monkeypatch) -> None:
     """POST /api/projects/{A}/tiber/reports creates report with zero Project B data.
@@ -339,7 +339,7 @@ async def test_auto_populate_no_leakage(two_project_fixture, db_session, monkeyp
     _patch_auth(monkeypatch)
     fx = two_project_fixture
     project_id = str(fx.project_a.id)
-    project_b_id = str(fx.project_b.id)
+    str(fx.project_b.id)
 
     async with await _client() as c:
         r = await c.post(
@@ -373,7 +373,7 @@ async def test_auto_populate_no_leakage(two_project_fixture, db_session, monkeyp
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="Wave 3 — TIBER service layer pending")
+@pytest.mark.skip(reason="Wave 3 - TIBER service layer pending")
 @pytest.mark.asyncio
 async def test_threat_landscape_auto_populate(two_project_fixture, db_session, monkeypatch) -> None:
     """POST creates report; tl_top_events contains N<=20 rows from project A scope only."""
@@ -418,7 +418,7 @@ async def test_threat_landscape_auto_populate(two_project_fixture, db_session, m
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="Wave 3 — TIBER service layer pending")
+@pytest.mark.skip(reason="Wave 3 - TIBER service layer pending")
 @pytest.mark.asyncio
 async def test_ai_draft_badge(two_project_fixture, db_session, monkeypatch) -> None:
     """POST .../draft-narrative + analyst PATCH → ai_draft_metadata JSONB persists.
@@ -538,7 +538,7 @@ async def test_lead_cannot_restore_archived(two_project_fixture, db_session, mon
     report_id = await _create_archived_report(fx, project_id)
 
     async with await _client() as c:
-        # jwt_a is a Contributor/Lead — not Admin
+        # jwt_a is a Contributor/Lead - not Admin
         r = await c.post(
             f"/api/projects/{project_id}/tiber/reports/{report_id}/restore",
             headers=_bearer(fx.jwt_a),
@@ -553,7 +553,7 @@ async def test_lead_cannot_restore_archived(two_project_fixture, db_session, mon
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.skip(reason="Wave 3 — TIBER service layer pending")
+@pytest.mark.skip(reason="Wave 3 - TIBER service layer pending")
 @pytest.mark.asyncio
 async def test_restore_rejects_non_archived(two_project_fixture, db_session, monkeypatch) -> None:
     """POST /reports/{id}/restore on a draft or published report → 409 cannot_restore_from_state.
@@ -591,7 +591,7 @@ async def test_restore_rejects_non_archived(two_project_fixture, db_session, mon
 
 
 # ---------------------------------------------------------------------------
-# Harness helpers — mirror test_prod01_cross_project_leakage.py pattern
+# Harness helpers - mirror test_prod01_cross_project_leakage.py pattern
 # ---------------------------------------------------------------------------
 
 TEST_SIGNING_KEY = "j" * 64

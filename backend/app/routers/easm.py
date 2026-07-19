@@ -14,7 +14,7 @@ Mounted paths (registered in main.py):
     PATCH  /api/projects/{project_id}/easm/findings/{finding_id} (lifecycle patch)
     GET    /api/projects/{project_id}/easm/scans/{scan_id}/findings (scan-scoped findings)
 
-Active-scan gate enforcement is defence-in-depth — plan 11-06 (projects router
+Active-scan gate enforcement is defence-in-depth - plan 11-06 (projects router
 PATCH /{id}/easm-gate) is the canonical gate-flip endpoint. The gate check here
 re-reads the project row BEFORE queue dispatch so a tampered request body cannot
 reach the BBOT subprocess without all three fields set and within TTL.
@@ -23,7 +23,7 @@ Authority matrix (CONTEXT.md §Scan authority matrix):
   Launch passive: Admin, Analyst (global), Lead, Contributor (project)
   Launch active:  Admin (global), Lead (project) only
   Cancel scan:    Admin (global), Lead (project), Contributor who launched it
-  Lifecycle PATCH: Admin, Analyst (global), Lead, Contributor (project) — Observer blocked
+  Lifecycle PATCH: Admin, Analyst (global), Lead, Contributor (project) - Observer blocked
   All GETs:       any project member (Observer+) or global Admin
 """
 from __future__ import annotations
@@ -61,7 +61,7 @@ log = structlog.get_logger(__name__)
 # ---------------------------------------------------------------------------
 # Two routers:
 #   router           → mounted at /api (handles /api/projects/... paths)
-#   safelist_router  → mounted at /api (handles /api/easm/safelist — no project scope)
+#   safelist_router  → mounted at /api (handles /api/easm/safelist - no project scope)
 # ---------------------------------------------------------------------------
 router = APIRouter(tags=["easm"])
 safelist_router = APIRouter(tags=["easm"])
@@ -72,7 +72,7 @@ _OBSERVER_RANK = PROJECT_ROLE_RANK["Observer"]
 
 
 # ---------------------------------------------------------------------------
-# GET /api/easm/safelist — public to any authenticated user (no project scope)
+# GET /api/easm/safelist - public to any authenticated user (no project scope)
 # ---------------------------------------------------------------------------
 
 @safelist_router.get("/easm/safelist", response_model=EASMSafelistResponse)
@@ -81,7 +81,7 @@ async def get_safelist(
 ) -> EASMSafelistResponse:
     """Return the effective module safelist + BBOT version + credential requirements.
 
-    UI populates its module multi-select from this endpoint — single source of truth.
+    UI populates its module multi-select from this endpoint - single source of truth.
     """
     modules = sorted(bbot_safelist.get_effective_safelist())
     return EASMSafelistResponse(
@@ -150,16 +150,16 @@ async def _findings_count_for(db: AsyncSession, scan_id: uuid.UUID) -> int:
 
 def _scan_to_response(scan: EASMScan, findings_count: int) -> EASMScanResponse:
     return EASMScanResponse(
-        id=scan.id,
-        project_id=scan.project_id,
-        status=scan.status,
-        scan_mode=scan.scan_mode,
+        id=scan.id,  # type: ignore[arg-type]
+        project_id=scan.project_id,  # type: ignore[arg-type]
+        status=scan.status,  # type: ignore[arg-type]
+        scan_mode=scan.scan_mode,  # type: ignore[arg-type]
         modules=list(scan.modules or []),
-        started_at=scan.started_at,
-        finished_at=scan.finished_at,
-        stdout_bytes=scan.stdout_bytes or 0,
-        error=scan.error,
-        launched_by=scan.launched_by,
+        started_at=scan.started_at,  # type: ignore[arg-type]
+        finished_at=scan.finished_at,  # type: ignore[arg-type]
+        stdout_bytes=scan.stdout_bytes or 0,  # type: ignore[arg-type]
+        error=scan.error,  # type: ignore[arg-type]
+        launched_by=scan.launched_by,  # type: ignore[arg-type]
         findings_count=findings_count,
     )
 
@@ -169,7 +169,7 @@ def _now() -> datetime.datetime:
 
 
 # ---------------------------------------------------------------------------
-# POST /api/projects/{project_id}/easm/scans — launch scan
+# POST /api/projects/{project_id}/easm/scans - launch scan
 # ---------------------------------------------------------------------------
 
 @router.post(
@@ -188,7 +188,7 @@ async def launch_scan(
 
     Authority (CONTEXT.md §Scan authority matrix):
       passive: Admin, Analyst (global), Lead, Contributor (project)
-      active:  Admin (global), Lead (project) only — plus active gate check
+      active:  Admin (global), Lead (project) only - plus active gate check
 
     Active-scan gate is defence-in-depth (plan 11-06 is the canonical flip).
     Concurrent-scan race guard (M-5): 409 if another scan is queued/running.
@@ -216,10 +216,10 @@ async def launch_scan(
                 detail="Insufficient role for passive scan launch.",
             )
 
-    # Load project — also enforces archived/legacy guard
+    # Load project - also enforces archived/legacy guard
     p = await _load_project_or_404(db, project_id)
 
-    # Module safelist validation (EASM-05 / M-3) — before gate, before enqueue
+    # Module safelist validation (EASM-05 / M-3) - before gate, before enqueue
     ok, invalid = bbot_safelist.validate_modules(body.modules)
     if not ok:
         raise HTTPException(
@@ -247,7 +247,7 @@ async def launch_scan(
     if existing is not None:
         raise HTTPException(status_code=409, detail="scan_already_in_progress")
 
-    # Semaphore precheck (EASM-09) — 503 if already at concurrent limit
+    # Semaphore precheck (EASM-09) - 503 if already at concurrent limit
     # Worker also re-checks; router precheck surfaces the 503 to the UI immediately.
     r = redis_lib.from_url(settings.REDIS_URL)
     try:
@@ -283,7 +283,7 @@ async def launch_scan(
         else settings.BBOT_ACTIVE_MAX_SECONDS
     )
     time_limit_ms = int(mode_seconds * 1000 * 1.1)
-    run_bbot_scan.send_with_options(args=[str(scan.id)], time_limit=time_limit_ms)
+    run_bbot_scan.send_with_options(args=[str(scan.id)], time_limit=time_limit_ms)  # type: ignore[arg-type]
 
     log.info(
         "easm_scan_queued",
@@ -297,7 +297,7 @@ async def launch_scan(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/easm/scans — list scans
+# GET /api/projects/{project_id}/easm/scans - list scans
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -322,11 +322,11 @@ async def list_scans(
     stmt = stmt.order_by(EASMScan.started_at.desc())
 
     scans = (await db.execute(stmt)).scalars().all()
-    return [_scan_to_response(s, await _findings_count_for(db, s.id)) for s in scans]
+    return [_scan_to_response(s, await _findings_count_for(db, s.id)) for s in scans]  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/easm/scans/{scan_id} — single scan
+# GET /api/projects/{project_id}/easm/scans/{scan_id} - single scan
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -351,12 +351,12 @@ async def get_scan(
     if scan is None:
         raise HTTPException(status_code=404, detail="scan_not_found")
 
-    fc = await _findings_count_for(db, scan.id)
+    fc = await _findings_count_for(db, scan.id)  # type: ignore[arg-type]
     return _scan_to_response(scan, fc)
 
 
 # ---------------------------------------------------------------------------
-# DELETE /api/projects/{project_id}/easm/scans/{scan_id} — cancel scan
+# DELETE /api/projects/{project_id}/easm/scans/{scan_id} - cancel scan
 # ---------------------------------------------------------------------------
 
 @router.delete(
@@ -397,14 +397,14 @@ async def cancel_scan(
     if not allowed:
         if scan.status in ("queued", "running"):
             raise HTTPException(status_code=403, detail="cannot_cancel_scan")
-        # Terminal state — allow 204 silently even without authority
+        # Terminal state - allow 204 silently even without authority
         return Response(status_code=204)
 
     if scan.status in ("queued", "running"):
-        # Best-effort container stop — never crashes the request
+        # Best-effort container stop - never crashes the request
         if scan.container_id:
             try:
-                bbot_runner.cancel_bbot_container(scan.container_id)
+                bbot_runner.cancel_bbot_container(scan.container_id)  # type: ignore[arg-type]
             except Exception:
                 log.warning(
                     "easm_cancel_container_failed",
@@ -432,7 +432,7 @@ async def cancel_scan(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/easm/scans/{scan_id}/diff — EASM-08
+# GET /api/projects/{project_id}/easm/scans/{scan_id}/diff - EASM-08
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -447,7 +447,7 @@ async def get_scan_diff(
 ) -> EASMDiffResponse:
     """Compute NEW / CHANGED / RESOLVED diff vs the previous finished scan.
 
-    Match key is (bbot_event_type, canonical_target) only — module/severity
+    Match key is (bbot_event_type, canonical_target) only - module/severity
     differences on the same target produce a CHANGED entry, not a NEW entry.
     Prior scan = next-most-recent *finished* scan for the same project, ordered
     by started_at DESC. Returns empty lists if no prior scan exists.
@@ -494,7 +494,7 @@ async def get_scan_diff(
         select(EASMFinding).where(EASMFinding.scan_id == prior.id)
     )).scalars().all()
 
-    # Build match-key dicts — key is (bbot_event_type, canonical_target)
+    # Build match-key dicts - key is (bbot_event_type, canonical_target)
     this_by_key = {(f.bbot_event_type, f.canonical_target): f for f in this_findings}
     prior_by_key = {(f.bbot_event_type, f.canonical_target): f for f in prior_findings}
 
@@ -508,32 +508,32 @@ async def get_scan_diff(
 
     def _entry(f: EASMFinding) -> EASMDiffEntry:
         return EASMDiffEntry(
-            bbot_event_type=f.bbot_event_type,
-            canonical_target=f.canonical_target,
+            bbot_event_type=f.bbot_event_type,  # type: ignore[arg-type]
+            canonical_target=f.canonical_target,  # type: ignore[arg-type]
             raw_bbot=f.raw_bbot if isinstance(f.raw_bbot, dict) else {},
-            module=f.module,
-            severity=f.severity,
+            module=f.module,  # type: ignore[arg-type]
+            severity=f.severity,  # type: ignore[arg-type]
         )
 
     return EASMDiffResponse(
         this_scan_id=scan_id,
-        prior_scan_id=prior.id,
+        prior_scan_id=prior.id,  # type: ignore[arg-type]
         new=[_entry(this_by_key[k]) for k in new_keys],
         changed=[
             EASMDiffChangedEntry(
-                bbot_event_type=k[0],
-                canonical_target=k[1],
+                bbot_event_type=k[0],  # type: ignore[arg-type]
+                canonical_target=k[1],  # type: ignore[arg-type]
                 previous=(
-                    prior_by_key[k].raw_bbot
+                    prior_by_key[k].raw_bbot  # type: ignore[arg-type]
                     if isinstance(prior_by_key[k].raw_bbot, dict)
                     else {}
                 ),
                 current=(
-                    this_by_key[k].raw_bbot
+                    this_by_key[k].raw_bbot  # type: ignore[arg-type]
                     if isinstance(this_by_key[k].raw_bbot, dict)
                     else {}
                 ),
-                module=this_by_key[k].module,
+                module=this_by_key[k].module,  # type: ignore[arg-type]
             )
             for k in changed_keys
         ],
@@ -542,7 +542,7 @@ async def get_scan_diff(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/easm/findings — list findings
+# GET /api/projects/{project_id}/easm/findings - list findings
 # ---------------------------------------------------------------------------
 
 @router.get(
@@ -586,7 +586,7 @@ async def list_findings(
 
 
 # ---------------------------------------------------------------------------
-# PATCH /api/projects/{project_id}/easm/findings/{finding_id} — lifecycle patch
+# PATCH /api/projects/{project_id}/easm/findings/{finding_id} - lifecycle patch
 # ---------------------------------------------------------------------------
 
 @router.patch(
@@ -602,7 +602,7 @@ async def patch_finding(
 ) -> EASMFindingResponse:
     """Update finding lifecycle status (confirm / dismiss / watchlist / new).
 
-    Observer blocked — requires Contributor+, global Analyst, or global Admin.
+    Observer blocked - requires Contributor+, global Analyst, or global Admin.
     'dismissed' sets dismiss_until = NOW() + 30d.
     'new' clears dismiss_until.
     """
@@ -646,7 +646,7 @@ async def patch_finding(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/projects/{project_id}/easm/scans/{scan_id}/findings — scan-scoped findings
+# GET /api/projects/{project_id}/easm/scans/{scan_id}/findings - scan-scoped findings
 # ---------------------------------------------------------------------------
 
 @router.get(

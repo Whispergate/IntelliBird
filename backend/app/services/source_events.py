@@ -1,4 +1,4 @@
-"""Fire-and-forget Redis pub/sub publisher — signals scheduler to reload source jobs.
+"""Fire-and-forget Redis pub/sub publisher - signals scheduler to reload source jobs.
 
 Consumers: Plan 02 CRUD router (POST/PATCH/DELETE handlers).
 Listener: Plan 06 scheduler listener (app.scheduler.jobs, daemon thread).
@@ -26,7 +26,7 @@ def publish_sources_changed(
     *,
     deleted: list[dict[str, Any]] | None = None,
 ) -> None:
-    """Publish a sources-changed event. Fire-and-forget — never raises."""
+    """Publish a sources-changed event. Fire-and-forget - never raises."""
     payload: dict[str, Any] = {"action": action}
     if deleted:
         payload["deleted"] = deleted
@@ -36,7 +36,7 @@ def publish_sources_changed(
             r.publish(RELOAD_CHANNEL, json.dumps(payload))
         finally:
             r.close()
-    except Exception as e:  # noqa: BLE001 — deliberate fire-and-forget
+    except Exception as e:  # noqa: BLE001 - deliberate fire-and-forget
         logger.warning(
             "source_events_publish_failed channel=%s action=%s error=%s",
             RELOAD_CHANNEL, action, e,

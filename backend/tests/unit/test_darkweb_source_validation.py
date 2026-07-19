@@ -1,4 +1,4 @@
-"""Unit tests for dark-web source OPSEC gate and input validation — DARK-07."""
+"""Unit tests for dark-web source OPSEC gate and input validation - DARK-07."""
 import os
 
 import pytest
@@ -39,18 +39,18 @@ def test_opsec_gate_rejects_telegram_without_authorisation():
 
 def test_opsec_gate_allows_dark_web_with_authorisation():
     """POST with feed_type='tor_html' and opsec_authorised=True → no exception raised"""
-    # Should not raise — returns None
+    # Should not raise - returns None
     result = _validate_dark_web_source("tor_html", "http://some.onion/", True, 3600)
     assert result is None
 
 
 def test_opsec_gate_does_not_block_rss_or_taxii():
     """feed_type='rss' with opsec_authorised=False → gate does not apply"""
-    # rss is a clearnet type — no OPSEC gate
+    # rss is a clearnet type - no OPSEC gate
     result = _validate_dark_web_source("rss", "https://example.com/feed.rss", False, 60)
     assert result is None
 
-    # taxii is also clearnet — no OPSEC gate
+    # taxii is also clearnet - no OPSEC gate
     result = _validate_dark_web_source("taxii", "https://taxii.example.com/", False, 60)
     assert result is None
 

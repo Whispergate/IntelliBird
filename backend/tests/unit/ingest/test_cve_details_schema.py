@@ -1,4 +1,4 @@
-"""Migration 002 part 2 — cve_details table for INGC-02.
+"""Migration 002 part 2 - cve_details table for INGC-02.
 
 Schema shape decided per RESEARCH.md Open Questions #2 (separate table,
 keyed on event_id as plain UUID, no FK to events because events is a
@@ -49,7 +49,7 @@ def test_cve_details_columns(migrated_engine) -> None:
     }
     assert cols["cve_id"]["nullable"] is False
     assert cols["cvss_v3_score"]["nullable"] is True
-    # cpe_match is JSONB — SQLAlchemy reflects as JSON/JSONB
+    # cpe_match is JSONB - SQLAlchemy reflects as JSON/JSONB
     assert "JSON" in str(cols["cpe_match"]["type"]).upper()
     # cwe_ids is TEXT[]
     assert "ARRAY" in str(cols["cwe_ids"]["type"]).upper() or str(cols["cwe_ids"]["type"]).endswith("[]")

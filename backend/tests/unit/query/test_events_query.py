@@ -1,4 +1,4 @@
-"""Tests for build_events_query — FIL-01, FIL-02.
+"""Tests for build_events_query - FIL-01, FIL-02.
 
 Updated in plan 09-05: role: str | None -> dashboard_roles: list[str] | None.
 """
@@ -54,7 +54,7 @@ def test_attack_technique_filter_subquery():
 def test_tag_and_semantics_coalesce_null():
     stmt = build_events_query(EventsQueryParams(tag=["apt28", "phishing"]), dashboard_roles=None)
     sql = _sql(stmt)
-    assert "coalesce(events.tags" in sql  # — NULL-safe
+    assert "coalesce(events.tags" in sql  # - NULL-safe
     assert "@>" in sql
 
 

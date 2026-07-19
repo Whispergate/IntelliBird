@@ -1,11 +1,10 @@
-"""Unit tests for TAXII bundle builder — TAXII-02, TAXII-04."""
+"""Unit tests for TAXII bundle builder - TAXII-02, TAXII-04."""
 from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
-import pytest
 
 from app.services.taxii_bundle import build_tlp_predicate, event_to_stix_sdo
 

@@ -1,4 +1,4 @@
-"""Unit tests for brand_synth — canonical event dict + STIX 2.1 Indicator SDO.
+"""Unit tests for brand_synth - canonical event dict + STIX 2.1 Indicator SDO.
 
 Activated by plan 12-03 (was Wave 0 stub in plan 12-00).
 Covers BRP-05 truths:
@@ -11,10 +11,9 @@ Covers BRP-05 truths:
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from uuid import uuid4
 
-import pytest
 
 from app.services.brand_synth import (
     _content_hash,

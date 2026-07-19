@@ -1,4 +1,4 @@
-"""tag_mode=any|all filter —-03 target (MAP-01)."""
+"""tag_mode=any|all filter --03 target (MAP-01)."""
 from __future__ import annotations
 
 from app.services.events_query import EventsQueryParams, build_events_query, build_fts_query
@@ -36,7 +36,7 @@ def test_tag_mode_any_uses_overlap():
 
 
 def test_tag_mode_all_explicit_uses_contains():
-    """Explicit tag_mode='all' behaves identically to default — uses @>, not &&."""
+    """Explicit tag_mode='all' behaves identically to default - uses @>, not &&."""
     params = EventsQueryParams(tag=["a", "b"], tag_mode="all")
     stmt = build_events_query(params, dashboard_roles=None)
     sql = _compile(stmt)

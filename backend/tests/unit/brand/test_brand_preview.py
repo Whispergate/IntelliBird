@@ -1,4 +1,4 @@
-"""Unit tests for brand_preview — test-coverage SQL + Redis cache.
+"""Unit tests for brand_preview - test-coverage SQL + Redis cache.
 
 Activated by plan 12-03 (was Wave 0 stub in plan 12-00).
 Covers H-5 truths:
@@ -9,7 +9,6 @@ Covers H-5 truths:
 """
 from __future__ import annotations
 
-import json
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
@@ -168,7 +167,7 @@ async def test_empty_events_table_returns_zero_no_warning():
 
 @pytest.mark.asyncio
 async def test_exactly_20_percent_no_warning():
-    """Threshold is strictly > 20% — exactly 20% is not 'likely_too_broad'."""
+    """Threshold is strictly > 20% - exactly 20% is not 'likely_too_broad'."""
     pid = uuid4()
     session = _mock_session(total=1000, hits=200)  # exactly 20%
     resp = await preview_term(

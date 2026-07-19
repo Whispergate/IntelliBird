@@ -1,6 +1,6 @@
-"""IOC-07 admin backfill endpoint + idempotency + seed_iocs CLI — Plan 22-04 Task 3.
+"""IOC-07 admin backfill endpoint + idempotency + seed_iocs CLI - Plan 22-04 Task 3.
 
-The backfill admin endpoint enqueues `backfill_iocs_actor` (Dramatiq) — for
+The backfill admin endpoint enqueues `backfill_iocs_actor` (Dramatiq) - for
 deterministic test runs we drive the actor's underlying body directly via
 `backfill_iocs_actor.fn(...)` (Dramatiq exposes `.fn` as the inner callable
 on every actor decorator) so we get synchronous execution against the
@@ -128,7 +128,6 @@ async def test_backfill_admin_endpoint_returns_202_and_job_id(db_session, monkey
         uuid.UUID(body["job_id"])
 
     # Drive the actor body synchronously to assert it produces rows.
-    from app.workers.iocs import backfill_iocs_actor
     from app.workers.iocs import _async_backfill
     await _async_backfill(body["job_id"], None)
 
@@ -153,7 +152,7 @@ async def test_backfill_idempotent_second_run_zero_inserts(db_session):
     ).scalar_one()
     assert first_count >= 1
 
-    # Second run — UNIQUE NULLS NOT DISTINCT + on_conflict_do_update preserves
+    # Second run - UNIQUE NULLS NOT DISTINCT + on_conflict_do_update preserves
     # confidence; net new rows should be 0.
     await _async_backfill(str(uuid.uuid4()), None)
     second_count = (
@@ -214,7 +213,7 @@ async def test_seed_iocs_cli_idempotent(db_session):
     await _seed_event(db_session, pid, "cli scan 7.7.7.7 sighting")
     await db_session.commit()
 
-    # Drive the CLI's inner coroutine directly — `cli.main()` calls
+    # Drive the CLI's inner coroutine directly - `cli.main()` calls
     # `asyncio.run(_run())` which can't nest inside pytest-asyncio's loop.
     # The CLI itself is exercised by the entrypoint at boot; this test
     # asserts the underlying idempotence contract.

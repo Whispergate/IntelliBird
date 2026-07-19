@@ -1,4 +1,4 @@
-"""Integration test stubs — enrichment_providers CRUD API.
+"""Integration test stubs - enrichment_providers CRUD API.
 
 Wave 0: all tests are xfail stubs. They will go GREEN when
 plan 23-03 ships the providers CRUD routes and migration.
@@ -22,37 +22,37 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
-@pytest.mark.xfail(reason="not yet implemented —")
+@pytest.mark.xfail(reason="not yet implemented -")
 async def test_upsert_per_project_provider(two_project_fixture, db_session, monkeypatch):
     """PUT /api/projects/{id}/enrichment-providers/{provider} creates a per-project row."""
-    assert False, "stub — implement after 23-03 ships providers CRUD routes"
+    assert False, "stub - implement after 23-03 ships providers CRUD routes"
 
 
-@pytest.mark.xfail(reason="not yet implemented —")
+@pytest.mark.xfail(reason="not yet implemented -")
 async def test_global_fallback_row_creation(db_session, monkeypatch):
     """PUT with project_id=None (global scope) creates a global fallback row."""
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented —")
+@pytest.mark.xfail(reason="not yet implemented -")
 async def test_disabled_by_default(two_project_fixture, db_session, monkeypatch):
     """Freshly created enrichment_providers row has enabled=False by default."""
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented —")
+@pytest.mark.xfail(reason="not yet implemented -")
 async def test_list_providers_returns_6(two_project_fixture, db_session, monkeypatch):
     """GET /api/projects/{id}/enrichment-providers lists all 6 provider slots for a project."""
-    assert False, "stub — 6 providers: vt, abuseipdb, greynoise, otx, shodan, urlhaus"
+    assert False, "stub - 6 providers: vt, abuseipdb, greynoise, otx, shodan, urlhaus"
 
 
-@pytest.mark.xfail(reason="not yet implemented —")
+@pytest.mark.xfail(reason="not yet implemented -")
 async def test_acl_lead_plus_required(two_project_fixture, monkeypatch):
     """Analyst role → 403 on PUT /api/projects/{id}/enrichment-providers/{provider}."""
     assert False, "stub"
 
 
-@pytest.mark.xfail(reason="not yet implemented —")
+@pytest.mark.xfail(reason="not yet implemented -")
 async def test_project_b_providers_not_visible_to_project_a(two_project_fixture, monkeypatch):
     """Cross-project ACL: Project A caller cannot list/modify Project B providers."""
     assert False, "stub"

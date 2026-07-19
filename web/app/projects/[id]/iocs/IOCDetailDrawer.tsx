@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * IOCDetailDrawer — (UI-SPEC §Surface 4 a/b/c/d/e + §Surface 7).
+ * IOCDetailDrawer - (UI-SPEC §Surface 4 a/b/c/d/e + §Surface 7).
  *
  * shadcn Sheet (right side, sm:max-w-xl) with:
  *   - 4a Header: Type/Status/Confidence pills + value + normalised
@@ -120,7 +120,7 @@ export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) 
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    // Fetch enrichments separately — non-blocking, additive
+    // Fetch enrichments separately - non-blocking, additive
     getIOCEnrichments(iocId)
       .then((data) => {
         if (!cancelled) setEnrichments(data);
@@ -296,7 +296,7 @@ export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) 
                   </dd>
                   <dt className="text-muted-foreground">Created by</dt>
                   <dd className="text-[12px] text-muted-foreground truncate">
-                    {ioc.created_by ?? "—"}
+                    {ioc.created_by ?? "-"}
                   </dd>
                 </dl>
               </div>
@@ -333,7 +333,7 @@ export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) 
                 )}
               </div>
 
-              {/* Enrichment section — ENRICH-01 */}
+              {/* Enrichment section - ENRICH-01 */}
               <div
                 className="px-6 py-4 border-b border-border"
                 data-testid="drawer-section-enrichment"
@@ -469,7 +469,7 @@ export function IOCDetailDrawer({ iocId, projectId, onClose, onMutate }: Props) 
         </SheetContent>
       </Sheet>
 
-      {/* Surface 7 — Delete confirm dialog */}
+      {/* Surface 7 - Delete confirm dialog */}
       <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

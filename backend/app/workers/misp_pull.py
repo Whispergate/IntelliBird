@@ -1,4 +1,4 @@
-"""MISP pull worker — MISP-02, MISP-04.
+"""MISP pull worker - MISP-02, MISP-04.
 
 Sync module (PyMISP uses requests, not httpx).
 Called by misp_pull_job_wrapper() from scheduler/jobs.py.
@@ -189,7 +189,7 @@ def _sync_galaxy_clusters(misp: Any, project_id: str) -> int:
 
 
 def misp_pull_job_wrapper(project_id: str, misp_config: dict) -> None:
-    """Sync APScheduler job wrapper. PyMISP is blocking HTTP — runs in sync context.
+    """Sync APScheduler job wrapper. PyMISP is blocking HTTP - runs in sync context.
 
     Args:
         project_id: UUID string of the project.

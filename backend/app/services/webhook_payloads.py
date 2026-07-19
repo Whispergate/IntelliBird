@@ -1,8 +1,8 @@
-"""Webhook payload builders — HOOK-03, HOOK-04, HOOK-05, HOOK-06.
+"""Webhook payload builders - HOOK-03, HOOK-04, HOOK-05, HOOK-06.
 
 Pure functions. No I/O, no DB, no HTTP. 4 destination types:
  - Slack Block Kit
- - Teams Power Automate AdaptiveCard v1.5 — legacy O365 BANNED
+ - Teams Power Automate AdaptiveCard v1.5 - legacy O365 BANNED
  - Discord embeds
  - Generic JSON matching EventItem schema
 
@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urlparse
 
-# — Slack TLP emoji shortcodes
+# - Slack TLP emoji shortcodes
 _TLP_SLACK_EMOJI: dict[str, str] = {
     "clear": ":white_circle:",
     "green": ":large_green_circle:",
@@ -24,7 +24,7 @@ _TLP_SLACK_EMOJI: dict[str, str] = {
     "red": ":red_circle:",
 }
 
-# — Discord TLP color (decimal int)
+# - Discord TLP color (decimal int)
 _TLP_DISCORD_COLOR: dict[str, int] = {
     "clear": 10478027,        # #9FE1CB
     "green": 1940085,         # #1D9E75
@@ -107,7 +107,7 @@ def build_teams_payload(
 ) -> dict[str, Any]:
     """Teams Power Automate workflow webhook + AdaptiveCard v1.5.
 
-: legacy O365 Connector format is BANNED (Microsoft EOL —).
+: legacy O365 Connector format is BANNED (Microsoft EOL -).
  Envelope MUST be {type:'message', attachments:[...]} for Power Automate.
 """
     n = len(events)
@@ -195,7 +195,7 @@ def build_generic_payload(
     dashboard_url: str,
     preset_query_params: dict | None = None,
 ) -> dict[str, Any]:
-    """Generic JSON POST. Shape is stable — operator integrations
+    """Generic JSON POST. Shape is stable - operator integrations
  depend on this. Event shape mirrors EventItem."""
     return {
         "preset": {
@@ -204,7 +204,7 @@ def build_generic_payload(
         },
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "count": len(events),
-        # Events passed through unchanged — caller already serialised to dict.
+        # Events passed through unchanged - caller already serialised to dict.
         "events": events,
     }
 
@@ -345,7 +345,7 @@ def build_payload_for_type(
     dashboard_url: str,
     preset_query_params: dict | None = None,
 ) -> dict[str, Any]:
-    """Polymorphic dispatch — used by dispatcher (07-03) and test-send (07-04).
+    """Polymorphic dispatch - used by dispatcher (07-03) and test-send (07-04).
 
  Raises ValueError on unknown destination_type.
 """

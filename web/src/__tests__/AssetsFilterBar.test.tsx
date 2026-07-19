@@ -1,5 +1,5 @@
 // Owned by: 12.1-05-PLAN
-// Production tests — replace Wave 0 stubs (plan 12.1-05a).
+// Production tests - replace Wave 0 stubs (plan 12.1-05a).
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -25,7 +25,7 @@ function baseFilters(overrides: Partial<AssetFilters> = {}): AssetFilters {
   };
 }
 
-describe("AssetsFilterBar — multi-select trigger labels", () => {
+describe("AssetsFilterBar - multi-select trigger labels", () => {
   it("shows 'All types' / 'All scopes' / 'All modules' when none selected", () => {
     render(
       <AssetsFilterBar
@@ -54,7 +54,7 @@ describe("AssetsFilterBar — multi-select trigger labels", () => {
       />,
     );
     expect(screen.getByTestId("assets-filter-type-trigger").textContent).toBe("DNS_NAME");
-    // Scope uses a label map — "in_scope" → "In scope".
+    // Scope uses a label map - "in_scope" → "In scope".
     expect(screen.getByTestId("assets-filter-scope-trigger").textContent).toBe("In scope");
   });
 
@@ -92,7 +92,7 @@ describe("AssetsFilterBar — multi-select trigger labels", () => {
   });
 });
 
-describe("AssetsFilterBar — Clear filters visibility", () => {
+describe("AssetsFilterBar - Clear filters visibility", () => {
   it("is hidden when no filters are active", () => {
     render(
       <AssetsFilterBar
@@ -140,7 +140,7 @@ describe("AssetsFilterBar — Clear filters visibility", () => {
   });
 });
 
-describe("AssetsFilterBar — Search submit on Enter", () => {
+describe("AssetsFilterBar - Search submit on Enter", () => {
   it("fires onChange with search value when Enter is pressed", () => {
     const onChange = vi.fn();
     render(
@@ -165,7 +165,7 @@ describe("AssetsFilterBar — Search submit on Enter", () => {
   });
 });
 
-describe("AssetsFilterBar — Stale single-select", () => {
+describe("AssetsFilterBar - Stale single-select", () => {
   it("defaults the Stale trigger label to 'Show all' and reflects current value on change", () => {
     // Radix Select's portal + pointerCapture behaviour is not friendly to jsdom;
     // rather than poking the popover, we verify the trigger reflects each of the

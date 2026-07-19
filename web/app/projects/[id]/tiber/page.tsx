@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/tiber — TIBER Reports list page.
+ * /projects/[id]/tiber - TIBER Reports list page.
  * UI-SPEC §Surface 1.
  *
  * Server component: passes projectId down to TIBERReportListClient which owns

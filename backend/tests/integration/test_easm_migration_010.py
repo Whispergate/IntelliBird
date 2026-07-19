@@ -1,4 +1,4 @@
-"""EASM migration 010 integration test — easm_scans + easm_findings + project_easm_credentials.
+"""EASM migration 010 integration test - easm_scans + easm_findings + project_easm_credentials.
 
 EASM-01, EASM-02, EASM-04, EASM-06, EASM-10. Activated by plan 11-01.
 
@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 import sqlalchemy as sa
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.engine import make_url
 from testcontainers.postgres import PostgresContainer
 
@@ -35,7 +35,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 def live_db_009():
     """Start intellibird-db:m1, migrate to 009, yield (engine, env).
 
-    Leaves the DB at 009 — tests upgrade to 010 and can downgrade back.
+    Leaves the DB at 009 - tests upgrade to 010 and can downgrade back.
     """
     with PostgresContainer("intellibird-db:m1") as pg:
         url = pg.get_connection_url()
@@ -87,7 +87,7 @@ def test_010_upgrade_creates_easm_scans_table(live_db_009):
     _upgrade_010(engine, env)
 
     with engine.connect() as conn:
-        # Table exists — SELECT * LIMIT 0 is the cheapest probe
+        # Table exists - SELECT * LIMIT 0 is the cheapest probe
         conn.execute(sa.text("SELECT * FROM easm_scans LIMIT 0"))
 
         # easm_scan_status enum exists with all 6 values
@@ -152,7 +152,7 @@ def test_010_upgrade_creates_unique_dedup_constraint(live_db_009):
 
 
 def test_010_upgrade_adds_events_easm_scan_id_with_set_null(live_db_009):
-    """fk_events_easm_scan_id FK has confdeltype='n' (ON DELETE SET NULL) — L-4 closure."""
+    """fk_events_easm_scan_id FK has confdeltype='n' (ON DELETE SET NULL) - L-4 closure."""
     engine, env = live_db_009
 
     with engine.connect() as conn:
@@ -227,7 +227,7 @@ def test_010_upgrade_idempotent_across_runs(live_db_009):
     """upgrade -> downgrade -> upgrade succeeds (idempotent DO-block for enums)."""
     engine, env = live_db_009
 
-    # Already at 009 from previous test — upgrade to 010 again
+    # Already at 009 from previous test - upgrade to 010 again
     r = subprocess.run(
         ["uv", "run", "alembic", "upgrade", "010_easm"],
         cwd=str(BACKEND_DIR),

@@ -1,4 +1,4 @@
-"""Unit tests for token budget Lua counter — AI-06.
+"""Unit tests for token budget Lua counter - AI-06.
 
 Tests use mock Redis clients to verify:
   - Budget exhaustion correctly blocks at cap
@@ -6,13 +6,13 @@ Tests use mock Redis clients to verify:
   - UTC day key rolls at midnight
   - EX=172800 TTL is used
 
-No external Redis required — eval / incrby / expire are mocked.
+No external Redis required - eval / incrby / expire are mocked.
 """
 from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +55,7 @@ async def test_budget_exhausted() -> None:
 
 
 async def test_lua_atomic_check_and_incr() -> None:
-    """Two concurrent eval calls — only one can push past the cap.
+    """Two concurrent eval calls - only one can push past the cap.
 
     We simulate two concurrent requests each asking for cap/2 + 1 tokens.
     Together they exceed the cap. With the Lua atomic check, exactly one
@@ -64,7 +64,7 @@ async def test_lua_atomic_check_and_incr() -> None:
     This test verifies the logic by running two sequential calls with a
     shared counter, simulating the Lua script's atomic behaviour.
     """
-    from app.services.llm.token_budget import BUDGET_LUA, check_and_reserve_budget
+    from app.services.llm.token_budget import check_and_reserve_budget
 
     cap = 1000
     increment = 600  # 600 + 600 = 1200 > 1000; only first should pass
@@ -104,8 +104,7 @@ async def test_lua_atomic_check_and_incr() -> None:
 
 
 def test_day_key_rolls_at_utc_midnight() -> None:
-    """budget_key uses UTC YYYYMMDD — key differs across day boundary."""
-    from app.services.llm.token_budget import budget_key
+    """budget_key uses UTC YYYYMMDD - key differs across day boundary."""
 
     # Two datetimes straddling midnight UTC
     before_midnight = datetime(2026, 4, 25, 23, 59, 59, tzinfo=timezone.utc)

@@ -1,4 +1,4 @@
-"""Unit tests for RequestLogMiddleware — SYS-04."""
+"""Unit tests for RequestLogMiddleware - SYS-04."""
 from __future__ import annotations
 
 import structlog

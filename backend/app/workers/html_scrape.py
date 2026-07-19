@@ -1,4 +1,4 @@
-"""HTML-scrape polling actor — quick task 260425-ovt.
+"""HTML-scrape polling actor - quick task 260425-ovt.
 
 Mirrors app.workers.rss control flow exactly so the existing health/stats
 plumbing applies unchanged. Differences vs poll_rss:
@@ -63,7 +63,7 @@ def _record_stats(session: Session, source_id: uuid.UUID, *, parse_ok: int, pars
 
 
 def poll_html_scrape_impl(source_id_str: str) -> None:
-    """Sync actor body — invoked directly by integration tests."""
+    """Sync actor body - invoked directly by integration tests."""
     source_id = uuid.UUID(source_id_str)
     inserted = 0
     deduped = 0

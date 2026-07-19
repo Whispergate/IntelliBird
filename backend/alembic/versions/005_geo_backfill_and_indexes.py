@@ -1,4 +1,4 @@
-"""005 Partial geo index on events — MAP-05.
+"""005 Partial geo index on events - MAP-05.
 
 Revision ID: 005_geo_backfill_and_indexes
 Revises: 004_fts_and_presets
@@ -6,7 +6,7 @@ Create Date: 2026-04-17
 
 Adds a partial B-tree index on events(geo_lat, geo_lon) restricted to rows
 where geo_lat IS NOT NULL AND geo_lon IS NOT NULL. Only rows that carry
-resolved geo coordinates enter the index — keeps it small while making the
+resolved geo coordinates enter the index - keeps it small while making the
  has_geo filter (WHERE geo_lat IS NOT NULL AND geo_lon IS NOT NULL)
 an index-scan rather than a seq-scan over the full hypertable.
 
@@ -28,7 +28,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # TimescaleDB hypertables do not support CONCURRENTLY — use standard CREATE INDEX.
+    # TimescaleDB hypertables do not support CONCURRENTLY - use standard CREATE INDEX.
     op.execute(
         "CREATE INDEX IF NOT EXISTS idx_events_geo_coords "
         "ON events (geo_lat, geo_lon) "

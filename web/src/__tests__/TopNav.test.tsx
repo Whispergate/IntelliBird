@@ -77,7 +77,7 @@ describe("TopNav", () => {
     expect(sources).toHaveAttribute("href", "/sources");
   });
 
-  it("test_topnav_has_events_link — Events link with href=/events is present", () => {
+  it("test_topnav_has_events_link - Events link with href=/events is present", () => {
     render(
       <RoleProvider value="blue">
         <TopNav />
@@ -87,7 +87,7 @@ describe("TopNav", () => {
     expect(eventsLink).toHaveAttribute("href", "/events");
   });
 
-  it("test_topnav_events_link_is_active_on_events_route — active className applied on /events", () => {
+  it("test_topnav_events_link_is_active_on_events_route - active className applied on /events", () => {
     pathnameMock = "/events";
     render(
       <RoleProvider value="blue">

@@ -1,4 +1,4 @@
-"""AuthMiddleware unit tests — AUTH-02, AUTH-03."""
+"""AuthMiddleware unit tests - AUTH-02, AUTH-03."""
 from __future__ import annotations
 
 import os
@@ -104,7 +104,7 @@ async def test_jti_blocklist_returns_401(app_with_auth):
 
 @pytest.mark.asyncio
 async def test_redis_down_returns_503(app_with_auth):
-    """PITFALL 3 — fail-closed on Redis connection error."""
+    """PITFALL 3 - fail-closed on Redis connection error."""
     user_id = str(uuid.uuid4())
     token, _ = mint_access_token(user_id, "Admin", ["red"], 0, "a" * 64)
     with patch("app.middleware.auth._get_cached_token_version", new=AsyncMock(return_value=0)), \
@@ -130,7 +130,7 @@ async def test_valid_token_populates_request_state(app_with_auth):
 @pytest.mark.asyncio
 async def test_expired_token_has_refresh_required_header(app_with_auth, monkeypatch):
     import time as _time
-    now = int(_time.time())
+    int(_time.time())
     # Mint with normal time, then make time jump forward so token appears expired
     token, _ = mint_access_token(str(uuid.uuid4()), "Admin", ["red"], 0, "a" * 64)
     # Patch jwt decode to raise ExpiredSignatureError

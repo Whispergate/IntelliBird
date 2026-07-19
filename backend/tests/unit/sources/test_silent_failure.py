@@ -69,7 +69,7 @@ def test_counter_resets_when_inserted_many() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Test 4: increment from zero — same as test 1, verifies no special-casing
+# Test 4: increment from zero - same as test 1, verifies no special-casing
 # ---------------------------------------------------------------------------
 
 def test_increment_from_zero() -> None:

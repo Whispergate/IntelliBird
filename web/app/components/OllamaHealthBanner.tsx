@@ -1,5 +1,5 @@
 /**
- * OllamaHealthBanner — System-level Ollama health indicator (AI-05).
+ * OllamaHealthBanner - System-level Ollama health indicator (AI-05).
  * Surface 6 per 17-UI-SPEC.md.
  *
  * Uses inline styles (paint-before-CSS-bundle pattern), mirroring NoAuthBanner.tsx.
@@ -73,6 +73,6 @@ export function OllamaHealthBanner({ ollamaHealth }: Props) {
     );
   }
 
-  // healthy / unknown / not-configured — render nothing
+  // healthy / unknown / not-configured - render nothing
   return null;
 }

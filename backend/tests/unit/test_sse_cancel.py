@@ -1,4 +1,4 @@
-"""Unit tests for the SSE Redis cancel-flag protocol — AI-06.
+"""Unit tests for the SSE Redis cancel-flag protocol - AI-06.
 
 Covers:
   - test_disconnect_sets_cancel_flag: Redis SET ai:job:{id}:cancelled with EX=300
@@ -22,7 +22,6 @@ os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 
 
 # ---------------------------------------------------------------------------

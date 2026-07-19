@@ -1,10 +1,10 @@
 """Maintenance window helper (H-7).
 
 Single source of truth: monitoring dispatchers call is_maintenance_active(session)
-BEFORE emitting any canonical event. No daemon — past windows auto-expire because
+BEFORE emitting any canonical event. No daemon - past windows auto-expire because
 `now() BETWEEN start_at AND end_at` simply stops matching them.
 
-Index: ix_mw_range on (start_at, end_at) — created in migration 016 — keeps this
+Index: ix_mw_range on (start_at, end_at) - created in migration 016 - keeps this
 sub-millisecond regardless of history size.
 
 Usage:
@@ -26,7 +26,7 @@ def is_maintenance_active(session: Session) -> bool:
         SELECT 1 FROM maintenance_windows WHERE now() BETWEEN start_at AND end_at LIMIT 1
 
     Sub-millisecond against the ix_mw_range (start_at, end_at) index created
-    in migration 016. Past windows auto-expire — no cleanup daemon needed.
+    in migration 016. Past windows auto-expire - no cleanup daemon needed.
 
     Args:
         session: Synchronous SQLAlchemy Session. Monitoring scheduler jobs use

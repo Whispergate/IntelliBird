@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AttachToCaseModal — (CASE-05).
+ * AttachToCaseModal - (CASE-05).
  *
  * Reusable modal for attaching events or IOCs to an open case.
  *
@@ -130,7 +130,7 @@ export function AttachToCaseModal({
             </div>
           ) : cases.length === 0 ? (
             <p className="text-sm text-muted-foreground italic py-4">
-              No open cases — create one first from the Cases tab.
+              No open cases - create one first from the Cases tab.
             </p>
           ) : (
             <div className="border rounded-md divide-y max-h-72 overflow-y-auto">

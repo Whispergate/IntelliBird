@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * ProjectRoleProvider — (UX-02).
+ * ProjectRoleProvider - (UX-02).
  *
  * Client context provider that exposes the current user's per-project role
  * to any descendant client component via `useProjectRole()`.
  *
  * Role is derived server-side in layout.tsx by calling the listMemberships
- * API (RESEARCH §5 Option A — pm claim is NOT forwarded into Next.js session).
+ * API (RESEARCH §5 Option A - pm claim is NOT forwarded into Next.js session).
  *
  * Hierarchy (RESEARCH.md §Authority Matrix):
  *   Admin > Lead > Contributor > Observer

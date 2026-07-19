@@ -1,4 +1,4 @@
-"""MON-01 silence detection unit tests — plan 16-06.
+"""MON-01 silence detection unit tests - plan 16-06.
 
 Tests that silence_check_all() synthesises a canonical monitoring event when
 a source has not produced any events within its configured SLA window, and that
@@ -7,10 +7,9 @@ maintenance windows and burst suppression suppress that alert.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 import uuid
 
-import pytest
 
 
 # ---------------------------------------------------------------------------
@@ -20,7 +19,7 @@ import pytest
 _SOURCE_ID = str(uuid.UUID("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"))
 _SOURCE_NAME = "Test RSS Feed"
 _NOW = datetime(2026, 4, 25, 12, 0, 0, tzinfo=timezone.utc)
-_LAST_EVENT_AT = _NOW - timedelta(hours=25)  # 25h ago — exceeds 24h RSS SLA
+_LAST_EVENT_AT = _NOW - timedelta(hours=25)  # 25h ago - exceeds 24h RSS SLA
 
 
 def _make_source_row(
@@ -70,7 +69,7 @@ def _make_mock_redis(suppressed: bool = False):
 
 
 def test_silence_check_emits_event() -> None:
-    """Source silent 25h > 24h RSS SLA — build_silence_event_dict called, event dispatched."""
+    """Source silent 25h > 24h RSS SLA - build_silence_event_dict called, event dispatched."""
     from app.scheduler.monitoring_jobs import silence_check_all_job
 
     source_row = _make_source_row()
@@ -149,7 +148,7 @@ def test_silence_respects_per_source_sla() -> None:
     """Source with custom 6h SLA, silent 5h, does NOT trigger alert (within SLA)."""
     from app.scheduler.monitoring_jobs import silence_check_all_job
 
-    # 5h silent — below 6h custom SLA
+    # 5h silent - below 6h custom SLA
     last_event_at = _NOW - timedelta(hours=5)
     source_row = _make_source_row(
         last_event_at=last_event_at,
@@ -187,7 +186,7 @@ def test_silence_respects_per_source_sla() -> None:
 
 
 def test_burst_suppression_prevents_dispatch() -> None:
-    """Burst cap reached for source — alert suppressed even though SLA is breached."""
+    """Burst cap reached for source - alert suppressed even though SLA is breached."""
     from app.scheduler.monitoring_jobs import silence_check_all_job
 
     source_row = _make_source_row()

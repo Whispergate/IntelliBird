@@ -1,4 +1,4 @@
-"""Filter preset CRUD — FIL-04 / PRJ-01 M-6 enforcement.
+"""Filter preset CRUD - FIL-04 / PRJ-01 M-6 enforcement.
 
 Endpoints:
  GET /api/presets → list[FilterPresetResponse]  (membership-filtered)
@@ -13,7 +13,7 @@ changes:
 - PUT/DELETE require Contributor+ on the preset's project
 - require_auth added to all endpoints (was unguarded legacy)
 
-Note: asyncpg rejects :param::type cast syntax — CAST(:param AS jsonb) used throughout
+Note: asyncpg rejects :param::type cast syntax - CAST(:param AS jsonb) used throughout
 (deviation discovered in-01, applied here proactively).
 """
 from __future__ import annotations
@@ -32,7 +32,7 @@ from app.middleware.auth import require_auth
 from app.models.filter_presets import FilterPreset
 from app.models.projects import LEGACY_PROJECT_ID, ProjectMembership, ProjectRole
 from app.schemas.presets import (
-    PRESET_NAME_REGEX,  # noqa: F401 — re-exported for convenience
+    PRESET_NAME_REGEX,  # noqa: F401 - re-exported for convenience
     FilterPresetResponse,
     PresetCreate,
     PresetUpsert,
@@ -59,7 +59,7 @@ async def _visible_project_ids(user: AuthUser, db: AsyncSession) -> set[uuid.UUI
     visible.update(uuid.UUID(pid) for pid in user.project_memberships.keys())
 
     if user.pm_truncated:
-        # JWT claim was truncated — widen via DB query
+        # JWT claim was truncated - widen via DB query
         rows = (await db.execute(
             select(ProjectMembership.project_id).where(
                 ProjectMembership.user_sub == user.id
@@ -168,7 +168,7 @@ async def upsert_preset(
 
  If the preset already exists: Contributor+ check on the existing row's project.
  If creating via upsert: payload.project_id is used (defaults to LEGACY_PROJECT_ID
- when absent — backward compat for integration tests).
+ when absent - backward compat for integration tests).
 
 : ON CONFLICT DO UPDATE must explicitly set updated_at = now
  because the column default only fires on INSERT, not on UPDATE.

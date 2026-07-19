@@ -1,4 +1,4 @@
-"""RiskIQ Community / PassiveTotal passive DNS provider — ENRICH-06.
+"""RiskIQ Community / PassiveTotal passive DNS provider - ENRICH-06.
 
 Supports: domain
 
@@ -7,7 +7,7 @@ Returns list[dict] | None where each dict:
 
 API docs: https://api.passivetotal.org/index.html
   GET /v2/dns/passive?query={domain}
-  Auth: HTTP Basic — username + api_secret from JSON credentials string
+  Auth: HTTP Basic - username + api_secret from JSON credentials string
 
 Credentials format (stored encrypted in EnrichmentProvider.credentials_enc):
   '{"username": "user@example.com", "api_secret": "abc123..."}'

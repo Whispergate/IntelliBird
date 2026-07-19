@@ -1,4 +1,4 @@
-"""Unit tests for SecurityTrails passive DNS provider — ENRICH-06."""
+"""Unit tests for SecurityTrails passive DNS provider - ENRICH-06."""
 from __future__ import annotations
 
 import os

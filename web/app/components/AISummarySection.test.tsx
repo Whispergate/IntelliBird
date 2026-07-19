@@ -22,7 +22,7 @@ vi.mock("sonner", () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// EventSource mock — per-test configurable
+// EventSource mock - per-test configurable
 // ---------------------------------------------------------------------------
 
 type EventSourceListener = (event: MessageEvent | Event) => void;
@@ -98,7 +98,7 @@ describe("AISummarySection", () => {
   it('renders "Summarise" button when no summary is present', () => {
     render(<AISummarySection eventId={EVENT_ID} />);
     expect(screen.getByRole("button", { name: /summarise/i })).toBeTruthy();
-    // "Summarise" — not "Re-summarise"
+    // "Summarise" - not "Re-summarise"
     const btn = screen.getByRole("button", { name: /summarise/i });
     expect(btn.textContent).toContain("Summarise");
     expect(btn.textContent).not.toContain("Re-summarise");
@@ -206,18 +206,18 @@ describe("AISummarySection", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Budget exhausted — resets at 00:00 UTC/i),
+        screen.getByText(/Budget exhausted - resets at 00:00 UTC/i),
       ).toBeTruthy();
     });
 
     expect(toast.error).toHaveBeenCalledWith(
-      "Daily AI budget exhausted — resets at 00:00 UTC.",
+      "Daily AI budget exhausted - resets at 00:00 UTC.",
     );
   });
 
   it("renders truncation footer separately when summary contains marker", async () => {
     const summaryWithTruncation =
-      "What: A critical CVE.\nWho: Threat actor APT28.\n— Content exceeded model window; summary based on top-ranked chunks";
+      "What: A critical CVE.\nWho: Threat actor APT28.\n- Content exceeded model window; summary based on top-ranked chunks";
 
     render(
       <AISummarySection
@@ -228,11 +228,11 @@ describe("AISummarySection", () => {
 
     const body = screen.getByTestId("ai-summary-body");
     // Body should NOT contain the truncation line
-    expect(body.textContent).not.toContain("— Content exceeded");
+    expect(body.textContent).not.toContain("- Content exceeded");
 
     // Footer paragraph should be separate
     const footer = screen.getByText(
-      /— Content exceeded model window; summary based on top-ranked chunks/,
+      /- Content exceeded model window; summary based on top-ranked chunks/,
     );
     expect(footer.tagName).toBe("P");
   });

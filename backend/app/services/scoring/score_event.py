@@ -1,4 +1,4 @@
-"""Pure scoring function — no DB, no I/O.
+"""Pure scoring function - no DB, no I/O.
 
 Implements the composite 0–100 priority score formula locked in 15-CONTEXT.md:
 
@@ -12,7 +12,7 @@ Implements the composite 0–100 priority score formula locked in 15-CONTEXT.md:
 
 Where:
     cvss_norm       = cvss_score / 10.0  (0–1 scale)
-    recency_factor  = 2^(-age_days / half_life_days)  — in [0, 1]
+    recency_factor  = 2^(-age_days / half_life_days)  - in [0, 1]
 
 No-CVSS events receive a synthetic CVSS derived from feed_type or brand_severity
 so the formula stays uniform across all event types.
@@ -52,7 +52,7 @@ def score_event(
 ) -> tuple[float, datetime, int]:
     """Compute the composite 0–100 priority score for a single event.
 
-    This function is pure — it performs no I/O and has no side effects.
+    This function is pure - it performs no I/O and has no side effects.
     It is safe to call synchronously in the event INSERT pipeline.
 
     Args:
@@ -61,7 +61,7 @@ def score_event(
         brand_severity:     Brand match severity (``'low'``, ``'medium'``, ``'high'``),
                             used when ``cvss_score`` is ``None``. Overrides feed_type
                             synthetic CVSS.
-        observed_at:        Event observation timestamp (may be naive — treated as UTC).
+        observed_at:        Event observation timestamp (may be naive - treated as UTC).
         source_confidence:  Source reliability signal in [0.0, 1.0].
         tag_relevance:      Tag intersection signal: 0.0 (no match) or 1.0 (match).
         weights:            ``ScoringWeights`` dataclass (use ``ScoringWeights()`` for
@@ -87,7 +87,7 @@ def score_event(
     else:
         cvss_norm = SYNTHETIC_CVSS.get(feed_type, 5.0) / 10.0
 
-    # 2. Recency decay — half-life formula.
+    # 2. Recency decay - half-life formula.
     # Normalise observed_at to UTC if naive (clock skew from feed timestamps).
     if observed_at.tzinfo is None:
         observed_at_utc = observed_at.replace(tzinfo=timezone.utc)
@@ -97,7 +97,7 @@ def score_event(
     age_days = max(0.0, (ts - observed_at_utc).total_seconds() / 86400.0)
     recency_factor = math.pow(2.0, -age_days / weights.decay_half_life_days)
 
-    # 3. Weighted sum — each weight is on the 0–100 scale, cvss_norm/recency_factor
+    # 3. Weighted sum - each weight is on the 0–100 scale, cvss_norm/recency_factor
     # are 0–1, source_confidence and tag_relevance are also 0–1.
     raw = (
         weights.cvss * cvss_norm

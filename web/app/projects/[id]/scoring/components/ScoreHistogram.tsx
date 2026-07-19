@@ -1,18 +1,18 @@
 "use client";
 
 /**
- * ScoreHistogram — Recharts BarChart wrapper for the Score Distribution card.
+ * ScoreHistogram - Recharts BarChart wrapper for the Score Distribution card.
  * UI-SPEC §Surface 4 Card 3.
  *
  * Props:
- *   data — 10 pre-bucketed HistogramBucket entries (built by ScoringTabContent)
+ *   data - 10 pre-bucketed HistogramBucket entries (built by ScoringTabContent)
  *
  * Buckets: "0-9", "10-19", ..., "90-100" (10 items total).
  * Bar colour: per-tier using hex colours that match the UI-SPEC tier badge palette.
  *
  * Empty state: rendered when sum of all bucket counts is 0 (no scored events).
  *
- * Height: 160px (UI-SPEC §Surface 4 §Card 3 — Score Histogram).
+ * Height: 160px (UI-SPEC §Surface 4 §Card 3 - Score Histogram).
  */
 
 import { BarChart, Bar, Cell, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
@@ -28,7 +28,7 @@ export type HistogramBucket = {
 //   A → orange-500  (#f97316)
 //   B → yellow-500  (#eab308)
 //   C → blue-500    (#3b82f6)
-//   D → muted       (#6b7280 — gray-500 approximation)
+//   D → muted       (#6b7280 - gray-500 approximation)
 const TIER_HEX: Record<HistogramBucket["tier"], string> = {
   S: "#ef4444",
   A: "#f97316",

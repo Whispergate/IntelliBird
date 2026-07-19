@@ -1,4 +1,4 @@
-"""MON-03 source_ingest_stats hypertable — plan 16-05.
+"""MON-03 source_ingest_stats hypertable - plan 16-05.
 
 Integration tests for the source_ingest_stats TimescaleDB hypertable:
 writing rows via record_ingest_stats(), reading them back, and verifying the
@@ -17,8 +17,6 @@ os.environ.setdefault("SECRET_KEY", "s" * 64)
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
 
-import pytest  # noqa: E402
-from sqlalchemy import text  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 
@@ -40,7 +38,7 @@ def _make_mock_session(rows=None):
 
 
 # ---------------------------------------------------------------------------
-# test_record_stats — verifies record_ingest_stats issues the correct INSERT
+# test_record_stats - verifies record_ingest_stats issues the correct INSERT
 # ---------------------------------------------------------------------------
 
 
@@ -100,7 +98,7 @@ def test_record_stats_clamps_negatives() -> None:
 
 
 # ---------------------------------------------------------------------------
-# test_continuous_aggregate_populated — RSS worker integration with fake feed
+# test_continuous_aggregate_populated - RSS worker integration with fake feed
 # ---------------------------------------------------------------------------
 
 
@@ -170,7 +168,7 @@ def test_continuous_aggregate_populated() -> None:
 
 
 # ---------------------------------------------------------------------------
-# test_parse_error_alert — wired in plan 16-06; keep skipped here
+# test_parse_error_alert - wired in plan 16-06; keep skipped here
 # ---------------------------------------------------------------------------
 
 
@@ -234,7 +232,7 @@ def test_parse_error_alert() -> None:
 
 
 def test_parse_error_no_alert_below_threshold() -> None:
-    """parse_error rate 1/11 ≈ 9% — below 50% threshold, no alert dispatched."""
+    """parse_error rate 1/11 ≈ 9% - below 50% threshold, no alert dispatched."""
     from unittest.mock import MagicMock, patch
 
     source_id = str(uuid.UUID("dddddddd-dddd-dddd-dddd-ddddddddddde"))
@@ -279,4 +277,4 @@ def test_parse_error_no_alert_below_threshold() -> None:
          patch("app.scheduler.monitoring_jobs._persist_canonical_event", side_effect=_fake_persist):
         parse_error_check_all_job()
 
-    assert len(dispatched_events) == 0, "Below threshold — no alert should fire"
+    assert len(dispatched_events) == 0, "Below threshold - no alert should fire"

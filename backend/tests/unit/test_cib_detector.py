@@ -1,5 +1,5 @@
 """
-DISINFO-02 — Coordinated Inauthentic Behaviour (CIB) detector identifies
+DISINFO-02 - Coordinated Inauthentic Behaviour (CIB) detector identifies
              clusters of near-identical posts using MinHash similarity.
 
 Implemented in: backend/app/services/cib_detector.py
@@ -37,7 +37,7 @@ def test_detect_cib_cluster_returns_cluster():
     Six posts with near-identical text (small word substitution) must yield
     at least one cluster of >= 5 members.
     """
-    base = "Urgent warning: critical vulnerability CVE-2025-1234 found in {product} — patch now"
+    base = "Urgent warning: critical vulnerability CVE-2025-1234 found in {product} - patch now"
     posts = [
         {"id": str(i), "text": base.format(product=f"product_{i}")}
         for i in range(6)

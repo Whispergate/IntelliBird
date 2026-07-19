@@ -1,16 +1,16 @@
-"""Pydantic v2 schemas for AI surfaces — AI-01..07, SCR-04.
+"""Pydantic v2 schemas for AI surfaces - AI-01..07, SCR-04.
 
 Exports:
-  AISummariseRequest      — body for POST /api/events/{id}/ai/summarise
-  AISummariseResponse     — {job_id} returned on 202 acceptance
-  AISuggestionRead        — suggestion row for GET /api/events/{id}/ai/suggestions
-  AISuggestionBulkRequest — {ids:[...]} for bulk confirm/discard
-  AIProviderRead          — GET /api/projects/{id}/ai-provider (no plaintext key)
-  AIProviderUpdate        — PUT /api/projects/{id}/ai-provider body
-  AIProviderTestResponse  — POST /api/projects/{id}/ai-provider/test result
-  AIDigestResponse        — GET /api/projects/{id}/ai/digest latest row
-  AIRerankStatus          — GET /api/projects/{id}/ai/rerank/status
-  AIHealthResponse        — GET /api/admin/ai-health
+  AISummariseRequest      - body for POST /api/events/{id}/ai/summarise
+  AISummariseResponse     - {job_id} returned on 202 acceptance
+  AISuggestionRead        - suggestion row for GET /api/events/{id}/ai/suggestions
+  AISuggestionBulkRequest - {ids:[...]} for bulk confirm/discard
+  AIProviderRead          - GET /api/projects/{id}/ai-provider (no plaintext key)
+  AIProviderUpdate        - PUT /api/projects/{id}/ai-provider body
+  AIProviderTestResponse  - POST /api/projects/{id}/ai-provider/test result
+  AIDigestResponse        - GET /api/projects/{id}/ai/digest latest row
+  AIRerankStatus          - GET /api/projects/{id}/ai/rerank/status
+  AIHealthResponse        - GET /api/admin/ai-health
 """
 from __future__ import annotations
 
@@ -29,12 +29,12 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 class AISummariseRequest(BaseModel):
     """Optional body for POST /api/events/{id}/ai/summarise.
 
-    All fields are optional — the endpoint can be called with an empty body
+    All fields are optional - the endpoint can be called with an empty body
     and will use project defaults.
     """
 
     # Reserved for future per-request overrides (model, temperature, etc.)
-    # Kept minimal for M2 — Claude's Discretion (CONTEXT.md).
+    # Kept minimal for M2 - Claude's Discretion (CONTEXT.md).
     pass
 
 
@@ -118,7 +118,7 @@ class AIProviderRead(BaseModel):
 class AIProviderUpdate(BaseModel):
     """PUT /api/projects/{id}/ai-provider request body.
 
-    All fields are optional — supports partial updates.
+    All fields are optional - supports partial updates.
     If api_key is omitted, existing credentials_enc is preserved.
     If ai_rerank_enabled transitions false→true, the router enqueues
     one-shot ai_rescore_project per CONTEXT.md §AI reranking trigger.
@@ -127,7 +127,7 @@ class AIProviderUpdate(BaseModel):
     provider_type: Literal["ollama", "openai", "anthropic"] | None = None
     model_name: str | None = None
     api_base: str | None = None
-    # Plaintext api_key — encrypted by router before storage.
+    # Plaintext api_key - encrypted by router before storage.
     api_key: str | None = None
     ai_rerank_enabled: bool | None = None
     ai_digest_enabled: bool | None = None
@@ -155,7 +155,7 @@ class AIProviderTestResponse(BaseModel):
 
 
 class AIDigestResponse(BaseModel):
-    """GET /api/projects/{id}/ai/digest — latest digest row.
+    """GET /api/projects/{id}/ai/digest - latest digest row.
 
     Returns the most recent ai_summaries row with summary_type='digest'
     for the project. 404 when no digest has been generated yet.
@@ -209,7 +209,7 @@ class AIHealthResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Attack path analysis — ATK-01..ATK-05
+# Attack path analysis - ATK-01..ATK-05
 # ---------------------------------------------------------------------------
 
 import re as _re  # noqa: E402

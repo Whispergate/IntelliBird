@@ -86,7 +86,7 @@ export default function SetupPage() {
         "Content-Type": "application/json",
       };
       // Operator pastes the SETUP_TOKEN into the form field so the UI can send
-      // it as X-Setup-Token — self-contained path, no CLI workaround needed.
+      // it as X-Setup-Token - self-contained path, no CLI workaround needed.
       if (setupToken.trim()) {
         headers["X-Setup-Token"] = setupToken.trim();
       }

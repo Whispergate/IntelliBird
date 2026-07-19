@@ -1,18 +1,18 @@
 "use client";
 
 /**
- * ProjectSourcesBinding — multi-select source checkbox list for /projects/[id]
+ * ProjectSourcesBinding - multi-select source checkbox list for /projects/[id]
  * Sources tab (PRJ-05).
  *
  * UI-SPEC §/projects/[id] detail §Sources tab locks:
  *   - List all globally configured sources (from /api/sources via fetchSources)
  *   - Pre-select sources currently bound to this project (listProjectSources)
  *   - Save button runs replaceProjectSources(projectId, checkedIds)
- *   - Empty state: "No sources bound — all sources are visible by default.
+ *   - Empty state: "No sources bound - all sources are visible by default.
  *     Bind sources for air-gapped engagements."
  *
  * Semantics reminder (CONTEXT.md §decisions §project_sources binding):
- *   - A project with NO bindings sees all sources (open default — matches
+ *   - A project with NO bindings sees all sources (open default - matches
  *     intel-team use cases where scope is the discrimininator, not sources).
  *   - A project with ≥1 binding sees ONLY the bound sources (TIBER / air-gap).
  *
@@ -97,7 +97,7 @@ export function ProjectSourcesBinding({
       setSavedRef(new Set(checked));
       toast.success(
         checked.size === 0
-          ? "Source binding cleared — all sources visible."
+          ? "Source binding cleared - all sources visible."
           : `Bound ${checked.size} source${checked.size === 1 ? "" : "s"} to ${project.name}.`,
       );
     } catch (err) {
@@ -131,7 +131,7 @@ export function ProjectSourcesBinding({
           <p className="text-sm text-muted-foreground max-w-2xl">
             When no sources are bound, all global sources feed this project&apos;s
             intel view. Binding a subset restricts the project to those
-            sources only — useful for air-gapped engagements (e.g. TIBER) where
+            sources only - useful for air-gapped engagements (e.g. TIBER) where
             operators must control which feeds are visible.
           </p>
         </div>
@@ -198,7 +198,7 @@ export function ProjectSourcesBinding({
         {totalCount === 0
           ? null
           : boundCount === 0
-            ? "No sources bound — all sources are visible by default."
+            ? "No sources bound - all sources are visible by default."
             : `${boundCount} of ${totalCount} source${totalCount === 1 ? "" : "s"} bound to this project.`}
       </p>
     </div>

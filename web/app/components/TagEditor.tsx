@@ -16,7 +16,7 @@ const CHIP_STYLE = {
   borderColor: "#0F6E56",
 };
 
-// Suggested tags grouped by intent — click to apply. Same vocabulary as
+// Suggested tags grouped by intent - click to apply. Same vocabulary as
 // widget queries (actor, c2, exploit, tooling, vendor-advisory,
 // high-severity) so tagged events roll up into dashboard widgets.
 const SUGGESTED_TAG_GROUPS: { label: string; tags: string[] }[] = [
@@ -143,7 +143,7 @@ export function TagEditor({
       />
       </div>
 
-      {/* Suggested tags — grouped, click to apply, hide if already applied*/}
+      {/* Suggested tags - grouped, click to apply, hide if already applied*/}
       <div className="flex flex-col gap-1" data-testid="tag-suggestions">
         {SUGGESTED_TAG_GROUPS.map((group) => {
           const available = group.tags.filter((t) => !appliedSet.has(t));

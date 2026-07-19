@@ -1,5 +1,5 @@
 /**
- * ScopeRowTooltip.test.tsx — -03 (UX-03 display)
+ * ScopeRowTooltip.test.tsx - -03 (UX-03 display)
  *
  * Tests that ScopeRowTable wraps punycode domain values in a shadcn Tooltip
  * showing the decoded unicode form, while plain ASCII values and non-FQDN
@@ -48,7 +48,7 @@ beforeEach(() => {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("ScopeRowTable — punycode Tooltip (UX-03)", () => {
+describe("ScopeRowTable - punycode Tooltip (UX-03)", () => {
   it("Test 1: renders tooltip trigger for punycode domain value", async () => {
     const row = makeRow({
       scope_type: "domain",
@@ -68,7 +68,7 @@ describe("ScopeRowTable — punycode Tooltip (UX-03)", () => {
     const user = userEvent.setup();
     await user.hover(screen.getByTestId("punycode-trigger"));
 
-    // TooltipContent renders in a Portal — Radix renders both a visible div and
+    // TooltipContent renders in a Portal - Radix renders both a visible div and
     // a visually-hidden ARIA span; use findAllByText and assert at least one match.
     const matches = await screen.findAllByText(/unicode:/i);
     expect(matches.length).toBeGreaterThan(0);

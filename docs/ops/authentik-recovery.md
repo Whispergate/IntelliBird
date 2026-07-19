@@ -4,7 +4,7 @@ Operator procedure for backing up, restoring, and verifying the self-hosted Auth
 
 Related: [auth-setup.md](auth-setup.md) (initial Authentik provisioning), [secret-rotation.md](secret-rotation.md) (IntelliBird SECRET_KEY drill).
 
-> **Pinned image:** `ghcr.io/goauthentik/server:2025.12.1` — do not float this tag during recovery. Restore must run against the same image major/minor as the backup source to avoid migration drift. The tag is pinned in `ops/docker-compose.yml` on both `authentik-server` and `authentik-worker`.
+> **Pinned image:** `ghcr.io/goauthentik/server:2025.12.1` - do not float this tag during recovery. Restore must run against the same image major/minor as the backup source to avoid migration drift. The tag is pinned in `ops/docker-compose.yml` on both `authentik-server` and `authentik-worker`.
 
 > **Scope:** IdP only. IntelliBird application DB (`db` service) recovery is a separate runbook. In a full disaster, recover Authentik first so SSO works, then recover IntelliBird application state.
 
@@ -29,7 +29,7 @@ docker compose -f ops/docker-compose.yml --profile sso exec -T authentik-db \
 
 - `-Fc` (custom format) enables selective restore via `pg_restore`.
 - Run at least weekly; retain >= 14 days. Store off-host (S3, Restic, encrypted external disk).
-- Size sanity: expect a few hundred KB to a few MB for a small team. A zero-byte file means the exec failed silently — check `docker compose --profile sso ps authentik-db`.
+- Size sanity: expect a few hundred KB to a few MB for a small team. A zero-byte file means the exec failed silently - check `docker compose --profile sso ps authentik-db`.
 
 ### 1.2 Media volume tarball (`/data/media`)
 
@@ -47,7 +47,7 @@ Verify non-empty:
 tar -tzf backups/authentik-media-*.tgz | head
 ```
 
-> **Pitfall 4 (RESEARCH.md):** Backing up `/media` instead of `/data/media` on 2025.10+ produces a tarball with no useful content — Authentik boots after restore but uploaded certs/icons 404.
+> **Pitfall 4 (RESEARCH.md):** Backing up `/media` instead of `/data/media` on 2025.10+ produces a tarball with no useful content - Authentik boots after restore but uploaded certs/icons 404.
 
 ### 1.3 Sealed secrets
 
@@ -55,7 +55,7 @@ The following are NOT in either artefact above and must be captured separately v
 
 - `AUTHENTIK_SECRET_KEY`
 - `AUTHENTIK_PG_PASS`
-- `SSO_CLIENT_ID` and `SSO_CLIENT_SECRET` (IntelliBird's OIDC client credentials — in `ops/.env`)
+- `SSO_CLIENT_ID` and `SSO_CLIENT_SECRET` (IntelliBird's OIDC client credentials - in `ops/.env`)
 
 A "complete backup" means DB dump + media tarball + verified secrets-vault snapshot from the same window.
 
@@ -142,7 +142,7 @@ If the IntelliBird OIDC client secret was compromised, or if the restore predate
 
 ### 3.2 Group -> role mapping sanity check
 
-**Admin UI -> Directory -> Groups** — verify `intellibird-admins` and `intellibird-analysts` exist and contain your test users. Unmapped users land as Viewer by default (`auth-setup.md` §8).
+**Admin UI -> Directory -> Groups** - verify `intellibird-admins` and `intellibird-analysts` exist and contain your test users. Unmapped users land as Viewer by default (`auth-setup.md` §8).
 
 ---
 
@@ -157,7 +157,7 @@ curl -sS -o /dev/null -w "%{http_code} %{redirect_url}\n" \
 
 **Expected:** `302 http://authentik:9000/application/o/authorize/?client_id=...&redirect_uri=...&response_type=code&scope=openid+profile+email+groups&state=...`
 
-(The `Location` host is whatever `SSO_ISSUER_URL` resolves to — `authentik:9000` inside the compose network, or your public Authentik hostname.)
+(The `Location` host is whatever `SSO_ISSUER_URL` resolves to - `authentik:9000` inside the compose network, or your public Authentik hostname.)
 
 Failure modes:
 
@@ -186,7 +186,7 @@ DR is only valid if exercised. Rehearse at least every 90 days in a staging stac
 
 1. Take fresh backups per §1 from production (or a production-like staging instance).
 2. Stand up an isolated Docker host (not prod).
-3. Walk §2 + §3 end-to-end using ONLY the backup artefacts and this runbook — no shortcuts, no copy-paste from a live prod shell.
+3. Walk §2 + §3 end-to-end using ONLY the backup artefacts and this runbook - no shortcuts, no copy-paste from a live prod shell.
 4. Run §4 verification (curl + browser round-trip) against the rehearsed stack.
 5. Time each phase; record deviations from the runbook as issues against this document.
 
@@ -232,8 +232,8 @@ Sign-off:            __________________________
 
 ## References
 
-- [auth-setup.md](auth-setup.md) — initial Authentik provisioning (env, groups, provider binding)
-- [secret-rotation.md](secret-rotation.md) — IntelliBird SECRET_KEY drill (separate from this runbook)
-- `ops/docker-compose.yml` — pinned service definitions (`authentik-server`, `authentik-worker`, `authentik-db`)
+- [auth-setup.md](auth-setup.md) - initial Authentik provisioning (env, groups, provider binding)
+- [secret-rotation.md](secret-rotation.md) - IntelliBird SECRET_KEY drill (separate from this runbook)
+- `ops/docker-compose.yml` - pinned service definitions (`authentik-server`, `authentik-worker`, `authentik-db`)
 - [Authentik backup/restore docs](https://docs.goauthentik.io/sys-mgmt/ops/backup-restore/)
-- [Authentik 2025.12 release notes](https://docs.goauthentik.io/releases/2025.12/) — `/data/media` path, `/files` URL prefix
+- [Authentik 2025.12 release notes](https://docs.goauthentik.io/releases/2025.12/) - `/data/media` path, `/files` URL prefix

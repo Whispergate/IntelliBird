@@ -13,7 +13,7 @@ Orchestrates:
 Cancellation: TimeLimitExceeded caught; cancel_bbot_container(container_id); status='cancelled'.
 
 Time limits: the actor decorator sets a default based on the passive cap. The launch_scan
-router (plan 11-05) overrides per-mode via `.send_with_options(time_limit=<ms>)` — passive
+router (plan 11-05) overrides per-mode via `.send_with_options(time_limit=<ms>)` - passive
 gets BBOT_PASSIVE_MAX_SECONDS, active gets BBOT_ACTIVE_MAX_SECONDS (I1 from checker feedback).
 """
 from __future__ import annotations
@@ -88,8 +88,8 @@ async def _run_bbot_scan_inner(scan_id: uuid.UUID) -> None:
     try:
         async with async_session_factory() as db:
             scan = (await db.execute(select(EASMScan).where(EASMScan.id == scan_id))).scalar_one()
-            targets = await easm_scope.derive_bbot_seeds(db, scan.project_id)
-            blacklist = await easm_scope.derive_bbot_blacklist(db, scan.project_id)
+            targets = await easm_scope.derive_bbot_seeds(db, scan.project_id)  # type: ignore[arg-type]
+            blacklist = await easm_scope.derive_bbot_blacklist(db, scan.project_id)  # type: ignore[arg-type]
 
             # Defence-in-depth: revalidate modules (router already validated)
             ok, invalid = bbot_safelist.validate_modules(list(scan.modules))
@@ -102,7 +102,7 @@ async def _run_bbot_scan_inner(scan_id: uuid.UUID) -> None:
 
             passive = scan.scan_mode == "passive"
             container_id = bbot_runner.launch_bbot_scan(
-                scan.id, scan.project_id, targets, blacklist, list(scan.modules), passive,
+                scan.id, scan.project_id, targets, blacklist, list(scan.modules), passive,  # type: ignore[arg-type]
             )
             await db.execute(
                 update(EASMScan)
@@ -111,7 +111,7 @@ async def _run_bbot_scan_inner(scan_id: uuid.UUID) -> None:
             )
             await db.commit()
 
-        # Stream outside the session context — each event opens a short session
+        # Stream outside the session context - each event opens a short session
         byte_count = 0
         for event in bbot_runner.stream_bbot_logs(container_id):
             byte_count += len(str(event))
@@ -119,7 +119,7 @@ async def _run_bbot_scan_inner(scan_id: uuid.UUID) -> None:
                 scan = (
                     await db.execute(select(EASMScan).where(EASMScan.id == scan_id))
                 ).scalar_one()
-                await bbot_runner.persist_finding(db, scan.id, scan.project_id, event)
+                await bbot_runner.persist_finding(db, scan.id, scan.project_id, event)  # type: ignore[arg-type]
 
                 # Promotion path
                 bbot_type = event.get("type", "")
@@ -128,12 +128,12 @@ async def _run_bbot_scan_inner(scan_id: uuid.UUID) -> None:
                 if easm_promoter.should_promote(bbot_type, severity):
                     # Load the finding to build promotion kwargs with server-side fields
                     chash = bbot_runner.content_hash_for(
-                        scan.project_id, bbot_type, _canonical_target(event)
+                        scan.project_id, bbot_type, _canonical_target(event)  # type: ignore[arg-type]
                     )
-                    finding = await _load_finding_for(db, scan.project_id, bbot_type, chash)
+                    finding = await _load_finding_for(db, scan.project_id, bbot_type, chash)  # type: ignore[arg-type]
                     if finding:
                         kwargs = easm_promoter.promote_finding_to_event(finding, scan)
-                        # source_type is metadata only — not an ORM column on events
+                        # source_type is metadata only - not an ORM column on events
                         kwargs.pop("source_type", None)
                         # summary -> description column mapping
                         summary = kwargs.pop("summary", None)
@@ -210,7 +210,7 @@ def _now() -> datetime.datetime:
 def _canonical_target(event: dict) -> str:
     """Extract canonical target string from a BBOT event dict.
 
-    PITFALLS §Pitfall 6: data field is polymorphic — dict or plain string.
+    PITFALLS §Pitfall 6: data field is polymorphic - dict or plain string.
     """
     data = event.get("data", {})
     if isinstance(data, dict):

@@ -139,7 +139,7 @@ def test_gate_flip_confirm_authorisation_false_rejected_at_pydantic_layer():
 
 
 # ---------------------------------------------------------------------------
-# Authority tests — 403 paths
+# Authority tests - 403 paths
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -189,7 +189,7 @@ async def test_gate_flip_as_global_analyst_with_no_membership_returns_403():
 
 
 # ---------------------------------------------------------------------------
-# Name mismatch — 422 path
+# Name mismatch - 422 path
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -211,7 +211,7 @@ async def test_gate_flip_with_wrong_name_returns_422_with_canonical_copy():
 
 
 # ---------------------------------------------------------------------------
-# Archive + legacy guards — 422 paths
+# Archive + legacy guards - 422 paths
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -247,7 +247,7 @@ async def test_gate_flip_against_legacy_project_returns_422():
 
 
 # ---------------------------------------------------------------------------
-# Successful flip — Lead + Admin paths
+# Successful flip - Lead + Admin paths
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -271,7 +271,6 @@ async def test_gate_flip_with_matching_name_and_lead_sets_all_four_fields():
     call_count = 0
 
     # Track the values passed to update
-    update_values: dict = {}
 
     async def fake_execute(stmt, *args, **kwargs):
         nonlocal call_count
@@ -281,7 +280,7 @@ async def test_gate_flip_with_matching_name_and_lead_sets_all_four_fields():
             # SELECT project
             result.scalar_one_or_none.return_value = proj
         elif call_count == 2:
-            # UPDATE — capture update values from the compiled statement
+            # UPDATE - capture update values from the compiled statement
             result.scalar_one_or_none.return_value = None
         else:
             # re-fetch after commit
@@ -307,7 +306,7 @@ async def test_gate_flip_with_matching_name_and_lead_sets_all_four_fields():
     # Patch _hydrate to avoid DB member_count query
     with patch("app.routers.projects._hydrate") as mock_hydrate:
         mock_hydrate.return_value = MagicMock(spec=ProjectResponse)
-        result = await flip_easm_gate(
+        await flip_easm_gate(
             project_id=proj.id,
             body=body,
             request=request,
@@ -366,8 +365,8 @@ async def test_gate_flip_as_global_admin_without_project_membership_succeeds():
 
     with patch("app.routers.projects._hydrate") as mock_hydrate:
         mock_hydrate.return_value = MagicMock(spec=ProjectResponse)
-        # Must NOT raise — Admin bypasses project membership requirement
-        result = await flip_easm_gate(
+        # Must NOT raise - Admin bypasses project membership requirement
+        await flip_easm_gate(
             project_id=proj.id,
             body=body,
             request=request,

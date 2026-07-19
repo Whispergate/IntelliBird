@@ -68,7 +68,7 @@ class AdminResetPasswordRequest(BaseModel):
 
 
 class SetupResponse(BaseModel):
-    """POST /api/admin/setup response — subset of UserResponse (no enabled/locked)."""
+    """POST /api/admin/setup response - subset of UserResponse (no enabled/locked)."""
 
     id: str
     username: str

@@ -1,9 +1,9 @@
-"""Unit tests for easm_promoter.py — allowlist promotion + STIX mapping.
+"""Unit tests for easm_promoter.py - allowlist promotion + STIX mapping.
 
 Plan 11-03 / EASM-06 / H-4 feed contamination prevention.
 
 Tests use in-memory dataclass stubs for EASMFinding + EASMScan (no DB).
-The promoter is a pure function — no session required.
+The promoter is a pure function - no session required.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from app.services.easm_promoter import (
 
 
 # ---------------------------------------------------------------------------
-# In-memory stubs — mirrors EASMFinding / EASMScan ORM shape without DB
+# In-memory stubs - mirrors EASMFinding / EASMScan ORM shape without DB
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -46,7 +46,7 @@ class _S:
 
 
 # ---------------------------------------------------------------------------
-# should_promote — allowlist behaviour
+# should_promote - allowlist behaviour
 # ---------------------------------------------------------------------------
 
 def test_should_promote_vulnerability():
@@ -98,7 +98,7 @@ def test_should_promote_url_rejected():
 
 
 # ---------------------------------------------------------------------------
-# promote_finding_to_event — STIX type mapping
+# promote_finding_to_event - STIX type mapping
 # ---------------------------------------------------------------------------
 
 def test_promote_vulnerability_produces_vulnerability_stix_type():
@@ -134,7 +134,7 @@ def test_promote_finding_high_produces_indicator_stix_type():
 
 
 # ---------------------------------------------------------------------------
-# promote_finding_to_event — ValueError on non-promotable types
+# promote_finding_to_event - ValueError on non-promotable types
 # ---------------------------------------------------------------------------
 
 def test_promote_non_promotable_raises_valueerror():
@@ -145,7 +145,7 @@ def test_promote_non_promotable_raises_valueerror():
 
 
 # ---------------------------------------------------------------------------
-# promote_finding_to_event — defensive BBOT data access (PITFALLS §Pitfall 6)
+# promote_finding_to_event - defensive BBOT data access (PITFALLS §Pitfall 6)
 # ---------------------------------------------------------------------------
 
 def test_promote_handles_non_dict_raw_bbot_data():
@@ -157,13 +157,13 @@ def test_promote_handles_non_dict_raw_bbot_data():
         canonical_target="sub.example.com",
     )
     s = _S()
-    # Should not raise — defensive access falls back gracefully
+    # Should not raise - defensive access falls back gracefully
     kwargs = promote_finding_to_event(f, s)
     assert kwargs["stix_type"] == "vulnerability"
 
 
 # ---------------------------------------------------------------------------
-# promote_finding_to_event — provenance fields
+# promote_finding_to_event - provenance fields
 # ---------------------------------------------------------------------------
 
 def test_promoted_event_has_source_type_bbot():

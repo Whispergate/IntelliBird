@@ -1,4 +1,4 @@
-"""— dismiss expiry sweep integration tests (BRP-04).
+"""- dismiss expiry sweep integration tests (BRP-04).
 
 Covers the must-have truth: `brand_dismiss_expiry_sweep` flips
 lifecycle_status='dismissed' → 'new' + clears dismiss_until on expired rows,
@@ -103,22 +103,22 @@ async def test_dismiss_expiry_sweep_reactivates_expired_only(db_session):
     )
     rows = {row[0]: (row[1], row[2]) for row in res.all()}
 
-    # A — reactivated + dismiss_until cleared
+    # A - reactivated + dismiss_until cleared
     status_a, until_a = rows[mid_a]
     assert status_a == "new", f"expired dismissal must flip to 'new', got {status_a!r}"
     assert until_a is None, "dismiss_until must be cleared when reactivating"
 
-    # B — still dismissed, dismiss_until untouched (future timestamp)
+    # B - still dismissed, dismiss_until untouched (future timestamp)
     status_b, until_b = rows[mid_b]
     assert status_b == "dismissed", "future-dated dismissal must be left alone"
     assert until_b is not None
 
-    # C — permanent dismissal (NULL dismiss_until) must survive
+    # C - permanent dismissal (NULL dismiss_until) must survive
     status_c, until_c = rows[mid_c]
     assert status_c == "dismissed", "NULL dismiss_until = permanent, must not reactivate"
     assert until_c is None
 
-    # D — confirmed with stale dismiss_until column: sweep filters by
+    # D - confirmed with stale dismiss_until column: sweep filters by
     # lifecycle_status='dismissed' so this must NOT change.
     status_d, _until_d = rows[mid_d]
     assert status_d == "confirmed", (
@@ -172,9 +172,9 @@ async def test_dismiss_expiry_sweep_idempotent(db_session):
     )
     await db_session.commit()
 
-    # First sweep — reactivates
+    # First sweep - reactivates
     await asyncio.to_thread(jobs_mod.brand_dismiss_expiry_sweep_job)
-    # Second sweep — no-op, must not raise
+    # Second sweep - no-op, must not raise
     await asyncio.to_thread(jobs_mod.brand_dismiss_expiry_sweep_job)
 
     res = await db_session.execute(

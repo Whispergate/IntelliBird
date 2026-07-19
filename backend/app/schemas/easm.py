@@ -2,7 +2,7 @@
 
 EASM-01..EASM-10.
 
-All enum fields use Literal types for compile-time safety — Wave 2 routers can
+All enum fields use Literal types for compile-time safety - Wave 2 routers can
 validate request bodies and generate OpenAPI schemas without a separate enum registry.
 """
 from __future__ import annotations
@@ -14,7 +14,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 # ---------------------------------------------------------------------------
-# Literal enum types — mirrors easm_* PG enums from migration 010
+# Literal enum types - mirrors easm_* PG enums from migration 010
 # ---------------------------------------------------------------------------
 ScanStatus = Literal["queued", "running", "finished", "failed", "cancelled", "orphaned"]
 ScanMode = Literal["passive", "active"]
@@ -28,7 +28,7 @@ CredentialProvider = Literal["shodan", "github", "bevigil", "chaos", "securitytr
 # ---------------------------------------------------------------------------
 
 class EASMScanCreate(BaseModel):
-    """POST /api/projects/{id}/easm/scans — create a new scan."""
+    """POST /api/projects/{id}/easm/scans - create a new scan."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -88,19 +88,19 @@ class EASMFindingLifecyclePatch(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Safelist DTO — GET /api/easm/safelist
+# Safelist DTO - GET /api/easm/safelist
 # ---------------------------------------------------------------------------
 
 class EASMSafelistResponse(BaseModel):
     """Module safelist returned by GET /api/easm/safelist."""
 
     modules: list[str]
-    bbot_version: str  # e.g. "2.8.4" — pinned in bbot_safelist.py
+    bbot_version: str  # e.g. "2.8.4" - pinned in bbot_safelist.py
     requires_credentials: dict[str, str]  # module_name -> provider name (e.g. "shodan_dns": "shodan")
 
 
 # ---------------------------------------------------------------------------
-# Diff DTOs — GET /api/projects/{id}/easm/scans/{scan_id}/diff (EASM-08)
+# Diff DTOs - GET /api/projects/{id}/easm/scans/{scan_id}/diff (EASM-08)
 # ---------------------------------------------------------------------------
 
 class EASMDiffEntry(BaseModel):
@@ -136,17 +136,17 @@ class EASMDiffResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Gate flip DTO — POST /api/projects/{id}/easm/gate
+# Gate flip DTO - POST /api/projects/{id}/easm/gate
 # ---------------------------------------------------------------------------
 
 class EASMGateFlipRequest(BaseModel):
-    """POST /api/projects/{id}/easm/gate — flip the active-scan authorisation gate.
+    """POST /api/projects/{id}/easm/gate - flip the active-scan authorisation gate.
 
     scope_acknowledgement_text must exactly match project.name (server-side validated).
-    confirm_authorisation must be Literal[True] — the checkbox must be checked.
+    confirm_authorisation must be Literal[True] - the checkbox must be checked.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     scope_acknowledgement_text: str  # must exact-match project.name server-side
-    confirm_authorisation: Literal[True]  # checkbox — must be True
+    confirm_authorisation: Literal[True]  # checkbox - must be True

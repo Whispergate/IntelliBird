@@ -1,9 +1,9 @@
-"""Integration tests for the EASM router — plan 11-05.
+"""Integration tests for the EASM router - plan 11-05.
 
 Covers:
   - GET /api/easm/safelist
-  - GET /api/projects/{id}/easm/scans (list — empty)
-  - GET /api/projects/{id}/easm/findings (list — empty, filtered)
+  - GET /api/projects/{id}/easm/scans (list - empty)
+  - GET /api/projects/{id}/easm/findings (list - empty, filtered)
   - PATCH /api/projects/{id}/easm/findings/{id} (lifecycle actions)
   - Observer blocked from PATCH (authority matrix)
 
@@ -24,14 +24,14 @@ pytestmark = pytest.mark.integration
 
 
 # ---------------------------------------------------------------------------
-# Helpers — mint an AuthUser and build a test app with overrides
+# Helpers - mint an AuthUser and build a test app with overrides
 # ---------------------------------------------------------------------------
 
 def _make_auth_user(
     role: str = "Admin",
     project_id: uuid.UUID | None = None,
     project_rank: int = 3,  # 3 = Lead
-) -> "AuthUser":  # type: ignore[name-defined]
+) -> "AuthUser":  # type: ignore[name-defined]  # noqa: F821
     from app.security.jwt import AuthUser
 
     pm: dict[str, int] = {}
@@ -87,7 +87,7 @@ async def easm_app(db_engine, _migrations_applied):
 
 @pytest.mark.asyncio
 async def test_safelist_endpoint_returns_frozen_modules(easm_app):
-    """GET /api/easm/safelist — 200; modules non-empty; contains 'crt'; no 'sublist3r'."""
+    """GET /api/easm/safelist - 200; modules non-empty; contains 'crt'; no 'sublist3r'."""
     app, factory, _user = easm_app
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         r = await client.get("/api/easm/safelist")
@@ -96,15 +96,15 @@ async def test_safelist_endpoint_returns_frozen_modules(easm_app):
     assert "modules" in data
     assert isinstance(data["modules"], list)
     assert len(data["modules"]) > 0
-    # Module name is "crt" (not "crt.sh") — PITFALLS §Pitfall 3
+    # Module name is "crt" (not "crt.sh") - PITFALLS §Pitfall 3
     assert "crt" in data["modules"]
-    # sublist3r removed from BBOT 2.8.x — must not be in safelist (PITFALLS §Pitfall 3)
+    # sublist3r removed from BBOT 2.8.x - must not be in safelist (PITFALLS §Pitfall 3)
     assert "sublist3r" not in data["modules"]
 
 
 @pytest.mark.asyncio
 async def test_safelist_includes_bbot_version(easm_app):
-    """GET /api/easm/safelist — bbot_version field present and matches pinned version."""
+    """GET /api/easm/safelist - bbot_version field present and matches pinned version."""
     from app.services.bbot_safelist import BBOT_VERSION
 
     app, factory, _user = easm_app
@@ -117,12 +117,12 @@ async def test_safelist_includes_bbot_version(easm_app):
 
 
 # ---------------------------------------------------------------------------
-# List scans — empty
+# List scans - empty
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_list_scans_empty_returns_empty_list(easm_app, db_session):
-    """GET /api/projects/{id}/easm/scans — fresh project has no scans."""
+    """GET /api/projects/{id}/easm/scans - fresh project has no scans."""
     app, factory, admin_user = easm_app
     project_id = uuid.uuid4()
     # Insert a project row
@@ -139,12 +139,12 @@ async def test_list_scans_empty_returns_empty_list(easm_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# List findings — empty
+# List findings - empty
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_list_findings_empty_returns_empty_list(easm_app, db_session):
-    """GET /api/projects/{id}/easm/findings — fresh project returns empty list."""
+    """GET /api/projects/{id}/easm/findings - fresh project returns empty list."""
     app, factory, admin_user = easm_app
     project_id = uuid.uuid4()
     await db_session.execute(text("""
@@ -355,7 +355,7 @@ async def test_list_findings_excludes_dismissed_by_default(easm_app, db_session)
         )
         assert r.status_code == 200
 
-        # Default list — should not include dismissed
+        # Default list - should not include dismissed
         r2 = await client.get(f"/api/projects/{project_id}/easm/findings")
     assert r2.status_code == 200
     ids = [f["id"] for f in r2.json()]

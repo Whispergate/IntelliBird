@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AIRerankCard — AI Re-ranking card for /projects/[id]/scoring (SCR-04).
+ * AIRerankCard - AI Re-ranking card for /projects/[id]/scoring (SCR-04).
  * Surface 5 per 17-UI-SPEC.md.
  *
  * Only rendered when aiRerankEnabled === true.
@@ -100,7 +100,7 @@ export function AIRerankCard({ projectId, aiRerankEnabled, onComplete }: Props) 
       } else if (wasPollingActive.current) {
         // Was > 0, now 0 → re-rank complete
         stopPolling();
-        toast.success(`AI re-ranking complete — ${status.total_count} events updated.`);
+        toast.success(`AI re-ranking complete - ${status.total_count} events updated.`);
         onComplete?.();
       }
     }, 3000);

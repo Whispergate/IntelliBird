@@ -1,4 +1,4 @@
-"""Admin Source Registry CRUD — SRC-01, SRC-02, SRC-04, SRC-05, STO-01, STO-02.
+"""Admin Source Registry CRUD - SRC-01, SRC-02, SRC-04, SRC-05, STO-01, STO-02.
 
 AUTH-02: every endpoint guarded by Depends(require_admin).
 Test Connection endpoint (SRC-03) added by Plan 03.
@@ -65,7 +65,7 @@ def _validate_dark_web_source(
     DARK-06, DARK-07.
     """
     if feed_type not in _DARK_WEB_FEED_TYPES:
-        return  # clearnet types — no OPSEC gate
+        return  # clearnet types - no OPSEC gate
 
     if not opsec_authorised:
         raise HTTPException(
@@ -102,8 +102,8 @@ class SourceResponse(BaseModel):
     name: str
     feed_type: FeedType
     url: str
-    # credentials_enc DELIBERATELY ABSENT — SRC-04
-    # session_enc DELIBERATELY ABSENT — write-only, never serialised
+    # credentials_enc DELIBERATELY ABSENT - SRC-04
+    # session_enc DELIBERATELY ABSENT - write-only, never serialised
     poll_interval_sec: int
     hot_retention_days: int
     archive_policy: ArchivePolicy
@@ -115,7 +115,7 @@ class SourceResponse(BaseModel):
     effective_status: str | None
     created_at: datetime
     # Quick task 260425-ovt: HTML-scrape selector config. Populated only when
-    # feed_type='custom'. Safe to expose — not credentials.
+    # feed_type='custom'. Safe to expose - not credentials.
     scrape_config: dict | None = None
     # DARK-07: whether operator has acknowledged OPSEC risks for this source.
     opsec_authorised: bool = False
@@ -156,13 +156,13 @@ class SourceCreate(BaseModel):
     # DARK-07: operator must acknowledge OPSEC risks for dark-web sources.
     opsec_authorised: bool = False
     # DARK-04: Telethon StringSession for telegram sources (write-only).
-    # Stored encrypted in sources.session_enc — never returned in responses.
+    # Stored encrypted in sources.session_enc - never returned in responses.
     session: str | None = None
 
 
 class SourceUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=200)
-    # feed_type DELIBERATELY ABSENT — locks it after creation
+    # feed_type DELIBERATELY ABSENT - locks it after creation
     url: str | None = None
     credentials: dict | None = None  # None/absent → keep; non-empty → re-encrypt
     poll_interval_sec: int | None = Field(default=None, ge=60)
@@ -201,7 +201,7 @@ def test_connection(
     _admin: AuthUser = Depends(require_admin),
 ) -> TestConnectionResponse:
     """Synchronous Test Connection probe. Returns 200 regardless of probe
- outcome — the ok flag in the body signals success/failure. UI uses
+ outcome - the ok flag in the body signals success/failure. UI uses
  this as informational only.
 """
     if payload.feed_type == "rss":
@@ -215,7 +215,7 @@ def test_connection(
         ok, latency, count, err = _probe_taxii(payload.url, payload.credentials)
     elif payload.feed_type == "custom":
         ok, latency, count, err = _probe_html_scrape(payload.url, payload.scrape_config)
-    else:  # pragma: no cover — Literal type keeps this unreachable
+    else:  # pragma: no cover - Literal type keeps this unreachable
         raise HTTPException(status_code=422, detail=f"unsupported feed_type {payload.feed_type}")
 
     logger.info(
@@ -314,7 +314,7 @@ async def update_source(
         raise HTTPException(status_code=404, detail="source not found")
 
     data = payload.model_dump(exclude_unset=True)
-    data.pop("feed_type", None)  # belt-and-braces — SourceUpdate has no feed_type field
+    data.pop("feed_type", None)  # belt-and-braces - SourceUpdate has no feed_type field
 
     # DARK-06, DARK-07: re-validate OPSEC gate on update using current
     # stored values merged with incoming payload values.

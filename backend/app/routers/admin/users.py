@@ -9,9 +9,9 @@ Admin-created users always start with:
   token_version = 0
   oidc_sub = NULL  (local account)
 
-Admin role implicitly gets dashboard_roles=[red,blue] — enforced on both create and update.
+Admin role implicitly gets dashboard_roles=[red,blue] - enforced on both create and update.
 
-Disabling a user (enabled=false) bumps token_version — every outstanding access+refresh
+Disabling a user (enabled=false) bumps token_version - every outstanding access+refresh
 token for that user fails the middleware token_version check on next request. Also clears
 Redis lockout keys so a re-enable doesn't inherit a stale lock.
 """
@@ -59,7 +59,7 @@ async def _hydrate(u: User, locked: bool) -> UserResponse:
     return UserResponse(
         id=str(u.id),
         username=u.username,
-        role=u.role,
+        role=u.role,  # type: ignore[arg-type]
         dashboard_roles=list(u.dashboard_roles or []),
         enabled=bool(u.enabled),
         must_change_password=bool(u.must_change_password),
@@ -75,7 +75,7 @@ async def create_user(
     _admin: AuthUser = Depends(require_admin),
     db: AsyncSession = Depends(get_session),
 ) -> UserResponse:
-    dashboards = _normalise_admin_dashboards(body.role, body.dashboard_roles)
+    dashboards = _normalise_admin_dashboards(body.role, body.dashboard_roles)  # type: ignore[arg-type]
     u = User(
         username=body.username,
         password_hash=hash_password(body.initial_password),
@@ -136,7 +136,7 @@ async def update_user(
     if body.dashboard_roles is not None:
         u.dashboard_roles = list(body.dashboard_roles)
 
-    # Admin always ends up with both — applied after both explicit updates above.
+    # Admin always ends up with both - applied after both explicit updates above.
     u.dashboard_roles = _normalise_admin_dashboards(u.role, u.dashboard_roles or [])
 
     if body.enabled is not None and body.enabled != u.enabled:

@@ -1,10 +1,10 @@
-"""IOC-02 bulk-import endpoint integration tests — Plan 22-05 Task 3.
+"""IOC-02 bulk-import endpoint integration tests - Plan 22-05 Task 3.
 
 Covers:
   * dry_run=true returns counts without writing anything
   * Real run returns 202 + job_id + Redis status key
   * 10_001-row CSV → 413
-  * Dry-run dedup is project-scoped (revision checker fix #9 — no cross-project
+  * Dry-run dedup is project-scoped (revision checker fix #9 - no cross-project
     info disclosure; mirrors PROD-01 leakage shape)
   * CSV row.project_id ≠ route project_id (non-admin) → 422 row_project_id_mismatch
     (revision checker fix #4)
@@ -168,7 +168,7 @@ async def test_row_cap_returns_413(db_session, monkeypatch):
     project_id, user_id = await _seed_project(db_session, "rowcap")
     jwt = _mint(user_id, "Analyst", [[str(project_id), PROJECT_ROLE_RANK["Lead"]]])
 
-    # 10_001 rows past the cap (10_000) — the parser raises IOCImportTooLarge.
+    # 10_001 rows past the cap (10_000) - the parser raises IOCImportTooLarge.
     body_lines = ["type,value"]
     for i in range(10_001):
         body_lines.append(f"ip,10.0.{(i // 256) % 256}.{i % 256}")
@@ -188,7 +188,7 @@ async def test_row_cap_returns_413(db_session, monkeypatch):
 @pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_dry_run_dedup_does_not_leak_across_projects(db_session, monkeypatch):
-    """Revision checker fix #9 — Lead-A's dry_run on `9.9.9.9` must NOT see
+    """Revision checker fix #9 - Lead-A's dry_run on `9.9.9.9` must NOT see
     Project B's row as a `would_update` hit. Without project-scoped dedup,
     row counts become an oracle for cross-project IOC enumeration (mirror of
     PROD-01 leakage).
@@ -226,14 +226,14 @@ async def test_dry_run_dedup_does_not_leak_across_projects(db_session, monkeypat
     assert body["would_insert"] == 1, body
     assert body["would_update"] == 0, (
         "Project B's row must NOT count as a duplicate from Project A's "
-        "perspective — would expose cross-project IOC presence"
+        "perspective - would expose cross-project IOC presence"
     )
 
 
 @pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_csv_project_id_mismatch_422(db_session, monkeypatch):
-    """Revision checker fix #4 — CSV row.project_id != route project_id (non-admin)
+    """Revision checker fix #4 - CSV row.project_id != route project_id (non-admin)
     must be rejected so a Lead can't smuggle rows into other projects via the
     optional CSV column.
     """

@@ -1,11 +1,11 @@
-""" geo resolution —.. (MAP-05).
+""" geo resolution -.. (MAP-05).
 
 resolve_geo(raw_stix) returns (lat, lon, country_code) using:
  1. STIX location SDO latitude/longitude/country
  2. MaxMind GeoLite2 City lookup on first IP observable
  3. (None, None, None) if nothing resolves
 
-The MMDB file at GEOLITE_PATH is optional — absent file logs a
+The MMDB file at GEOLITE_PATH is optional - absent file logs a
 single warning on first attempt and all subsequent calls short-circuit.
 """
 from __future__ import annotations
@@ -36,13 +36,13 @@ def _get_reader() -> Any:
     _reader_attempted = True
     path = os.environ.get("GEOLITE_PATH", "/app/geolite/GeoLite2-City.mmdb")
     try:
-        import geoip2.database  # lazy — keeps module loadable without geoip2 installed
+        import geoip2.database  # lazy - keeps module loadable without geoip2 installed
         _reader = geoip2.database.Reader(path)
         log.info("maxmind_db_loaded", path=path)
     except FileNotFoundError:
         log.warning("maxmind_db_missing", path=path)
         _reader = None
-    except Exception as exc:  # noqa: BLE001 — corrupted DB, missing lib, etc.
+    except Exception as exc:  # noqa: BLE001 - corrupted DB, missing lib, etc.
         log.warning("maxmind_db_load_failed", path=path, error=str(exc))
         _reader = None
     return _reader
@@ -55,7 +55,7 @@ def _lookup_ip(ip: str) -> Optional[tuple[float, float, str | None]]:
  Caches results to avoid repeated MMDB reads for the same IP. The
  caller is responsible for stripping any CIDR suffix before calling.
 
- Raises nothing — AddressNotFoundError and all other geoip2 errors are
+ Raises nothing - AddressNotFoundError and all other geoip2 errors are
  caught and converted to None.
 """
     reader = _get_reader()
@@ -63,7 +63,7 @@ def _lookup_ip(ip: str) -> Optional[tuple[float, float, str | None]]:
         return None
     try:
         response = reader.city(ip)
-    except Exception:  # noqa: BLE001 — AddressNotFoundError + any geoip2 error
+    except Exception:  # noqa: BLE001 - AddressNotFoundError + any geoip2 error
         return None
     lat = getattr(response.location, "latitude", None)
     lon = getattr(response.location, "longitude", None)
@@ -79,7 +79,7 @@ def _extract_stix_location(
     """Return (lat, lon, country_code) from the first STIX location SDO that
  has both latitude and longitude, or None if no usable location is found.
 
- country may be absent in a location SDO — that is fine per STIX 2.1.
+ country may be absent in a location SDO - that is fine per STIX 2.1.
 """
     if not isinstance(raw_stix, dict):
         return None
@@ -104,7 +104,7 @@ def _extract_ips_from_stix(raw_stix: dict | None) -> list[str]:
  observables in bundle order.
 
  Values may include CIDR suffixes (e.g. ``192.0.2.1/24``) per STIX
- flexibility — callers are expected to strip them before lookup.
+ flexibility - callers are expected to strip them before lookup.
 """
     if not isinstance(raw_stix, dict):
         return []
@@ -130,12 +130,12 @@ def resolve_geo(
  Resolution order:
  1. STIX location SDO (latitude + longitude + optional country)
  2. MaxMind GeoLite2 City lookup on first IP observable in bundle
- 3. (None, None, None) — coordinates unknown
+ 3. (None, None, None) - coordinates unknown
 
  CIDR suffixes on IP values are stripped automatically before the
  MaxMind lookup so geoip2 does not raise AddressNotFoundError.
 
- Never raises — all failure modes (absent MMDB, unknown IP, bad STIX
+ Never raises - all failure modes (absent MMDB, unknown IP, bad STIX
  shape, None input) are handled and produce (None, None, None).
 """
     stix_hit = _extract_stix_location(raw_stix)

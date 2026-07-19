@@ -1,4 +1,4 @@
-"""Tier classification — pure function. No DB, no I/O.
+"""Tier classification - pure function. No DB, no I/O.
 
 Locked cutoffs in 15-CONTEXT.md:
     S >= 90, A 75–89, B 55–74, C 30–54, D < 30
@@ -12,7 +12,7 @@ from .defaults import DEFAULT_TIER_CUTOFFS
 
 # TIER_RANGES provides closed (lo, hi) ranges for each tier.
 # Used by plan 15-05 for the tier filter SQL WHERE clause.
-# Note: D hi is 29.99 (not 30) — inclusive upper bound for SQL range queries.
+# Note: D hi is 29.99 (not 30) - inclusive upper bound for SQL range queries.
 TIER_RANGES: dict[str, tuple[float, float]] = {
     "S": (90.0, 100.0),
     "A": (75.0, 89.99),

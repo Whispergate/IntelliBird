@@ -1,16 +1,16 @@
-"""Suggestion validator gate — AI-03, updated ACTOR-04.
+"""Suggestion validator gate - AI-03, updated ACTOR-04.
 
 Every LLM-extracted CVE / ATT&CK technique / actor name passes validation:
   - CVE / ATT&CK: format regex + catalog presence check (bool path)
   - Actor names: rapidfuzz fuzzy alias match against threat_actors table
 
 The actor branch uses match_actor_name() with three outcomes:
-  score >= 85  → "auto_link"  — write ActorEventLink directly (no ai_suggestion)
-  score 60–84  → "stage"      — create AISuggestion type='actor' for analyst review
-  score < 60   → "discard"    — drop silently
+  score >= 85  → "auto_link"  - write ActorEventLink directly (no ai_suggestion)
+  score 60–84  → "stage"      - create AISuggestion type='actor' for analyst review
+  score < 60   → "discard"    - drop silently
 
 Both CVE/ATT&CK checks must pass for a suggestion to be staged. Failures are
-logged at INFO and silently dropped — they never reach the ai_suggestions table.
+logged at INFO and silently dropped - they never reach the ai_suggestions table.
 
 This enforces C-2 (analyst confirmation queue must be signal-rich) and
 prevents unvalidated entity rows from polluting downstream analysis.
@@ -60,13 +60,13 @@ async def validate_cve(db: "AsyncSession", value: str) -> bool:
     """Return True if *value* matches CVE_REGEX AND exists in cve_details cache.
 
     Both checks must pass.  A well-formed CVE ID that is not yet in the local
-    NVD cache fails — the operator can trigger an NVD re-ingest and
+    NVD cache fails - the operator can trigger an NVD re-ingest and
     re-summarise when needed.
     """
     if not CVE_REGEX.match(value):
         return False
 
-    from app.models.cve_details import CveDetails  # noqa: PLC0415 — deferred import
+    from app.models.cve_details import CveDetails  # noqa: PLC0415 - deferred import
 
     row = (
         await db.execute(
@@ -80,13 +80,13 @@ async def validate_attack_technique(db: "AsyncSession", value: str) -> bool:
     """Return True if *value* matches ATTCK_REGEX AND exists in attack_techniques.
 
     Both checks must pass.  A well-formed technique ID absent from the local
-    ATT&CK bootstrap table fails — the operator can re-run the ATT&CK bootstrap
+    ATT&CK bootstrap table fails - the operator can re-run the ATT&CK bootstrap
     job to pick up newly published techniques.
     """
     if not ATTCK_REGEX.match(value):
         return False
 
-    from app.models.attack import AttackTechnique  # noqa: PLC0415 — deferred import
+    from app.models.attack import AttackTechnique  # noqa: PLC0415 - deferred import
 
     row = (
         await db.execute(
@@ -105,12 +105,12 @@ async def validate_actor_name(db: "AsyncSession", value: str) -> bool:
     with stix_type='threat-actor' and their STIX name field mapped to
     events.title (see app.ingest.taxii_parser._title_for).
 
-    This is intentionally STRICT — names with no matching SDO are rejected.
+    This is intentionally STRICT - names with no matching SDO are rejected.
     The operator can manually create the SDO (or trigger a TAXII re-ingest)
     and re-summarise when needed.  This choice is deliberate per 17-CONTEXT.md
     §Suggestion validation (C-2 mitigation).
     """
-    from app.models.events import Event  # noqa: PLC0415 — deferred import
+    from app.models.events import Event  # noqa: PLC0415 - deferred import
 
     row = (
         await db.execute(
@@ -127,11 +127,11 @@ async def validate_actor_name(db: "AsyncSession", value: str) -> bool:
 # ---------------------------------------------------------------------------
 
 async def validate_narrative_op(db: "AsyncSession", value: str) -> bool:
-    """narrative_op values are free-form JSON metadata — structural validation only.
+    """narrative_op values are free-form JSON metadata - structural validation only.
 
     The AI pipeline stores the raw LLM JSON in suggestion.value. Format:
     {"claim": "...", "amplifier": "...", "audience": "...", "is_narrative_op": true}
-    No catalog lookup required — always passes validator stage.
+    No catalog lookup required - always passes validator stage.
     """
     return True
 
@@ -166,10 +166,10 @@ async def validate_and_stage_suggestions(
     ai_summary_id:
         FK to the ai_summaries row that generated these candidates.
     project_id:
-        Project scope FK — stored directly on each suggestion row so the
+        Project scope FK - stored directly on each suggestion row so the
         project-wide queue page can filter without joining through ai_summaries.
     event_id:
-        Soft FK to events.id (no DB constraint — events is a hypertable).
+        Soft FK to events.id (no DB constraint - events is a hypertable).
         Pass None for digest-level suggestions (not currently used but included
         for forward compatibility).
     candidates:
@@ -189,7 +189,7 @@ async def validate_and_stage_suggestions(
         if stype == "actor":
             decision, matched_actor = await match_actor_name(db, value)
             if decision == "auto_link" and matched_actor is not None:
-                # Write direct actor-event link — skip ai_suggestion staging
+                # Write direct actor-event link - skip ai_suggestion staging
                 from app.models.actors import ActorEventLink  # noqa: PLC0415
                 db.add(ActorEventLink(
                     actor_id=matched_actor.id,

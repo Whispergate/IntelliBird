@@ -85,7 +85,7 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 // 1. Add mode heading + submit label
 // ---------------------------------------------------------------------------
-describe("SourceDialog — Add mode", () => {
+describe("SourceDialog - Add mode", () => {
   it("renders 'Add Source' heading and 'Save Source' submit label", () => {
     renderAdd();
     expect(
@@ -100,7 +100,7 @@ describe("SourceDialog — Add mode", () => {
 // ---------------------------------------------------------------------------
 // 2. Edit mode heading + submit label
 // ---------------------------------------------------------------------------
-describe("SourceDialog — Edit mode", () => {
+describe("SourceDialog - Edit mode", () => {
   it("renders 'Edit Source' heading and 'Save Changes' submit label", () => {
     renderEdit();
     expect(
@@ -124,7 +124,7 @@ describe("SourceDialog — Edit mode", () => {
   });
 
   // 4. Edit mode credential inputs show the verbatim placeholder
-  it("shows '(unchanged — type to replace)' placeholder on credential inputs", () => {
+  it("shows '(unchanged - type to replace)' placeholder on credential inputs", () => {
     // NVD source: one password input visible
     renderEdit(MINIMAL_SOURCE);
     const passwordInputs = document.querySelectorAll<HTMLInputElement>(
@@ -132,7 +132,7 @@ describe("SourceDialog — Edit mode", () => {
     );
     expect(passwordInputs.length).toBeGreaterThanOrEqual(1);
     for (const input of passwordInputs) {
-      expect(input.placeholder).toBe("(unchanged — type to replace)");
+      expect(input.placeholder).toBe("(unchanged - type to replace)");
     }
   });
 });
@@ -140,7 +140,7 @@ describe("SourceDialog — Edit mode", () => {
 // ---------------------------------------------------------------------------
 // 5. Type=RSS hides credentials section entirely
 // ---------------------------------------------------------------------------
-describe("SourceDialog — credentials visibility", () => {
+describe("SourceDialog - credentials visibility", () => {
   it("Type=RSS hides credentials section (no password inputs)", () => {
     // Default add mode uses RSS
     renderAdd();
@@ -175,7 +175,7 @@ describe("SourceDialog — credentials visibility", () => {
       />,
     );
 
-    // NVD source — should see the API key password input
+    // NVD source - should see the API key password input
     const passwordInputs = document.querySelectorAll<HTMLInputElement>(
       'input[type="password"]',
     );
@@ -187,7 +187,7 @@ describe("SourceDialog — credentials visibility", () => {
 // ---------------------------------------------------------------------------
 // 7. Test Connection success → green alert
 // ---------------------------------------------------------------------------
-describe("SourceDialog — Test Connection", () => {
+describe("SourceDialog - Test Connection", () => {
   it("success renders 'Connection OK · Xms · N items sampled' in alert", async () => {
     mockTestConnection.mockResolvedValue({
       ok: true,
@@ -263,7 +263,7 @@ describe("SourceDialog — Test Connection", () => {
 // ---------------------------------------------------------------------------
 // 10–11. Inline validation errors
 // ---------------------------------------------------------------------------
-describe("SourceDialog — validation", () => {
+describe("SourceDialog - validation", () => {
   it("invalid URL shows inline error 'A valid URL is required'", async () => {
     renderAdd();
 
@@ -293,7 +293,7 @@ describe("SourceDialog — validation", () => {
 // ---------------------------------------------------------------------------
 // 12. Custom retention preset reveals hot_retention_days + archive_policy
 // ---------------------------------------------------------------------------
-describe("SourceDialog — RetentionPresetPicker", () => {
+describe("SourceDialog - RetentionPresetPicker", () => {
   it("Custom retention preset reveals hot_retention_days and archive_policy inputs", async () => {
     renderAdd();
 
@@ -316,7 +316,7 @@ describe("SourceDialog — RetentionPresetPicker", () => {
 // ---------------------------------------------------------------------------
 // 13. Valid Add form calls onSubmit with buildCreatePayload shape
 // ---------------------------------------------------------------------------
-describe("SourceDialog — submit", () => {
+describe("SourceDialog - submit", () => {
   it("valid Add form calls onSubmit with expected payload shape", async () => {
     const { onSubmit } = renderAdd();
 

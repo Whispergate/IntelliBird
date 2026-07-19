@@ -16,7 +16,7 @@ beforeEach(() => {
   pathnameMock = "/blue";
 });
 
-describe("TopNav — Webhooks link", () => {
+describe("TopNav - Webhooks link", () => {
   it("renders 'Webhooks' link with href='/webhooks' after Events link", () => {
     render(
       <RoleProvider value="blue">

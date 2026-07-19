@@ -1,11 +1,11 @@
 """
-Per-project sandbox configuration — SANDBOX-01.
-PUT /api/projects/{id}/sandbox-config  — Lead+ sets provider + API key (OPSEC gated)
-GET /api/projects/{id}/sandbox-config  — Lead+ reads current config (API key NOT returned)
+Per-project sandbox configuration - SANDBOX-01.
+PUT /api/projects/{id}/sandbox-config  - Lead+ sets provider + API key (OPSEC gated)
+GET /api/projects/{id}/sandbox-config  - Lead+ reads current config (API key NOT returned)
 
 Note: plan specified backend/app/routers/projects/sandbox.py but creating a
 projects/ subpackage would shadow the existing flat-file app/routers/projects.py
-(1500+ LOC). Placed here as app/routers/sandbox.py instead — same import path used
+(1500+ LOC). Placed here as app/routers/sandbox.py instead - same import path used
 in main.py.
 """
 from __future__ import annotations

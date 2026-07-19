@@ -1,11 +1,11 @@
-"""Pydantic v2 schemas for scoring rules API — SCR-02, SCR-03.
+"""Pydantic v2 schemas for scoring rules API - SCR-02, SCR-03.
 
 Exports:
-  ScoringWeightsPayload   — four-component weights block, validated sum=100
-  TierCutoffsPayload      — S/A/B/C thresholds, validated strictly descending
-  ScoringRulesPayload     — compound request body for PUT /scoring
-  ScoringRulesRead        — response shape (project_id, version, rules, is_default)
-  RescoreStatusResponse   — shape for GET /rescore/status
+  ScoringWeightsPayload   - four-component weights block, validated sum=100
+  TierCutoffsPayload      - S/A/B/C thresholds, validated strictly descending
+  ScoringRulesPayload     - compound request body for PUT /scoring
+  ScoringRulesRead        - response shape (project_id, version, rules, is_default)
+  RescoreStatusResponse   - shape for GET /rescore/status
 """
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ class ScoringRulesPayload(BaseModel):
     """Request body for PUT /api/projects/{id}/scoring.
 
     Pydantic validates weights sum + tier descending order automatically before
-    the route body is available to the handler — malformed payloads return 422.
+    the route body is available to the handler - malformed payloads return 422.
     """
 
     weights: ScoringWeightsPayload

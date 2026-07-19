@@ -1,5 +1,5 @@
 """
-DISINFO-01 — Social listening worker dispatches polls by platform and
+DISINFO-01 - Social listening worker dispatches polls by platform and
              persists events via _persist_event_for_bindings.
 
 Implemented in: backend/app/workers/social_worker.py

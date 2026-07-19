@@ -1,4 +1,4 @@
-"""Integration smoke tests for /api/projects/{id}/graph/traverse — GRAPH-01.
+"""Integration smoke tests for /api/projects/{id}/graph/traverse - GRAPH-01.
 
 Tests happy path + cross-project isolation at the HTTP layer.
 Uses two_project_fixture for realistic project/user setup.

@@ -1,5 +1,5 @@
 /**
- * EventsExportButton.test.tsx — (UX-02)
+ * EventsExportButton.test.tsx - (UX-02)
  *
  * Tests that the Export button in OverviewClient is hidden for Observer role
  * and visible for non-Observer roles (Lead, Contributor, Admin).
@@ -16,7 +16,7 @@ import {
 } from "@/app/projects/[id]/ProjectRoleProvider";
 
 // ---------------------------------------------------------------------------
-// Mocks — must be hoisted before component imports
+// Mocks - must be hoisted before component imports
 // ---------------------------------------------------------------------------
 
 vi.mock("next/navigation", () => ({
@@ -73,7 +73,7 @@ function renderOverviewWithRole(role: ProjectRoleString) {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("OverviewClient Export button — UX-02 Observer gate", () => {
+describe("OverviewClient Export button - UX-02 Observer gate", () => {
   it("Export button is hidden when role is Observer", () => {
     renderOverviewWithRole("Observer");
     expect(

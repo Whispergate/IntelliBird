@@ -1,9 +1,9 @@
-"""CBEST mode relabel helper — TIBER-01.
+"""CBEST mode relabel helper - TIBER-01.
 
 Replaces TIBER-EU "Critical Infrastructure Function" (CIF) terminology with
 CBEST "Critical Business Service" (CBS) in report output when cbest_mode=True.
 
-The relabel is surface-only — same DB columns store both. Only output rendering
+The relabel is surface-only - same DB columns store both. Only output rendering
 (exporters + UI labels) is affected when cbest_mode is True on the TiberReport row.
 
 Patterns applied (case-sensitive, whole-word boundaries via \\b regex):

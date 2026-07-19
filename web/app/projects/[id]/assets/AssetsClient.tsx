@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * AssetsClient — plans 12.1-05a (shell) + 12.1-05b (table+drawer wire-in).
+ * AssetsClient - plans 12.1-05a (shell) + 12.1-05b (table+drawer wire-in).
  *
  * Client component owning:
  *   - Filter state parsed from useSearchParams (URL-as-single-source-of-truth)
@@ -45,7 +45,7 @@ import {
 import { AssetDetailDrawer } from "./components/AssetDetailDrawer";
 
 // ---------------------------------------------------------------------------
-// Local type surface — generated api-client types land in 12.1-06.
+// Local type surface - generated api-client types land in 12.1-06.
 // Shapes mirror backend schemas (12.1-02) so later codegen is a drop-in swap.
 // ---------------------------------------------------------------------------
 
@@ -81,7 +81,7 @@ export const BUCKET_TYPE_MAP: Record<string, readonly string[]> = {
   OTHER: [],
 };
 
-/** Stable bucket iteration order — UI-SPEC locked. */
+/** Stable bucket iteration order - UI-SPEC locked. */
 export const BUCKET_ORDER = [
   "DOMAINS",
   "IPS",
@@ -208,15 +208,15 @@ export default function AssetsClient({
     [searchParams],
   );
 
-  // Summary fetch — 7-bucket map; populated on mount + on filters change.
+  // Summary fetch - 7-bucket map; populated on mount + on filters change.
   const [summary, setSummary] = useState<AssetSummaryMap | null>(null);
 
-  // List fetch — paginated asset rows.
+  // List fetch - paginated asset rows.
   const [rows, setRows] = useState<AssetRow[]>([]);
   const [listTotal, setListTotal] = useState(0);
   const [listLoading, setListLoading] = useState(true);
 
-  // Filter options — distinct types + modules discovered across ALL assets
+  // Filter options - distinct types + modules discovered across ALL assets
   // for this project (unfiltered snapshot on mount). Scans = project's EASM
   // scan history. Null = still loading, [] = loaded + empty.
   const [availableTypes, setAvailableTypes] = useState<string[] | null>(null);
@@ -227,10 +227,10 @@ export default function AssetsClient({
     { id: string; label: string }[] | null
   >(null);
 
-  // Drawer/asset-id param — controlled by URL so refresh preserves state.
+  // Drawer/asset-id param - controlled by URL so refresh preserves state.
   const drawerAssetId = searchParams.get("asset") || null;
 
-  // Derived total from summary — sum of all bucket counts.
+  // Derived total from summary - sum of all bucket counts.
   const total = useMemo(() => {
     if (!summary) return 0;
     return Object.values(summary).reduce((acc, b) => acc + (b?.count ?? 0), 0);
@@ -268,7 +268,7 @@ export default function AssetsClient({
     };
   }, [projectId]);
 
-  // Scan list — dropdown source for the Scan filter.
+  // Scan list - dropdown source for the Scan filter.
   useEffect(() => {
     let cancelled = false;
     const url = `/api/projects/${projectId}/easm/scans`;
@@ -328,7 +328,7 @@ export default function AssetsClient({
     setListLoading(true);
     const params = buildSearchParams(filters);
     // Backend accepts limit + offset (not page/page_size) and does not yet
-    // honour a server-side sort param — sort is applied client-side via
+    // honour a server-side sort param - sort is applied client-side via
     // displayedRows. See backend/app/routers/assets.py list endpoint.
     params.set("limit", String(PAGE_SIZE));
     params.set("offset", String((page - 1) * PAGE_SIZE));
@@ -509,7 +509,7 @@ export default function AssetsClient({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  {/* Span wrapper — disabled buttons don't fire pointer events,
+                  {/* Span wrapper - disabled buttons don't fire pointer events,
                       so the tooltip listens on a wrapping span per Radix docs. */}
                   <span className="inline-block">{exportButton}</span>
                 </TooltipTrigger>
@@ -541,7 +541,7 @@ export default function AssetsClient({
         availableScans={availableScans}
       />
 
-      {/* AssetsTable — wired in 05b */}
+      {/* AssetsTable - wired in 05b */}
       {showTable && (
         <AssetsTable
           rows={rows}
@@ -558,7 +558,7 @@ export default function AssetsClient({
         />
       )}
 
-      {/* AssetDetailDrawer — mounted when ?asset= is set (wired in 05b) */}
+      {/* AssetDetailDrawer - mounted when ?asset= is set (wired in 05b) */}
       <AssetDetailDrawer
         projectId={projectId}
         assetId={drawerAssetId}
@@ -566,7 +566,7 @@ export default function AssetsClient({
         canEditNote={canEditNote}
       />
 
-      {/* Empty states — UI-SPEC §Empty States */}
+      {/* Empty states - UI-SPEC §Empty States */}
       {showEmptyFiltered && (
         <div
           className="flex flex-col items-center justify-center py-16 gap-2"

@@ -50,7 +50,7 @@ const DISCARDED_SUGGESTION: AISuggestion = {
   status: "discarded",
 };
 
-describe("AISuggestionChip — pending state", () => {
+describe("AISuggestionChip - pending state", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -148,7 +148,7 @@ describe("AISuggestionChip — pending state", () => {
   });
 });
 
-describe("AISuggestionChip — confirmed state", () => {
+describe("AISuggestionChip - confirmed state", () => {
   it("renders green chip with no action buttons", () => {
     render(<AISuggestionChip suggestion={CONFIRMED_SUGGESTION} />);
     const chip = screen.getByTestId("suggestion-chip");
@@ -160,7 +160,7 @@ describe("AISuggestionChip — confirmed state", () => {
   });
 });
 
-describe("AISuggestionChip — discarded state", () => {
+describe("AISuggestionChip - discarded state", () => {
   it("renders muted chip with no action buttons", () => {
     render(<AISuggestionChip suggestion={DISCARDED_SUGGESTION} />);
     const chip = screen.getByTestId("suggestion-chip");

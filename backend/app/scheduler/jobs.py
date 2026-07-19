@@ -1,4 +1,4 @@
-"""APScheduler process — dispatches Dramatiq actors on cron triggers.
+"""APScheduler process - dispatches Dramatiq actors on cron triggers.
 
  established attack_weekly_refresh + attack_first_boot.
  adds per-source poll_{rss,taxii,nvd} IntervalTrigger jobs
@@ -16,7 +16,7 @@ import threading
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session as SyncSession
 
 from apscheduler.jobstores.base import JobLookupError
@@ -42,7 +42,7 @@ from app.services.source_events import RELOAD_CHANNEL
 logger = logging.getLogger(__name__)
 
 # feed_type -> actor lookup. Must match sources.feed_type enum (migration 001).
-# 'custom' wired by quick task 260425-ovt — HTML-scrape sources reuse the existing
+# 'custom' wired by quick task 260425-ovt - HTML-scrape sources reuse the existing
 # enum slot and store CSS selectors in sources.scrape_config (migration 017).
 _ACTOR_MAP: dict[str, object] = {
     "rss": poll_rss,
@@ -62,7 +62,7 @@ def refresh_attack() -> None:
 
 
 def archiver_job_wrapper() -> None:
-    """Nightly archiver entrypoint — opens a sync session and runs one pass."""
+    """Nightly archiver entrypoint - opens a sync session and runs one pass."""
     from app.config import settings  # noqa: PLC0415
 
     sync_url = settings.DATABASE_URL
@@ -87,7 +87,7 @@ def _make_dispatch(actor: object, source_id: str):  # type: ignore[no-untyped-de
 def _load_source_jobs(scheduler: BlockingScheduler) -> None:
     """Read sources table and register one IntervalTrigger job per enabled source.
 
- Uses a short-lived sync psycopg2 connection — APScheduler is sync.
+ Uses a short-lived sync psycopg2 connection - APScheduler is sync.
  Idempotent via replace_existing=True . Unknown feed_type
  values are skipped with a structured-log WARNING (defence against
  CRUD introducing new types before the scheduler is updated).
@@ -97,7 +97,7 @@ def _load_source_jobs(scheduler: BlockingScheduler) -> None:
     from app.config import settings  # noqa: PLC0415
 
     url = settings.DATABASE_URL
-    # psycopg2 accepts plain postgresql:// — strip any asyncpg marker first
+    # psycopg2 accepts plain postgresql:// - strip any asyncpg marker first
     url = url.replace("postgresql+asyncpg://", "postgresql://")
     url = url.replace("+asyncpg", "")
 
@@ -122,7 +122,7 @@ def _load_source_jobs(scheduler: BlockingScheduler) -> None:
                     _make_dispatch(actor, str(source_id)),
                     IntervalTrigger(seconds=int(interval_sec)),
                     id=job_id,
-                    replace_existing=True,  # — prevents duplicate jobs on restart
+                    replace_existing=True,  # - prevents duplicate jobs on restart
                 )
                 logger.info(
                     "scheduler_registered feed_type=%s source_id=%s interval=%d",
@@ -139,7 +139,7 @@ def _reload_handler(scheduler: BlockingScheduler, payload: dict[str, Any]) -> No
 
 : DELETE publishes {"deleted": [{"feed_type": "...", "source_id": "..."}]}.
  We must remove those specific APScheduler jobs BEFORE _load_source_jobs runs
- (which only adds/updates — it does not remove orphans).
+ (which only adds/updates - it does not remove orphans).
 """
     deleted = payload.get("deleted") or []
     for entry in deleted:
@@ -163,7 +163,7 @@ def _reload_handler(scheduler: BlockingScheduler, payload: dict[str, Any]) -> No
 
 
 def _reload_listener_loop(scheduler: BlockingScheduler) -> None:
-    """Daemon thread entrypoint — subscribes to Redis and dispatches reload_handler."""
+    """Daemon thread entrypoint - subscribes to Redis and dispatches reload_handler."""
     import redis as redis_lib  # noqa: PLC0415
 
     from app.config import settings  # noqa: PLC0415
@@ -208,7 +208,7 @@ def _start_reload_listener(scheduler: BlockingScheduler) -> threading.Thread:
 
 
 def scan_history_cleanup_job() -> None:
-    """Daily 04:00 UTC — keep the BBOT_SCAN_HISTORY_LIMIT most recent scans per project.
+    """Daily 04:00 UTC - keep the BBOT_SCAN_HISTORY_LIMIT most recent scans per project.
 
     Uses sync psycopg2 connection (APScheduler is sync; matches precedent).
     CASCADE on easm_findings.scan_id removes orphaned findings automatically.
@@ -247,7 +247,7 @@ def scan_history_cleanup_job() -> None:
 
 
 def dismiss_expiry_sweep_job() -> None:
-    """Hourly — findings with dismiss_until < NOW() bounce back to lifecycle_status='new'.
+    """Hourly - findings with dismiss_until < NOW() bounce back to lifecycle_status='new'.
 
     Handles the case where a user dismissed a finding with a time limit; once the
     dismiss window expires the finding reappears in the EASM findings view.
@@ -279,10 +279,10 @@ def dismiss_expiry_sweep_job() -> None:
 
 
 def orphan_reaper_job() -> None:
-    """Hourly — reap exited intellibird.easm labelled containers and mark stale scans orphaned.
+    """Hourly - reap exited intellibird.easm labelled containers and mark stale scans orphaned.
 
     Delegates to plan 11-04a's bbot_runner.reap_orphan_containers() (sync) and
-    reap_orphan_scans() (async — wrapped in asyncio.run).
+    reap_orphan_scans() (async - wrapped in asyncio.run).
     """
     import asyncio  # noqa: PLC0415
 
@@ -320,7 +320,7 @@ def _brand_sync_pg_url() -> str:
 
 
 def brand_monitor_tick_job() -> None:
-    """Every BRAND_MONITOR_INTERVAL_SECONDS — enqueue a scan_project actor for
+    """Every BRAND_MONITOR_INTERVAL_SECONDS - enqueue a scan_project actor for
     every active (non-archived) project. Pattern mirrors _make_dispatch but
     reads the projects list at tick-time (not at scheduler-start) so newly
     created projects get picked up without a restart.
@@ -348,7 +348,7 @@ def brand_monitor_tick_job() -> None:
 
 
 def brand_gdpr_purge_job() -> None:
-    """Daily 03:00 UTC — delete person-type brand_matches older than
+    """Daily 03:00 UTC - delete person-type brand_matches older than
     project.gdpr_person_match_retention_days (BRP-04 / L-3).
 
     Per-project retention: a JOIN against brand_terms + projects drives the
@@ -382,7 +382,7 @@ def brand_gdpr_purge_job() -> None:
 
 
 def brand_noise_downgrade_sweep_job() -> None:
-    """Daily 04:30 UTC — auto-downgrade high-noise active terms to watch_only
+    """Daily 04:30 UTC - auto-downgrade high-noise active terms to watch_only
     (H-5). A term is "noisy" when its brand_matches count in the last 24h
     exceeds settings.BRAND_NOISE_THRESHOLD. Only affects mode='active' terms.
     """
@@ -423,7 +423,7 @@ def brand_noise_downgrade_sweep_job() -> None:
 
 
 def brand_dismiss_expiry_sweep_job() -> None:
-    """Hourly — flip lifecycle_status back to 'new' for dismissed brand_matches
+    """Hourly - flip lifecycle_status back to 'new' for dismissed brand_matches
     whose dismiss_until has passed (BRP-04).
 
     Mirrors easm_findings dismiss_expiry_sweep_job 1:1.
@@ -454,7 +454,7 @@ def brand_dismiss_expiry_sweep_job() -> None:
 def register_brand_jobs(scheduler: BlockingScheduler, settings_obj) -> None:  # type: ignore[no-untyped-def]
     """Wire the 4 Brand Protection jobs onto the given scheduler.
 
-    Job IDs (stable — used by tests + ops):
+    Job IDs (stable - used by tests + ops):
       - brand_monitor_tick               : IntervalTrigger(BRAND_MONITOR_INTERVAL_SECONDS, default 900s)
       - brand_gdpr_purge                 : CronTrigger(hour=3, minute=0, UTC)
       - brand_noise_downgrade_sweep      : CronTrigger(hour=4, minute=30, UTC)
@@ -494,7 +494,7 @@ def register_brand_jobs(scheduler: BlockingScheduler, settings_obj) -> None:  # 
 def register_misp_jobs(scheduler: BlockingScheduler) -> None:  # type: ignore[no-untyped-def]
     """Register misp_pull_job for all enabled MISP configs (one per project).
 
-    Job ID: misp_pull_{project_id} — allows per-project add/remove.
+    Job ID: misp_pull_{project_id} - allows per-project add/remove.
     Interval: 6 hours (CONTEXT.md locked decision).
     """
     import psycopg2  # noqa: PLC0415
@@ -534,7 +534,7 @@ def register_misp_jobs(scheduler: BlockingScheduler) -> None:  # type: ignore[no
 def register_social_jobs(scheduler: BlockingScheduler) -> None:  # type: ignore[no-untyped-def]
     """Register per-source social listening poll jobs.
 
-    DISINFO-01 — mirrors register_source_poll_jobs but filtered
+    DISINFO-01 - mirrors register_source_poll_jobs but filtered
     to social_listening feed_type only.  Social sources use
     source_config.poll_interval_seconds if present, otherwise default 300 s.
     Minimum effective interval is 60 s.
@@ -586,7 +586,7 @@ def build_scheduler() -> BlockingScheduler:
         id="attack_first_boot",
         replace_existing=True,
     )
-    # archiver job — nightly at 03:00 UTC
+    # archiver job - nightly at 03:00 UTC
     scheduler.add_job(
         archiver_job_wrapper,
         CronTrigger(hour=3, minute=0),
@@ -598,7 +598,7 @@ def build_scheduler() -> BlockingScheduler:
         _load_source_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_source_load_failed error=%s", e)
-    # MAP-05 — geo backfill one-shot at startup (+30s)
+    # MAP-05 - geo backfill one-shot at startup (+30s)
     try:
         from app.services.geo_backfill import backfill_geo_once  # noqa: PLC0415
         scheduler.add_job(
@@ -623,7 +623,7 @@ def build_scheduler() -> BlockingScheduler:
         logger.info("scheduler_registered webhook_dispatch_tick interval=60")
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_webhook_dispatch_register_failed error=%s", e)
-    # Plan 06 — live reload listener (daemon thread)
+    # Plan 06 - live reload listener (daemon thread)
     try:
         _start_reload_listener(scheduler)
     except Exception as e:  # noqa: BLE001
@@ -666,7 +666,7 @@ def build_scheduler() -> BlockingScheduler:
         register_brand_jobs(scheduler, _brand_settings)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_brand_jobs_register_failed error=%s", e)
-    # Continuous monitoring — silence / drift / parse_error checks
+    # Continuous monitoring - silence / drift / parse_error checks
     try:
         from app.scheduler.monitoring_jobs import register_monitoring_jobs  # noqa: PLC0415
 
@@ -677,7 +677,7 @@ def build_scheduler() -> BlockingScheduler:
     try:
         from app.scheduler.ai_jobs import register_ai_jobs  # noqa: PLC0415
     except Exception:  # pragma: no cover
-        register_ai_jobs = None
+        register_ai_jobs = None  # type: ignore[assignment]
     if register_ai_jobs is not None:
         register_ai_jobs(scheduler)
     # IOC TTL expiry sweep (IOC-05)
@@ -697,7 +697,7 @@ def build_scheduler() -> BlockingScheduler:
         register_social_jobs(scheduler)
     except Exception as e:  # noqa: BLE001
         logger.warning("scheduler_social_jobs_register_failed error=%s", e)
-    # CIB detection sweep (DISINFO-02) — global, every 300s
+    # CIB detection sweep (DISINFO-02) - global, every 300s
     try:
         from app.services.cib_detector import run_cib_sweep  # noqa: PLC0415
         scheduler.add_job(

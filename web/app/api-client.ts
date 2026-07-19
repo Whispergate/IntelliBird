@@ -4,11 +4,11 @@ import type { components } from "./api-client.generated";
 
 // ============================================================
 // Enum types extracted from generated schema
-// (These types are inlined in schema objects — no standalone OpenAPI schemas for them)
+// (These types are inlined in schema objects - no standalone OpenAPI schemas for them)
 // ============================================================
 
 // FeedType: "bbot" added locally; "brand-monitor" added
-// locally — both pending api-client.generated.ts regen.
+// locally - both pending api-client.generated.ts regen.
 // DARK-07: "tor_html", "paste", "telegram" added for dark-web collection.
 export type FeedType =
   | components["schemas"]["SourceResponse"]["feed_type"]
@@ -47,7 +47,7 @@ export type TlpName = "clear" | "green" | "amber" | "amber+strict" | "red";
 export type Visibility = components["schemas"]["EventItem"]["visibility"];
 export type DestinationType = components["schemas"]["WebhookResponse"]["destination_type"];
 
-// WebhookAuth — union of generated discriminated auth schemas
+// WebhookAuth - union of generated discriminated auth schemas
 export type WebhookAuth =
   | components["schemas"]["BearerAuth"]
   | components["schemas"]["BasicAuth"]
@@ -169,7 +169,7 @@ export type AISuggestionRead = {
 };
 
 // ============================================================
-// UI-only types (not in OpenAPI schema — frontend shapes only)
+// UI-only types (not in OpenAPI schema - frontend shapes only)
 // ============================================================
 
 export type DashboardRole = "red" | "blue"; // frontend-only, not in OpenAPI schema
@@ -194,7 +194,7 @@ export type EventsQuery = {
   tag_mode?: "any" | "all";
 };
 
-// DeliveryStatus — more specific than generated WebhookResponse.last_delivery_status (string | null)
+// DeliveryStatus - more specific than generated WebhookResponse.last_delivery_status (string | null)
 export type DeliveryStatus = "ok" | "http_error" | "network_error" | "timeout" | null;
 
 // ============================================================
@@ -207,7 +207,7 @@ export type DeliveryStatus = "ok" | "http_error" | "network_error" | "timeout" |
 // forwarding upstream.
 //
 // Server (RSC, Server Action, Route Handler that calls these helpers): cannot
-// use relative URLs — Node.js fetch needs an origin. Talks directly to backend
+// use relative URLs - Node.js fetch needs an origin. Talks directly to backend
 // over the compose internal network AND must inject the bearer token itself
 // because the request never traverses the /api/[...path] proxy on the SSR
 // path. See _apiFetch below.
@@ -286,7 +286,7 @@ export async function fetchSystemStatus(): Promise<SystemStatus | null> {
 }
 
 // ============================================================
-// Sources — SRC-01..04
+// Sources - SRC-01..04
 // ============================================================
 
 export async function fetchSources(): Promise<Source[]> {
@@ -354,7 +354,7 @@ export async function fetchSourceTemplates(): Promise<SourceTemplate[]> {
 }
 
 // ============================================================
-// Events — FIL-01..05, FIL-03, FIL-04
+// Events - FIL-01..05, FIL-03, FIL-04
 // ============================================================
 
 export async function listEvents(
@@ -408,9 +408,9 @@ export type TraverseGraphResponse = GraphResponse & {
 };
 
 /**
- * GET /api/projects/{id}/graph/traverse — multi-hop AGE Cypher traversal.
+ * GET /api/projects/{id}/graph/traverse - multi-hop AGE Cypher traversal.
  *
- * Client-side only — uses relative URL through the [...path] proxy.
+ * Client-side only - uses relative URL through the [...path] proxy.
  * Per CLAUDE.md: browser fetches must use relative URLs (no _apiFetch).
  */
 export async function traverseGraph(
@@ -431,7 +431,7 @@ export async function traverseGraph(
 }
 
 // ============================================================
-// Filter presets — FIL-05
+// Filter presets - FIL-05
 // ============================================================
 
 export async function listPresets(): Promise<FilterPreset[]> {
@@ -484,7 +484,7 @@ export async function deletePreset(name: string): Promise<void> {
 }
 
 // ============================================================
-// Webhook alerts — HOOK-01, HOOK-02, HOOK-06, HOOK-09
+// Webhook alerts - HOOK-01, HOOK-02, HOOK-06, HOOK-09
 // ============================================================
 
 export async function listWebhooks(): Promise<Webhook[]> {
@@ -539,8 +539,8 @@ export async function testWebhook(
 }
 
 // ============================================================
-// Monitoring sources — MON-04
-// (Types locally defined — api-client.generated.ts pending regen when
+// Monitoring sources - MON-04
+// (Types locally defined - api-client.generated.ts pending regen when
 //  backend openapi endpoint is accessible without auth.)
 // ============================================================
 
@@ -585,7 +585,7 @@ export async function patchMonitoringConfig(
 }
 
 // ============================================================
-// Maintenance windows — H-7
+// Maintenance windows - H-7
 // ============================================================
 
 export type MaintenanceWindowItem = {
@@ -642,7 +642,7 @@ export async function deleteMaintenanceWindow(id: string): Promise<void> {
 }
 
 // ============================================================
-// IOCs — (IOC-02..08). Shapes mirror backend
+// IOCs - (IOC-02..08). Shapes mirror backend
 // app/schemas/iocs.py::IOCRead + IOCPatch. Inlined pending
 // api-client.generated.ts regen.
 // ============================================================
@@ -880,7 +880,7 @@ export async function triggerBackfill(projectId?: string): Promise<IOCBackfillEn
 }
 
 // ============================================================
-// Enrichment types — ENRICH-01, ENRICH-04
+// Enrichment types - ENRICH-01, ENRICH-04
 // ============================================================
 
 export type EnrichmentProviderName =
@@ -926,7 +926,7 @@ export type IOCEnrichmentRead = {
 /**
  * GET /api/projects/{project_id}/enrichment-providers
  * List all 6 provider slots for a project (with breaker state).
- * Client-side fetch — uses relative URL through /api/[...path] proxy.
+ * Client-side fetch - uses relative URL through /api/[...path] proxy.
  */
 export async function listEnrichmentProviders(
   projectId: string,
@@ -1176,7 +1176,7 @@ export async function unlinkEventFromCampaign(campaignId: string, eventId: strin
 }
 
 // ---------------------------------------------------------------------------
-// TAXII Partner Key Admin — TAXII-03
+// TAXII Partner Key Admin - TAXII-03
 // ---------------------------------------------------------------------------
 
 export interface TaxiiClientRead {
@@ -1191,7 +1191,7 @@ export interface TaxiiClientRead {
 }
 
 export interface TaxiiClientCreated extends TaxiiClientRead {
-  raw_api_key: string; // shown once — copy immediately
+  raw_api_key: string; // shown once - copy immediately
 }
 
 export interface TaxiiClientCreate {
@@ -1412,7 +1412,7 @@ export async function testSigmaRule(body: {
 }
 
 // ---------------------------------------------------------------------------
-// Cases (— CASE-01..05)
+// Cases (- CASE-01..05)
 // ---------------------------------------------------------------------------
 
 export interface CaseRow {
@@ -1764,7 +1764,7 @@ export async function getCibClusters(
 ): Promise<CibClustersResponse> {
   const res = await fetch(`/api/projects/${projectId}/cib-clusters?limit=${limit}`);
   if (!res.ok) {
-    // 404 means no clusters yet — return empty gracefully
+    // 404 means no clusters yet - return empty gracefully
     if (res.status === 404) return { clusters: [], total: 0 };
     throw new Error(`cib-clusters: ${res.status}`);
   }

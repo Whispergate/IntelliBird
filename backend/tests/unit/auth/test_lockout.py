@@ -1,4 +1,4 @@
-"""Login lockout counter unit tests — AUTH-04."""
+"""Login lockout counter unit tests - AUTH-04."""
 from __future__ import annotations
 
 import pytest
@@ -80,7 +80,7 @@ async def test_admin_unlock_alias(redis_flush):
 
 
 async def test_dummy_username_increments_counter(redis_flush):
-    """PITFALL 7 — record_failure runs even for non-existent users to prevent enumeration."""
+    """PITFALL 7 - record_failure runs even for non-existent users to prevent enumeration."""
     redis = await _get_redis()
     try:
         from app.security.lockout import record_failure, is_locked

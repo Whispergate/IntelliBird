@@ -1,6 +1,6 @@
-# IntelliBird — Projects Operator Runbook
+# IntelliBird - Projects Operator Runbook
 
-Operator procedure for (Projects Foundation) — PRJ-01 through PRJ-07.
+Operator procedure for (Projects Foundation) - PRJ-01 through PRJ-07.
 Covers the migration 009 three-step backfill, the `_legacy` sentinel project,
 the Lead / Contributor / Observer authority matrix, last-Lead protection, the
 JWT `pm` claim + 50-membership cutoff, 50k export cap semantics, and
@@ -22,14 +22,14 @@ constraint lands without orphaning any historical data.
 
 New tables:
 
-- `projects` — engagement containers (name, engagement_type, description,
+- `projects` - engagement containers (name, engagement_type, description,
   archived, created_by, EASM pre-columns for)
-- `project_scope_rows` — 7-type scope definitions
+- `project_scope_rows` - 7-type scope definitions
   (`keyword / service / domain / certificate / whois / as_number / ip_range`)
   with `exclude` and `intel_scope` + `active_test_scope` flags
-- `project_sources` — optional many-to-many restricting which feed sources a
+- `project_sources` - optional many-to-many restricting which feed sources a
   project "sees"
-- `project_memberships` — project-local role axis (`Lead / Contributor /
+- `project_memberships` - project-local role axis (`Lead / Contributor /
   Observer`), orthogonal to the global role (`Admin / Analyst / Viewer`)
 
 New columns:
@@ -45,7 +45,7 @@ New composite index (for PROD-05 p95 <200ms on per-project event queries):
 New frontend surfaces: `/projects` list, `/projects/[id]/{overview,intel,graph,settings,…}`,
 `/projects/compare?a=<uuid>&b=<uuid>`, inline STIX/CSV export.
 
-## 2. Migration 009 — Three-Step Sentinel Backfill
+## 2. Migration 009 - Three-Step Sentinel Backfill
 
 Migration 009 adds `project_id` to three hypertables and hypertable-adjacent
 tables (`events` is a TimescaleDB hypertable; `filter_presets` and `webhooks`
@@ -54,17 +54,17 @@ constraints. The pattern is locked by research pitfall **C-4**.
 
 Four statements per table, ordered:
 
-1. `INSERT INTO projects (id=00000000-0000-0000-0000-000000000001, …)` — the
+1. `INSERT INTO projects (id=00000000-0000-0000-0000-000000000001, …)` - the
    `_legacy` sentinel row (idempotent via `ON CONFLICT (id) DO NOTHING`)
 2. `ALTER TABLE <t> ADD COLUMN project_id UUID NOT NULL
-    DEFAULT '00000000-0000-0000-0000-000000000001'::uuid` — constant default
+    DEFAULT '00000000-0000-0000-0000-000000000001'::uuid` - constant default
    backfills every existing row in-place, atomically, under PG 11+'s
    fast-path rewrite-free path
 3. `ALTER TABLE <t> ADD CONSTRAINT fk_<t>_project_id FOREIGN KEY (project_id)
-    REFERENCES projects(id) ON DELETE RESTRICT` — emitted **separately** from
+    REFERENCES projects(id) ON DELETE RESTRICT` - emitted **separately** from
    the ADD COLUMN because TimescaleDB 2.26 columnstore chunks reject inline
    FK-on-ADD-COLUMN (observed at dry-run)
-4. `ALTER TABLE <t> ALTER COLUMN project_id DROP DEFAULT` — future INSERTs
+4. `ALTER TABLE <t> ALTER COLUMN project_id DROP DEFAULT` - future INSERTs
    must provide `project_id` explicitly; no ambient fallback to the sentinel
 
 Upgrade procedure:
@@ -85,7 +85,7 @@ migration_009 events_project_observed_idx created
 
 ### 2.1 Compressed-chunk precaution (C-4 rollback bracket)
 
-If the upgrade **errors** on a compressed TimescaleDB chunk (rare — ADD COLUMN
+If the upgrade **errors** on a compressed TimescaleDB chunk (rare - ADD COLUMN
 NOT NULL DEFAULT with a constant is inline for PG 11+ / Timescale 2.11+, but
 the dry-run is the gate), decompress the affected chunks, rerun the upgrade,
 then recompress:
@@ -128,7 +128,7 @@ WHERE hypertable_name = 'events' AND is_compressed = false
 - DROP the four new tables (`project_memberships`, `project_sources`,
   `project_scope_rows`, `projects`) in FK-dependent order
 
-**Downgrade is destructive** — any project rows created after upgrade (not
+**Downgrade is destructive** - any project rows created after upgrade (not
 the sentinel, which the downgrade scrubs) are lost. Back up before running.
 
 ## 3. The `_legacy` Sentinel Project
@@ -136,13 +136,13 @@ the sentinel, which the downgrade scrubs) are lost. Back up before running.
 All legacy events, presets, and webhooks point at the `_legacy` sentinel
 project (UUID `00000000-0000-0000-0000-000000000001`). The sentinel:
 
-- Is **archived=true by default** — hidden from `/projects` default list;
+- Is **archived=true by default** - hidden from `/projects` default list;
   becomes visible when the "Show archived" toggle is on
-- Is **non-editable** — rename, archive-toggle, delete, and membership CRUD
+- Is **non-editable** - rename, archive-toggle, delete, and membership CRUD
   all return HTTP 422 `cannot_modify_legacy_sentinel`
 - Renders on `/projects` **at the bottom** of the archived list with a
   muted row background and a caption "Legacy data" badge
-- Holds every pre-migration event, preset, and webhook via FK — `ON DELETE
+- Holds every pre-migration event, preset, and webhook via FK - `ON DELETE
   RESTRICT` means any attempt to DELETE the sentinel row will abort
 
 **Do NOT delete or modify the sentinel directly in SQL.** If the sentinel
@@ -172,7 +172,7 @@ code references it by name rather than literal.
 ## 4. Authority Matrix (PRJ-05)
 
 Per-project role axis (`project_role`) is ORTHOGONAL to the global role
-(`role` on `users` — Admin / Analyst / Viewer). Effective access =
+(`role` on `users` - Admin / Analyst / Viewer). Effective access =
 intersection: a global Viewer who is project-Lead still has read-only global
 capabilities, but their project-Lead role grants per-project authority (see
 below). A global Analyst who is a project-Observer has read-only access to
@@ -193,10 +193,10 @@ Notes:
 
 - **Creator auto-Lead:** project creation atomically inserts a
   `project_memberships` row for the creator with `project_role='Lead'`.
-  Enforced in a single transaction with the project INSERT — an IntegrityError
+  Enforced in a single transaction with the project INSERT - an IntegrityError
   on either side rolls both back, preventing orphaned projects with no Lead.
 - **Global Admin bypass (strong default):** users with global `role='Admin'`
-  bypass the `require_project_membership` dependency entirely — they see and
+  bypass the `require_project_membership` dependency entirely - they see and
   manage every project regardless of `project_memberships` rows. This is a
   locked Claude's Discretion decision (CONTEXT.md §Project membership model)
   so operations + support don't require every Admin to be bound to every
@@ -218,7 +218,7 @@ The only Lead on a project **cannot be removed or demoted**. Attempts return:
 
 This invariant is enforced inside the router handlers (not the
 `require_project_membership` dependency) so that Global Admin's bypass of the
-membership check does NOT bypass the last-Lead guard — an Admin-driven
+membership check does NOT bypass the last-Lead guard - an Admin-driven
 `DELETE /api/projects/{id}/memberships/{m}` on the sole Lead still 409s.
 
 To remove or demote the current Lead:
@@ -228,8 +228,8 @@ To remove or demote the current Lead:
     body `{"project_role": "Lead"}`)
 2. Then remove or demote the original Lead
 
-If a project genuinely has lost all Leads (should not happen — enforced at
-creation + demote/remove — but if it does, e.g. via direct SQL), re-appoint
+If a project genuinely has lost all Leads (should not happen - enforced at
+creation + demote/remove - but if it does, e.g. via direct SQL), re-appoint
 a Lead:
 
 ```sql
@@ -264,7 +264,7 @@ list on demand. Under this design a 50-membership access token measured
 ~3225 bytes (well under the 8KB header limit; see plan 10-02 SUMMARY.md).
 
 ** token compatibility:** neither `pm` nor `pm_truncated` is in the
-`decode_token` required-claims list — -minted tokens still in the
+`decode_token` required-claims list - -minted tokens still in the
 7-day refresh TTL circulation continue to decode cleanly; AuthMiddleware
 defaults `pm=[]` when the claim is absent.
 
@@ -272,7 +272,7 @@ To tune the cutoff, edit `PM_CUTOFF` in
 `backend/app/security/project_membership.py` and restart the API service.
 If the cutoff becomes a bottleneck (some teams run hundreds of projects per
 user), consider moving `pm` out of the JWT entirely into a Redis-backed
-session claim — deferred to v2.1.
+session claim - deferred to v2.1.
 
 ## 7. Export Caps (PRJ-07)
 
@@ -290,20 +290,20 @@ Both formats cap at **50,000 events per export**. Over the cap returns:
 ```
 
 With the frontend translating this to the UI-SPEC copy:
-"Export exceeds 50,000 event cap — narrow the date range or scope and retry."
+"Export exceeds 50,000 event cap - narrow the date range or scope and retry."
 
 Workarounds:
 
-- **Narrow by date range** — the export dialog accepts optional
+- **Narrow by date range** - the export dialog accepts optional
   `observed_from` / `observed_until` date inputs that filter events before
   the cap is counted
-- **Narrow the project scope** — reducing the scope-row include set
+- **Narrow the project scope** - reducing the scope-row include set
   shrinks the query result symmetrically
-- **Archive old events** — archiver + TimescaleDB retention policies
+- **Archive old events** - archiver + TimescaleDB retention policies
   already tier events by age; archived events drop out of exports unless the
   operator explicitly unarchives
 
-Filename convention (backend-owned — client parses via
+Filename convention (backend-owned - client parses via
 `parseContentDispositionFilename`, never synthesised):
 
 ```text
@@ -323,14 +323,14 @@ project and composed into a single SQL predicate at read time.
 
 Predicate composition (canonical rules):
 
-- **Include rows (default):** UNION — event matches ANY include row → it's in
+- **Include rows (default):** UNION - event matches ANY include row → it's in
   scope for this project
-- **Exclude rows (`exclude=true`):** subtract — event matches an include row
+- **Exclude rows (`exclude=true`):** subtract - event matches an include row
   AND does NOT match any exclude row → in scope
 - **`intel_scope=false`** rows are skipped for the intel query lens (they
   exist only to reserve authorisation for active scans)
 - **Empty scope (`intel_scope=true` rows = 0)** → the predicate returns
-  `sa.text("false")`, so zero events match — **not** "all events". This is
+  `sa.text("false")`, so zero events match - **not** "all events". This is
   an **invariant** (CONTEXT.md §Scope-intersection locked) and is enforced
   on the `/api/events`, `/api/graph`, `/api/projects/*/export`, and
   `/api/projects/compare` paths symmetrically.
@@ -344,7 +344,7 @@ Per scope_type:
 - `keyword` / `service` / `whois` / `certificate` / `as_number` → FTS match
   on `events.search_tsv @@ plainto_tsquery('english', row_value)` (MEDIUM
   confidence; enrichment may denormalise some of these to dedicated
-  columns for precision — see CONTEXT.md §Claude's Discretion)
+  columns for precision - see CONTEXT.md §Claude's Discretion)
 
 ## 9. Graph Scoping (PRJ-04, H-3 closure)
 
@@ -352,7 +352,7 @@ The project-scoped attack graph uses **JOIN-to-events**, NEVER AGE node
 properties. Every BFS expansion hop (seed + every re-expansion) re-applies
 the `Event.project_id = <project>` filter; seed-only guards would leak
 cross-project events that share a technique/actor tag. This is pitfall **H-3**
-closure — documented and test-covered in `backend/tests/phase10/test_graph_scope.py`.
+closure - documented and test-covered in `backend/tests/phase10/test_graph_scope.py`.
 
 ## 10. Route Protection + Frontend Middleware
 
@@ -375,22 +375,22 @@ export const config = {
 An unauthenticated request to any `/projects/*` path (including
 `/projects/compare` since it sits under `/projects/*`) redirects to
 `/login?next=<requested-path>` via the Auth.js `session` check. The
-middleware does **not** enforce project-role gates — those are enforced at
+middleware does **not** enforce project-role gates - those are enforced at
 the backend boundary (`require_project_membership` +
 `check_project_membership`) so any direct API caller (curl, a misbehaving
 client) gets the same gate as the UI. Defence-in-depth.
 
 ## See also
 
-- `.planning/phases/10-projects-foundation/10-CONTEXT.md` — user decisions + locks
-- `.planning/phases/10-projects-foundation/10-RESEARCH.md` — Migration 009 risk
+- `.planning/phases/10-projects-foundation/10-CONTEXT.md` - user decisions + locks
+- `.planning/phases/10-projects-foundation/10-RESEARCH.md` - Migration 009 risk
   + JWT claim design
-- `.planning/phases/10-projects-foundation/10-UI-SPEC.md` — UI contract
-- `backend/alembic/versions/009_projects_and_memberships.py` — migration source
-- `backend/app/models/projects.py` — `LEGACY_PROJECT_ID` constant + ORM models
-- `backend/app/routers/projects.py` — CRUD + membership + scope + sources
+- `.planning/phases/10-projects-foundation/10-UI-SPEC.md` - UI contract
+- `backend/alembic/versions/009_projects_and_memberships.py` - migration source
+- `backend/app/models/projects.py` - `LEGACY_PROJECT_ID` constant + ORM models
+- `backend/app/routers/projects.py` - CRUD + membership + scope + sources
   + export + compare endpoints
-- `backend/app/security/project_membership.py` — `require_project_membership`,
+- `backend/app/security/project_membership.py` - `require_project_membership`,
   `check_project_membership`, `PM_CUTOFF`
-- `docs/ops/secret-rotation.md` — runbook (SECRET_KEY rotation)
-- `docs/ops/auth-setup.md` — runbook (Authentik + Auth.js)
+- `docs/ops/secret-rotation.md` - runbook (SECRET_KEY rotation)
+- `docs/ops/auth-setup.md` - runbook (Authentik + Auth.js)

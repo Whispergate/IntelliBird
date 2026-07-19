@@ -1,4 +1,4 @@
-"""graph_traversal tag_source propagation —-03 target (MAP-03, MAP-04)."""
+"""graph_traversal tag_source propagation --03 target (MAP-03, MAP-04)."""
 from __future__ import annotations
 
 import uuid

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * /admin/sigma-rules — SIGMA-03.
+ * /admin/sigma-rules - SIGMA-03.
  * Admin CRUD for Sigma rules: list, add rule YAML, toggle enabled, delete.
  * Includes Test button that shows match count against recent events.
  * Access: Admin only (enforced server-side; page shows error on API error).
@@ -189,7 +189,7 @@ export default function SigmaRulesPage() {
                   onChange={(e) => { setForm((f) => ({ ...f, content: e.target.value })); setTestResult(null); }}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Parsed immediately — invalid YAML returns an error.
+                  Parsed immediately - invalid YAML returns an error.
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -262,14 +262,14 @@ export default function SigmaRulesPage() {
                 <TableCell>
                   {rule.level ? (
                     <Badge variant="outline" className="text-xs">{rule.level}</Badge>
-                  ) : "—"}
+                  ) : "-"}
                 </TableCell>
                 <TableCell>
                   {(rule.tags ?? []).length > 0 ? (
                     rule.tags.slice(0, 3).map((t) => (
                       <Badge key={t} variant="secondary" className="text-xs mr-1">{t}</Badge>
                     ))
-                  ) : "—"}
+                  ) : "-"}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="text-xs">

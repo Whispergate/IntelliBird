@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for timeline API — TIMELINE-01, TIMELINE-02."""
+"""Pydantic v2 schemas for timeline API - TIMELINE-01, TIMELINE-02."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -22,7 +22,7 @@ class TimelineSeriesResponse(BaseModel):
 
     buckets: ordered list of time buckets (oldest first).
     tags: top-10 tags by total event count across all buckets.
-    bucket_interval: 'hour' | 'day' | 'week' — adaptive bucket size used.
+    bucket_interval: 'hour' | 'day' | 'week' - adaptive bucket size used.
     """
 
     buckets: list[BucketRow]
@@ -34,7 +34,7 @@ class HeatmapCell(BaseModel):
     """One cell in the hour-of-day × day-of-week heatmap.
 
     hour: 0–23 (UTC hour of day)
-    dow: 0–6 (0=Monday, 6=Sunday — ISO weekday - 1)
+    dow: 0–6 (0=Monday, 6=Sunday - ISO weekday - 1)
     count: number of events in this hour/dow combination
     """
 

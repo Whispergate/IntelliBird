@@ -1,14 +1,14 @@
 """STIX 2.1 bundle → (ioc_type, raw_value) iterator (IOC-02).
 
 Maps the eight atomic indicator/observed-data shapes documented in CONTEXT.md
-§"STIX SDO mapping". Compound patterns (AND/OR/FOLLOWEDBY) are skipped — they
+§"STIX SDO mapping". Compound patterns (AND/OR/FOLLOWEDBY) are skipped - they
 are rare in indicator feeds and outside 's scope (per RESEARCH.md).
 
 Try a normal parse first; on any parse error we retry with `allow_custom=True`
 so malformed bundles from third-party feeds still yield whatever we recognise.
 
 NOTE: the installed `stix2` (3.x) does NOT accept a `strict` kwarg on
-`parse()` — verified via `help(stix2.parse)`. The existing
+`parse()` - verified via `help(stix2.parse)`. The existing
 `tiber/exporters/stix.py:143` usage already calls `stix2.parse(bundle_json,
 allow_custom=True)` only and we mirror that here.
 """
@@ -48,7 +48,7 @@ def parse_stix_bundle(bundle_json: dict) -> Iterator[tuple[str, str]]:
     bundle = None
     try:
         bundle = stix2.parse(bundle_json, allow_custom=False)
-    except Exception:  # noqa: BLE001 — STIXError + downstream validation errors
+    except Exception:  # noqa: BLE001 - STIXError + downstream validation errors
         try:
             bundle = stix2.parse(bundle_json, allow_custom=True)
         except Exception:  # noqa: BLE001

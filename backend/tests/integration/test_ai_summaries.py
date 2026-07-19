@@ -1,10 +1,10 @@
-"""Integration tests for AI-02 ai_summaries — soft-FK contract and project scoping.
+"""Integration tests for AI-02 ai_summaries - soft-FK contract and project scoping.
 
 Covers:
   - ai_summaries.event_id is a soft FK: NULL event_id does not cause a constraint failure.
   - summary_type='event' insert with a UUID event_id that does not exist in events.
   - summary_type='digest' insert with event_id=NULL (digest record pattern).
-  - PROD-01 extension: ai_summaries rows are project-scoped — no cross-project leakage.
+  - PROD-01 extension: ai_summaries rows are project-scoped - no cross-project leakage.
 
 AI-01, AI-02: task 1 (migration) and task 3 (PROD-01 extension).
 """
@@ -65,7 +65,7 @@ async def _insert_summary(db_session, project_id: uuid.UUID, event_id=None, summ
 
 @pytest.mark.asyncio
 async def test_event_id_soft_fk_no_constraint_failure(db_session) -> None:
-    """ai_summaries.event_id is a soft FK — NULL does not cause constraint failure.
+    """ai_summaries.event_id is a soft FK - NULL does not cause constraint failure.
 
     Inserts a summary row with event_id=NULL (digest pattern). Must NOT raise a
     FK constraint error since events is a hypertable and cannot be a FK target.
@@ -88,7 +88,7 @@ async def test_event_id_soft_fk_no_constraint_failure(db_session) -> None:
 async def test_summary_type_event_insert(db_session) -> None:
     """Insert ai_summaries row with summary_type='event' and a phantom event_id UUID.
 
-    The insert must succeed with no FK constraint error — events is a hypertable,
+    The insert must succeed with no FK constraint error - events is a hypertable,
     so event_id is a soft UUID column only.
     """
     project_id = await _make_project(db_session)
@@ -142,7 +142,7 @@ async def test_summary_type_digest_insert(db_session) -> None:
 
 @pytest.mark.asyncio
 async def test_prod01_leakage_extension_ai_summaries(db_session) -> None:
-    """PROD-01 extension: ai_summaries rows are project-scoped — no cross-project leakage.
+    """PROD-01 extension: ai_summaries rows are project-scoped - no cross-project leakage.
 
     Seeds 3 summaries under Project A and 3 under Project B (disjoint). Queries
     ai_summaries WHERE project_id = A and asserts only A rows are returned.

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * CTLogModeCard — CERT-03.
+ * CTLogModeCard - CERT-03.
  *
  * CT Log Mode selector for the Brand tab. Lead+ gated.
  * Three modes map to certstream_enabled boolean on the project:
@@ -90,7 +90,7 @@ export function CTLogModeCard({
         </div>
         {ctLogMode !== "crtsh" && (
           <Badge variant="secondary" className="text-xs">
-            CertStream worker must be running — docker compose up
+            CertStream worker must be running - docker compose up
             certstream-worker
           </Badge>
         )}

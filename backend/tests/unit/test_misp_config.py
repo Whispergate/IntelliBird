@@ -1,5 +1,5 @@
 """
-MISP-01 — Admin configures MISP URL + API key per project via misp_configs table.
+MISP-01 - Admin configures MISP URL + API key per project via misp_configs table.
           Credential stored encrypted via app.crypto.encrypt_credentials.
 
 Implemented in: backend/app/routers/misp.py

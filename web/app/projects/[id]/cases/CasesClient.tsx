@@ -69,12 +69,12 @@ export default function CasesClient({ initialCases, projectId, initialView }: Ca
       await patchCase(projectId, caseId, { status: newStatus });
     } catch (err) {
       toast.error("Failed to update case status");
-      // Revert on error — reload from server
+      // Revert on error - reload from server
       try {
         const data = await listCases(projectId, { limit: 200 });
         setCases(data.items as unknown as CaseRow[]);
       } catch {
-        // silent — UI shows stale data
+        // silent - UI shows stale data
       }
     }
   }
@@ -143,7 +143,7 @@ export default function CasesClient({ initialCases, projectId, initialView }: Ca
             </Button>
           </div>
 
-          {/* New Case button — always visible in both views */}
+          {/* New Case button - always visible in both views */}
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
             New Case

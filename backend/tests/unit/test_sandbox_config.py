@@ -1,5 +1,5 @@
 """
-SANDBOX-01 — per-project sandbox config: encrypted API key storage, OPSEC gate.
+SANDBOX-01 - per-project sandbox config: encrypted API key storage, OPSEC gate.
 Implemented in: backend/app/routers/projects/sandbox.py
 """
 import pytest
@@ -23,7 +23,7 @@ def test_put_sandbox_config_opsec_gate_raises_422():
 
 
 def test_put_sandbox_config_stores_encrypted_key():
-    """PUT /api/projects/{id}/sandbox-config stores API key via encrypt_credentials — gate logic verified."""
+    """PUT /api/projects/{id}/sandbox-config stores API key via encrypt_credentials - gate logic verified."""
     from app.routers.sandbox import _validate_sandbox_opsec, _PUBLIC_PROVIDERS
 
     # cuckoo is self-hosted; must NOT require OPSEC gate
@@ -38,7 +38,7 @@ def test_put_sandbox_config_stores_encrypted_key():
 
 
 def test_put_sandbox_config_default_disabled():
-    """Project with no sandbox_configs row behaves as disabled — SandboxConfigCreate defaults."""
+    """Project with no sandbox_configs row behaves as disabled - SandboxConfigCreate defaults."""
     from app.schemas.sandbox import SandboxConfigCreate
 
     # Default SandboxConfigCreate has enabled=False

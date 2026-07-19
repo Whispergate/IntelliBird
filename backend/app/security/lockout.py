@@ -1,4 +1,4 @@
-"""Redis-backed failed-login lockout counter — AUTH-04 / M-7.
+"""Redis-backed failed-login lockout counter - AUTH-04 / M-7.
 
 Keys (TTL in seconds):
   login:fails:{username}   600   (10 min window)
@@ -6,7 +6,7 @@ Keys (TTL in seconds):
 
 Lock threshold and TTLs pinned per CONTEXT.md.
 
-Dummy-username attempts go through the same counter path (PITFALL 7 mitigation) —
+Dummy-username attempts go through the same counter path (PITFALL 7 mitigation) -
 callers do NOT gate record_failure on "user exists" lookups.
 """
 from __future__ import annotations
@@ -45,7 +45,7 @@ async def record_failure(redis: "Redis", username: str) -> int:
     """
     fails = await redis.incr(_fails_key(username))
     if fails == 1:
-        # First failure in the window — attach the 10-min TTL
+        # First failure in the window - attach the 10-min TTL
         await redis.expire(_fails_key(username), FAILS_TTL_SECONDS)
     if fails >= FAILS_THRESHOLD:
         await redis.set(_locked_key(username), "1", ex=LOCKOUT_TTL_SECONDS)
@@ -58,7 +58,7 @@ async def clear_lockout(redis: "Redis", username: str) -> None:
 
 
 async def admin_unlock(redis: "Redis", username: str) -> None:
-    """Admin-initiated unlock — same effect as a successful login's clear.
+    """Admin-initiated unlock - same effect as a successful login's clear.
 
     Used by POST /api/admin/users/{id}/unlock (plan 09-04).
     """

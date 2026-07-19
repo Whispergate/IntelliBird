@@ -1,5 +1,5 @@
 """
-— Sandbox submission and poll actors.
+- Sandbox submission and poll actors.
 submit_sandbox_report: fetch sample, YARA scan, submit to provider, create pending report row.
 poll_sandbox_report:   self-rescheduling poll with exponential backoff; writes result on completion.
 
@@ -36,7 +36,7 @@ MAX_POLL_ATTEMPTS = 30
 
 
 # ---------------------------------------------------------------------------
-# Per-loop engine helper — MANDATORY (see ai.py for canonical rationale)
+# Per-loop engine helper - MANDATORY (see ai.py for canonical rationale)
 # Each Dramatiq worker thread has its own asyncio event loop.
 # A module-level engine would bind to the first loop and crash on subsequent calls.
 # ---------------------------------------------------------------------------
@@ -44,7 +44,7 @@ MAX_POLL_ATTEMPTS = 30
 
 def _make_engine_and_session():
     """Build a fresh async engine + session factory inside the running loop."""
-    from app.config import settings  # noqa: PLC0415 — lazy import
+    from app.config import settings  # noqa: PLC0415 - lazy import
     engine = create_async_engine(
         settings.DATABASE_URL,
         pool_pre_ping=True,
@@ -68,8 +68,8 @@ def submit_sandbox_report(ioc_id: str, project_id: str) -> None:
     """Submit a SHA256 IOC for sandbox detonation (SANDBOX-02).
 
     Flow:
-      1. Load IOC row — bail if not sha256 type
-      2. Check project sandbox config (enabled=True) — bail if not enabled
+      1. Load IOC row - bail if not sha256 type
+      2. Check project sandbox config (enabled=True) - bail if not enabled
       3. fetch_sample() from MalwareBazaar (free) / VirusTotal Premium (fallback)
       4. If no sample → create sandbox_reports row with status='sample_unavailable'
       5. scan_sample() for YARA matches → write_yara_matches() if hits
@@ -89,7 +89,7 @@ def poll_sandbox_report(report_id: str, submitted_at_iso: str, attempt: int) -> 
 
     Flow:
       1. Load SandboxReport by (id, submitted_at) composite PK
-      2. Call provider.poll() — if None (still running):
+      2. Call provider.poll() - if None (still running):
          a. attempt < MAX_POLL_ATTEMPTS → re-queue with backoff delay
          b. attempt >= MAX_POLL_ATTEMPTS → set status='timeout'
       3. On result → _write_sandbox_result() then commit
@@ -144,7 +144,7 @@ async def _async_submit(ioc_id: str, project_id: str) -> None:
             # Fetch VT key if available (Premium fallback for sample download)
             vt_key = await _get_vt_key(db, uuid.UUID(project_id))
 
-            # Fetch sample bytes — MalwareBazaar first, VT Premium fallback
+            # Fetch sample bytes - MalwareBazaar first, VT Premium fallback
             async with httpx.AsyncClient() as client:
                 sample_data = await fetch_sample(client, ioc.normalized_value, vt_key)
 
@@ -162,7 +162,7 @@ async def _async_submit(ioc_id: str, project_id: str) -> None:
                 log.info("sandbox_sample_unavailable sha256=%.16s", ioc.normalized_value)
                 return
 
-            # YARA scan in memory before sandbox submission — no disk writes
+            # YARA scan in memory before sandbox submission - no disk writes
             yara_matches = await scan_sample(db, uuid.UUID(project_id), sample_data)
             if _event_id and yara_matches:
                 await write_yara_matches(db, yara_matches, _event_id, scan_context="sample")
@@ -259,7 +259,7 @@ async def _async_poll(report_id: str, submitted_at_iso: str, attempt: int) -> No
                     )
 
             if sandbox_result is None:
-                # Still running — increment attempt counter
+                # Still running - increment attempt counter
                 report.poll_attempts = attempt + 1
                 if attempt + 1 >= MAX_POLL_ATTEMPTS:
                     report.status = "timeout"
@@ -277,7 +277,7 @@ async def _async_poll(report_id: str, submitted_at_iso: str, attempt: int) -> No
                 )
                 return
 
-            # Complete — write result and commit
+            # Complete - write result and commit
             await _write_sandbox_result(db, report, sandbox_result)
             await db.commit()
             log.info(
@@ -289,7 +289,7 @@ async def _async_poll(report_id: str, submitted_at_iso: str, attempt: int) -> No
 
 
 # ---------------------------------------------------------------------------
-# _write_sandbox_result — writes report row, auto-tags techniques, upserts IOCs
+# _write_sandbox_result - writes report row, auto-tags techniques, upserts IOCs
 # ---------------------------------------------------------------------------
 
 
@@ -301,7 +301,7 @@ async def _write_sandbox_result(
     """Write completed sandbox result: update report row, auto-tag techniques, upsert network IOCs.
 
     NOTE: Uses direct pg_insert for both AttackTechniqueTag and IOC rows.
-    upsert_ioc_for_event_sync/upsert_ioc_for_event take an event_row+enrichment bundle —
+    upsert_ioc_for_event_sync/upsert_ioc_for_event take an event_row+enrichment bundle -
     their signatures are incompatible with per-IOC value insertion from a sandbox report.
     Direct pg_insert(IOC.__table__).on_conflict_do_nothing() is the correct pattern here.
     """
@@ -318,7 +318,7 @@ async def _write_sandbox_result(
     if report.event_id and result.techniques:
         for technique_id in result.techniques:
             await db.execute(
-                pg_insert(AttackTechniqueTag.__table__).values(
+                pg_insert(AttackTechniqueTag.__table__).values(  # type: ignore[arg-type]
                     event_id=report.event_id,
                     technique_id=technique_id,
                     tag_source="auto",
@@ -327,7 +327,7 @@ async def _write_sandbox_result(
             )
 
     # Upsert network IOCs extracted from sandbox report
-    # IOC table has no event_id column — link is via IOCEventLink junction table
+    # IOC table has no event_id column - link is via IOCEventLink junction table
     if result.network_iocs:
         now = datetime.datetime.now(tz=datetime.timezone.utc)
         for raw_ioc in result.network_iocs:
@@ -336,7 +336,7 @@ async def _write_sandbox_result(
                 if ioc_type:
                     ioc_id = uuid.uuid4()
                     await db.execute(
-                        pg_insert(IOC.__table__).values(
+                        pg_insert(IOC.__table__).values(  # type: ignore[arg-type]
                             id=ioc_id,
                             project_id=report.project_id,
                             type=ioc_type,
@@ -351,7 +351,7 @@ async def _write_sandbox_result(
                     )
                     if report.event_id:
                         await db.execute(
-                            pg_insert(IOCEventLink.__table__).values(
+                            pg_insert(IOCEventLink.__table__).values(  # type: ignore[arg-type]
                                 id=uuid.uuid4(),
                                 ioc_id=ioc_id,
                                 event_id=report.event_id,
@@ -379,7 +379,7 @@ def _classify_ioc(value: str) -> str | None:
 
 
 def _decrypt_api_key(credentials_enc: str | None) -> str | None:
-    """Decrypt stored API key — same pattern as enrichment workers."""
+    """Decrypt stored API key - same pattern as enrichment workers."""
     if not credentials_enc:
         return None
     try:

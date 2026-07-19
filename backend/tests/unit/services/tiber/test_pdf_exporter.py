@@ -1,11 +1,11 @@
-"""Unit tests for TIBER PDF exporter — WeasyPrint subprocess isolation.
+"""Unit tests for TIBER PDF exporter - WeasyPrint subprocess isolation.
 
-Wave 0 stubs — skip-marked pending Wave 3 service layer (18-03-PLAN).
+Wave 0 stubs - skip-marked pending Wave 3 service layer (18-03-PLAN).
 Each test documents the subprocess isolation contract for
 app.services.tiber.exporters.pdf.
 
 Requirements covered:
-  TIBER-03 — WeasyPrint subprocess isolation; PDF truncation at 500 events
+  TIBER-03 - WeasyPrint subprocess isolation; PDF truncation at 500 events
 
 Key invariants tested:
   1. subprocess.run called with ["weasyprint", input_path, output_path]
@@ -21,9 +21,8 @@ from __future__ import annotations
 import pathlib
 from unittest.mock import MagicMock, patch
 
-import pytest
 
-# No pytestmark — unit tests are the default (not integration-marked)
+# No pytestmark - unit tests are the default (not integration-marked)
 
 # Defensive: confirm weasyprint is NOT imported at test module level
 # (if we imported it here, we'd be violating the same rule we test)
@@ -31,7 +30,7 @@ assert "weasyprint" not in dir(), "weasyprint must not be imported at module lev
 
 
 # ---------------------------------------------------------------------------
-# TIBER-03: subprocess isolation — weasyprint CLI via subprocess.run
+# TIBER-03: subprocess isolation - weasyprint CLI via subprocess.run
 # ---------------------------------------------------------------------------
 
 
@@ -52,7 +51,7 @@ def test_subprocess_isolation() -> None:
       5. Assert timeout=120 was passed as keyword arg
       6. Assert check=True was passed as keyword arg
       7. Assert NO `import weasyprint` statement exists in app/workers/reports.py
-         (grep assertion — the module may not exist yet in Wave 0)
+         (grep assertion - the module may not exist yet in Wave 0)
     """
     from app.services.tiber.exporters.pdf import generate_pdf_bytes
 
@@ -127,7 +126,7 @@ def test_pdf_truncates_event_list_at_500() -> None:
     """
     from app.services.tiber.exporters.pdf import prepare_report_data_for_pdf
 
-    # 600 events — must be truncated to 500
+    # 600 events - must be truncated to 500
     report_data_600 = {
         "tl_top_events": [{"id": f"evt-{i}", "title": f"Event {i}"} for i in range(600)],
         "title": "Test Report",
@@ -138,7 +137,7 @@ def test_pdf_truncates_event_list_at_500() -> None:
         "See RESEARCH.md Pitfall 6: 500+ events cause WeasyPrint timeout."
     )
 
-    # Exactly 500 — no change
+    # Exactly 500 - no change
     report_data_500 = {
         "tl_top_events": [{"id": f"evt-{i}", "title": f"Event {i}"} for i in range(500)],
         "title": "Test Report",
@@ -146,7 +145,7 @@ def test_pdf_truncates_event_list_at_500() -> None:
     result_500 = prepare_report_data_for_pdf(report_data_500)
     assert len(result_500["tl_top_events"]) == 500
 
-    # 20 events (default) — no change
+    # 20 events (default) - no change
     report_data_20 = {
         "tl_top_events": [{"id": f"evt-{i}", "title": f"Event {i}"} for i in range(20)],
         "title": "Test Report",

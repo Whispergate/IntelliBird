@@ -1,14 +1,14 @@
-"""Authentik OIDC client + groups->role mapping — AUTH-01.
+"""Authentik OIDC client + groups->role mapping - AUTH-01.
 
-Env-driven config (per CONTEXT.md — Admin UI for OIDC deferred to v2.1+):
+Env-driven config (per CONTEXT.md - Admin UI for OIDC deferred to v2.1+):
   SSO_ISSUER_URL, SSO_CLIENT_ID, SSO_CLIENT_SECRET, SSO_GROUPS_CLAIM,
   SSO_ADMIN_GROUPS, SSO_ANALYST_GROUPS, SSO_VIEWER_GROUPS.
 
 Uses authlib's AsyncOAuth2Client for the authorization-code flow with PKCE
 (code_challenge_method="S256"; Authentik 2025.12.x requires PKCE by default
-for confidential providers — PITFALL 6).
+for confidential providers - PITFALL 6).
 
-map_groups_to_role is the deterministic part of the flow — unit-testable without
+map_groups_to_role is the deterministic part of the flow - unit-testable without
 network. Fetch + verify id_token landing is in plan 09-03's callback handler.
 """
 from __future__ import annotations
@@ -36,11 +36,11 @@ def map_groups_to_role(
     Precedence: Admin > Analyst > Viewer. Unmatched groups default to Viewer
     (CONTEXT.md: "SSO first-login behaviour: claude picks default role = Viewer
     when no groups match"). viewer_groups is accepted for symmetry but Viewer is
-    also the default — the argument is useful for explicit viewer-group lock-in.
+    also the default - the argument is useful for explicit viewer-group lock-in.
     """
     admins = _parse_groups_setting(admin_groups)
     analysts = _parse_groups_setting(analyst_groups)
-    # viewer_groups is advisory — Viewer is the default fallback regardless.
+    # viewer_groups is advisory - Viewer is the default fallback regardless.
     _viewers = _parse_groups_setting(viewer_groups)  # noqa: F841
     claim_set = set(groups_claim)
     if claim_set & admins:
@@ -57,7 +57,7 @@ async def build_oidc_client():
     Defers import of authlib so the backend starts even without authlib installed
     until OIDC is wired.
 
-    Implementation stub — the actual exchange + verify path lives in plan 09-03's
+    Implementation stub - the actual exchange + verify path lives in plan 09-03's
     OIDC callback handler. This module exposes the factory so the handler stays
     short.
     """

@@ -1,4 +1,4 @@
-"""Unit tests for ai_digest_project top-N selection — AI-07.
+"""Unit tests for ai_digest_project top-N selection - AI-07.
 
 Covers:
   - test_top_ten_by_coalesce: digest selects top 10 events ordered by COALESCE(ai_score, score) DESC
@@ -19,7 +19,6 @@ os.environ.setdefault("SECRET_KEY", "a" * 32 + "deadbeef")
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("JWT_SIGNING_KEY", "b" * 64)
 
-import pytest
 
 
 # ---------------------------------------------------------------------------
@@ -89,7 +88,7 @@ async def _run_digest_with_events(
             # Project lookup.
             result.scalar_one_or_none = MagicMock(return_value=mock_project)
         elif n == 2:
-            # Window count query — return list of ids.
+            # Window count query - return list of ids.
             result.all = MagicMock(return_value=[(uuid.uuid4(),)] * window_count)
         else:
             # Top-10 events query.

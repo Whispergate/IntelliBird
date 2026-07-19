@@ -222,7 +222,7 @@ describe("AIReviewTable", () => {
 // Tab registration tests (imported from ProjectTabs)
 // ---------------------------------------------------------------------------
 
-describe("ProjectTabs — ai-review tab registration", () => {
+describe("ProjectTabs - ai-review tab registration", () => {
   it("TABS array contains ai-review at position 18 (index 17)", () => {
     const idx = TABS.findIndex((t) => t.key === "ai-review");
     expect(idx).toBe(17);

@@ -4,11 +4,11 @@ Wave 1 plan 10-02 activates:
   - monkeypatch_module (session-scoped monkeypatch shim)
   - pg_container (session-scoped testcontainers Postgres)
   - redis_container (session-scoped testcontainers Redis)
-  - db_engine (module-scoped — runs alembic head migrations)
+  - db_engine (module-scoped - runs alembic head migrations)
   - db_session (test-scoped async SQLAlchemy session)
-  - two_projects (real body — seeds two projects with shared-compare artefacts)
-  - users_matrix (real body — seeds 5 users + builds pm-empty tokens)
-  - memberships_60 (real body — seeds 60 rows + issues token via build_membership_claim)
+  - two_projects (real body - seeds two projects with shared-compare artefacts)
+  - users_matrix (real body - seeds 5 users + builds pm-empty tokens)
+  - memberships_60 (real body - seeds 60 rows + issues token via build_membership_claim)
 
 Gracefully skips when testcontainers are unavailable (no Docker) so CI without
 the container runtime stays green.
@@ -24,7 +24,7 @@ import pytest
 import pytest_asyncio
 
 # ---------------------------------------------------------------------------
-# Env defaults — required for app.config.Settings() at import time
+# Env defaults - required for app.config.Settings() at import time
 # ---------------------------------------------------------------------------
 os.environ.setdefault("SECRET_KEY", "s" * 64)
 os.environ.setdefault("JWT_SIGNING_KEY", "j" * 64)
@@ -59,7 +59,7 @@ def _testcontainers_available() -> bool:
 @pytest.fixture(scope="session")
 def pg_container():
     if not _testcontainers_available():
-        pytest.skip("testcontainers unavailable — install or unset SKIP_TESTCONTAINERS")
+        pytest.skip("testcontainers unavailable - install or unset SKIP_TESTCONTAINERS")
     from testcontainers.postgres import PostgresContainer
     # intellibird-db:m1 ships TimescaleDB + AGE; required for migration 001.
     with PostgresContainer("intellibird-db:m1") as pg:
@@ -69,7 +69,7 @@ def pg_container():
 @pytest.fixture(scope="session")
 def redis_container():
     if not _testcontainers_available():
-        pytest.skip("testcontainers unavailable — install or unset SKIP_TESTCONTAINERS")
+        pytest.skip("testcontainers unavailable - install or unset SKIP_TESTCONTAINERS")
     from testcontainers.redis import RedisContainer
     with RedisContainer("redis:7-alpine") as r:
         yield r
@@ -91,7 +91,7 @@ def pg_url(pg_container) -> str:
 def redis_url(redis_container) -> str:
     host = redis_container.get_container_host_ip()
     port = redis_container.get_exposed_port(6379)
-    return f"redis://{host}:{port}/11"  # DB 11 — isolate from other test suites
+    return f"redis://{host}:{port}/11"  # DB 11 - isolate from other test suites
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -130,7 +130,7 @@ def _migrations_applied(pg_url) -> None:
 
 @pytest_asyncio.fixture
 async def db_engine(pg_url, _migrations_applied):
-    """Fresh async engine per test — avoids cross-loop Future leakage when tests
+    """Fresh async engine per test - avoids cross-loop Future leakage when tests
     run in different event loops (pytest-asyncio default is function-scoped loops).
     Migrations run once per module via `_migrations_applied`.
     """
@@ -148,7 +148,7 @@ async def db_session(db_engine) -> AsyncIterator[Any]:
     """Fresh test-scoped session.
 
     TRUNCATEs the test tables (users, projects + cascades to memberships,
-    scope_rows, sources) before yielding so each test starts clean — fixtures
+    scope_rows, sources) before yielding so each test starts clean - fixtures
     commit real rows, and a rolling tx rollback at teardown does not undo them.
     Preserves sentinel LEGACY_PROJECT_ID row (required by FK back-reference from
     events/filter_presets/webhooks).
@@ -168,7 +168,7 @@ async def db_session(db_engine) -> AsyncIterator[Any]:
         await session.execute(text(
             "TRUNCATE TABLE attack_technique_tags RESTART IDENTITY"
         ))
-        # events is a hypertable — TRUNCATE works fine
+        # events is a hypertable - TRUNCATE works fine
         await session.execute(text("TRUNCATE TABLE events RESTART IDENTITY CASCADE"))
         await session.execute(text(
             "TRUNCATE TABLE webhooks RESTART IDENTITY CASCADE"
@@ -186,7 +186,7 @@ async def db_session(db_engine) -> AsyncIterator[Any]:
 
 
 # ---------------------------------------------------------------------------
-# Legacy project id literal (ORM-level constant — no DB round trip needed)
+# Legacy project id literal (ORM-level constant - no DB round trip needed)
 # ---------------------------------------------------------------------------
 
 @pytest.fixture
@@ -196,7 +196,7 @@ def legacy_project_id() -> str:
 
 
 # ---------------------------------------------------------------------------
-# Wave 1 fixtures (real bodies — plan 10-02 activates)
+# Wave 1 fixtures (real bodies - plan 10-02 activates)
 # ---------------------------------------------------------------------------
 
 @pytest_asyncio.fixture
@@ -309,7 +309,7 @@ async def users_matrix(db_session, jwt_settings, argon2_fast) -> dict[str, Any]:
 @pytest_asyncio.fixture
 async def memberships_60(db_session, users_matrix, jwt_settings) -> dict[str, Any]:
     """Seed 60 project_memberships rows for global_analyst and issue a real token
-    via build_membership_claim — exercises the >PM_CUTOFF truncation branch.
+    via build_membership_claim - exercises the >PM_CUTOFF truncation branch.
     """
     from app.models.projects import Project, ProjectMembership
     from app.security.jwt import build_membership_claim, mint_access_token_with_pm
@@ -337,5 +337,5 @@ async def memberships_60(db_session, users_matrix, jwt_settings) -> dict[str, An
 
 @pytest.fixture
 async def testcontainer_compressed_chunk(db_session) -> None:
-    """Kept as an owning-plan-10-01 stub — migration 009 compressed-chunk spike."""
+    """Kept as an owning-plan-10-01 stub - migration 009 compressed-chunk spike."""
     pytest.skip("Wave 0 stub - plan 10-01 owns testcontainer_compressed_chunk")

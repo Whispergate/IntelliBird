@@ -105,7 +105,7 @@ describe("WebhookDialog", () => {
 
   // Test 3: Auth field hidden for Slack/Teams/Discord
   it("Auth field hidden for Slack/Teams/Discord", () => {
-    // Add mode defaults to Slack — auth fields should not be present
+    // Add mode defaults to Slack - auth fields should not be present
     renderAdd();
     // The auth_type Select should not be rendered (only present for generic)
     expect(document.getElementById("auth_type")).toBeNull();
@@ -135,7 +135,7 @@ describe("WebhookDialog", () => {
     expect(trigger).toHaveTextContent("5 min");
   });
 
-  // Test 6: Test Send success — verbatim copy
+  // Test 6: Test Send success - verbatim copy
   it("Test Send button shows green alert with 'Test sent successfully · {ms}ms' copy on success", async () => {
     mockTestWebhook.mockResolvedValue({
       ok: true,
@@ -161,7 +161,7 @@ describe("WebhookDialog", () => {
     });
   });
 
-  // Test 7: Test Send failure — verbatim copy
+  // Test 7: Test Send failure - verbatim copy
   it("Test Send button shows amber alert with 'Test failed: {err}. You can still save this configuration.' copy on failure", async () => {
     mockTestWebhook.mockResolvedValue({
       ok: false,

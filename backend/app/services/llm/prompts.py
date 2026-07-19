@@ -1,4 +1,4 @@
-"""Prompt constants for the LiteLLM adapter — AI-04.
+"""Prompt constants for the LiteLLM adapter - AI-04.
 
 Prompt templates are stored as code constants (NOT in DB) to minimise C-3
 prompt-injection surface.  Admin UI editing of prompts is explicitly out of
@@ -53,12 +53,12 @@ SYSTEM_PROMPT_SUGGESTIONS_V1: str = (
     "You are a threat intelligence analyst. Read the supplied event JSON "
     "(includes title, description, and a prior AI-generated summary when "
     "available) and extract structured entities. INFER MITRE ATT&CK techniques "
-    "(TTPs) even when not literally named — map described behaviour to the "
+    "(TTPs) even when not literally named - map described behaviour to the "
     "best-fitting technique IDs (e.g. spearphishing attachment → T1566.001, "
     "credential dumping → T1003, lateral movement via PsExec → T1021.002). "
     "Prefer specific sub-technique IDs (T1566.001) over parent IDs (T1566) "
     "when the evidence supports it. "
-    "Also produce up to 8 short topical TAGS — single tokens or short hyphenated "
+    "Also produce up to 8 short topical TAGS - single tokens or short hyphenated "
     "phrases capturing campaign names, malware/tool families, targeted "
     "sectors, geographic focus, attack vectors, or notable behaviours "
     "(e.g. 'apt29', 'cobalt-strike', 'healthcare', 'eastern-europe', "
@@ -72,7 +72,7 @@ SYSTEM_PROMPT_SUGGESTIONS_V1: str = (
 )
 
 # ---------------------------------------------------------------------------
-# Version tag constants — stored in ai_summaries.prompt_template_version
+# Version tag constants - stored in ai_summaries.prompt_template_version
 # ---------------------------------------------------------------------------
 
 EVENT_SUMMARY_PROMPT_V1: str = "event_summary_v1"
@@ -81,14 +81,14 @@ META_SUMMARY_PROMPT_V1: str = "meta_summary_v1"
 SUGGESTION_EXTRACTION_PROMPT_V1: str = "suggestion_extraction_v1"
 
 # ---------------------------------------------------------------------------
-# Message builders — structural construction only (C-3 compliance)
+# Message builders - structural construction only (C-3 compliance)
 # ---------------------------------------------------------------------------
 
 
 def build_summary_messages(event_payload: dict) -> list[dict]:
     """Build messages for a single-event summary.
 
-    The user content is json.dumps(event_payload) — never an f-string.
+    The user content is json.dumps(event_payload) - never an f-string.
     """
     return [
         {"role": "system", "content": SYSTEM_PROMPT_V1},
@@ -121,7 +121,7 @@ def build_suggestion_messages(event_payload: dict) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# TIBER scenario narrative prompt — AI-08
+# TIBER scenario narrative prompt - AI-08
 # ---------------------------------------------------------------------------
 
 SCENARIO_NARRATIVE_PROMPT_V1: str = "scenario_narrative_v1"
@@ -131,7 +131,7 @@ SYSTEM_PROMPT_SCENARIO_NARRATIVE_V1: str = (
     "Targeted Threat Intelligence Report (TTIR) under the ECB TIBER-EU / CBEST framework. "
     "Output 2-4 paragraphs of formal prose covering: "
     "(1) actor motivation and capability relative to the named target, "
-    "(2) targeting rationale — why the actor would pursue this specific CIF or CBS, "
+    "(2) targeting rationale - why the actor would pursue this specific CIF or CBS, "
     "(3) the procedure employed to achieve the stated objective (aligned to the ATT&CK technique "
     "where supplied). "
     "Tone: professional, intelligence-led, third-person. "
@@ -141,7 +141,7 @@ SYSTEM_PROMPT_SCENARIO_NARRATIVE_V1: str = (
 
 
 # ---------------------------------------------------------------------------
-# Narrative operation classification prompt — DISINFO-03
+# Narrative operation classification prompt - DISINFO-03
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT_NARRATIVE_OP_V1: str = (
@@ -159,7 +159,7 @@ SYSTEM_PROMPT_NARRATIVE_OP_V1: str = (
 
 
 # ---------------------------------------------------------------------------
-# Attack path analysis prompt — ATK-01
+# Attack path analysis prompt - ATK-01
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT_ATTACK_PATH_V1: str = (
@@ -190,7 +190,7 @@ def build_attack_path_messages(events_payload: dict) -> list[dict]:
 def tiber_scenario_narrative_messages(scenario, actor, report) -> list[dict]:
     """Build messages for an AI-drafted TIBER scenario narrative (AI-08).
 
-    Structural prompt construction — NO f-string of raw user-controlled text
+    Structural prompt construction - NO f-string of raw user-controlled text
     into a single role's content (C-3 compliance; same rule as build_summary_messages).
     The user content is json.dumps of a structured payload.
 

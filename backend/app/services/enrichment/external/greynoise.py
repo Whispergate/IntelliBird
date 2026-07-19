@@ -1,9 +1,9 @@
-"""GreyNoise enrichment provider — ENRICH-02.
+"""GreyNoise enrichment provider - ENRICH-02.
 
 Supports: ip, ipv6
 
 Community tier endpoint: GET /v3/community/{ip}
-api_key=None is valid (community tier — no auth header sent).
+api_key=None is valid (community tier - no auth header sent).
 
 Verdict logic (from RESEARCH.md):
   HTTP 404 → "unknown" (IP not seen)
@@ -15,7 +15,7 @@ Verdict logic (from RESEARCH.md):
 score: None (community tier does not return a numeric score)
 
 IMPORTANT: Wrap field access in try/except KeyError per RESEARCH.md
-(API shape stability risk — fields may be absent in some responses).
+(API shape stability risk - fields may be absent in some responses).
 """
 from __future__ import annotations
 
@@ -110,7 +110,7 @@ async def enrich(
     if not allowed:
         return None
 
-    # 4. Build headers — only include key header when api_key is provided
+    # 4. Build headers - only include key header when api_key is provided
     headers: dict[str, str] = {}
     if api_key:
         headers["key"] = api_key
@@ -127,7 +127,7 @@ async def enrich(
         return None
 
     if response.status_code == 404:
-        # IP not observed in GreyNoise — not an error, valid "unknown"
+        # IP not observed in GreyNoise - not an error, valid "unknown"
         await record_success(redis, PROVIDER, project_scope)
         verdict, evidence = "unknown", "ip_not_seen"
         await cache_result(redis, PROVIDER, normalized_value, verdict, None, evidence)

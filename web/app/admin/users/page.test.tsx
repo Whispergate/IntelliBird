@@ -1,5 +1,5 @@
 /**
- * AdminUsersPage — activated in plan 09-08.
+ * AdminUsersPage - activated in plan 09-08.
  *
  * Tests use React Testing Library + vitest. Fetch is mocked globally via
  * vi.stubGlobal so each test controls the API response.
@@ -125,7 +125,7 @@ describe("AdminUsersPage", () => {
       />,
     );
     expect(screen.getByText("Keep locked")).toBeTruthy();
-    // heading and confirm button both say "Unlock account" — confirm is a <button>
+    // heading and confirm button both say "Unlock account" - confirm is a <button>
     expect(screen.getByRole("button", { name: "Unlock account" })).toBeTruthy();
     expect(
       screen.getByText(/Clear the failed-attempt counter for alice/),
@@ -179,7 +179,7 @@ describe("AddUserDialog", () => {
       <AddUserDialog open={true} onOpenChange={() => {}} onCreated={() => {}} />,
     );
 
-    // Initial role is Viewer — checkboxes unchecked and enabled
+    // Initial role is Viewer - checkboxes unchecked and enabled
     const redCheckbox = screen.getByRole("checkbox", { name: /red/i });
     const blueCheckbox = screen.getByRole("checkbox", { name: /blue/i });
     expect(redCheckbox).not.toBeChecked();

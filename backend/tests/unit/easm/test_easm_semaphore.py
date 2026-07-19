@@ -1,23 +1,19 @@
-"""Unit tests for bbot_runner semaphore functions — EASM-09.
+"""Unit tests for bbot_runner semaphore functions - EASM-09.
 
 Plan: 11-04a
 
-Tests use mocked Redis — no live Redis, no live DB.
+Tests use mocked Redis - no live Redis, no live DB.
 """
 from __future__ import annotations
 
-import uuid
-from typing import Any
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock
 
-import pytest
 
 import os
 os.environ.setdefault("SECRET_KEY", "a" * 32)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("JWT_SIGNING_KEY", "b" * 32)
 
-from app.services import bbot_runner  # noqa: E402
 from app.services.bbot_runner import (  # noqa: E402
     _SEMAPHORE_KEY,
     acquire_semaphore,

@@ -1,5 +1,5 @@
 /**
- * /projects/[id] — server component page that dispatches to the correct tab
+ * /projects/[id] - server component page that dispatches to the correct tab
  * pane based on the `?tab=` query param.
  *
  * History:
@@ -7,7 +7,7 @@
  *     ProjectTabs strip + OverviewClient. At that time page.tsx only rendered
  *     OverviewClient; other ?tab= values still landed on the Overview pane.
  *   - Plan 10-10 (THIS PLAN) extends page.tsx to dispatch via
- *     ProjectDetailClient — a thin client wrapper that reads `?tab=` via
+ *     ProjectDetailClient - a thin client wrapper that reads `?tab=` via
  *     useSearchParams and picks the matching tab pane. This keeps page.tsx
  *     a server component (fetches project detail once) while the tab selection
  *     stays reactive to URL changes without a re-fetch.
@@ -16,7 +16,7 @@
  *   - Plan 10-12 owns the Intel + Graph nested routes; those don't go through
  *     page.tsx (they have their own /intel/page.tsx + /graph/page.tsx).
  *
- * Next.js 15: params is a Promise — await before reading `.id`. layout.tsx
+ * Next.js 15: params is a Promise - await before reading `.id`. layout.tsx
  * already validated access; a refetch failure here propagates to the Next
  * error boundary.
  */

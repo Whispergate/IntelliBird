@@ -1,13 +1,13 @@
 """STIX 2.1 / TAXII parser + TLP resolver + SDO → Event row mapper.
 
-INGT-01 via stix2.parse(..., allow_custom=True) — never drop custom MISP/
+INGT-01 via stix2.parse(..., allow_custom=True) - never drop custom MISP/
 OpenCTI types (PITFALLS H-5).
-INGT-02 — raw SDO stored in events.raw_stix; stix_id/stix_type/observed_at/
+INGT-02 - raw SDO stored in events.raw_stix; stix_id/stix_type/observed_at/
 title/description land in indexed columns.
-INGT-03 — object_marking_refs resolved against the four canonical TLP 2.0
+INGT-03 - object_marking_refs resolved against the four canonical TLP 2.0
 UUIDs seeded in migration 001. Non-canonical markings log a WARNING and
 leave tlp_marking_id NULL (PITFALLS H-4).
- analog — objects missing id or modified are dropped with a WARNING.
+ analog - objects missing id or modified are dropped with a WARNING.
 """
 from __future__ import annotations
 
@@ -41,7 +41,7 @@ def parse_stix_bundle(bundle_or_envelope: dict | list) -> list[Any]:
  stix2 SDO instances depending on shape).
 
  Raises stix2-side validation errors when a non-custom type is malformed
- (e.g. `indicator` without required `pattern`). This is intentional — we
+ (e.g. `indicator` without required `pattern`). This is intentional - we
  want bad input to surface.
 """
     if isinstance(bundle_or_envelope, list):
@@ -118,7 +118,7 @@ def _title_for(obj_dict: dict) -> str | None:
     name = obj_dict.get("name")
     if name:
         return str(name)[:2048]
-    # Indicator fallback — use pattern prefix
+    # Indicator fallback - use pattern prefix
     pattern = obj_dict.get("pattern")
     if pattern:
         return str(pattern)[:120]

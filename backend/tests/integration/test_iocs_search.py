@@ -3,9 +3,9 @@
 Implemented by Plan 22-03 Task 2.
 
 Covers:
-  * GET /api/iocs?type=ip                — list filter by type
-  * GET /api/iocs/{id}/events            — IOC → events pivot
-  * GET /api/events/{event_id}/iocs      — event → IOCs pivot (Surface 5)
+  * GET /api/iocs?type=ip                - list filter by type
+  * GET /api/iocs/{id}/events            - IOC → events pivot
+  * GET /api/events/{event_id}/iocs      - event → IOCs pivot (Surface 5)
   * Substring search on `q` against value/normalized_value
 """
 from __future__ import annotations
@@ -13,7 +13,6 @@ from __future__ import annotations
 import os
 import uuid
 from datetime import datetime, timezone
-from decimal import Decimal
 
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("SECRET_KEY", "s" * 64)
@@ -59,7 +58,7 @@ def _bearer(token: str) -> dict[str, str]:
 
 @pytest.fixture(autouse=True)
 async def _truncate_iocs(db_session):
-    """Per-test truncate of iocs + ioc_event_links — these tables aren't yet in
+    """Per-test truncate of iocs + ioc_event_links - these tables aren't yet in
     the shared conftest._TRUNCATE_TABLES list; documented as a Plan 22-02
     follow-up. Local fixture keeps the change scoped to this file.
     """
@@ -154,7 +153,7 @@ async def test_search_returns_linked_events_via_m2m(db_session, monkeypatch):
     await db_session.commit()
 
     async with await _client() as c:
-        # 1. List filter by type — single match.
+        # 1. List filter by type - single match.
         r = await c.get(
             "/api/iocs",
             headers=_bearer(jwt),
@@ -211,14 +210,14 @@ async def test_default_query_hides_expired_unless_opt_in(db_session, monkeypatch
     await db_session.commit()
 
     async with await _client() as c:
-        # Default — expired hidden.
+        # Default - expired hidden.
         r = await c.get("/api/iocs", headers=_bearer(jwt), params={"type": "domain"})
         assert r.status_code == 200, r.text
         ids = {row["id"] for row in r.json()}
         assert str(active_id) in ids
         assert str(expired_id) not in ids
 
-        # include_expired=true — both surface.
+        # include_expired=true - both surface.
         r2 = await c.get(
             "/api/iocs",
             headers=_bearer(jwt),
@@ -233,7 +232,7 @@ async def test_default_query_hides_expired_unless_opt_in(db_session, monkeypatch
 @pytest.mark.cross_file_pollution
 @pytest.mark.asyncio
 async def test_get_ioc_404_when_out_of_scope(db_session, monkeypatch):
-    """GET /api/iocs/{id} returns 404 (not 403) when the row is not visible —
+    """GET /api/iocs/{id} returns 404 (not 403) when the row is not visible -
     avoids an enumerable side channel.
     """
     _patch_auth(monkeypatch)

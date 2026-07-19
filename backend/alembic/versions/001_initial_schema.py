@@ -1,4 +1,4 @@
-"""M1 initial schema — sources, events hypertable, AGE, TLP seed, graph tables.
+"""M1 initial schema - sources, events hypertable, AGE, TLP seed, graph tables.
 
 Revision ID: 0001_initial_schema
 Revises:
@@ -20,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # 1. Enums FIRST — referenced by multiple tables below
+    # 1. Enums FIRST - referenced by multiple tables below
     op.execute(
         "CREATE TYPE visibility_enum AS ENUM ('red_only','blue_only','shared')"
     )
@@ -34,7 +34,7 @@ def upgrade() -> None:
         "CREATE TYPE matrix_enum AS ENUM ('enterprise','ics','mobile')"
     )
 
-    # 2. Extensions — idempotent
+    # 2. Extensions - idempotent
     op.execute("CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE")
     op.execute("CREATE EXTENSION IF NOT EXISTS age CASCADE")
 
@@ -135,7 +135,7 @@ def upgrade() -> None:
 """
     )
 
-    # 7. nodes, edges (relational graph — AGE deferred to M2)
+    # 7. nodes, edges (relational graph - AGE deferred to M2)
     op.create_table(
         "nodes",
         sa.Column("id", postgresql.UUID(as_uuid=True),
@@ -168,7 +168,7 @@ def upgrade() -> None:
         "attack_technique_tags",
         sa.Column("id", postgresql.UUID(as_uuid=True),
                   server_default=sa.text("gen_random_uuid()"), primary_key=True),
-        # NOTE: no FK to events.id — TimescaleDB hypertables can't be FK targets
+        # NOTE: no FK to events.id - TimescaleDB hypertables can't be FK targets
         # (requires unique index including partition column). App enforces integrity.
         sa.Column("event_id", postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column("technique_id", sa.Text(), nullable=False),
@@ -209,4 +209,4 @@ def downgrade() -> None:
     op.execute("DROP TYPE IF EXISTS feed_type_enum")
     op.execute("DROP TYPE IF EXISTS tag_source_enum")
     op.execute("DROP TYPE IF EXISTS visibility_enum")
-    # Do not DROP EXTENSION timescaledb/age — they may be shared.
+    # Do not DROP EXTENSION timescaledb/age - they may be shared.

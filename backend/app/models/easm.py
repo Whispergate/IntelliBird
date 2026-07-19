@@ -1,15 +1,14 @@
-"""EASM ORM models — mirrors migration 010_easm.py exactly.
+"""EASM ORM models - mirrors migration 010_easm.py exactly.
 
 EASM-01, EASM-02, EASM-04, EASM-06, EASM-10.
 
-EASMScan — one row per scan launch, FK → projects (CASCADE)
-EASMFinding — deduped across scans via UNIQUE(project_id, bbot_event_type, canonical_target) (M-4)
-EASMCredential — per-project provider credentials (encrypted, key-rotation pattern)
+EASMScan - one row per scan launch, FK → projects (CASCADE)
+EASMFinding - deduped across scans via UNIQUE(project_id, bbot_event_type, canonical_target) (M-4)
+EASMCredential - per-project provider credentials (encrypted, key-rotation pattern)
 """
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
 
 from sqlalchemy import (
     Column,
@@ -27,7 +26,7 @@ from app.models.base import Base
 
 
 # ---------------------------------------------------------------------------
-# Enum type objects — create_type=False because enums are pre-created by the
+# Enum type objects - create_type=False because enums are pre-created by the
 # migration 010 DO-block pattern (009 precedent). SA must not emit
 # CREATE TYPE; postgresql.ENUM with create_type=False is the correct SA2 pattern.
 # ---------------------------------------------------------------------------
@@ -64,9 +63,9 @@ class EASMScan(Base):
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )
-    status = Column(EASM_SCAN_STATUS, nullable=False, default="queued")
-    scan_mode = Column(EASM_SCAN_MODE, nullable=False)
-    modules = Column(ARRAY(Text), nullable=False)
+    status = Column(EASM_SCAN_STATUS, nullable=False, default="queued")  # type: ignore[var-annotated]
+    scan_mode = Column(EASM_SCAN_MODE, nullable=False)  # type: ignore[var-annotated]
+    modules = Column(ARRAY(Text), nullable=False)  # type: ignore[var-annotated]
     container_id = Column(Text, nullable=True)
     started_at = Column(TIMESTAMP(timezone=True), nullable=False)
     finished_at = Column(TIMESTAMP(timezone=True), nullable=True)
@@ -86,7 +85,7 @@ class EASMFinding(Base):
     """Individual BBOT finding, deduped across scans by (project_id, bbot_event_type, canonical_target).
 
     M-4: ON CONFLICT DO UPDATE on the unique key updates last_seen + raw_bbot in place.
-    H-4: NOT a TimescaleDB hypertable — plain partitioned table; no time-series overhead.
+    H-4: NOT a TimescaleDB hypertable - plain partitioned table; no time-series overhead.
     """
 
     __tablename__ = "easm_findings"
@@ -110,14 +109,14 @@ class EASMFinding(Base):
     )
     bbot_event_type = Column(Text, nullable=False)
     canonical_target = Column(Text, nullable=False)
-    severity = Column(EASM_SEVERITY, nullable=True)
+    severity = Column(EASM_SEVERITY, nullable=True)  # type: ignore[var-annotated]
     module = Column(Text, nullable=False)
     raw_bbot = Column(JSONB, nullable=False)
-    # sha256(project_id::text || bbot_event_type || canonical_target) — no scan_id/timestamp
+    # sha256(project_id::text || bbot_event_type || canonical_target) - no scan_id/timestamp
     content_hash = Column(Text, nullable=False)
     first_seen = Column(TIMESTAMP(timezone=True), nullable=False)
     last_seen = Column(TIMESTAMP(timezone=True), nullable=False)
-    lifecycle_status = Column(EASM_LIFECYCLE, nullable=False, default="new")
+    lifecycle_status = Column(EASM_LIFECYCLE, nullable=False, default="new")  # type: ignore[var-annotated]
     dismiss_until = Column(TIMESTAMP(timezone=True), nullable=True)
 
     scan = relationship("EASMScan", back_populates="findings")
@@ -140,7 +139,7 @@ class EASMCredential(Base):
         ForeignKey("projects.id", ondelete="CASCADE"),
         nullable=False,
     )
-    provider = Column(EASM_CREDENTIAL_PROVIDER, nullable=False)
+    provider = Column(EASM_CREDENTIAL_PROVIDER, nullable=False)  # type: ignore[var-annotated]
     credentials_enc = Column(LargeBinary, nullable=False)
     credentials_key_version = Column(Integer, nullable=False, default=1)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False)

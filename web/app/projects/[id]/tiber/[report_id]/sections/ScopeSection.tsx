@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScopeSection — Section 3a: Scope of Intelligence Research.
+ * ScopeSection - Section 3a: Scope of Intelligence Research.
  * UI-SPEC §3a.
  *
  * Manual entry only: engagement window dates + in/out-scope assets.

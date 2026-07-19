@@ -1,4 +1,4 @@
-"""Shared writers for workers — _persist_event + update_source_health.
+"""Shared writers for workers - _persist_event + update_source_health.
 
 These helpers encapsulate (ON CONFLICT DO NOTHING against
 UNIQUE(source_id, content_hash, observed_at)) and (single-transaction
@@ -10,7 +10,6 @@ rely on them.
 """
 from __future__ import annotations
 
-import os
 import uuid
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
@@ -58,7 +57,7 @@ def test_update_source_health_success_issues_update(monkeypatch: pytest.MonkeyPa
     update_source_health(session, sid, status="ok", succeeded=True)
     # Must execute at least one statement through the session
     assert session.execute.called
-    # Inspect the compiled SQL — check for SET last_status='ok' and consecutive_failures = 0
+    # Inspect the compiled SQL - check for SET last_status='ok' and consecutive_failures = 0
     call_args = session.execute.call_args[0]
     stmt = call_args[0]
     compiled = str(stmt.compile(compile_kwargs={"literal_binds": True}))
@@ -77,7 +76,7 @@ def test_update_source_health_failure_uses_increment(monkeypatch: pytest.MonkeyP
     stmt = str(session.execute.call_args[0][0].compile(compile_kwargs={"literal_binds": True}))
     # On failure: consecutive_failures = consecutive_failures + 1 (self-increment in SQL)
     assert "consecutive_failures" in stmt
-    assert "+ 1" in stmt.replace(" ", "+ 1")  # tolerant compare — '+1' or '+ 1'
+    assert "+ 1" in stmt.replace(" ", "+ 1")  # tolerant compare - '+1' or '+ 1'
 
 
 def test_persist_event_returns_rowcount(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -126,10 +125,11 @@ def test_persist_event_returns_rowcount(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_persist_event_uses_on_conflict_do_nothing() -> None:
     """The compiled statement must include ON CONFLICT DO NOTHING targeting
- (source_id, content_hash, observed_at) — three-column index per 02-01 deviation."""
+ (source_id, content_hash, observed_at) - three-column index per 02-01 deviation."""
     from app.ingest.normalise import _persist_event
     session = MagicMock()
-    res = MagicMock(); res.rowcount = 1
+    res = MagicMock()
+    res.rowcount = 1
     session.execute.return_value = res
     row = {
         "stix_type": "x-intellibird-rss",

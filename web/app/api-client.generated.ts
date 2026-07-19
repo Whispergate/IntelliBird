@@ -70,7 +70,7 @@ export interface paths {
         /**
          * Test Connection
          * @description Synchronous Test Connection probe. Returns 200 regardless of probe
-         *     outcome — the ok flag in the body signals success/failure. UI uses
+         *     outcome - the ok flag in the body signals success/failure. UI uses
          *     this as informational only.
          */
         post: operations["test_connection_api_admin_sources_test_connection_post"];
@@ -398,7 +398,7 @@ export interface paths {
          *
          *     Used when the JWT pm claim was truncated (pm_truncated=true; >PM_CUTOFF
          *     memberships). Returns up to `limit` (default 100, max 100) rows ordered by
-         *     created_at DESC, id DESC. `cursor` is an ISO8601 timestamp — only rows
+         *     created_at DESC, id DESC. `cursor` is an ISO8601 timestamp - only rows
          *     with created_at < cursor are returned (keyset pagination).
          */
         get: operations["list_my_memberships_api_auth_memberships_get"];
@@ -516,7 +516,7 @@ export interface paths {
          *     - Any invalid tag (after lowercasing) in add OR remove → 422 (whole request rejected).
          *     - Re-adding an existing tag is a no-op; removing an absent tag is a no-op (idempotent).
          *     - Response: sorted tag array after the operation.
-         *     - 404 if event_id not found (visibility not gated in M1 — auth deferred to M2).
+         *     - 404 if event_id not found (visibility not gated in M1 - auth deferred to M2).
          */
         patch: operations["patch_event_tags_api_events__event_id__tags_patch"];
         trace?: never;
@@ -622,7 +622,7 @@ export interface paths {
          * @description Create a project and atomically bind the creator as Lead.
          *
          *     If the project INSERT succeeds but the ProjectMembership INSERT fails, the
-         *     transaction rolls back — prevents orphaned projects without a Lead.
+         *     transaction rolls back - prevents orphaned projects without a Lead.
          */
         post: operations["create_project_api_projects_post"];
         delete?: never;
@@ -644,7 +644,7 @@ export interface paths {
         post?: never;
         /**
          * Hard Delete Disabled
-         * @description Hard delete is disabled — the only deletion path is POST /archive.
+         * @description Hard delete is disabled - the only deletion path is POST /archive.
          */
         delete: operations["hard_delete_disabled_api_projects__project_id__delete"];
         options?: never;
@@ -846,7 +846,7 @@ export interface paths {
          * Get Safelist
          * @description Return the effective module safelist + BBOT version + credential requirements.
          *
-         *     UI populates its module multi-select from this endpoint — single source of truth.
+         *     UI populates its module multi-select from this endpoint - single source of truth.
          */
         get: operations["get_safelist_api_easm_safelist_get"];
         put?: never;
@@ -876,7 +876,7 @@ export interface paths {
          *
          *     Authority (CONTEXT.md §Scan authority matrix):
          *       passive: Admin, Analyst (global), Lead, Contributor (project)
-         *       active:  Admin (global), Lead (project) only — plus active gate check
+         *       active:  Admin (global), Lead (project) only - plus active gate check
          *
          *     Active-scan gate is defence-in-depth (plan 11-06 is the canonical flip).
          *     Concurrent-scan race guard (M-5): 409 if another scan is queued/running.
@@ -928,7 +928,7 @@ export interface paths {
          * Get Scan Diff
          * @description Compute NEW / CHANGED / RESOLVED diff vs the previous finished scan.
          *
-         *     Match key is (bbot_event_type, canonical_target) only — module/severity
+         *     Match key is (bbot_event_type, canonical_target) only - module/severity
          *     differences on the same target produce a CHANGED entry, not a NEW entry.
          *     Prior scan = next-most-recent *finished* scan for the same project, ordered
          *     by started_at DESC. Returns empty lists if no prior scan exists.
@@ -982,7 +982,7 @@ export interface paths {
          * Patch Finding
          * @description Update finding lifecycle status (confirm / dismiss / watchlist / new).
          *
-         *     Observer blocked — requires Contributor+, global Analyst, or global Admin.
+         *     Observer blocked - requires Contributor+, global Analyst, or global Admin.
          *     'dismissed' sets dismiss_until = NOW() + 30d.
          *     'new' clears dismiss_until.
          */
@@ -1079,8 +1079,8 @@ export interface paths {
          *     the include_dismissed flag is ignored (explicit lifecycle wins).
          *
          *     Response includes two banner flags:
-         *       * has_expiring_dismissals     — dismissals expiring in the next 7 days
-         *       * has_recent_auto_downgrade   — >0 terms flipped to watch_only recently
+         *       * has_expiring_dismissals     - dismissals expiring in the next 7 days
+         *       * has_recent_auto_downgrade   - >0 terms flipped to watch_only recently
          */
         get: operations["list_matches_api_projects__project_id__brand_matches_get"];
         put?: never;
@@ -1130,7 +1130,7 @@ export interface paths {
          *
          *     Semantics:
          *       let_resurface=True  → lifecycle_status='new',    dismiss_until=NULL
-         *       extend_days=None    → dismiss_until=NULL   (Indefinite — status preserved)
+         *       extend_days=None    → dismiss_until=NULL   (Indefinite - status preserved)
          *       extend_days=N       → dismiss_until=NOW() + N days
          */
         post: operations["extend_dismissal_api_projects__project_id__brand_matches__match_id__extend_post"];
@@ -1151,7 +1151,7 @@ export interface paths {
          * Suppression Review
          * @description List dismissed matches whose dismiss_until falls within the next 7 days.
          *
-         *     Drives the 'Suppression Review' widget on the brand dashboard — operators
+         *     Drives the 'Suppression Review' widget on the brand dashboard - operators
          *     get a short-horizon view of noise about to resurface.
          */
         get: operations["suppression_review_api_projects__project_id__brand_suppression_review_get"];
@@ -1434,7 +1434,7 @@ export interface components {
         };
         /**
          * AssetRow
-         * @description One aggregated asset row — table display + list endpoint items.
+         * @description One aggregated asset row - table display + list endpoint items.
          */
         AssetRow: {
             /**
@@ -1490,7 +1490,7 @@ export interface components {
         };
         /**
          * BasicAuth
-         * @description HTTP Basic authentication — adds Authorization: Basic <base64> header.
+         * @description HTTP Basic authentication - adds Authorization: Basic <base64> header.
          */
         BasicAuth: {
             /**
@@ -1506,7 +1506,7 @@ export interface components {
         };
         /**
          * BearerAuth
-         * @description Bearer token authentication — adds Authorization: Bearer <token> header.
+         * @description Bearer token authentication - adds Authorization: Bearer <token> header.
          */
         BearerAuth: {
             /**
@@ -1520,7 +1520,7 @@ export interface components {
         };
         /**
          * BrandDashboardResponse
-         * @description GET /api/projects/{id}/brand/dashboard — aggregated dashboard payload.
+         * @description GET /api/projects/{id}/brand/dashboard - aggregated dashboard payload.
          *
          *     `has_expiring_dismissals` → show the "X dismissals expiring in 7 days" banner.
          *     `has_recent_auto_downgrade` → show the "N terms auto-downgraded to watch_only"
@@ -1541,7 +1541,7 @@ export interface components {
         };
         /**
          * BrandMatchPatch
-         * @description PATCH /api/projects/{id}/brand/matches/{match_id} — lifecycle transition.
+         * @description PATCH /api/projects/{id}/brand/matches/{match_id} - lifecycle transition.
          *
          *     `dismiss_days` is required when `lifecycle_status == 'dismissed'`; validated
          *     server-side. 1..3650 days (≈10y max).
@@ -1615,7 +1615,7 @@ export interface components {
         };
         /**
          * BrandPreviewResponse
-         * @description GET /api/projects/{id}/brand/terms/preview?value=... — noise preview.
+         * @description GET /api/projects/{id}/brand/terms/preview?value=... - noise preview.
          *
          *     `warning='likely_too_broad'` triggers the 'high_noise_risk' auto-flag on create.
          */
@@ -1669,7 +1669,7 @@ export interface components {
         };
         /**
          * BrandTermCreate
-         * @description POST /api/projects/{id}/brand/terms — create a new watched term.
+         * @description POST /api/projects/{id}/brand/terms - create a new watched term.
          *
          *     `gdpr_consent` MUST be true when `term_type == 'person'` (enforced server-side
          *     in the router; validator here is lenient to allow partial UI drafts).
@@ -1690,7 +1690,7 @@ export interface components {
         };
         /**
          * BrandTermPatch
-         * @description PATCH /api/projects/{id}/brand/terms/{term_id} — mode flip or archive.
+         * @description PATCH /api/projects/{id}/brand/terms/{term_id} - mode flip or archive.
          */
         BrandTermPatch: {
             /** Mode */
@@ -1882,10 +1882,10 @@ export interface components {
         };
         /**
          * EASMGateFlipRequest
-         * @description POST /api/projects/{id}/easm/gate — flip the active-scan authorisation gate.
+         * @description POST /api/projects/{id}/easm/gate - flip the active-scan authorisation gate.
          *
          *     scope_acknowledgement_text must exactly match project.name (server-side validated).
-         *     confirm_authorisation must be Literal[True] — the checkbox must be checked.
+         *     confirm_authorisation must be Literal[True] - the checkbox must be checked.
          */
         EASMGateFlipRequest: {
             /** Scope Acknowledgement Text */
@@ -1912,7 +1912,7 @@ export interface components {
         };
         /**
          * EASMScanCreate
-         * @description POST /api/projects/{id}/easm/scans — create a new scan.
+         * @description POST /api/projects/{id}/easm/scans - create a new scan.
          */
         EASMScanCreate: {
             /**
@@ -1976,7 +1976,7 @@ export interface components {
         };
         /**
          * EventDetail
-         * @description Full event including raw_stix JSONB — returned by GET /api/events/{id}.
+         * @description Full event including raw_stix JSONB - returned by GET /api/events/{id}.
          */
         EventDetail: {
             /**
@@ -2159,7 +2159,7 @@ export interface components {
         };
         /**
          * HeaderAuth
-         * @description Arbitrary custom header authentication — adds {name}: {value} header.
+         * @description Arbitrary custom header authentication - adds {name}: {value} header.
          */
         HeaderAuth: {
             /**
@@ -2228,7 +2228,7 @@ export interface components {
          * MembershipSummary
          * @description Hydrated project_memberships entry for /api/auth/me (project_name + archived flag).
          *
-         *     Truncated on /me when the JWT pm_truncated flag is set — clients must call
+         *     Truncated on /me when the JWT pm_truncated flag is set - clients must call
          *     /api/auth/memberships for the full paginated list.
          */
         MembershipSummary: {
@@ -2479,7 +2479,7 @@ export interface components {
         };
         /**
          * SetupResponse
-         * @description POST /api/admin/setup response — subset of UserResponse (no enabled/locked).
+         * @description POST /api/admin/setup response - subset of UserResponse (no enabled/locked).
          */
         SetupResponse: {
             /** Id */
@@ -2687,7 +2687,7 @@ export interface components {
          * TestSendRequest
          * @description Payload for the test-send endpoint.
          *
-         *     Client sends plaintext auth — backend encrypts for the round-trip.
+         *     Client sends plaintext auth - backend encrypts for the round-trip.
          *     Always returns HTTP 200; ok flag signals success/failure.
          */
         TestSendRequest: {
@@ -2863,7 +2863,7 @@ export interface components {
          * WebhookResponse
          * @description Webhook representation returned by CRUD endpoints.
          *
-         *     auth_enc DELIBERATELY ABSENT — SRC-04 parallel: credentials never returned
+         *     auth_enc DELIBERATELY ABSENT - SRC-04 parallel: credentials never returned
          *     in plaintext responses. bound_preset_names populated via join query in router
          *     (07-04); defaults to [] for schema-level tests.
          */
@@ -2911,7 +2911,7 @@ export interface components {
          * WebhookUpdate
          * @description Payload to partially update a webhook.
          *
-         *     destination_type DELIBERATELY ABSENT — locked on edit.
+         *     destination_type DELIBERATELY ABSENT - locked on edit.
          */
         WebhookUpdate: {
             /** Name */
@@ -3530,7 +3530,7 @@ export interface operations {
                 };
                 content?: never;
             };
-            /** @description Setup already complete — a user already exists */
+            /** @description Setup already complete - a user already exists */
             409: {
                 headers: {
                     [name: string]: unknown;

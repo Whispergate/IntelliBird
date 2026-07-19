@@ -1,19 +1,19 @@
 "use client";
 
 /**
- * CompareTable — shared presentational table reused 3× on /projects/compare.
+ * CompareTable - shared presentational table reused 3× on /projects/compare.
  *
  * Renders one section (Shared actors / Shared techniques / Shared IOCs) with:
  *   - Heading with row count in parentheses (UI-SPEC lock)
  *   - Empty-state muted single line when rows.length === 0 (copy from caller)
  *   - 500-row cap caption when rows.length === CAP (CompareTable doesn't know
- *     the cap — caller passes `capReached` explicitly so the table stays agnostic)
+ *     the cap - caller passes `capReached` explicitly so the table stays agnostic)
  *
  * Row rendering is delegated to `renderRow(row, idx)` so the three call-sites
  * can each render their specific shape (string for actors/techniques,
  * `{kind, value}` for IOCs) with their own link + copy affordances.
  *
- * Also exports `copyToClipboard(value)` — a thin wrapper around
+ * Also exports `copyToClipboard(value)` - a thin wrapper around
  * navigator.clipboard.writeText that pops a sonner toast on success/failure.
  * Kept here so ProjectCompareClient + any future call-site share one behaviour.
  */
@@ -56,7 +56,7 @@ export function CompareTable<T>({
           </table>
           {capReached && (
             <p className="text-xs text-muted-foreground mt-2">
-              Showing 500 — narrow project scope to see all.
+              Showing 500 - narrow project scope to see all.
             </p>
           )}
         </>

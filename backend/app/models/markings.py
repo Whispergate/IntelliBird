@@ -1,4 +1,4 @@
-"""TLP marking definitions (canonical UUIDs hard-coded — see migration 001)."""
+"""TLP marking definitions (canonical UUIDs hard-coded - see migration 001)."""
 from __future__ import annotations
 
 import uuid

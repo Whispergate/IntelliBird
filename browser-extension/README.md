@@ -1,4 +1,4 @@
-# IntelliBird Lookup — Browser Extension
+# IntelliBird Lookup - Browser Extension
 
 Right-click any selected text on any webpage to pivot instantly to IntelliBird IOC search.
 
@@ -27,6 +27,6 @@ You must be logged in to IntelliBird in the same browser profile for the search 
 
 ## Notes
 - Selected text is trimmed to 200 characters before search.
-- The extension stores only your base URL in `chrome.storage.sync` — no other data is collected or transmitted.
+- The extension stores only your base URL in `chrome.storage.sync` - no other data is collected or transmitted.
 - The `<all_urls>` host permission is required so the extension can open tabs to any configured IntelliBird origin, including `http://localhost` for local development.
-- The `browser-polyfill.min.js` file is webextension-polyfill 0.12.0 from https://cdn.jsdelivr.net/npm/webextension-polyfill@0.12.0/dist/browser-polyfill.min.js — replace it with the latest release if you see browser API compatibility errors.
+- The `browser-polyfill.min.js` file is webextension-polyfill 0.12.0 from https://cdn.jsdelivr.net/npm/webextension-polyfill@0.12.0/dist/browser-polyfill.min.js - replace it with the latest release if you see browser API compatibility errors.

@@ -1,5 +1,5 @@
 // Owned by: 17-09-PLAN
-// AIProviderCard — Surface 4 per 17-UI-SPEC.md.
+// AIProviderCard - Surface 4 per 17-UI-SPEC.md.
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act, fireEvent } from "@testing-library/react";
@@ -58,7 +58,7 @@ describe("AIProviderCard (17-09)", () => {
       render(<AIProviderCard projectId="p1" />);
       // wait for initial load attempt
       await waitFor(() => screen.getByLabelText("Provider"));
-      // Ollama is default — API key should not be visible
+      // Ollama is default - API key should not be visible
       expect(screen.queryByLabelText("API key")).toBeNull();
     });
 

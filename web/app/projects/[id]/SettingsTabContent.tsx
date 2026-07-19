@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * SettingsTabContent — (UI-SPEC §/projects/[id] §Settings).
+ * SettingsTabContent - (UI-SPEC §/projects/[id] §Settings).
  *
  * Editable settings surface:
  *   - Name            (required; 1..200 chars)
@@ -10,9 +10,9 @@
  *   - Archive toggle  (Archive Project ↔ Restore button)
  *
  * Read-only footer:
- *   - TIBER banner (conditional on engagement_type === 'tiber') — signal-amber
+ *   - TIBER banner (conditional on engagement_type === 'tiber') - signal-amber
  *     left-border strip per UI-SPEC §Color §Semantic surfaces
- * - EASMGatePreview — 3 gate fields with " wires this form
+ * - EASMGatePreview - 3 gate fields with " wires this form
  *     live" caption
  *   - Hard-delete informational copy (archive is the only deletion path)
  *
@@ -21,7 +21,7 @@
  * hiding is a plan 10-11/10-14 concern; for 10-10 the server is the gate.
  *
  * Archive confirmation uses native window.confirm (v1.5 precedent) per
- * UI-SPEC §Destructive confirmations — matches /sources delete pattern.
+ * UI-SPEC §Destructive confirmations - matches /sources delete pattern.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -160,12 +160,12 @@ export function SettingsTabContent({
     setArchiving(true);
     try {
       if (archived) {
-        // Restore — no confirmation step (restore is non-destructive).
+        // Restore - no confirmation step (restore is non-destructive).
         await restoreProject(liveProject.id);
         toast.success(`Restored ${liveProject.name}.`);
         setArchived(false);
       } else {
-        // Archive — UI-SPEC §Destructive confirmations body copy.
+        // Archive - UI-SPEC §Destructive confirmations body copy.
         const confirmed = window.confirm(
           `Archive this project?\n\n${liveProject.name} will be hidden from the default list. Events, scope, sources, and memberships are retained. You can restore anytime.`,
         );
@@ -268,7 +268,7 @@ export function SettingsTabContent({
           }}
         >
           <p className="text-foreground">
-            <strong>TIBER engagement</strong> — scope-acknowledgement gate
+            <strong>TIBER engagement</strong> - scope-acknowledgement gate
             governs active scans.
           </p>
         </div>
@@ -284,13 +284,13 @@ export function SettingsTabContent({
 
       <section className="border-t border-border pt-4 text-sm text-muted-foreground">
         <p>
-          Hard delete is disabled. Archive is the only path — events, scope,
+          Hard delete is disabled. Archive is the only path - events, scope,
           sources, and memberships remain visible under the Archived toggle on
           /projects.
         </p>
       </section>
 
-      {/* AI Provider card — Lead+ only */}
+      {/* AI Provider card - Lead+ only */}
       {userIsLeadOrAdmin && (
         <AIProviderCard
           projectId={liveProject.id}
@@ -298,10 +298,10 @@ export function SettingsTabContent({
         />
       )}
 
-      {/* Enrichment Providers card — Lead+ only for edits, all roles can view */}
+      {/* Enrichment Providers card - Lead+ only for edits, all roles can view */}
       <EnrichmentProvidersCard projectId={liveProject.id} />
 
-      {/* MISP Integration — Lead+ only */}
+      {/* MISP Integration - Lead+ only */}
       <MispConfigSection
         projectId={liveProject.id}
         isLead={userIsLeadOrAdmin}

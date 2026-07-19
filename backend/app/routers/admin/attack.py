@@ -1,4 +1,4 @@
-"""POST /admin/attack/refresh — on-demand ATT&CK catalog refresh.
+"""POST /admin/attack/refresh - on-demand ATT&CK catalog refresh.
 
 AUTH-02: endpoint guarded by Depends(require_admin).
 """
@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from app.middleware.auth import require_admin
 from app.security.jwt import AuthUser
-from app.workers import broker as _broker  # noqa: F401 — registers actor
+from app.workers import broker as _broker  # noqa: F401 - registers actor
 from app.workers.bootstrap import bootstrap_attack
 
 router = APIRouter(prefix="/admin/attack", tags=["admin"])

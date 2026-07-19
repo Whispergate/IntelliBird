@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * IngestSparkline — 120×32 Recharts BarChart sparkline for source ingest volume.
+ * IngestSparkline - 120×32 Recharts BarChart sparkline for source ingest volume.
  * MON-04 dashboard requirement.
  *
  * Props:
- *   data — up to 168 hourly buckets ({ bucket: string; total: number }[])
+ *   data - up to 168 hourly buckets ({ bucket: string; total: number }[])
  *          Renders blue bars; empty/zero data shows a faint placeholder.
  *
  * Mirrors ScoreHistogram pattern (ResponsiveContainer + BarChart).

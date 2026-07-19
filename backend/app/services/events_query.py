@@ -1,13 +1,13 @@
-"""Events list query builder — FIL-01, FIL-02.
+"""Events list query builder - FIL-01, FIL-02.
 
-Pure query construction. No DB execution here — routers pass the returned
+Pure query construction. No DB execution here - routers pass the returned
 Select to session.execute.
 """
 from __future__ import annotations
 
 import base64
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal
 
@@ -70,7 +70,7 @@ def _build_score_expressions(
     if not needs_score:
         return stmt, None
 
-    # Lateral scalar subquery — latest override score for this event.
+    # Lateral scalar subquery - latest override score for this event.
     override_subq = (
         select(EventScoreOverride.score)
         .where(EventScoreOverride.event_id == Event.id)
@@ -98,18 +98,18 @@ def _build_score_expressions(
     decay_expr = sa.func.power(sa.literal(2.0), -age_days_expr / sa.literal(14.0))
     decayed_score = current_score_expr * decay_expr
 
-    # Tier filter — applied BEFORE order_by so the WHERE composes correctly
+    # Tier filter - applied BEFORE order_by so the WHERE composes correctly
     # with the scope predicate already in stmt.
     if params.tier:
         tier_clauses = []
         for t in params.tier:
-            lo, hi = TIER_RANGES[t]  # KeyError if invalid tier label — expected
+            lo, hi = TIER_RANGES[t]  # KeyError if invalid tier label - expected
             tier_clauses.append(
                 sa.and_(current_score_expr >= lo, current_score_expr <= hi)
             )
         stmt = stmt.where(sa.or_(*tier_clauses))
 
-    # Sort — replaces the default observed_at DESC order.
+    # Sort - replaces the default observed_at DESC order.
     if params.sort == "score_desc":
         stmt = stmt.order_by(
             decayed_score.desc(),
@@ -150,7 +150,7 @@ def build_events_query(
 ) -> Select:
     """Compose a Select of Event rows honouring dashboard_roles + project filters.
 
-    kwargs (all default None — unchanged when omitted, preserving
+    kwargs (all default None - unchanged when omitted, preserving
     dashboard contract):
       project_id: when set, filters events.project_id = project_id
       scope_predicate: when set, applies the scope-intersection predicate
@@ -194,7 +194,7 @@ def build_events_query(
 
     if params.tag:
         #: COALESCE NULL tags to empty array so untagged rows are NOT
-        # silently excluded — NULL @> ARRAY[...] = NULL which never matches WHERE.
+        # silently excluded - NULL @> ARRAY[...] = NULL which never matches WHERE.
         #: tag_mode='any' uses && (overlap); tag_mode='all' (default) uses @> (contains).
         op_token = "&&" if params.tag_mode == "any" else "@>"
         stmt = stmt.where(
@@ -232,7 +232,7 @@ def build_events_query(
         if scope_predicate is not None:
             stmt = stmt.where(scope_predicate)
 
-    # SCR-05: score sort + tier filter — injected via shared helper so the
+    # SCR-05: score sort + tier filter - injected via shared helper so the
     # lateral subquery is defined exactly once per Select.  The helper also
     # adds the ORDER BY when sort is score_desc/score_asc; the default
     # observed_at DESC is added only when no score sort was requested.
@@ -255,7 +255,7 @@ def apply_cursor(stmt: Select, cursor_ts: datetime, cursor_id: uuid.UUID) -> Sel
 
 
 def _rank_expression(q: str):
-    """ts_rank_cd(search_tsv, plainto_tsquery('english', q)) — SQL column expression."""
+    """ts_rank_cd(search_tsv, plainto_tsquery('english', q)) - SQL column expression."""
     tsquery = sa.func.plainto_tsquery("english", q)
     return sa.func.ts_rank_cd(sa.column("search_tsv"), tsquery)
 
@@ -346,7 +346,7 @@ def build_fts_query(
         if scope_predicate is not None:
             stmt = stmt.where(scope_predicate)
 
-    # SCR-05: score sort + tier filter — same helper as build_events_query.
+    # SCR-05: score sort + tier filter - same helper as build_events_query.
     # FTS path: when score sort requested, score ordering replaces rank ordering.
     # Tier filter is always applied when tier is set regardless of sort choice.
     stmt, _score_expr = _build_score_expressions(stmt, params)

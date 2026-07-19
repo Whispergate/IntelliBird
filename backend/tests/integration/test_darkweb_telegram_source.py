@@ -1,5 +1,4 @@
-"""Integration: telegram source lifecycle — DARK-04."""
-import pytest
+"""Integration: telegram source lifecycle - DARK-04."""
 
 
 def test_poll_telegram_impl_ingests_channel_messages(db_session):
@@ -18,7 +17,7 @@ def test_poll_telegram_floodwait_marks_source_error(db_session):
 
 
 def test_poll_telegram_uses_asyncio_run_not_await(db_session):
-    """Worker body wraps async Telethon logic in asyncio.run() — no coroutine leak"""
+    """Worker body wraps async Telethon logic in asyncio.run() - no coroutine leak"""
     pass
 
 

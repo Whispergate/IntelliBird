@@ -1,4 +1,4 @@
-"""Async Redis client — per-event-loop cache.
+"""Async Redis client - per-event-loop cache.
 
 Thin wrapper over `redis.asyncio.Redis.from_url` using `settings.REDIS_URL`.
 
@@ -9,7 +9,7 @@ loop B reuses it the redis library raises `RuntimeError: Event loop is closed`
 (connection.disconnect → transport.close → call_soon on closed loop).
 
 Per-loop caching keeps the FastAPI single-loop fast path (one client for the
-whole app lifetime) and also makes worker actors safe — each `asyncio.run()`
+whole app lifetime) and also makes worker actors safe - each `asyncio.run()`
 gets its own client, transparently. Stale entries from finished loops are
 evicted on next access.
 """
@@ -18,6 +18,7 @@ from __future__ import annotations
 import asyncio
 import weakref
 
+import redis as redis_sync
 from redis.asyncio import Redis
 
 from app.config import settings
@@ -50,3 +51,12 @@ async def close_redis() -> None:
     client = _clients.pop(loop, None)
     if client is not None:
         await client.aclose()
+
+
+def get_sync_redis() -> "redis_sync.Redis":
+    """Return a synchronous Redis client for sync worker/scheduler contexts.
+
+    Async code paths must use `get_redis()`; this exists for the handful of
+    blocking helpers (e.g. robots.txt caching) that run outside an event loop.
+    """
+    return redis_sync.Redis.from_url(settings.REDIS_URL, decode_responses=True)

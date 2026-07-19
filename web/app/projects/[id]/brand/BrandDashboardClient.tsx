@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * BrandDashboardClient — (UI-SPEC §Surface 2 + §Surface 3).
+ * BrandDashboardClient - (UI-SPEC §Surface 2 + §Surface 3).
  *
  * Owns:
  *   - Filter state (severity / source / lifecycle / include_dismissed)
@@ -31,7 +31,7 @@ import { MatchDetailDrawer } from "./MatchDetailDrawer";
 
 // ---------------------------------------------------------------------------
 // Brand sub-tab strip (Matches | Terms | Stoplist)
-// Tab order: Matches (default) | Terms | Stoplist — UI-SPEC §Surface 1
+// Tab order: Matches (default) | Terms | Stoplist - UI-SPEC §Surface 1
 // ---------------------------------------------------------------------------
 
 interface BrandTab {
@@ -92,7 +92,7 @@ function BrandTabStrip({ projectId }: { projectId: string }) {
 }
 
 // ---------------------------------------------------------------------------
-// Skeleton rows (loading state — mirrors FindingsSkeleton)
+// Skeleton rows (loading state - mirrors FindingsSkeleton)
 // ---------------------------------------------------------------------------
 function MatchesSkeleton() {
   return (
@@ -112,7 +112,7 @@ function MatchesSkeleton() {
 // ---------------------------------------------------------------------------
 interface BrandDashboardClientProps {
   projectId: string;
-  /** Test-only — override observer-role detection. */
+  /** Test-only - override observer-role detection. */
   isObserver?: boolean;
 }
 
@@ -124,7 +124,7 @@ export function BrandDashboardClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Drawer URL state — ?match=<uuid>
+  // Drawer URL state - ?match=<uuid>
   const activeMatchId = searchParams.get("match");
   const [drawerDetails, setDrawerDetails] = useState<MatchDetailsResponse | null>(null);
   const [drawerMatch, setDrawerMatch] = useState<BrandMatchRead | null>(null);
@@ -192,12 +192,12 @@ export function BrandDashboardClient({
     if (found) setDrawerMatch(found);
   }, [data, activeMatchId]);
 
-  // Called when matched_value cell is clicked — push URL param (shallow)
+  // Called when matched_value cell is clicked - push URL param (shallow)
   function handleMatchClick(matchId: string) {
     router.push(`${pathname}?match=${matchId}`, { scroll: false });
   }
 
-  // Close drawer — clear URL param
+  // Close drawer - clear URL param
   function handleDrawerClose() {
     router.push(pathname, { scroll: false });
   }
@@ -249,7 +249,7 @@ export function BrandDashboardClient({
               role="alert"
             >
               <p className="text-sm text-foreground">
-                Term &apos;{value}&apos; auto-downgraded to watch-only — {count}{" "}
+                Term &apos;{value}&apos; auto-downgraded to watch-only - {count}{" "}
                 matches in last 24h. Review on the Terms tab.
               </p>
             </div>
@@ -264,7 +264,7 @@ export function BrandDashboardClient({
       {/* Brand sub-tab strip: Matches | Terms | Stoplist */}
       <BrandTabStrip projectId={projectId} />
 
-      {/* Suppression-review banner (clickable — opens modal) */}
+      {/* Suppression-review banner (clickable - opens modal) */}
       {data?.has_expiring_dismissals && (
         <SuppressionReviewBanner
           projectId={projectId}
@@ -299,7 +299,7 @@ export function BrandDashboardClient({
           </Button>
         </div>
       ) : matches.length === 0 ? (
-        /* Empty state — UI-SPEC canonical copy */
+        /* Empty state - UI-SPEC canonical copy */
         <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
           <h2 className="text-[22px] font-medium leading-[1.3]">
             No brand matches yet.
@@ -324,7 +324,7 @@ export function BrandDashboardClient({
         />
       )}
 
-      {/* Match detail drawer — mounts when ?match= param is set and details loaded */}
+      {/* Match detail drawer - mounts when ?match= param is set and details loaded */}
       {activeMatchId && drawerMatch && drawerDetails && (
         <MatchDetailDrawer
           projectId={projectId}

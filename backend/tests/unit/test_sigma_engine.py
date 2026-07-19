@@ -1,4 +1,4 @@
-"""Sigma Rule Engine — unit tests (SIGMA-01, SIGMA-02, SIGMA-04)."""
+"""Sigma Rule Engine - unit tests (SIGMA-01, SIGMA-02, SIGMA-04)."""
 from __future__ import annotations
 
 import os
@@ -99,7 +99,7 @@ level: medium
                 mock_rescore.send = MagicMock()
                 evaluate_sigma_rules(session, event_id, project_id)
 
-    # Assert session.execute was called — at least once for the INSERT
+    # Assert session.execute was called - at least once for the INSERT
     assert session.execute.called
 
 

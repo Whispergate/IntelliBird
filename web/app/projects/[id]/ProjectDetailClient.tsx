@@ -17,13 +17,13 @@
  *   - ?tab=settings      → SettingsTabContent
  *
  * Intel + Graph tabs are handled by nested routes (/intel/page.tsx,
- * /graph/page.tsx) — they never reach this component because ProjectTabs uses
+ * /graph/page.tsx) - they never reach this component because ProjectTabs uses
  * router.push to navigate there. If someone crafts a URL with
  * `?tab=intel` or `?tab=graph` manually, we fall back to Overview.
  *
  * Next.js 15 note: useSearchParams requires a Suspense boundary. The parent
  * layout.tsx is an async server component, so Next.js wraps this client
- * subtree automatically — no explicit <Suspense> needed (same pattern as
+ * subtree automatically - no explicit <Suspense> needed (same pattern as
  * ProjectBreadcrumb + ProjectTabs, per plan 10-09 key-decisions).
  */
 

@@ -1,4 +1,4 @@
-"""/api/projects router — PRJ-01 CRUD + PRJ-05 memberships.
+"""/api/projects router - PRJ-01 CRUD + PRJ-05 memberships.
 
 Auth model:
   POST /       Admin OR Analyst (via require_analyst_or_above)
@@ -7,7 +7,7 @@ Auth model:
   PATCH /{id}  Lead+ (via require_project_membership)
   POST /{id}/archive   Lead+
   POST /{id}/restore   Lead+
-  DELETE /{id}         disabled — returns 405 (archive is the only deletion path)
+  DELETE /{id}         disabled - returns 405 (archive is the only deletion path)
 
 Auto-Lead: project creator is inserted into project_memberships as Lead in the same
 transaction as the project INSERT. Prevents orphaned projects without Lead.
@@ -127,7 +127,7 @@ async def _hydrate(
 
 
 # ---------------------------------------------------------------------------
-# POST / — create project + auto-Lead membership (atomic)
+# POST / - create project + auto-Lead membership (atomic)
 # ---------------------------------------------------------------------------
 
 
@@ -140,7 +140,7 @@ async def create_project(
     """Create a project and atomically bind the creator as Lead.
 
     If the project INSERT succeeds but the ProjectMembership INSERT fails, the
-    transaction rolls back — prevents orphaned projects without a Lead.
+    transaction rolls back - prevents orphaned projects without a Lead.
     """
     # Python-side UUID generation for SQLite test compatibility (CONTEXT.md
     # §Established Patterns carry-over from source registry pattern).
@@ -159,7 +159,7 @@ async def create_project(
         await db.rollback()
         raise HTTPException(status_code=409, detail="project_name_exists")
 
-    # Atomic auto-Lead membership — same transaction as the project INSERT.
+    # Atomic auto-Lead membership - same transaction as the project INSERT.
     db.add(
         ProjectMembership(
             user_sub=user.id,
@@ -184,7 +184,7 @@ async def create_project(
 
 
 # ---------------------------------------------------------------------------
-# GET / — membership-filtered list
+# GET / - membership-filtered list
 # ---------------------------------------------------------------------------
 
 
@@ -220,7 +220,7 @@ async def list_projects(
 
 
 # ---------------------------------------------------------------------------
-# GET /{id} — project detail
+# GET /{id} - project detail
 # ---------------------------------------------------------------------------
 
 
@@ -240,7 +240,7 @@ async def get_project(
 
 
 # ---------------------------------------------------------------------------
-# PATCH /{id} — update (Lead+ only)
+# PATCH /{id} - update (Lead+ only)
 # ---------------------------------------------------------------------------
 
 
@@ -278,7 +278,7 @@ async def update_project(
 
 
 # ---------------------------------------------------------------------------
-# POST /{id}/archive + /{id}/restore — soft delete toggles
+# POST /{id}/archive + /{id}/restore - soft delete toggles
 # ---------------------------------------------------------------------------
 
 
@@ -325,7 +325,7 @@ async def restore_project(
 
 
 # ---------------------------------------------------------------------------
-# EASM active-scan gate (EASM-04 / C-3) — flip + revoke
+# EASM active-scan gate (EASM-04 / C-3) - flip + revoke
 # ---------------------------------------------------------------------------
 
 
@@ -386,10 +386,10 @@ async def flip_easm_gate(
     if not (global_role == "Admin" or project_rank >= _LEAD_RANK):
         raise HTTPException(status_code=403, detail=_GATE_AUTHORITY_MSG)
 
-    # Byte-exact project name match — NO .strip(), NO .lower() (C-3 requirement)
+    # Byte-exact project name match - NO .strip(), NO .lower() (C-3 requirement)
     if body.scope_acknowledgement_text != project.name:
         raise HTTPException(status_code=422, detail=_GATE_NAME_MISMATCH_MSG)
-    # body.confirm_authorisation is Literal[True] — Pydantic enforces at deserialization.
+    # body.confirm_authorisation is Literal[True] - Pydantic enforces at deserialization.
 
     now = datetime.now(timezone.utc)
     user_sub = user.id
@@ -472,21 +472,21 @@ async def revoke_easm_gate(
 
 
 # ---------------------------------------------------------------------------
-# DELETE /{id} — disabled (405)
+# DELETE /{id} - disabled (405)
 # ---------------------------------------------------------------------------
 
 
 @router.delete("/{project_id}", status_code=405)
 async def hard_delete_disabled(project_id: uuid.UUID) -> Response:
-    """Hard delete is disabled — the only deletion path is POST /archive."""
+    """Hard delete is disabled - the only deletion path is POST /archive."""
     raise HTTPException(
         status_code=405,
-        detail="hard_delete_disabled — use POST /api/projects/{id}/archive",
+        detail="hard_delete_disabled - use POST /api/projects/{id}/archive",
     )
 
 
 # ---------------------------------------------------------------------------
-# Membership endpoints — nested under /{project_id}/memberships
+# Membership endpoints - nested under /{project_id}/memberships
 # ---------------------------------------------------------------------------
 
 
@@ -694,7 +694,7 @@ async def remove_member(
 
 
 # ---------------------------------------------------------------------------
-# Scope rows (PRJ-02) — 7-type row CRUD with per-type value validators
+# Scope rows (PRJ-02) - 7-type row CRUD with per-type value validators
 # ---------------------------------------------------------------------------
 
 
@@ -793,7 +793,7 @@ async def update_scope_row(
     if body.intel_scope is not None:
         row.intel_scope = body.intel_scope
     # Enforce the CHECK constraint invariant at the 422 layer against the
-    # merged (current + patch) state — ScopeRowUpdate's model_validator only
+    # merged (current + patch) state - ScopeRowUpdate's model_validator only
     # sees the patch body, not the current row, so a patch of {intel_scope:
     # false} passes Pydantic even when the row already has active_test_scope
     # false. Without this guard the commit raises IntegrityError → 500.
@@ -834,13 +834,13 @@ async def delete_scope_row(
 
 
 # ---------------------------------------------------------------------------
-# project_sources binding (PRJ-05) — atomic-replace multi-select
+# project_sources binding (PRJ-05) - atomic-replace multi-select
 # ---------------------------------------------------------------------------
 #
 # Semantics per CONTEXT.md §project_sources binding:
 #   - PUT accepts the FULL desired source_ids list; delete-then-insert in a
-#     single transaction (atomic replace — not append).
-#   - Empty list removes all bindings — events_query then falls back to the
+#     single transaction (atomic replace - not append).
+#   - Empty list removes all bindings - events_query then falls back to the
 #     default "all sources visible" path for the project.
 #   - FK on source_id -> sources.id rejects unknown ids with IntegrityError
 #     which we translate to 422 `unknown_source_id`.
@@ -946,7 +946,7 @@ async def replace_project_sources(
 
 
 # ---------------------------------------------------------------------------
-# PRJ-07 Export endpoint — POST /{project_id}/export
+# PRJ-07 Export endpoint - POST /{project_id}/export
 # ---------------------------------------------------------------------------
 
 
@@ -957,7 +957,7 @@ async def export_project(
     _role: ProjectRole = Depends(require_project_membership(ProjectRole.Contributor)),
     db: AsyncSession = Depends(get_session),
 ) -> StreamingResponse:
-    """PRJ-07 per-project export — STIX 2.1 Bundle OR CSV.
+    """PRJ-07 per-project export - STIX 2.1 Bundle OR CSV.
 
     Auth: Contributor+ on project (or global Admin bypass via require_project_membership).
     Observer is rejected by the Contributor minimum. 50k event cap -> 413.
@@ -972,7 +972,7 @@ async def export_project(
     if project is None:
         raise HTTPException(status_code=404, detail="project_not_found")
 
-    # Cap check — module-ref so monkeypatch in tests is observable to the handler
+    # Cap check - module-ref so monkeypatch in tests is observable to the handler
     count = await _project_export.count_exportable_events(db, project_id)
     cap = (
         _project_export.STIX_BUNDLE_EVENT_CAP
@@ -982,7 +982,7 @@ async def export_project(
     if count > cap:
         raise HTTPException(
             status_code=413,
-            detail=f"export exceeds {cap}-event cap ({count} events) — narrow the project scope or filter",
+            detail=f"export exceeds {cap}-event cap ({count} events) - narrow the project scope or filter",
         )
 
     events = await _project_export.fetch_scoped_events(db, project_id)
@@ -1005,7 +1005,7 @@ async def export_project(
 
 
 # ---------------------------------------------------------------------------
-# Scoring routes — SCR-02 / SCR-03
+# Scoring routes - SCR-02 / SCR-03
 # GET  /{project_id}/scoring            → Observer+  (read effective rules)
 # PUT  /{project_id}/scoring            → Lead+      (save rules + trigger rescore)
 # POST /{project_id}/rescore            → Lead+      (manual rescore trigger)
@@ -1039,14 +1039,14 @@ async def get_scoring_rules(
         return ScoringRulesRead(
             project_id=project_id,
             version=1,
-            rules=DEFAULT_SCORING_CONFIG,
+            rules=DEFAULT_SCORING_CONFIG,  # type: ignore[arg-type]
             is_default=True,
         )
 
     return ScoringRulesRead(
         project_id=project_id,
         version=row.version,
-        rules=row.rules,
+        rules=row.rules,  # type: ignore[arg-type]
         is_default=False,
     )
 
@@ -1061,7 +1061,7 @@ async def put_scoring_rules(
     """Persist per-project scoring rules, bump version, and enqueue rescore actor.
 
     Pydantic validates weights sum=100 and tier cutoffs descending before this
-    handler is invoked — malformed payloads return 422 automatically.
+    handler is invoked - malformed payloads return 422 automatically.
 
     Upsert semantics: if a row exists, increment version + update rules + updated_at;
     otherwise INSERT a new row at version=1.
@@ -1110,7 +1110,7 @@ async def put_scoring_rules(
     return ScoringRulesRead(
         project_id=project_id,
         version=row.version,
-        rules=row.rules,
+        rules=row.rules,  # type: ignore[arg-type]
         is_default=False,
     )
 
@@ -1144,7 +1144,7 @@ async def get_rescore_status(
     total_count: number of event_score_override rows for this project.
     in_progress_count: 1 when rescore_project actor is currently executing for this
         project (Redis key rescore:project:{id}:active exists), else 0. Redis failure
-        degrades to 0 — polling never blocks on Redis.
+        degrades to 0 - polling never blocks on Redis.
     """
     result = (
         await db.execute(
@@ -1166,7 +1166,7 @@ async def get_rescore_status(
         redis = await get_redis()
         exists = await redis.exists(f"rescore:project:{project_id}:active")
         in_progress_count = 1 if exists else 0
-    except Exception as exc:  # noqa: BLE001 — never 5xx the status poll on Redis hiccup
+    except Exception as exc:  # noqa: BLE001 - never 5xx the status poll on Redis hiccup
         log.warning(
             "rescore_inprogress_flag_read_failed project_id=%s error=%r",
             project_id,
@@ -1182,7 +1182,7 @@ async def get_rescore_status(
 
 
 # ---------------------------------------------------------------------------
-# AI provider routes — AI-04, AI-05, SCR-04
+# AI provider routes - AI-04, AI-05, SCR-04
 # GET  /{project_id}/ai-provider          → Observer+ (read config, no key)
 # PUT  /{project_id}/ai-provider          → Admin only (upsert config + encrypt key)
 # POST /{project_id}/ai-provider/test     → Admin only (ping LLM provider)
@@ -1416,7 +1416,7 @@ async def trigger_ai_rescore(
 ) -> dict:
     """Manually enqueue the ai_rescore_project actor. Admin only.
 
-    Checks ai_rerank_enabled on the project — returns 409 if disabled.
+    Checks ai_rerank_enabled on the project - returns 409 if disabled.
     """
     from app.workers.ai import ai_rescore_project  # noqa: PLC0415
 
@@ -1468,7 +1468,7 @@ async def get_ai_rerank_status(
         redis = await get_redis()
         exists = await redis.exists(f"ai:rerank:project:{project_id}:active")
         in_progress = bool(exists)
-    except Exception as exc:  # noqa: BLE001 — degrade gracefully
+    except Exception as exc:  # noqa: BLE001 - degrade gracefully
         log.warning(
             "ai_rerank_inprogress_flag_read_failed project_id=%s error=%r",
             project_id,
@@ -1483,7 +1483,7 @@ async def get_ai_rerank_status(
 
 
 # ---------------------------------------------------------------------------
-# Attack path analysis — ATK-01..ATK-05
+# Attack path analysis - ATK-01..ATK-05
 # ---------------------------------------------------------------------------
 
 from app.services.llm.attack_path import analyse_attack_path  # noqa: E402
@@ -1510,7 +1510,7 @@ async def analyse_project_attack_path(
     except (LiteLLMConnectionError, LiteLLMTimeout) as exc:
         raise HTTPException(
             status_code=504,
-            detail="AI provider timed out — local models (Ollama) may be too slow for this request. Configure an OpenAI or Anthropic provider in Admin → AI Settings for faster results.",
+            detail="AI provider timed out - local models (Ollama) may be too slow for this request. Configure an OpenAI or Anthropic provider in Admin → AI Settings for faster results.",
         ) from exc
     except ValueError as exc:
         msg = str(exc)
@@ -1522,7 +1522,7 @@ async def analyse_project_attack_path(
 
 
 # ---------------------------------------------------------------------------
-# PRJ-06 compare_router — sibling APIRouter at /projects/compare
+# PRJ-06 compare_router - sibling APIRouter at /projects/compare
 # Registered BEFORE projects_router in main.py so /api/projects/compare
 # does not collide with /{project_id} route on the main router.
 # ---------------------------------------------------------------------------
@@ -1537,7 +1537,7 @@ async def compare_projects(
     user: AuthUser = Depends(require_auth),
     db: AsyncSession = Depends(get_session),
 ) -> CompareResponse:
-    """PRJ-06 cross-project compare — shared actors / techniques / IOCs.
+    """PRJ-06 cross-project compare - shared actors / techniques / IOCs.
 
     Auth: Observer+ on BOTH projects (or global Admin bypass).
     Empty arrays on no-overlap (not 404). 500-row cap per panel (service-side).

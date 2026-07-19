@@ -1,4 +1,4 @@
-"""Unit tests for bbot_safelist.py — EASM-05 / M-3 safelist closure.
+"""Unit tests for bbot_safelist.py - EASM-05 / M-3 safelist closure.
 
 Activated by plan 11-02 (was Wave 0 stub referencing plan 11-04).
 """
@@ -35,7 +35,7 @@ VALID_CREDENTIAL_PROVIDERS: frozenset[str] = frozenset({
 
 class TestSafelistImmutability:
     def test_safelist_is_frozenset(self) -> None:
-        """BBOT_STABLE_PASSIVE_MODULES must be a frozenset — not a set or list."""
+        """BBOT_STABLE_PASSIVE_MODULES must be a frozenset - not a set or list."""
         assert isinstance(BBOT_STABLE_PASSIVE_MODULES, frozenset), (
             f"Expected frozenset, got {type(BBOT_STABLE_PASSIVE_MODULES)}"
         )
@@ -47,9 +47,9 @@ class TestSafelistImmutability:
 
 class TestSafelistContents:
     def test_sublist3r_absent(self) -> None:
-        """sublist3r is NOT in BBOT 2.8.4 — must be excluded (PITFALLS §Pitfall 3)."""
+        """sublist3r is NOT in BBOT 2.8.4 - must be excluded (PITFALLS §Pitfall 3)."""
         assert "sublist3r" not in BBOT_STABLE_PASSIVE_MODULES, (
-            "sublist3r was removed in BBOT 2.8.x — do NOT include it (PITFALLS §Pitfall 3)"
+            "sublist3r was removed in BBOT 2.8.x - do NOT include it (PITFALLS §Pitfall 3)"
         )
 
     def test_crt_in_safelist_not_crt_sh(self) -> None:
@@ -89,7 +89,7 @@ class TestValidateModules:
         assert invalid == ["nuke_everything"]
 
     def test_validate_modules_rejects_sublist3r(self) -> None:
-        """sublist3r must be rejected regardless — it is not in BBOT 2.8.x."""
+        """sublist3r must be rejected regardless - it is not in BBOT 2.8.x."""
         ok, invalid = validate_modules(["sublist3r"])
         assert ok is False
         assert "sublist3r" in invalid

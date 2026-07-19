@@ -16,7 +16,7 @@ with a NULL webhook_fired_at are synthesised into a canonical event via
 brand_synth.build_event_dict.
 
 dnstwist subprocess failures (TimeoutExpired / CalledProcessError / non-zero rc /
-malformed JSON) are logged + skipped — they never raise out of scan_project.
+malformed JSON) are logged + skipped - they never raise out of scan_project.
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ import json
 import logging
 import subprocess
 from datetime import datetime, timezone
-from typing import Any, TYPE_CHECKING
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import text
@@ -150,7 +150,7 @@ def _run_dnstwist_one(term_value: str) -> list[dict] | None:
     """Invoke dnstwist for a single term. Returns parsed perms or None on error.
 
     Handles TimeoutExpired / CalledProcessError / non-zero rc / malformed JSON by
-    logging + returning None — never raises.
+    logging + returning None - never raises.
     """
     cmd = ["dnstwist", "--threads", str(DNSTWIST_THREADS), "--format", "json", term_value]
     try:
@@ -166,7 +166,7 @@ def _run_dnstwist_one(term_value: str) -> list[dict] | None:
     except subprocess.CalledProcessError as exc:
         log.warning("brand_dnstwist_error term=%s rc=%s", term_value, getattr(exc, "returncode", "?"))
         return None
-    except Exception as exc:  # pragma: no cover — defensive
+    except Exception as exc:  # pragma: no cover - defensive
         log.warning("brand_dnstwist_unexpected term=%s exc=%s", term_value, exc)
         return None
 
@@ -187,13 +187,13 @@ def _run_dnstwist_one(term_value: str) -> list[dict] | None:
 
     try:
         return parse_dnstwist_output(payload)
-    except Exception as exc:  # pragma: no cover — parser is defensive, but guard anyway
+    except Exception as exc:  # pragma: no cover - parser is defensive, but guard anyway
         log.warning("brand_dnstwist_parse_failed term=%s exc=%s", term_value, exc)
         return None
 
 
 async def _run_dnstwist_batch(terms: list[dict]) -> dict[str, list[dict]]:
-    """Run dnstwist synchronously per term in a batch — returns {term_value: perms}."""
+    """Run dnstwist synchronously per term in a batch - returns {term_value: perms}."""
     results: dict[str, list[dict]] = {}
     for t in terms:
         perms = await asyncio.to_thread(_run_dnstwist_one, t["value"])
@@ -402,7 +402,7 @@ async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int
     CertStream WebSocket worker is active for this project. dnstwist and FTS still
     run regardless of certstream_enabled.
     """
-    # Load per-project stoplist once — includes DEFAULT ∪ env ∪ project terms
+    # Load per-project stoplist once - includes DEFAULT ∪ env ∪ project terms
     runtime_stoplist = await load_runtime_stoplist_for_project(session, project_id)
 
     terms_result = await session.execute(_TERMS_SQL, {"project_id": str(project_id)})
@@ -435,7 +435,7 @@ async def scan_project(session: AsyncSession, project_id: UUID) -> dict[str, int
             if synthed:
                 stats["synthesised"] += 1
 
-    # ---- CT log branch — skip when CertStream WebSocket is active for this project ----
+    # ---- CT log branch - skip when CertStream WebSocket is active for this project ----
     if not certstream_enabled:
         for term in terms:
             for match in await _ctlog_scan(term):

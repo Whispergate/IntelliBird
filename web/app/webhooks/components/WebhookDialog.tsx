@@ -75,7 +75,7 @@ function defaultValuesFor(
     name: wh.name,
     destination_type: wh.destination_type,
     url: wh.url,
-    auth_type: "none", // always 'none' on open — operator re-enters to change
+    auth_type: "none", // always 'none' on open - operator re-enters to change
     bound_preset_names: wh.bound_preset_names,
     batching_window_sec: wh.batching_window_sec as 0 | 60 | 300 | 900 | 1800,
     enabled: wh.enabled,
@@ -228,7 +228,7 @@ export function WebhookDialog({
               )}
             </div>
 
-            {/* Field 2: Type — locked on edit*/}
+            {/* Field 2: Type - locked on edit*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="destination_type">Type</Label>
               <Select
@@ -262,7 +262,7 @@ export function WebhookDialog({
               )}
             </div>
 
-            {/* Field 3: URL — label varies by type*/}
+            {/* Field 3: URL - label varies by type*/}
             <div className="flex flex-col gap-1">
               <Label htmlFor="url">
                 {destinationType === "email"
@@ -279,7 +279,7 @@ export function WebhookDialog({
               )}
             </div>
 
-            {/* Field 4: Auth — conditional on Generic destination type*/}
+            {/* Field 4: Auth - conditional on Generic destination type*/}
             <AuthField />
 
             {/* Email credential fields */}
@@ -403,7 +403,7 @@ export function WebhookDialog({
               </div>
             )}
 
-            {/* Field 5: Bound presets — async-loaded on open*/}
+            {/* Field 5: Bound presets - async-loaded on open*/}
             <div className="flex flex-col gap-1">
               <Label>Bound presets</Label>
               <PresetMultiSelect
@@ -442,7 +442,7 @@ export function WebhookDialog({
               </Select>
             </div>
 
-            {/* Test Send inline alert — NON-BLOCKING*/}
+            {/* Test Send inline alert - NON-BLOCKING*/}
             {testResult?.kind === "ok" && (
               <Alert className="border-green-700 bg-green-900/20 text-green-300">
                 <AlertDescription>
@@ -464,7 +464,7 @@ export function WebhookDialog({
                 Cancel
               </Button>
               {/* Test Send: type="button" so it never submits the form.
- Brand: Primary teal outline — secondary action*/}
+ Brand: Primary teal outline - secondary action*/}
               <Button
                 type="button"
                 variant="outline"
@@ -477,8 +477,8 @@ export function WebhookDialog({
               >
                 {testing ? "Sending..." : "Test Send"}
               </Button>
-              {/* Save button — NEVER disabled by test result.
- Brand: Signal amber — primary CTA*/}
+              {/* Save button - NEVER disabled by test result.
+ Brand: Signal amber - primary CTA*/}
               <Button
                 type="submit"
                 style={{

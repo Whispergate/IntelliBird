@@ -1,4 +1,4 @@
-"""Unit tests for the rescore_project Dramatiq actor — SCR-02.
+"""Unit tests for the rescore_project Dramatiq actor - SCR-02.
 
 These tests verify:
   1. The actor is registered on the ``scoring`` queue with the correct options.
@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import os
 
-# Pydantic-settings singleton loads at import time — bootstrap required env vars
+# Pydantic-settings singleton loads at import time - bootstrap required env vars
 # before any app.* import to prevent ValidationError at collection time.
 os.environ.setdefault("SECRET_KEY", "x" * 64)
 os.environ.setdefault("JWT_SIGNING_KEY", "y" * 64)

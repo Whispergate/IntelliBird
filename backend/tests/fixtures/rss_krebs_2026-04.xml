@@ -7,14 +7,14 @@
     <language>en-US</language>
     <atom:link href="https://krebsonsecurity.com/feed/" rel="self" type="application/rss+xml" />
     <item>
-      <title>Fixture Entry One — Supply Chain Compromise</title>
+      <title>Fixture Entry One - Supply Chain Compromise</title>
       <link>https://krebsonsecurity.com/2026/04/fixture-one/</link>
       <guid isPermaLink="true">https://krebsonsecurity.com/2026/04/fixture-one/</guid>
       <pubDate>Mon, 07 Apr 2026 14:00:00 +0000</pubDate>
       <description><![CDATA[<p>First fixture article describing a hypothetical supply chain incident.</p>]]></description>
     </item>
     <item>
-      <title>Fixture Entry Two — Ransomware Group Surfaces</title>
+      <title>Fixture Entry Two - Ransomware Group Surfaces</title>
       <link>https://krebsonsecurity.com/2026/04/fixture-two/</link>
       <guid isPermaLink="true">https://krebsonsecurity.com/2026/04/fixture-two/</guid>
       <pubDate>Tue, 08 Apr 2026 09:30:00 +0000</pubDate>

@@ -1,5 +1,5 @@
 # Owned by: 12.1-01-PLAN
-"""AssetNote ORM model tests (no DB required — pure schema introspection)."""
+"""AssetNote ORM model tests (no DB required - pure schema introspection)."""
 from __future__ import annotations
 
 import uuid

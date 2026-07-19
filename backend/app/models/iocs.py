@@ -1,17 +1,17 @@
-"""IOC + IOCEventLink ORM models — IOC-01, IOC-08.
+"""IOC + IOCEventLink ORM models - IOC-01, IOC-08.
 
 Schema mirrors alembic 023 (revision id `019_iocs`). All ENUM columns use
-`create_type=False` so SQLAlchemy never attempts CREATE TYPE — the migration
+`create_type=False` so SQLAlchemy never attempts CREATE TYPE - the migration
 is the single source of truth for the type DDL.
 
 Design notes:
-  * `project_id` is NULLABLE — NULL = global "known bad" row visible to all
+  * `project_id` is NULLABLE - NULL = global "known bad" row visible to all
     projects (admin-curated). Per-project rows remain isolated.
   * Uniqueness `(project_id, type, normalized_value) NULLS NOT DISTINCT`
     is enforced at the index level (see migration 023). The model carries
     no `__table_args__` UNIQUE because SQLAlchemy core does not yet support
     NULLS NOT DISTINCT in `UniqueConstraint`.
-  * `IOCEventLink.event_id` is a SOFT FK (no constraint) — `events` is a
+  * `IOCEventLink.event_id` is a SOFT FK (no constraint) - `events` is a
     TimescaleDB hypertable; mirrors brand_matches.event_id precedent.
 """
 from __future__ import annotations
@@ -28,7 +28,7 @@ from sqlalchemy.sql import func
 
 from app.models.base import Base
 
-# Locked at migration 023 — extending requires a new alembic revision.
+# Locked at migration 023 - extending requires a new alembic revision.
 IOC_TYPES = (
     "ip", "ipv6", "domain", "url", "sha256", "sha1", "md5",
     "email", "btc", "eth", "mutex", "registry_key", "filename",
@@ -94,7 +94,7 @@ class IOC(Base):
 class IOCEventLink(Base):
     """M2M junction between iocs and events (IOC-08).
 
-    SOFT FK on event_id — events is a TimescaleDB hypertable.
+    SOFT FK on event_id - events is a TimescaleDB hypertable.
     """
 
     __tablename__ = "ioc_event_links"
@@ -110,7 +110,7 @@ class IOCEventLink(Base):
         ForeignKey("iocs.id", ondelete="CASCADE"),
         nullable=False,
     )
-    # Soft reference — no FK constraint to events hypertable.
+    # Soft reference - no FK constraint to events hypertable.
     event_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     observed_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True), nullable=False, server_default=func.now()

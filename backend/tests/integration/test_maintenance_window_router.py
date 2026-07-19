@@ -1,4 +1,4 @@
-"""MON-05 maintenance window CRUD — plan 16-06.
+"""MON-05 maintenance window CRUD - plan 16-06.
 
 Integration tests for the maintenance window REST endpoints:
 Admin-only POST/GET/DELETE CRUD, the is_maintenance_active() service helper,
@@ -67,7 +67,7 @@ def _patch_auth(monkeypatch) -> None:
 
 
 # ---------------------------------------------------------------------------
-# test_is_maintenance_active_helper (unit test — no DB required)
+# test_is_maintenance_active_helper (unit test - no DB required)
 # ---------------------------------------------------------------------------
 
 
@@ -161,7 +161,7 @@ async def test_admin_creates_window_invalid_end_at(monkeypatch) -> None:
             "/api/admin/maintenance-window",
             json={
                 "start_at": now.isoformat(),
-                "end_at": now.isoformat(),  # equal — not valid
+                "end_at": now.isoformat(),  # equal - not valid
             },
             headers={"Authorization": f"Bearer {_mint_admin_token()}"},
         )

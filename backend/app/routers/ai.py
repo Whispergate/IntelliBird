@@ -1,16 +1,16 @@
-"""/api AI router — AI-02, AI-03, AI-06, AI-07.
+"""/api AI router - AI-02, AI-03, AI-06, AI-07.
 
 Endpoints:
-  POST   /api/events/{event_id}/ai/summarise       — enqueue AI summary job (Analyst+)
-  GET    /api/ai/jobs/{job_id}/stream              — SSE token stream from Redis buffer
-  GET    /api/events/{event_id}/ai/suggestions     — list suggestions for event (member)
-  GET    /api/projects/{project_id}/ai/suggestions — list all suggestions for project (Observer+)
-  POST   /api/ai/suggestions/{suggestion_id}/confirm   — confirm single suggestion (Analyst+)
-  POST   /api/ai/suggestions/{suggestion_id}/discard   — discard single suggestion (Analyst+)
-  POST   /api/projects/{project_id}/ai/suggestions/bulk-confirm  — bulk confirm (Analyst+)
-  POST   /api/projects/{project_id}/ai/suggestions/bulk-discard  — bulk discard (Analyst+)
-  GET    /api/projects/{project_id}/ai/digest      — latest digest row (member)
-  POST   /api/projects/{project_id}/ai/digest/trigger — enqueue digest job (Admin)
+  POST   /api/events/{event_id}/ai/summarise       - enqueue AI summary job (Analyst+)
+  GET    /api/ai/jobs/{job_id}/stream              - SSE token stream from Redis buffer
+  GET    /api/events/{event_id}/ai/suggestions     - list suggestions for event (member)
+  GET    /api/projects/{project_id}/ai/suggestions - list all suggestions for project (Observer+)
+  POST   /api/ai/suggestions/{suggestion_id}/confirm   - confirm single suggestion (Analyst+)
+  POST   /api/ai/suggestions/{suggestion_id}/discard   - discard single suggestion (Analyst+)
+  POST   /api/projects/{project_id}/ai/suggestions/bulk-confirm  - bulk confirm (Analyst+)
+  POST   /api/projects/{project_id}/ai/suggestions/bulk-discard  - bulk discard (Analyst+)
+  GET    /api/projects/{project_id}/ai/digest      - latest digest row (member)
+  POST   /api/projects/{project_id}/ai/digest/trigger - enqueue digest job (Admin)
 
 SSE buffering contract (RESEARCH.md §Pitfall 6):
   StreamingResponse with Cache-Control: no-cache, X-Accel-Buffering: no.
@@ -33,7 +33,7 @@ from typing import AsyncGenerator
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
-from sqlalchemy import func, select, update as sql_update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
@@ -106,7 +106,7 @@ async def enqueue_summarise(
 
     project_id = event_row.project_id
 
-    # 2. Membership guard — Contributor (Analyst) or higher required.
+    # 2. Membership guard - Contributor (Analyst) or higher required.
     if user.role != "Admin":
         pid_str = str(project_id)
         cached_rank = user.project_memberships.get(pid_str, 0)
@@ -132,7 +132,7 @@ async def enqueue_summarise(
     if project_row is None:
         raise HTTPException(status_code=404, detail="project_not_found")
 
-    # 4. Estimate tokens (simple heuristic — 1.2× applied in actor; use flat estimate here).
+    # 4. Estimate tokens (simple heuristic - 1.2× applied in actor; use flat estimate here).
     estimated_tokens = 200  # Pre-flight placeholder before the actor runs litellm.token_counter
 
     # 5. Budget gate.
@@ -143,7 +143,7 @@ async def enqueue_summarise(
         allowed, used = await check_and_reserve_budget(redis, str(project_id), estimated_tokens, cap)
     except Exception as budget_exc:  # noqa: BLE001
         log.warning("budget_check_failed event_id=%s error=%r", event_id, budget_exc)
-        allowed = True  # Degrade gracefully — do not block on Redis error.
+        allowed = True  # Degrade gracefully - do not block on Redis error.
         used = 0
         redis = None  # type: ignore[assignment]
 
@@ -180,7 +180,7 @@ async def enqueue_summarise(
 
 
 # ---------------------------------------------------------------------------
-# GET /api/ai/jobs/{job_id}/stream — SSE
+# GET /api/ai/jobs/{job_id}/stream - SSE
 # ---------------------------------------------------------------------------
 
 
@@ -215,7 +215,7 @@ async def _sse_generator(
 
         # Drain new chunks since last position.
         try:
-            chunks = await redis.lrange(chunk_key, sent, -1)
+            chunks = await redis.lrange(chunk_key, sent, -1)  # type: ignore[misc]
         except Exception as exc:  # noqa: BLE001
             log.warning("sse_lrange_failed job_id=%s error=%r", job_id, exc)
             yield f"event: error\ndata: {exc!s}\n\n"
@@ -246,7 +246,7 @@ async def stream_job(
     user: AuthUser = Depends(require_auth),
     db: AsyncSession = Depends(get_session),
 ) -> StreamingResponse:
-    """SSE endpoint — replays Redis chunk list until job is done.
+    """SSE endpoint - replays Redis chunk list until job is done.
 
     Auth: authenticated user that is a member of the project associated with job_id.
     The project association is stored in ai:job:{job_id}:project at enqueue time.
@@ -301,7 +301,7 @@ async def get_event_summary(
 ) -> dict:
     """Return the most recent persisted AI summary for an event.
 
-    Returns 404 if no summary exists yet — the UI prompts the analyst to
+    Returns 404 if no summary exists yet - the UI prompts the analyst to
     click "Summarise". Reads `ai_summaries` directly so the result survives
     Redis stream chunk expiry (the 1h CHUNKS_TTL only governs live SSE).
     """
@@ -406,7 +406,7 @@ async def _transition_suggestion(
     if row is None:
         raise HTTPException(status_code=404, detail="suggestion_not_found")
 
-    # Membership check — Contributor+ required.
+    # Membership check - Contributor+ required.
     if user.role != "Admin":
         pid_str = str(row.project_id)
         cached_rank = user.project_memberships.get(pid_str, 0)
@@ -471,7 +471,7 @@ async def confirm_suggestion(
 ) -> AISuggestionRead:
     """Confirm a single AI suggestion. Requires Contributor+ on its project."""
     result = await _transition_suggestion(suggestion_id, "confirmed", user, db)
-    # MISP push hook — fire-and-forget, does not affect response
+    # MISP push hook - fire-and-forget, does not affect response
     await _enqueue_misp_push_if_configured(result, db)
     return result
 
@@ -506,9 +506,9 @@ async def list_project_suggestions(
     """List all AI suggestions for a project. Observer+ required.
 
     Filters:
-      type   — cve | attack | actor
-      status — pending | confirmed | discarded
-      since  — 24h | 7d | 30d
+      type   - cve | attack | actor
+      status - pending | confirmed | discarded
+      since  - 24h | 7d | 30d
     """
     stmt = select(AISuggestion).where(AISuggestion.project_id == project_id)
     if type is not None:

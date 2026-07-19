@@ -1,4 +1,4 @@
-"""JWT encode/decode unit tests — AUTH-03."""
+"""JWT encode/decode unit tests - AUTH-03."""
 from __future__ import annotations
 
 import time

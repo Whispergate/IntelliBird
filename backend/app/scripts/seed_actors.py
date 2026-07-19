@@ -2,7 +2,7 @@
 
 Invoked by `ops/api-entrypoint.sh` AFTER `alembic upgrade head`.
 
-Idempotent — upserts on mitre_group_id; analyst-edited profile_md is preserved
+Idempotent - upserts on mitre_group_id; analyst-edited profile_md is preserved
 across re-bootstraps. Falls through TAXII → GitHub → bundled JSON.
 
 NOT a Dramatiq actor: runs synchronously at boot before workers exist.

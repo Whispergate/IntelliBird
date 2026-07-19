@@ -1,4 +1,4 @@
-# AI Providers — Operator Guide
+# AI Providers - Operator Guide
 
 IntelliBird supports three AI provider backends for on-demand event summarisation,
 daily project digests, and AI-assisted score re-ranking: **Ollama** (self-hosted
@@ -10,14 +10,14 @@ recommended models, key procurement, and the security model.
 ## Overview
 
 AI summarisation is **on-demand and opt-in per project**. Summaries are never
-generated automatically on ingest — an analyst triggers summarisation from the
+generated automatically on ingest - an analyst triggers summarisation from the
 Event Detail Drawer, or the nightly digest job runs for projects with digest
 enabled. This keeps token expenditure predictable and prevents queue saturation
 during high-volume feed ingest.
 
 Each project stores its own AI provider configuration (provider type, model,
 encrypted API key). Project A's credentials are never used in Project B's
-requests — credential isolation is enforced at the per-call level.
+requests - credential isolation is enforced at the per-call level.
 
 ---
 
@@ -42,7 +42,7 @@ Expected output: `ollama` service with status `Up (healthy)` after the 60-second
 start period (model load time on first pull).
 
 The `ollama_models` named volume persists downloaded models across container
-restarts and upgrades — model files survive `docker compose down` and
+restarts and upgrades - model files survive `docker compose down` and
 `docker compose --profile ai up -d` cycles.
 
 ---
@@ -109,7 +109,7 @@ docker compose exec ollama ollama ps
 ## CPU-only deployment
 
 Leave the `deploy.resources` block commented (the default). Ollama automatically
-falls back to CPU inference — no configuration change required.
+falls back to CPU inference - no configuration change required.
 
 **Recommended CPU-only models:**
 
@@ -120,7 +120,7 @@ falls back to CPU inference — no configuration change required.
 
 Both models are viable on an 8 GB host alongside the rest of the IntelliBird
 stack (PostgreSQL + Redis + FastAPI + Next.js). A 1024-token event summary takes
-approximately 2 minutes worst case on CPU — the 1-hour Redis chunk buffer allows
+approximately 2 minutes worst case on CPU - the 1-hour Redis chunk buffer allows
 the browser tab to refresh and still replay the full summary.
 
 Pull a model:
@@ -167,7 +167,7 @@ requests. Changing the provider mid-project does not affect existing summaries.
 1. Go to https://platform.openai.com
 2. Create an account or sign in
 3. Navigate to **Settings → API keys**
-4. Click **Create new secret key** — copy the key immediately (shown once)
+4. Click **Create new secret key** - copy the key immediately (shown once)
 5. Paste into the project AI Provider card → **API Key**
 
 **Recommended model:** `gpt-4o`
@@ -185,12 +185,12 @@ for incident response scenarios requiring higher throughput.
 1. Go to https://console.anthropic.com
 2. Create an account or sign in
 3. Navigate to **API Keys** in the left sidebar
-4. Click **Create Key** — copy the key immediately (shown once)
+4. Click **Create Key** - copy the key immediately (shown once)
 5. Paste into the project AI Provider card → **API Key**
 
 **Recommended model:** `claude-3-5-sonnet-20241022`
 
-Anthropic bills per token. The same daily token cap applies — adjust in project
+Anthropic bills per token. The same daily token cap applies - adjust in project
 settings as needed.
 
 ---
@@ -203,7 +203,7 @@ the `CREDENTIALS_KEY` environment variable (same mechanism as `sources.credentia
 ). Credentials are never stored in plaintext.
 
 **Credential isolation:** Each project has its own `ai_providers` row. Per-call
-LLM requests pass `api_key` and `api_base` as parameters — there is no global
+LLM requests pass `api_key` and `api_base` as parameters - there is no global
 `litellm.api_key` state. Project A's key cannot leak into Project B's requests.
 
 **Rekeying:** To rotate the `CREDENTIALS_KEY`, set `REKEY_FROM_SECRET` to the
@@ -218,7 +218,7 @@ in a single transaction. The `ai_providers.credentials_key_version` column
 tracks which key version encrypted each row.
 
 **Prompt injection mitigation:** Prompt templates are code constants in
-`backend/app/services/llm/prompts.py` — there is no admin UI for editing
+`backend/app/services/llm/prompts.py` - there is no admin UI for editing
 prompts. Event content is passed as JSON-serialised structured data (never
 f-string interpolated into prompts). This limits the prompt injection surface
 to the event data pipeline.
@@ -236,8 +236,8 @@ with a 10-second timeout.
 | Probe result | `app.state.ollama_health` | Frontend banner |
 |---|---|---|
 | Response ≤5s, HTTP 200 | `healthy` | (none) |
-| Response >5s, HTTP 200 | `slow` | "Ollama responding slowly — recommend `phi3:mini` or `gemma2:2b` on CPU-only hosts" |
-| Connection refused / timeout | `down` | "Ollama unreachable — start `docker compose --profile ai up` or switch provider" |
+| Response >5s, HTTP 200 | `slow` | "Ollama responding slowly - recommend `phi3:mini` or `gemma2:2b` on CPU-only hosts" |
+| Connection refused / timeout | `down` | "Ollama unreachable - start `docker compose --profile ai up` or switch provider" |
 
 The current health state is available via:
 
@@ -250,7 +250,7 @@ GET /api/admin/ai-health
 ## Token budget
 
 Each project has a **daily token cap** (default: 100,000 tokens/project/day,
-resets at 00:00 UTC). The cap covers all LLM calls for the project that day —
+resets at 00:00 UTC). The cap covers all LLM calls for the project that day -
 event summaries, digest generation, and AI re-ranking.
 
 **Pre-flight check:** Before dispatching a request to the LLM, IntelliBird
@@ -263,7 +263,7 @@ HTTP 429 Too Many Requests
 Retry-After: <seconds until 00:00 UTC>
 X-Budget-Reset-At: <ISO-8601 timestamp>
 
-{"detail": "Daily AI budget exhausted — resets at 00:00 UTC"}
+{"detail": "Daily AI budget exhausted - resets at 00:00 UTC"}
 ```
 
 **Adjusting the cap:** Admin → Projects → {Project} → Settings → AI Provider
@@ -285,9 +285,9 @@ docker compose --profile ai logs ollama --tail 50
 
 **"Ollama responding slowly" banner:**
 
-- Switch to `phi3:mini` or `gemma2:2b` in project settings — these are optimised for CPU inference
-- Move to a GPU host — even a mid-range GPU dramatically improves throughput
-- Check host memory: `free -h` — ensure at least 4 GB RAM free for the model + stack
+- Switch to `phi3:mini` or `gemma2:2b` in project settings - these are optimised for CPU inference
+- Move to a GPU host - even a mid-range GPU dramatically improves throughput
+- Check host memory: `free -h` - ensure at least 4 GB RAM free for the model + stack
 
 **429 Too Many Requests (budget exhausted):**
 
@@ -316,8 +316,8 @@ These capabilities are explicitly excluded from M2:
 - **Auto-summarise on ingest:** Would saturate the AI queue during high-volume
   feed ingestion and exhaust token budgets silently
 - **Admin UI prompt editing:** DB-stored, user-editable prompts widen the prompt
-  injection surface (C-3 mitigation — prompts remain code constants)
+  injection surface (C-3 mitigation - prompts remain code constants)
 - **Auto-promote AI suggestions:** Every entity suggestion (CVE, ATT&CK technique,
-  threat actor) requires explicit analyst confirmation (C-2 — no auto-promote)
+  threat actor) requires explicit analyst confirmation (C-2 - no auto-promote)
 - **Multi-provider failover:** If Ollama is unreachable, the request fails with a
   clear error; operators switch providers manually in project settings

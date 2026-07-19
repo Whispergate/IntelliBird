@@ -1,4 +1,4 @@
-"""Migration 006 webhook tables integration tests — unskipped by 07-01.
+"""Migration 006 webhook tables integration tests - unskipped by 07-01.
 
 Tests verify:
 - upgrade to 006 creates destination_type_enum, webhooks, webhook_preset_bindings
@@ -27,7 +27,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[2]
 def live_db_005():
     """Start intellibird-db:m1, migrate to 005, yield (engine, env).
 
- Leaves the DB at 005 — tests upgrade to 006 and can downgrade back.
+ Leaves the DB at 005 - tests upgrade to 006 and can downgrade back.
 """
     with PostgresContainer("intellibird-db:m1") as pg:
         url = pg.get_connection_url()
@@ -205,7 +205,7 @@ def test_fk_cascade_on_preset_delete(live_db_005):
             {"wh_id": wh_id, "preset_name": preset_name},
         )
 
-    # Now delete the preset — binding should cascade-delete
+    # Now delete the preset - binding should cascade-delete
     with engine.begin() as conn:
         conn.execute(
             text("DELETE FROM filter_presets WHERE name = :name"),
@@ -258,7 +258,7 @@ def test_fk_cascade_on_webhook_delete(live_db_005):
             {"wh_id": wh_id, "preset_name": preset_name},
         )
 
-    # Now delete the webhook — binding should cascade-delete
+    # Now delete the webhook - binding should cascade-delete
     with engine.begin() as conn:
         conn.execute(
             text("DELETE FROM webhooks WHERE id = CAST(:wh_id AS uuid)"),

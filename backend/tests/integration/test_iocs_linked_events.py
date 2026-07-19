@@ -5,10 +5,10 @@ Implemented by Plan 22-03 Task 2.
 Covers BOTH directions of the IOC ↔ Event relationship:
   * GET /api/iocs/{id}/events returns linked events sorted by observed_at DESC
     (Plan/spec mentions `published_at`; Event model in this repo names the
-    field `observed_at` — TimescaleDB partition column. Sort semantics are
+    field `observed_at` - TimescaleDB partition column. Sort semantics are
     identical: most-recent-first.)
   * GET /api/events/{id}/iocs returns ALL linked IOCs (used by Plan 22-06's
-    EventDetailDrawer §Surface 5 — concrete event-side endpoint replacing the
+    EventDetailDrawer §Surface 5 - concrete event-side endpoint replacing the
     earlier "embed in event payload" hedge).
 """
 from __future__ import annotations

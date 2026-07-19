@@ -40,7 +40,7 @@ export default async function RootLayout({
 }) {
   const status = await fetchSystemStatus();
   // Fetch Ollama health for the app-shell banner.
-  // Only show banner when AUTH is enabled (auth guard in place) — in dev-mode
+  // Only show banner when AUTH is enabled (auth guard in place) - in dev-mode
   // without auth this is a trusted network, so suppress the banner to reduce noise.
   const ollamaHealth = status?.auth_enabled
     ? await fetchOllamaHealth()

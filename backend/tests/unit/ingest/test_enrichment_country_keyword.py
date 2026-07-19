@@ -9,7 +9,6 @@ Locks:
 - Common English words do NOT false-positive (us / it / no / in)
 """
 
-import pytest
 
 from app.services.enrichment import enrich_event
 
@@ -43,7 +42,7 @@ def test_country_code_priority_us_beats_brazil():
 
 
 def test_country_code_alpha2_fallback_when_no_priority():
-    # Belgium + Netherlands — neither in priority list. Lex order picks BE.
+    # Belgium + Netherlands - neither in priority list. Lex order picks BE.
     e = enrich_event(None, "Dutch and Belgian banks targeted in coordinated raid.")
     assert e.country_codes == {"BE", "NL"}
     assert e.country_code == "BE"
@@ -76,7 +75,7 @@ def test_no_false_positive_on_common_english_words():
 
 
 def test_full_country_name_long_tail():
-    # Country in the long-tail list (no demonym) — match by name only
+    # Country in the long-tail list (no demonym) - match by name only
     e = enrich_event(None, "Botnet C2 nodes located in Mongolia and Senegal.")
     assert "MN" in e.country_codes
     assert "SN" in e.country_codes

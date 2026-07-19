@@ -1,4 +1,4 @@
-# IntelliBird v2.0 — Docker Compose stack
+# IntelliBird v2.0 - Docker Compose stack
 #
 # PROD-07: public exposure is now fronted by Caddy. The api and
 # web services are compose-network-internal (no host-port publish). Caddy
@@ -88,7 +88,7 @@ services:
     image: intellibird-api:m1
     # Explicitly scope to non-easm queues. easm-worker owns the easm queue
     # (only that container has /var/run/docker.sock mounted).
-    # brand-monitor queue (BRP-02) co-located here — dnstwist runs in-process
+    # brand-monitor queue (BRP-02) co-located here - dnstwist runs in-process
     # no docker.sock needed (contrast BBOT).
     command: dramatiq app.workers.broker --queues ingest maintenance webhooks brand-monitor --processes 1 --threads 4
     env_file: .env
@@ -123,7 +123,7 @@ services:
   # Long-lived asyncio WebSocket consumer; NOT a Dramatiq actor.
   # Connects to wss://certstream.calidog.io (or CERTSTREAM_URL env override for
   # operators running a self-hosted CertStream instance). Pattern set is reloaded
-  # from DB every 30s — no restart required when brand_terms change.
+  # from DB every 30s - no restart required when brand_terms change.
   # Only active when at least one project has certstream_enabled=True.
   certstream-worker:
     image: intellibird-api:m1
@@ -140,10 +140,10 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # --- Tor SOCKS5 proxy (dark-web collection — opt-in via `docker compose --profile darkweb up`) ---
+  # --- Tor SOCKS5 proxy (dark-web collection - opt-in via `docker compose --profile darkweb up`) ---
   # DARK-01: isolated on darkweb_net (internal: true).
   # No clearnet egress from darkweb_net; tor daemon is the sole Tor egress point.
-  # Image default: osminogin/tor-simple — binds SOCKS5 to 0.0.0.0:9050 out of the box.
+  # Image default: osminogin/tor-simple - binds SOCKS5 to 0.0.0.0:9050 out of the box.
   # Override: set TOR_IMAGE env var (e.g. torproject/tor requires custom torrc for SOCKS).
   tor:
     image: ${TOR_IMAGE:-osminogin/tor-simple:latest}
@@ -151,7 +151,7 @@ services:
     networks:
       - darkweb_net
     restart: unless-stopped
-    # No host-port published — tor-worker reaches via compose DNS tor:9050
+    # No host-port published - tor-worker reaches via compose DNS tor:9050
 
   # --- Dark-web ingest worker (darkweb Dramatiq queue) ---
   # DARK-01..04: processes tor_html, paste, telegram actors.
@@ -195,7 +195,7 @@ services:
       AUTH_ENABLED: ${AUTH_ENABLED:-false}
       AUTH_TRUST_HOST: "true"
       AUTH_URL: ${AUTH_URL:-https://localhost}
-      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET required — generate with `openssl rand -hex 32`}
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET required - generate with `openssl rand -hex 32`}
     depends_on:
       api:
         condition: service_healthy
@@ -221,7 +221,7 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  # --- Authentik (optional SSO — opt-in via `docker compose --profile sso up -d`) ---
+  # --- Authentik (optional SSO - opt-in via `docker compose --profile sso up -d`) ---
   # Runs its own Postgres (authentik-db) per Authentik best practice (isolation from
   # IntelliBird's primary DB). Shares the redis container (AUTHENTIK_REDIS__HOST=redis).
   # AUTH-01.
@@ -278,7 +278,7 @@ services:
       authentik-server:
         condition: service_started
 
-  # --- EASM worker (opt-in — docker compose up easm-worker) ---
+  # --- EASM worker (opt-in - docker compose up easm-worker) ---
   # ELEVATED PRIVILEGE: /var/run/docker.sock is mounted on THIS service only.
   # Any code path that reaches easm-worker can docker-run arbitrary images with
   # root-equivalent host access. See docs/ops/easm.md §Security for threat model.
@@ -300,7 +300,7 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
     volumes:
-      # ELEVATED PRIVILEGE — see docs/ops/easm.md §Security before copying this
+      # ELEVATED PRIVILEGE - see docs/ops/easm.md §Security before copying this
       # mount to any other service.
       - /var/run/docker.sock:/var/run/docker.sock
       - bbot_scans:/bbot/scans
@@ -312,7 +312,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     profiles: ["ai"]
-    # Loopback-only publish — ai-worker reaches ollama on the compose network.
+    # Loopback-only publish - ai-worker reaches ollama on the compose network.
     # Host publish exists for operator-local `ollama pull` / curl debugging.
     # docker exec ops-ollama-1 ollama pull <model name>
     # Do NOT expose externally: Ollama has no auth.
@@ -351,14 +351,14 @@ services:
         condition: service_started
     restart: unless-stopped
 
-  # --- Reports worker (opt-in — docker compose --profile reports up -d) ---
+  # --- Reports worker (opt-in - docker compose --profile reports up -d) ---
   # Dedicated worker for PDF/MD/STIX export generation on the "reports" queue.
   # WeasyPrint subprocess isolation: the worker process never imports weasyprint
-  # directly — it shells out via subprocess.run(["weasyprint", ...]) so the C
+  # directly - it shells out via subprocess.run(["weasyprint", ...]) so the C
   # library (pango/cairo/fontconfig) RSS is reclaimed on subprocess exit.
   # mem_limit 2g: WeasyPrint child subprocess can spike to ~1GB for large PDFs;
   # 2g gives the parent worker + child subprocess sufficient headroom.
-  # profiles: ["reports"] — opt-in.
+  # profiles: ["reports"] - opt-in.
   reports-worker:
     image: intellibird-api:m1
     command: dramatiq app.workers.broker --queues reports --processes 1 --threads 1
@@ -375,7 +375,7 @@ services:
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
-  # ntfy notification service (optional — profile: notify)
+  # ntfy notification service (optional - profile: notify)
   # Run: docker compose --profile notify up
   # Self-hosted push notification broker for NOTIF-04.
   # Default port 2586; override with NTFY_PORT env var.
@@ -432,6 +432,6 @@ networks:
   darkweb_net:
     driver: bridge
     internal: true
-    # internal: true — containers on darkweb_net cannot reach the public internet directly.
+    # internal: true - containers on darkweb_net cannot reach the public internet directly.
     # The tor daemon is the sole clearnet egress point via the Tor network.
     # tor-worker is also attached to the default compose network for db/redis + paste clearnet access.

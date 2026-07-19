@@ -1,4 +1,4 @@
-"""Integration test: decay-on-read observable — SCR-05.
+"""Integration test: decay-on-read observable - SCR-05.
 
 Verifies that the on-read decay formula in ``events_query.build_events_query``
 (via ``_build_score_expressions``) produces measurably lower scores for events
@@ -17,7 +17,7 @@ For score=80 scored just now:
 Assertions:
   1. ``sort=score_desc`` returns event B (recent) before event A (stale).
   2. The SQL-decayed score for A is within [16.0, 20.0] (±~11% tolerance for
-     any wall-clock drift during the test run — the theoretical value 18.06
+     any wall-clock drift during the test run - the theoretical value 18.06
      moves less than ±0.15 per hour so the window is generous).
   3. The SQL-decayed score for B is approximately 80 (≥ 75, since decay over
      seconds is negligible).

@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/brand/stoplist — Per-project brand stoplist page (BRAND-01).
+ * /projects/[id]/brand/stoplist - Per-project brand stoplist page (BRAND-01).
  *
  * Server Component. Fetches the stoplist server-side via `listBrandStoplist`
  * (which uses `_apiFetch` → Auth.js v5 bearer injection). Hands `initialTerms`

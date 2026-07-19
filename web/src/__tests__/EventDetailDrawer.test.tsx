@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 
 // ---------------------------------------------------------------------------
-// Mocks — factories must not reference outer let variables (hoisting issue).
+// Mocks - factories must not reference outer let variables (hoisting issue).
 // Capture the mock fn via vi.mocked after import instead.
 // ---------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ beforeEach(() => {
 
 describe("EventDetailDrawer", () => {
   it("renders nothing visible when searchParams has no event", () => {
-    // searchParams is empty — no ?event param
+    // searchParams is empty - no ?event param
     render(
       <RoleProvider value="blue">
         <EventDetailDrawer />

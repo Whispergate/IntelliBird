@@ -1,5 +1,5 @@
-// background.js — IntelliBird Lookup MV3 service worker
-// Cross-browser via webextension-polyfill (importScripts — NOT ES module syntax;
+// background.js - IntelliBird Lookup MV3 service worker
+// Cross-browser via webextension-polyfill (importScripts - NOT ES module syntax;
 // Firefox MV3 does not support "type":"module" for service workers as of 2026).
 
 // importScripts is only available in service worker contexts (not Node.js test env).
@@ -14,9 +14,9 @@ const MENU_ID = "intellibird-lookup";
  * Build the full IntelliBird IOC search URL for the given selection and base URL.
  * Exported for unit testing via background.test.js.
  *
- * @param {string} text     — selected text (will be trimmed to 200 chars)
- * @param {string} baseUrl  — operator's IntelliBird origin (trailing slash stripped)
- * @returns {string}        — full URL: {origin}/iocs?q={encodedText}
+ * @param {string} text     - selected text (will be trimmed to 200 chars)
+ * @param {string} baseUrl  - operator's IntelliBird origin (trailing slash stripped)
+ * @returns {string}        - full URL: {origin}/iocs?q={encodedText}
  */
 function buildLookupUrl(text, baseUrl) {
   const trimmed = text.slice(0, 200);
@@ -57,7 +57,7 @@ if (typeof browser !== "undefined") {
     );
 
     if (!baseUrl) {
-      // Operator hasn't configured the URL yet — open options page
+      // Operator hasn't configured the URL yet - open options page
       browser.runtime.openOptionsPage();
       return;
     }

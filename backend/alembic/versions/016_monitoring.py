@@ -1,4 +1,4 @@
-"""monitoring infrastructure — hypertable + CA + maintenance windows + sources columns
+"""monitoring infrastructure - hypertable + CA + maintenance windows + sources columns
 + webhook_alert_type_enum + sentinel project.
 
 Revision ID: 016_monitoring
@@ -29,7 +29,7 @@ Schema foundation for the continuous monitoring subsystem:
 
   source_ingest_stats_hourly continuous aggregate (CA)
     MON-02: drift z-score reads 168 hourly buckets × N sources. Refresh every 1h.
-    First use of TimescaleDB continuous aggregate in this project — WITH NO DATA required
+    First use of TimescaleDB continuous aggregate in this project - WITH NO DATA required
     (Pitfall: omitting NO DATA causes CA materialisation failure on empty hypertable in some
     TimescaleDB 2.x versions; defensive approach: always use WITH NO DATA + explicit policy).
 
@@ -37,25 +37,25 @@ Schema foundation for the continuous monitoring subsystem:
     MON-05: monitoring_synth.py emits canonical events with these alert types; existing webhook
     fan-out picks them up without any new webhook code (BRP-05 precedent).
     Confirmed by grep on migrations 001..015: webhook_alert_type_enum does NOT exist yet.
-    DO $$ EXCEPTION WHEN duplicate_object pattern (Pitfall 1 — idempotent ENUM creation per
+    DO $$ EXCEPTION WHEN duplicate_object pattern (Pitfall 1 - idempotent ENUM creation per
     migration 003/006/009 precedent).
 
   Sentinel project row 00000000-0000-0000-0000-000000000000
-    Pitfall 3 — events.project_id is NOT NULL (added by migration 009). Any monitoring event
+    Pitfall 3 - events.project_id is NOT NULL (added by migration 009). Any monitoring event
     inserted by monitoring_synth.py must carry a valid project_id. The sentinel project
     'system-monitoring' satisfies that FK constraint without exposing monitoring events to
     normal project queries (archived=true, intel_only engagement type).
     Note: migration 009 uses LEGACY_PROJECT_ID = 00000000-0000-0000-0000-000000000001.
     The monitoring sentinel uses ...0000 (all zeros), distinct from the legacy sentinel.
 
-TimescaleDB extension is already loaded by migration 001 (Pitfall 2 — no CREATE EXTENSION
+TimescaleDB extension is already loaded by migration 001 (Pitfall 2 - no CREATE EXTENSION
 call needed here; add_retention_policy and create_hypertable are available from 001 onward).
 
 ADD COLUMN safety (migration 013 precedent): sources is NOT a hypertable (it is a plain
 PostgreSQL table), so the split-statement requirement does NOT apply. However, we still use
 separate op.execute() calls per logical block for clarity and consistency.
 
-No CONCURRENT index creation anywhere in this migration — standard CREATE INDEX is used
+No CONCURRENT index creation anywhere in this migration - standard CREATE INDEX is used
 throughout (consistent with all prior migrations; concurrent form is rejected by TimescaleDB
 in a transaction on compressed hypertables).
 """
@@ -63,9 +63,7 @@ from __future__ import annotations
 
 from typing import Sequence, Union
 
-import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import postgresql
 
 revision: str = "016_monitoring"
 down_revision: Union[str, None] = "013_scoring"
@@ -75,10 +73,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     # --- 1. sources.last_event_at timestamptz NULL ----------------------------------
-    # MON-01: silence detection pivot column. Nullable — NULL means "no event ever
+    # MON-01: silence detection pivot column. Nullable - NULL means "no event ever
     # received" which is itself a silence signal. Updated by all 4 ingest sites
     # (normalise.py, nvd.py, brand_monitor.py, easm.py) after successful insert.
-    # sources is a plain PG table (not a hypertable) — single-statement ALTER is safe.
+    # sources is a plain PG table (not a hypertable) - single-statement ALTER is safe.
     op.execute("ALTER TABLE sources ADD COLUMN last_event_at timestamptz NULL;")
 
     # --- 2. sources.monitoring_config jsonb NOT NULL DEFAULT '{}' -------------------
@@ -90,10 +88,10 @@ def upgrade() -> None:
     )
 
     # --- 3. maintenance_windows table -----------------------------------------------
-    # H-7: global-only maintenance window. created_by_user_id nullable — rows inserted
+    # H-7: global-only maintenance window. created_by_user_id nullable - rows inserted
     # programmatically (e.g., API bootstrap) don't always have a user context.
     # ON DELETE SET NULL so window records survive user deletion (audit trail).
-    # No slug or project scope — one window suppresses ALL monitoring alerts globally.
+    # No slug or project scope - one window suppresses ALL monitoring alerts globally.
     op.execute(
         """
         CREATE TABLE maintenance_windows (
@@ -115,7 +113,7 @@ def upgrade() -> None:
 
     # --- 5. source_ingest_stats table -----------------------------------------------
     # MON-03: item-level ingest counters. Primary key (time, source_id) is required
-    # before create_hypertable — TimescaleDB promotes time to the partitioning dimension.
+    # before create_hypertable - TimescaleDB promotes time to the partitioning dimension.
     # ON DELETE CASCADE ensures orphan stats rows are purged when a source is removed.
     op.execute(
         """
@@ -153,7 +151,7 @@ def upgrade() -> None:
     # aggregation so drift checks are cheap SELECT queries rather than full hypertable scans.
     # WITH NO DATA is mandatory here (Pitfall: omitting NO DATA can fail on empty hypertable
     # in some TimescaleDB 2.x versions; always use WITH NO DATA + explicit refresh policy).
-    # First use of timescaledb.continuous in this project — CREATE MATERIALIZED VIEW with
+    # First use of timescaledb.continuous in this project - CREATE MATERIALIZED VIEW with
     # the timescaledb.continuous option converts the view into a managed CA.
     op.execute(
         """
@@ -175,7 +173,7 @@ def upgrade() -> None:
     # --- 9. Continuous aggregate refresh policy -------------------------------------
     # Refresh every 1h, materialise from 7d ago to 1h ago (end_offset keeps the
     # "real-time window" unbucketed so the CA doesn't overwrite in-progress hour).
-    # schedule_interval='1 hour' aligns with bucket size — one sweep per bucket boundary.
+    # schedule_interval='1 hour' aligns with bucket size - one sweep per bucket boundary.
     op.execute(
         """
         SELECT add_continuous_aggregate_policy(
@@ -190,7 +188,7 @@ def upgrade() -> None:
     # --- 10. webhook_alert_type_enum ------------------------------------------------
     # MON-05: monitoring_synth.py emits events with alert_type from this enum; existing
     # webhook fan-out (webhook_dispatcher.py) handles dispatch with zero new webhook code.
-    # DO $$ EXCEPTION WHEN duplicate_object pattern (Pitfall 1 — established project
+    # DO $$ EXCEPTION WHEN duplicate_object pattern (Pitfall 1 - established project
     # pattern from migrations 003, 006, 008, 009): if a partial upgrade already created
     # the type, the EXCEPTION branch adds any missing values via ALTER TYPE ... ADD VALUE
     # IF NOT EXISTS (PG 10+ supports conditional ADD VALUE; safe no-op if value exists).
@@ -219,7 +217,7 @@ def upgrade() -> None:
     # so the NOT NULL + FK constraint is satisfied without associating monitoring events
     # with any real analyst project. archived=true keeps it out of normal project lists.
     # engagement_type='intel_only' is the closest semantic match for system-level events.
-    # ON CONFLICT (id) DO NOTHING — idempotent; safe to run on an existing install.
+    # ON CONFLICT (id) DO NOTHING - idempotent; safe to run on an existing install.
     # Sentinel project UUID (locked from 16-02-PLAN.md interfaces block):
     #   00000000-0000-0000-0000-000000000000  (all zeros)
     # DISTINCT from the legacy sentinel 00000000-0000-0000-0000-000000000001 (mig 009).
@@ -243,7 +241,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     # Reverse in strict opposite order of upgrade().
-    # NOTE: webhook_alert_type_enum values cannot be dropped (PG limitation —
+    # NOTE: webhook_alert_type_enum values cannot be dropped (PG limitation -
     # ALTER TYPE DROP VALUE does not exist in PostgreSQL). The ENUM type itself is
     # dropped below, but if any column references it the DROP TYPE will fail with
     # a dependency error; that is the expected safety gate.
@@ -255,7 +253,7 @@ def downgrade() -> None:
 
     # --- 10. Drop webhook_alert_type_enum -------------------------------------------
     # PG cannot DROP individual ENUM values; we drop the entire type.
-    # If any column already references this type, the DROP TYPE will fail (intended —
+    # If any column already references this type, the DROP TYPE will fail (intended -
     # means the downgrade is running after later migrations that added a column).
     op.execute("DROP TYPE IF EXISTS webhook_alert_type_enum;")
 

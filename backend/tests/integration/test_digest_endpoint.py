@@ -1,4 +1,4 @@
-"""Integration tests for AI-07 digest endpoints — Plan 17-07.
+"""Integration tests for AI-07 digest endpoints - Plan 17-07.
 
 Covers:
   - GET /api/projects/{id}/ai/digest returns latest digest row; 404 if none

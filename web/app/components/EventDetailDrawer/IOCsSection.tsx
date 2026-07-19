@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * IOCsSection — (UI-SPEC §Surface 5).
+ * IOCsSection - (UI-SPEC §Surface 5).
  *
  * Renders inside EventDetailDrawer. Sources data from the concrete
  * `GET /api/events/{id}/iocs` endpoint added in Plan 22-03. Compact chip-row
- * list — clicking a chip deep-links to /projects/{project_id}/iocs?ioc=<uuid>.
+ * list - clicking a chip deep-links to /projects/{project_id}/iocs?ioc=<uuid>.
  *
  * ENRICH-04: fetch enrichments for first 5 IOCs; render unified
  * verdict badge beside ConfidenceBadge when verdict is non-unknown.
@@ -25,7 +25,7 @@ import { TypeBadge, ConfidenceBadge } from "@/app/projects/[id]/iocs/badges";
 interface Props {
   eventId: string;
   /**
-   * Optional — when provided, chip click navigates to
+   * Optional - when provided, chip click navigates to
    * `/projects/{projectId}/iocs?ioc=<uuid>`. Otherwise click is a no-op
    * (event drawer may render in a context without project context).
    */
@@ -87,7 +87,7 @@ export function IOCsSection({ eventId, projectId }: Props) {
             try {
               map[ioc.id] = await getIOCEnrichments(ioc.id);
             } catch {
-              // Silently skip — enrichment section is additive
+              // Silently skip - enrichment section is additive
             }
           }),
         );

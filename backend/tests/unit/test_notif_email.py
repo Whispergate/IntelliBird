@@ -11,13 +11,10 @@ Tests cover:
 
 from __future__ import annotations
 
-import types
 import uuid
-from datetime import datetime, timezone
 from email.mime.text import MIMEText
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 
 from app.crypto import encrypt_credentials
 from app.services.webhook_dispatcher import (
@@ -107,7 +104,7 @@ def test_dispatch_email_success() -> None:
     with patch("app.services.webhook_dispatcher.settings") as mock_settings, \
          patch("app.services.webhook_dispatcher.aiosmtplib") as mock_smtp:
         mock_settings.SECRET_KEY = _SECRET
-        # aiosmtplib.send is awaitable — make it a coroutine that succeeds
+        # aiosmtplib.send is awaitable - make it a coroutine that succeeds
         mock_smtp.send = AsyncMock(return_value=None)
 
         ok, err = _dispatch_email(webhook, events)
@@ -185,7 +182,7 @@ def test_dispatch_email_implicit_tls() -> None:
 
 
 def test_email_subject_format() -> None:
-    """Subject = '[IntelliBird] N alert(s) — webhook.name'."""
+    """Subject = '[IntelliBird] N alert(s) - webhook.name'."""
     webhook = _make_webhook(name="my-alert-channel")
     events = _make_events()
 
@@ -205,7 +202,7 @@ def test_email_subject_format() -> None:
     msg = captured_args[0]
     assert isinstance(msg, MIMEText)
     subject = msg["Subject"]
-    assert subject == "[IntelliBird] 2 alert(s) — my-alert-channel"
+    assert subject == "[IntelliBird] 2 alert(s) - my-alert-channel"
 
 
 def test_dispatch_email_default_port() -> None:

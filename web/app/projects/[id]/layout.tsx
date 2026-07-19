@@ -1,5 +1,5 @@
 /**
- * /projects/[id] — project detail layout.
+ * /projects/[id] - project detail layout.
  *
  * Server component. Fetches the project detail once via `fetchProjectDetail`
  * and wraps every nested route (Overview via page.tsx, Intel via ./intel/,
@@ -15,20 +15,20 @@
  *      session.user.id, extract project_role. Null on miss or error (least-privilege).
  *
  * RESEARCH §5 key finding: auth.ts session callback does NOT forward the `pm` JWT
- * claim into the Next.js session object — `auth()` alone cannot read pm[project_id].
+ * claim into the Next.js session object - `auth()` alone cannot read pm[project_id].
  * The listMemberships API call is the correct solution (Option A from RESEARCH §5).
  *
  * Access gating: `fetchProjectDetail` throws on 403 or 404 (both shapes mean
  * "you don't see this project"). The catch branch redirects to
- * /projects?error=not_found — /projects reads that query param and surfaces a
+ * /projects?error=not_found - /projects reads that query param and surfaces a
  * sonner toast (wired in plan 10-08 ProjectsClient if needed; operator can
  * wire later).
  *
  * Notes:
- *   - Global TopNav stays — it comes from a route-local shell or a parent
+ *   - Global TopNav stays - it comes from a route-local shell or a parent
  *     layout not managed here. See web/app/components/TopNav.tsx; this layout
  *     renders only the project-scoped breadcrumb + tab strip beneath it.
- *   - Next.js 15: params is a Promise — `await params` before reading `.id`.
+ *   - Next.js 15: params is a Promise - `await params` before reading `.id`.
  *   - Client components own the URL tab state (ProjectTabs) and the active
  *     section label (ProjectBreadcrumb). The layout stays server-rendered so
  *     the project fetch does not re-run on tab switch.
@@ -65,14 +65,14 @@ export default async function ProjectLayout({
   }
 
   // Derive per-project role for ProjectRoleProvider.
-  // RESEARCH §5: pm claim is NOT in session — must call listMemberships API.
+  // RESEARCH §5: pm claim is NOT in session - must call listMemberships API.
   let role: ProjectRoleString = null;
   try {
     const session = await auth();
     if (session?.user) {
       const globalRole = (session.user as { role?: string }).role;
       if (globalRole === "Admin") {
-        // Global Admin bypasses project membership — same logic as backend require_project_membership
+        // Global Admin bypasses project membership - same logic as backend require_project_membership
         role = "Admin";
       } else {
         const userId = (session.user as { id?: string }).id;

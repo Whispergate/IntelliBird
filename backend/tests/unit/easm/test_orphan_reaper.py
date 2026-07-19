@@ -7,10 +7,9 @@ Covers:
 from __future__ import annotations
 
 import os
-import subprocess
 from unittest.mock import AsyncMock, MagicMock, patch
 
-# pydantic-settings singleton loaded at first app.* import — set required env vars before that
+# pydantic-settings singleton loaded at first app.* import - set required env vars before that
 os.environ.setdefault("SECRET_KEY", "a" * 32)
 os.environ.setdefault("DATABASE_URL", "postgresql+asyncpg://test:test@localhost/test")
 os.environ.setdefault("JWT_SIGNING_KEY", "b" * 32)
@@ -102,8 +101,7 @@ def test_reap_containers_noops_when_whitespace_only():
 # ---------------------------------------------------------------------------
 
 
-import pytest
-import pytest_asyncio
+import pytest  # noqa: E402
 
 
 @pytest.mark.asyncio

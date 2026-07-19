@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ThreatLandscapeSection — Section 3c: Threat Landscape.
+ * ThreatLandscapeSection - Section 3c: Threat Landscape.
  * UI-SPEC §3c.
  *
  * Auto-populated + manual. Read-only top_events Table (max 20 rows) + analyst narrative.
@@ -111,15 +111,15 @@ export function ThreatLandscapeSection({
                   {topEvents.map((event, i) => (
                     <TableRow key={event.id ?? i}>
                       <TableCell className="text-sm">
-                        {event.title ?? "—"}
+                        {event.title ?? "-"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {event.score != null ? event.score.toFixed(1) : "—"}
+                        {event.score != null ? event.score.toFixed(1) : "-"}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {event.observed_at
                           ? new Date(event.observed_at).toLocaleDateString()
-                          : "—"}
+                          : "-"}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -156,7 +156,7 @@ export function ThreatLandscapeSection({
         </div>
       </div>
 
-      {/* Refresh diff modal — Surface 5 */}
+      {/* Refresh diff modal - Surface 5 */}
       {!readOnly && (
         <RefreshDiffModal
           open={refreshModalOpen}

@@ -1,4 +1,4 @@
-"""MISP push actor — MISP-03.
+"""MISP push actor - MISP-03.
 
 Dramatiq fire-and-forget actor on 'ingest' queue.
 Triggered after ai_suggestion status transitions to 'confirmed'
@@ -65,7 +65,7 @@ def misp_push_suggestion(suggestion_id: str, project_id: str) -> None:
         event = MISPEvent()
         event.info = f"IntelliBird: Confirmed {suggestion_type} suggestion"
         event.distribution = 0  # org-only
-        # Add content as a comment attribute (generic — analyst reviews in MISP)
+        # Add content as a comment attribute (generic - analyst reviews in MISP)
         event.add_attribute("comment", str(content))
         misp.add_event(event)
         log.info(
@@ -77,7 +77,7 @@ def misp_push_suggestion(suggestion_id: str, project_id: str) -> None:
             "misp_push_failed suggestion_id=%s error=%s",
             suggestion_id, exc,
         )
-        # Do NOT re-raise — fire-and-forget; confirmation already committed
+        # Do NOT re-raise - fire-and-forget; confirmation already committed
 
 
 def _maybe_push_to_misp(

@@ -1,5 +1,5 @@
 /**
- * /projects/[id]/assets — Assets Dashboard page.
+ * /projects/[id]/assets - Assets Dashboard page.
  *
  * Server component shell: hands project ID to the client component.
  * Layout.tsx already renders the breadcrumb + ProjectTabs strip.

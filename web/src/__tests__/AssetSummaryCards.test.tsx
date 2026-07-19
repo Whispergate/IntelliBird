@@ -1,5 +1,5 @@
 // Owned by: 12.1-05-PLAN
-// Production tests — replace Wave 0 stubs (plan 12.1-05a).
+// Production tests - replace Wave 0 stubs (plan 12.1-05a).
 
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";

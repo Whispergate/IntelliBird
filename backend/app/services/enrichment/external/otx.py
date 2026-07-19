@@ -1,7 +1,7 @@
-"""OTX (AlienVault Open Threat Exchange) enrichment provider — ENRICH-02.
+"""OTX (AlienVault Open Threat Exchange) enrichment provider - ENRICH-02.
 
 Supports: domain, sha256, sha1, md5
-(ip/ipv6 intentionally not included — see PROVIDER_IOC_ROUTING in resolver.py)
+(ip/ipv6 intentionally not included - see PROVIDER_IOC_ROUTING in resolver.py)
 
 Endpoint: GET https://otx.alienvault.com/api/v1/indicators/{otx_type}/{value}/general
 

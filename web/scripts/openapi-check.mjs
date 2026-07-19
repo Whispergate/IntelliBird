@@ -12,14 +12,14 @@ const GENERATE_CMD = `node node_modules/openapi-typescript/bin/cli.js ${backendU
 const DIFF_CMD = "git diff --exit-code app/api-client.generated.ts";
 
 console.log(
-  `Regenerating app/api-client.generated.ts from ${backendUrl}/openapi.json — requires docker compose up -d api`
+  `Regenerating app/api-client.generated.ts from ${backendUrl}/openapi.json - requires docker compose up -d api`
 );
 
 try {
   execSync(GENERATE_CMD, { stdio: "inherit" });
 } catch (err) {
   console.error(
-    `ERROR: backend not reachable at ${backendUrl} — run 'docker compose -f ops/docker-compose.yml up -d api db redis' first`
+    `ERROR: backend not reachable at ${backendUrl} - run 'docker compose -f ops/docker-compose.yml up -d api db redis' first`
   );
   process.exit(1);
 }
@@ -29,6 +29,6 @@ try {
   console.log("OpenAPI drift gate: no drift.");
   process.exit(0);
 } catch {
-  console.error("OpenAPI drift detected — run `pnpm gen:api` and commit the result.");
+  console.error("OpenAPI drift detected - run `pnpm gen:api` and commit the result.");
   process.exit(1);
 }

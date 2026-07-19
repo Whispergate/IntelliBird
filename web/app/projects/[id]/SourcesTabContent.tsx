@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * SourcesTabContent — Sources tab orchestrator for /projects/[id]
+ * SourcesTabContent - Sources tab orchestrator for /projects/[id]
  * (PRJ-05).
  *
  * Thin wrapper over ProjectSourcesBinding. Kept as a separate named export so
@@ -10,7 +10,7 @@
  *
  * If later iterations introduce Sources-tab-local controls (e.g. a "bulk
  * import from CSV" affordance, a per-source polling-interval override) they
- * belong in this file — ProjectSourcesBinding is specifically the multi-select
+ * belong in this file - ProjectSourcesBinding is specifically the multi-select
  * widget and should not grow into a full page.
  */
 

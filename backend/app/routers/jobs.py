@@ -1,4 +1,4 @@
-"""GET /api/jobs/{job_id} — generic async-job status poll.
+"""GET /api/jobs/{job_id} - generic async-job status poll.
 
 Used by BackfillButton and IOCBulkImportDialog to track Dramatiq actors.
 Redis key format: job:{job_id}:status → JSON {status, ...fields}.

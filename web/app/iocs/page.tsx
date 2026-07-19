@@ -1,9 +1,9 @@
 /**
- * /iocs — Global IOC search page.
+ * /iocs - Global IOC search page.
  *
  * RSC wrapper: reads ?q from searchParams, fetches initial results server-side
  * via _apiFetch (per CLAUDE.md SSR convention), hands them to IOCsGlobalClient.
- * No projectId — cross-project scope; ACL handled by build_ioc_scope_predicate
+ * No projectId - cross-project scope; ACL handled by build_ioc_scope_predicate
  * on the backend (Admin sees all projects, other roles see their own projects).
  */
 import { _apiFetch, type IOCRead } from "@/app/api-client";

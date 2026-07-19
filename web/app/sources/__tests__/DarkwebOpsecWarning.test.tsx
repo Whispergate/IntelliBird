@@ -84,7 +84,7 @@ beforeEach(() => {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("DarkwebOpsecWarning — SourceDialog OPSEC banner", () => {
+describe("DarkwebOpsecWarning - SourceDialog OPSEC banner", () => {
 
   it("shows OPSEC warning for tor_html feed type", () => {
     renderEdit(makeSource("tor_html"));
@@ -147,7 +147,7 @@ describe("DarkwebOpsecWarning — SourceDialog OPSEC banner", () => {
   it("does NOT show OPSEC warning for clearnet feed types (rss default in add mode)", () => {
     renderAdd();
 
-    // Default add mode uses feed_type='rss' — no OPSEC banner
+    // Default add mode uses feed_type='rss' - no OPSEC banner
     expect(screen.queryByText(/I understand the risks and authorise this source/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
 

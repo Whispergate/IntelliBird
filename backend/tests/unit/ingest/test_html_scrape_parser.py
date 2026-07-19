@@ -1,4 +1,4 @@
-"""Unit tests for app.ingest.html_scrape_parser — quick task 260425-ovt.
+"""Unit tests for app.ingest.html_scrape_parser - quick task 260425-ovt.
 
 These tests pin the canonical scrape_config contract, the @attr selector syntax,
 the urljoin behaviour, the max_items cap, the date fallback, and the dedup

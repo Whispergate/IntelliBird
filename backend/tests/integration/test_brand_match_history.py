@@ -1,18 +1,18 @@
-"""Integration tests for BRAND-02 — PATCH history append + match details endpoint.
+"""Integration tests for BRAND-02 - PATCH history append + match details endpoint.
 
 BRAND-02. TDD Wave 1 (RED baseline before implementation).
 
 Tests:
-  - test_patch_appends_history             — PATCH with note + status creates history[0]
-  - test_patch_preserves_detector_keys     — PATCH leaves existing detector keys intact
-  - test_patch_appends_multiple            — two PATCHes → history len=2, ordered insertion
-  - test_patch_note_max_500               — PATCH with 501-char note → 422
-  - test_patch_observer_403               — Observer PATCH → 403 (existing gate, sanity)
-  - test_details_endpoint_shape           — GET /matches/{id}/details returns correct shape
-  - test_details_aggregate_counts         — 3 sibling matches → correct per-status counts
-  - test_details_timeline_ordering        — 12 history entries → exactly 10, descending acted_at
-  - test_details_observer_can_read        — Observer GET details → 200
-  - test_details_cross_project_leakage    — details never returns data from other project
+  - test_patch_appends_history             - PATCH with note + status creates history[0]
+  - test_patch_preserves_detector_keys     - PATCH leaves existing detector keys intact
+  - test_patch_appends_multiple            - two PATCHes → history len=2, ordered insertion
+  - test_patch_note_max_500               - PATCH with 501-char note → 422
+  - test_patch_observer_403               - Observer PATCH → 403 (existing gate, sanity)
+  - test_details_endpoint_shape           - GET /matches/{id}/details returns correct shape
+  - test_details_aggregate_counts         - 3 sibling matches → correct per-status counts
+  - test_details_timeline_ordering        - 12 history entries → exactly 10, descending acted_at
+  - test_details_observer_can_read        - Observer GET details → 200
+  - test_details_cross_project_leakage    - details never returns data from other project
 """
 from __future__ import annotations
 
@@ -155,7 +155,7 @@ async def _seed_match(
 
 
 # ---------------------------------------------------------------------------
-# Task 1: RED tests — PATCH history append
+# Task 1: RED tests - PATCH history append
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -315,7 +315,7 @@ async def test_patch_observer_403(brand_app, db_session):
 
 
 # ---------------------------------------------------------------------------
-# Task 1: RED tests — GET /matches/{match_id}/details
+# Task 1: RED tests - GET /matches/{match_id}/details
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
@@ -503,7 +503,7 @@ async def test_details_cross_project_leakage(brand_app, db_session):
     # Additional match in project_a for count
     await _seed_match(db_session, pid_a, tid_a, matched_value="evil2.com", lifecycle="new")
 
-    # Project B — separate project/term, but same matched value to simulate overlap
+    # Project B - separate project/term, but same matched value to simulate overlap
     pid_b = await _seed_project(db_session, admin_user.id)
     tid_b = await _seed_term(db_session, pid_b)
     history_b = [

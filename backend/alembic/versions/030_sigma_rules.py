@@ -1,4 +1,4 @@
-"""030 — sigma_rules table for Sigma Rule Engine.
+"""030 - sigma_rules table for Sigma Rule Engine.
 
 Revision ID: 030_sigma_rules
 Revises: 029_passive_dns_whois_age
@@ -7,17 +7,17 @@ Create Date: 2026-05-04
 sigma_rules: stored Sigma detection rules (global or per-project).
 
 Design notes:
-  * project_id is nullable — NULL = global rule visible to all projects
+  * project_id is nullable - NULL = global rule visible to all projects
     (admin-curated). Per-project rules are scoped by project_id filter.
-  * compiled_cache is JSONB (not LargeBinary) — Sigma rules compile to a
+  * compiled_cache is JSONB (not LargeBinary) - Sigma rules compile to a
     Python dict structure (field mappings, detection conditions) rather than
     a binary blob. JSONB enables introspection and partial updates.
   * level (TEXT, nullable) mirrors Sigma's native severity field:
     informational | low | medium | high | critical
   * tags (ARRAY of TEXT, nullable) stores raw Sigma rule tags such as
-    attack.t1566 — used for MITRE technique tagging of matched events.
+    attack.t1566 - used for MITRE technique tagging of matched events.
   * Two partial indexes: project_id (FK lookups) and enabled=TRUE
-    (warm path for scanner job — only scans enabled rules).
+    (warm path for scanner job - only scans enabled rules).
 """
 from __future__ import annotations
 

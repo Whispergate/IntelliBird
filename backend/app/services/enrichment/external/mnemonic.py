@@ -1,4 +1,4 @@
-"""Mnemonic PassiveDNS provider — ENRICH-06.
+"""Mnemonic PassiveDNS provider - ENRICH-06.
 
 Supports: domain
 
@@ -9,7 +9,7 @@ API docs: https://api.mnemonic.no/pdns/v3/
   GET /pdns/v3/{domain}
   Optional header: Argus-API-Key: <api_key>
 
-CRITICAL: Mnemonic timestamps are epoch MILLISECONDS — divide by 1000 before fromtimestamp().
+CRITICAL: Mnemonic timestamps are epoch MILLISECONDS - divide by 1000 before fromtimestamp().
 """
 from __future__ import annotations
 
@@ -131,7 +131,7 @@ async def enrich_pdns(
     for rec in response.json().get("data", []):
         if rec.get("rrtype") not in ("A", "AAAA"):
             continue
-        # CRITICAL: timestamps are epoch milliseconds — divide by 1000
+        # CRITICAL: timestamps are epoch milliseconds - divide by 1000
         first_seen_ms = rec.get("firstSeenTimestamp")
         last_seen_ms = rec.get("lastSeenTimestamp")
         rows.append(

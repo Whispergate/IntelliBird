@@ -80,7 +80,7 @@ function renderEventsClient() {
 }
 
 describe("Events route (plan 06-07, MAP/D-28)", () => {
-  it("test_events_page_renders_title — h1 'Events' heading is present", async () => {
+  it("test_events_page_renders_title - h1 'Events' heading is present", async () => {
     renderEventsClient();
     expect(screen.getByRole("heading", { level: 1, name: "Events" })).toBeInTheDocument();
   });
@@ -88,7 +88,7 @@ describe("Events route (plan 06-07, MAP/D-28)", () => {
   it("test_events_page_renders_subtitle_copy", async () => {
     renderEventsClient();
     expect(
-      screen.getByText("All ingested intel events — filter, tag, and drill in."),
+      screen.getByText("All ingested intel events - filter, tag, and drill in."),
     ).toBeInTheDocument();
   });
 
@@ -99,7 +99,7 @@ describe("Events route (plan 06-07, MAP/D-28)", () => {
     });
   });
 
-  it("test_preset_url_param_parses_and_applies — listEvents called with tag from preset JSON", async () => {
+  it("test_preset_url_param_parses_and_applies - listEvents called with tag from preset JSON", async () => {
     const presetJson = JSON.stringify({ tag: ["exploit"], limit: 1000 });
     searchParamsStore = new URLSearchParams({ preset: encodeURIComponent(presetJson) });
     renderEventsClient();
@@ -111,7 +111,7 @@ describe("Events route (plan 06-07, MAP/D-28)", () => {
     });
   });
 
-  it("test_events_table_has_six_columns — all 6 column headers present", async () => {
+  it("test_events_table_has_six_columns - all 6 column headers present", async () => {
     listEventsMock.mockResolvedValue({ items: buildEvents(1), next_cursor: null, total: null });
     renderEventsClient();
     await waitFor(() => {
@@ -139,7 +139,7 @@ describe("Events route (plan 06-07, MAP/D-28)", () => {
     );
   });
 
-  it("test_clear_filters_button_removes_filters — router.replace called without tlp after clear", async () => {
+  it("test_clear_filters_button_removes_filters - router.replace called without tlp after clear", async () => {
     searchParamsStore = new URLSearchParams({ tlp: "amber" });
     renderEventsClient();
     const clearBtn = await screen.findByRole("button", { name: /clear filters/i });

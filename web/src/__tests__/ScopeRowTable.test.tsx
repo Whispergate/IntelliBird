@@ -1,5 +1,5 @@
 /**
- * ScopeRowTable.test.tsx — -01 (UX-01 audit + test coverage)
+ * ScopeRowTable.test.tsx - -01 (UX-01 audit + test coverage)
  *
  * Asserts that all three toggle fields in ScopeRowTable (exclude, active_test_scope,
  * intel_scope) fire a single PATCH call via updateScopeRow and NEVER call
@@ -10,24 +10,24 @@
  *
  * UX-01 audit verdict (confirmed by reading all three source files):
  *
- * Step 1 — ScopeRowTable.tsx:84-106
+ * Step 1 - ScopeRowTable.tsx:84-106
  *   Three <Switch> components each call onToggle(row, { field: v }) with a
  *   single-key patch object: { exclude: v }, { active_test_scope: v }, { intel_scope: v }.
  *
- * Step 2 — ScopeTabContent.tsx:167-179
+ * Step 2 - ScopeTabContent.tsx:167-179
  *   handleToggle builds merged = { ...row, ...patch }. Pre-flight check:
  *   if (!merged.active_test_scope && !merged.intel_scope) { toast.error(...); return; }
  *   This mirrors the backend CHECK constraint project_scope_rows_at_least_one_flag.
  *
- * Step 3 — ScopeTabContent.tsx:181-185
+ * Step 3 - ScopeTabContent.tsx:181-185
  *   Optimistic update: setRows(prev => prev.map(...)) applied immediately.
- *   Then: await updateScopeRow(project.id, row.id, patch) — single PATCH call.
+ *   Then: await updateScopeRow(project.id, row.id, patch) - single PATCH call.
  *
- * Step 4 — projects/lib/api.ts:374-383
+ * Step 4 - projects/lib/api.ts:374-383
  *   updateScopeRow calls _apiFetch PATCH. No DELETE+POST anywhere.
  *   deleteScopeRow is wired ONLY to the explicit Delete icon button, not toggles.
  *
- * Step 5 — ScopeTabContent.tsx:186-190
+ * Step 5 - ScopeTabContent.tsx:186-190
  *   catch: toast.error("Could not update row. ...") + await reload() (full revert).
  *
  * Audit verdict: UX-01 is fully implemented. No code path falls back to DELETE+POST.
@@ -39,7 +39,7 @@ import { render, screen, waitFor, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // ---------------------------------------------------------------------------
-// Mock @/app/projects/lib/api — spy on updateScopeRow and deleteScopeRow
+// Mock @/app/projects/lib/api - spy on updateScopeRow and deleteScopeRow
 // ---------------------------------------------------------------------------
 vi.mock("@/app/projects/lib/api", () => ({
   listScopeRows: vi.fn(),
@@ -119,7 +119,7 @@ beforeEach(() => {
 
 /** Render ScopeTabContent with one pre-loaded row. tabKey="scope-domain" maps to scope_type="domain". */
 async function renderWithRow(row: ScopeRowResponse) {
-  // listScopeRows is called in useEffect on mount — return the single row.
+  // listScopeRows is called in useEffect on mount - return the single row.
   listScopeRowsMock.mockResolvedValue([row]);
 
   let container: HTMLElement;
@@ -142,7 +142,7 @@ async function renderWithRow(row: ScopeRowResponse) {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("ScopeRowTable toggle — fires PATCH not DELETE+POST (UX-01)", () => {
+describe("ScopeRowTable toggle - fires PATCH not DELETE+POST (UX-01)", () => {
   it("Test 1: toggles exclude via single PATCH (not DELETE+POST)", async () => {
     const row = makeRow({ exclude: false });
     updateScopeRowMock.mockResolvedValue({ ...row, exclude: true });
@@ -202,10 +202,10 @@ describe("ScopeRowTable toggle — fires PATCH not DELETE+POST (UX-01)", () => {
     expect(deleteScopeRowMock).not.toHaveBeenCalled();
   });
 
-  it("Test 4: optimistic-update reverts on PATCH 5xx — toast.error + reload", async () => {
+  it("Test 4: optimistic-update reverts on PATCH 5xx - toast.error + reload", async () => {
     const row = makeRow({ exclude: false });
     updateScopeRowMock.mockRejectedValueOnce(new Error("Server error"));
-    // reload() calls listScopeRows again — return the original row (revert).
+    // reload() calls listScopeRows again - return the original row (revert).
     listScopeRowsMock
       .mockResolvedValueOnce([row])  // initial load
       .mockResolvedValueOnce([row]); // reload after failure
@@ -225,15 +225,15 @@ describe("ScopeRowTable toggle — fires PATCH not DELETE+POST (UX-01)", () => {
       "could not update row",
     );
 
-    // reload() was called to revert optimistic update — listScopeRows called again.
+    // reload() was called to revert optimistic update - listScopeRows called again.
     await waitFor(() => {
       expect(listScopeRowsMock).toHaveBeenCalledTimes(2);
     });
   });
 
-  it("Test 5: all-flags-false pre-flight gate — toast shown, updateScopeRow NOT called", async () => {
+  it("Test 5: all-flags-false pre-flight gate - toast shown, updateScopeRow NOT called", async () => {
     // Row: intel_scope=false, active_test_scope=true. Toggling active_test_scope
-    // false would zero BOTH flags — frontend pre-flight must block the PATCH.
+    // false would zero BOTH flags - frontend pre-flight must block the PATCH.
     const row = makeRow({ intel_scope: false, active_test_scope: true });
     listScopeRowsMock.mockResolvedValue([row]);
 
@@ -259,7 +259,7 @@ describe("ScopeRowTable toggle — fires PATCH not DELETE+POST (UX-01)", () => {
       "at least intel or active test",
     );
 
-    // PATCH must NOT have been called — pre-flight stopped it.
+    // PATCH must NOT have been called - pre-flight stopped it.
     expect(updateScopeRowMock).not.toHaveBeenCalled();
   });
 });

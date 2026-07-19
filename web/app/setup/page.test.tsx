@@ -1,5 +1,5 @@
 /**
- * Setup page tests — AUTH-01.
+ * Setup page tests - AUTH-01.
  *
  * Renders only when SETUP_TOKEN set; shows already-complete state when user exists;
  * validates password length 12; redirects to /login on success. Activated in plan 09-07.

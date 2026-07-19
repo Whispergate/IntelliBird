@@ -30,7 +30,7 @@ class GraphResponse(BaseModel):
     nodes: list[GraphNode]
     edges: list[GraphEdge]
     truncated: bool = False
-    # centrality fields — only populated by the /traverse endpoint.
+    # centrality fields - only populated by the /traverse endpoint.
     # Existing endpoints (event graph, project graph) leave these at defaults.
     per_node_centrality: dict[str, float] | None = None
     centrality_truncated: bool = False

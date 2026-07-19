@@ -2,7 +2,7 @@
 
 /**
  * AIReviewTable
- * UI-SPEC §Surface 2 — /projects/[id]/ai-review suggestion queue.
+ * UI-SPEC §Surface 2 - /projects/[id]/ai-review suggestion queue.
  *
  * Features:
  *   - URL param sync (?type=, ?status=, ?since=)
@@ -368,7 +368,7 @@ export function AIReviewTable({ projectId }: { projectId: string }) {
         </Select>
       </div>
 
-      {/* Selection count bar — visible when rows are selected */}
+      {/* Selection count bar - visible when rows are selected */}
       {someSelected && (
         <div
           className="flex items-center justify-between bg-card border border-border rounded-md px-4 py-2 mb-3"
@@ -396,7 +396,7 @@ export function AIReviewTable({ projectId }: { projectId: string }) {
           ))}
         </div>
       ) : suggestions.length === 0 ? (
-        /* Empty state — UI-SPEC §Copywriting Contract */
+        /* Empty state - UI-SPEC §Copywriting Contract */
         <div className="flex flex-col items-center justify-center py-16">
           <Inbox size={32} className="text-muted-foreground/40 mx-auto mb-2" />
           <p className="text-muted-foreground text-sm text-center">
@@ -470,7 +470,7 @@ export function AIReviewTable({ projectId }: { projectId: string }) {
                       {s.event_id}
                     </a>
                   ) : (
-                    <span className="text-muted-foreground text-sm">—</span>
+                    <span className="text-muted-foreground text-sm">-</span>
                   )}
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">

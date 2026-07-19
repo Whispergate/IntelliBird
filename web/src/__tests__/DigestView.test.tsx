@@ -1,5 +1,5 @@
 // Owned by: 17-09-PLAN
-// DigestView — Surface 3 per 17-UI-SPEC.md.
+// DigestView - Surface 3 per 17-UI-SPEC.md.
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, act } from "@testing-library/react";
@@ -58,7 +58,7 @@ const mockDigest = {
   model_used: "phi3:mini",
   prompt_template_version: "DIGEST_PROMPT_V1",
   summary_text:
-    "## Highlights\n- Critical CVE found\n- Threat actor active\n— Summary based on 5 of 10 events",
+    "## Highlights\n- Critical CVE found\n- Threat actor active\n- Summary based on 5 of 10 events",
   tokens_used: 500,
   requires_analyst_review: false,
   created_at: new Date(Date.now() - 60_000).toISOString(),
@@ -115,9 +115,9 @@ describe("DigestView (17-09)", () => {
 
       render(<DigestView projectId="p1" />);
       await waitFor(() => {
-        expect(screen.getByText("— Summary based on 5 of 10 events")).toBeTruthy();
+        expect(screen.getByText("- Summary based on 5 of 10 events")).toBeTruthy();
       });
-      const el = screen.getByText("— Summary based on 5 of 10 events");
+      const el = screen.getByText("- Summary based on 5 of 10 events");
       expect(el.tagName.toLowerCase()).toBe("p");
     });
   });

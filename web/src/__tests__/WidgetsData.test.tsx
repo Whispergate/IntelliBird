@@ -154,7 +154,7 @@ describe("Widgets data (plan 06-06, BLU-01/RED-01)", () => {
     expect(buckets[5]).toBe(1); // 1d ago
     expect(buckets[3]).toBe(1); // 3d ago
     expect(buckets[0]).toBe(1); // 6d ago
-    // day 7 is outside window — sum should be 4 total
+    // day 7 is outside window - sum should be 4 total
     expect(buckets.reduce((a, b) => a + b, 0)).toBe(4);
   });
 

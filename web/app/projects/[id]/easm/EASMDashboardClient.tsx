@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * EASMDashboardClient — (UI-SPEC §Surface 3).
+ * EASMDashboardClient - (UI-SPEC §Surface 3).
  *
  * Owns:
  *   - Filter state (type, module, severity, lifecycle, include_dismissed)
@@ -64,9 +64,9 @@ function FindingsSkeleton() {
 // ---------------------------------------------------------------------------
 interface EASMDashboardClientProps {
   projectId: string;
-  /** Optional — passed by tests or by page if project is already available. */
+  /** Optional - passed by tests or by page if project is already available. */
   initialProject?: ProjectBannerData | null;
-  /** Optional — passed by tests to control observer role display. */
+  /** Optional - passed by tests to control observer role display. */
   isObserver?: boolean;
   /** True when the current user has Lead or global Admin authority to launch active scans. */
   userIsLeadOrAdmin?: boolean;
@@ -171,7 +171,7 @@ export function EASMDashboardClient({
   // Fetch project data for banner gating (if not provided)
   // -----------------------------------------------------------------------
   useEffect(() => {
-    if (initialProject !== null) return; // provided externally — skip fetch
+    if (initialProject !== null) return; // provided externally - skip fetch
     let cancelled = false;
     fetch(`/api/projects/${projectId}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
@@ -275,7 +275,7 @@ export function EASMDashboardClient({
           role="alert"
         >
           <p className="text-sm text-foreground">
-            Active-scan authorisation expires in less than 24 hours — re-confirm
+            Active-scan authorisation expires in less than 24 hours - re-confirm
             on the Settings tab before launching more active scans.
           </p>
         </div>

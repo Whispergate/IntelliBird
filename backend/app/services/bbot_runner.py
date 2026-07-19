@@ -9,12 +9,12 @@ Architecture:
 - Finding persist: ON CONFLICT DO UPDATE dedup, content_hash without scan_id/timestamp (M-4)
 
 Pitfall closures:
-  §Pitfall 1 — flag is '-om json' NOT '--output-modules json'
-  §Pitfall 2 — docker run -d (detached); container_id captured before log streaming
-  §Pitfall 3 — sublist3r excluded from safelist (bbot_safelist.py); not referenced here
-  §Pitfall 4 — startup heal resets bbot:concurrent_scans to SELECT count(*) WHERE running
-  §Pitfall 5 — concurrency semaphore + router-level 409 if scan already running (actor layer)
-  §Pitfall 6 — isinstance(data, dict) guard on every BBOT event.data access
+  §Pitfall 1 - flag is '-om json' NOT '--output-modules json'
+  §Pitfall 2 - docker run -d (detached); container_id captured before log streaming
+  §Pitfall 3 - sublist3r excluded from safelist (bbot_safelist.py); not referenced here
+  §Pitfall 4 - startup heal resets bbot:concurrent_scans to SELECT count(*) WHERE running
+  §Pitfall 5 - concurrency semaphore + router-level 409 if scan already running (actor layer)
+  §Pitfall 6 - isinstance(data, dict) guard on every BBOT event.data access
 """
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ _SEMAPHORE_KEY = "bbot:concurrent_scans"
 # ---------------------------------------------------------------------------
 
 def content_hash_for(project_id: uuid.UUID, bbot_event_type: str, canonical_target: str) -> str:
-    """sha256(project_id || bbot_event_type || canonical_target) — no scan_id, no timestamp.
+    """sha256(project_id || bbot_event_type || canonical_target) - no scan_id, no timestamp.
 
     M-4: Two scans finding the same target produce the same hash, enabling ON CONFLICT
     DO UPDATE to dedup across scan boundaries without creating duplicate rows.
@@ -80,13 +80,13 @@ def launch_bbot_scan(
     """
     if not targets:
         raise ValueError(
-            "cannot launch BBOT scan with empty targets — "
+            "cannot launch BBOT scan with empty targets - "
             "project has no active_test_scope rows of supported types (domain, ip_range, as_number)"
         )
 
     args = [
         "docker", "run",
-        "-d",          # PITFALLS §Pitfall 2: detached — prints container_id to stdout
+        "-d",          # PITFALLS §Pitfall 2: detached - prints container_id to stdout
         "--rm",        # auto-remove on exit; reaper handles cleanup of exited containers
         "--label", "intellibird.easm=true",
         "--label", f"intellibird.scan_id={scan_id}",
@@ -96,12 +96,12 @@ def launch_bbot_scan(
         _BBOT_IMAGE,
         # BBOT 2.8.x: `--json` streams NDJSON events on stdout (what we consume
         # via docker logs --follow). `-om json` is the output MODULE which
-        # writes a file in the scan dir — stdout stays empty and the scan
+        # writes a file in the scan dir - stdout stays empty and the scan
         # silently produces zero findings. See RESEARCH.md §BBOT flags.
         "--json",
     ]
 
-    # BBOT CLI uses argparse nargs='+' for -t / --blacklist / -m — ONE flag
+    # BBOT CLI uses argparse nargs='+' for -t / --blacklist / -m - ONE flag
     # followed by all values. Repeating the flag per value overwrites earlier
     # values (observed: `-t a -t b -t c` → only `c` reaches the scan). Pass the
     # flag once with all values spread after it.
@@ -113,7 +113,7 @@ def launch_bbot_scan(
         args += ["-m", *modules]
 
     if passive:
-        # EASM-03: passive enforcement is worker-code enforced — no UI path can bypass.
+        # EASM-03: passive enforcement is worker-code enforced - no UI path can bypass.
         # Safelist also prevents active modules from landing in modules list via HTTP 422.
         args += ["-rf", "passive"]
 
@@ -135,7 +135,7 @@ def stream_bbot_logs(container_id: str) -> Iterator[dict]:
     """Stream NDJSON events from 'docker logs --follow <container_id>'.
 
     Pattern 1 (RESEARCH.md): separate Popen for log streaming after detached launch.
-    Silently skips non-JSON lines — BBOT emits startup/shutdown text that is not NDJSON.
+    Silently skips non-JSON lines - BBOT emits startup/shutdown text that is not NDJSON.
     Blocks until the container exits (proc.stdout.readline returns '' on EOF).
     """
     # Merge stderr into stdout: BBOT emits INFO/WARN to stderr and JSON events
@@ -150,14 +150,14 @@ def stream_bbot_logs(container_id: str) -> Iterator[dict]:
         text=True,
     )
     try:
-        for line in iter(proc.stdout.readline, ""):
+        for line in iter(proc.stdout.readline, ""):  # type: ignore[union-attr]
             line = line.strip()
             if not line:
                 continue
             try:
                 yield json.loads(line)
             except json.JSONDecodeError:
-                # BBOT may emit non-JSON startup/teardown lines — silently skip
+                # BBOT may emit non-JSON startup/teardown lines - silently skip
                 continue
     finally:
         proc.wait()
@@ -195,12 +195,12 @@ def cancel_bbot_container(container_id: str) -> None:
 def acquire_semaphore(r: redis_lib.Redis, limit: int) -> bool:
     """Atomically INCR bbot:concurrent_scans; DECR + return False if over limit.
 
-    Pattern 2 (RESEARCH.md): Redis INCR is atomic — race-safe across workers.
+    Pattern 2 (RESEARCH.md): Redis INCR is atomic - race-safe across workers.
     If limit exceeded, DECR restores the counter before returning False so the
     counter remains consistent (startup heal is the secondary safety net).
     """
     n = r.incr(_SEMAPHORE_KEY)
-    if n > limit:
+    if n > limit:  # type: ignore[operator]
         r.decr(_SEMAPHORE_KEY)
         return False
     return True
@@ -209,7 +209,7 @@ def acquire_semaphore(r: redis_lib.Redis, limit: int) -> bool:
 def release_semaphore(r: redis_lib.Redis) -> None:
     """DECR bbot:concurrent_scans unconditionally.
 
-    Called in a finally block in the actor — always runs on scan completion,
+    Called in a finally block in the actor - always runs on scan completion,
     exception, or timeout (Pattern 2). The startup heal fixes any drift if
     the worker dies between INCR and the try block.
     """
@@ -220,12 +220,12 @@ def heal_semaphore_from_db(db_sync: object, r: redis_lib.Redis) -> int:
     """Reset bbot:concurrent_scans to SELECT count(*) WHERE status='running'.
 
     Called once on easm-worker startup BEFORE accepting any work (PITFALLS §Pitfall 4).
-    Uses a sync DB connection — APScheduler + startup hooks run in sync context.
+    Uses a sync DB connection - APScheduler + startup hooks run in sync context.
     Returns the count written to Redis.
 
     This heals drift caused by worker crash between INCR and finally: DECR.
     """
-    count = db_sync.execute(
+    count = db_sync.execute(  # type: ignore[attr-defined]
         "SELECT count(*) FROM easm_scans WHERE status='running'"
     ).scalar()
     healed_count = count or 0
@@ -270,7 +270,7 @@ async def reap_orphan_scans(db: AsyncSession) -> int:
     Grace window = BBOT_PASSIVE_MAX_SECONDS + 600 seconds (10 minutes buffer).
     This is the DB-side complement to reap_orphan_containers().
 
-    Uses CAST(:grace AS INTEGER) not ::type shorthand — asyncpg rejects the
+    Uses CAST(:grace AS INTEGER) not ::type shorthand - asyncpg rejects the
     PostgreSQL ::type syntax in parameterised queries (Pitfall established
     pattern from STATE.md).
 
@@ -286,7 +286,7 @@ async def reap_orphan_scans(db: AsyncSession) -> int:
     """)
     result = await db.execute(stmt, {"grace": grace_seconds})
     await db.commit()
-    return result.rowcount or 0
+    return result.rowcount or 0  # type: ignore[attr-defined]
 
 
 # ---------------------------------------------------------------------------
@@ -302,12 +302,12 @@ async def persist_finding(
     """Upsert a BBOT event into easm_findings with ON CONFLICT DO UPDATE dedup.
 
     M-4 compliance:
-    - UNIQUE constraint is (project_id, bbot_event_type, canonical_target) — no scan_id
-    - content_hash = sha256(project_id || bbot_event_type || canonical_target) — no timestamp
+    - UNIQUE constraint is (project_id, bbot_event_type, canonical_target) - no scan_id
+    - content_hash = sha256(project_id || bbot_event_type || canonical_target) - no timestamp
     - ON CONFLICT updates last_seen, raw_bbot, scan_id, severity (always latest data)
     - first_seen is protected (not in DO UPDATE SET) so it reflects initial discovery
 
-    PITFALLS §Pitfall 6: data field is polymorphic — dict for VULNERABILITY/FINDING/TECHNOLOGY,
+    PITFALLS §Pitfall 6: data field is polymorphic - dict for VULNERABILITY/FINDING/TECHNOLOGY,
     str for DNS_NAME/IP_ADDRESS/URL. isinstance(data, dict) guard applied before any key access.
 
     CAST(:severity AS easm_severity) and CAST(:raw_bbot AS jsonb) required because asyncpg
@@ -321,7 +321,7 @@ async def persist_finding(
     data = event.get("data", {})
     module: str = event.get("module") or "unknown"
 
-    # PITFALLS §Pitfall 6 — polymorphic data field defensive access
+    # PITFALLS §Pitfall 6 - polymorphic data field defensive access
     if isinstance(data, dict):
         canonical_target = (
             data.get("host")

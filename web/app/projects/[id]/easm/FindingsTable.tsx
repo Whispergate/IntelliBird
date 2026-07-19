@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * FindingsTable — (UI-SPEC §Surface 3 §Findings table).
+ * FindingsTable - (UI-SPEC §Surface 3 §Findings table).
  *
  * 8-column findings table per UI-SPEC:
  *   Type (160px) | Target (flex-1, font-mono, truncate@48) | Module (140px) |
  *   Severity (100px chip) | First seen (120px) | Last seen (120px) |
  *   Status (120px) | Actions (140px)
  *
- * Row height 44px (WCAG 2.5.5 touch target — matches /events event-list density).
+ * Row height 44px (WCAG 2.5.5 touch target - matches /events event-list density).
  *
  * Watchlist rows: signal-amber dot before lifecycle pill.
  * Dismissed rows: opacity-60 + text-muted-foreground.
@@ -45,7 +45,7 @@ const SEVERITY_CLASS: Record<string, string> = {
 };
 
 function SeverityChip({ severity }: { severity: Severity | null }) {
-  if (!severity) return <span className="text-muted-foreground">—</span>;
+  if (!severity) return <span className="text-muted-foreground">-</span>;
   const cls = SEVERITY_CLASS[severity] ?? "text-muted-foreground";
   return (
     <span className={`brand-caption uppercase ${cls}`}>{severity}</span>
@@ -247,7 +247,7 @@ export function FindingsTable({
                   {finding.bbot_event_type}
                 </td>
 
-                {/* Target — font-mono 12px */}
+                {/* Target - font-mono 12px */}
                 <td className="py-2 px-3">
                   <TooltipProvider>
                     <Tooltip>
@@ -300,7 +300,7 @@ export function FindingsTable({
                   {fmtDate(finding.last_seen)}
                 </td>
 
-                {/* Status — lifecycle pill + watchlist dot */}
+                {/* Status - lifecycle pill + watchlist dot */}
                 <td
                   className="py-2 px-3"
                   style={{ width: "120px" }}
@@ -316,7 +316,7 @@ export function FindingsTable({
                             />
                           </TooltipTrigger>
                           <TooltipContent>
-                            On watchlist — will not be auto-dismissed
+                            On watchlist - will not be auto-dismissed
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>

@@ -1,5 +1,4 @@
-"""Integration: paste source lifecycle — DARK-03."""
-import pytest
+"""Integration: paste source lifecycle - DARK-03."""
 
 
 def test_poll_paste_impl_ingests_rss_feed(db_session):

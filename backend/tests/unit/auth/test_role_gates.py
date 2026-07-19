@@ -1,4 +1,4 @@
-"""Role gate Depends unit tests — AUTH-02."""
+"""Role gate Depends unit tests - AUTH-02."""
 from __future__ import annotations
 
 import os

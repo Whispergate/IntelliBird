@@ -2,12 +2,12 @@
 
 Two contracts:
 
-1. /api/events?include_brand_match={bool} — default false excludes events
+1. /api/events?include_brand_match={bool} - default false excludes events
    tagged 'brand-match'; true includes them. Filter discrimination is by tag,
    mirroring how brand_synth.build_event_dict canonically tags events.
 2. Zero-new-webhook-code guarantee (BRP-05): no files under
    backend/app/services/webhook_payloads/ mention 'brand'. Existing
-   webhook_dispatcher composes webhook payloads from event tags/description —
+   webhook_dispatcher composes webhook payloads from event tags/description -
    brand events flow through the same code path as any other tagged event.
 """
 from __future__ import annotations
@@ -186,7 +186,7 @@ def test_zero_new_webhook_payload_files_for_brand():
 
 
 # ---------------------------------------------------------------------------
-# Plan 12-12 / BRP-05 — regression guard for events.source_type drift
+# Plan 12-12 / BRP-05 - regression guard for events.source_type drift
 # ---------------------------------------------------------------------------
 # These tests drive brand_monitor._maybe_synth against a real testcontainer
 # Postgres so the INSERT column list cannot drift from the events schema
@@ -216,7 +216,7 @@ async def _seed_project_term_and_match(
         ),
         {"id": str(pid), "name": f"synth-proj-{pid}", "created_by": admin_user_id},
     )
-    # brand_term — domain, active, not archived
+    # brand_term - domain, active, not archived
     term_result = await db_session.execute(
         text(
             """
@@ -235,7 +235,7 @@ async def _seed_project_term_and_match(
         "match_metadata": {"lookup_success": True},
     }
 
-    # brand_matches — severity HIGH, lifecycle 'new', webhook_fired_at NULL
+    # brand_matches - severity HIGH, lifecycle 'new', webhook_fired_at NULL
     import json as _json
 
     match_result = await db_session.execute(
@@ -353,7 +353,7 @@ async def test_maybe_synth_does_not_raise_undefined_column(events_app, db_sessio
 
     Re-introducing `source_type` into either _EVENT_INSERT_SQL or
     brand_synth.build_event_dict would surface as a sqlalchemy ProgrammingError
-    here — this is the narrow schema-drift guard.
+    here - this is the narrow schema-drift guard.
     """
     from sqlalchemy.exc import ProgrammingError
 
@@ -374,7 +374,7 @@ async def test_maybe_synth_does_not_raise_undefined_column(events_app, db_sessio
             severity="high",
         )
         await db_session.commit()
-    except ProgrammingError as exc:  # pragma: no cover — failure path
+    except ProgrammingError as exc:  # pragma: no cover - failure path
         pytest.fail(
             f"_maybe_synth raised ProgrammingError (schema drift regression): {exc}"
         )

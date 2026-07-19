@@ -1,4 +1,4 @@
-"""Pydantic v2 schemas for Case Management API — CASE-01, CASE-02."""
+"""Pydantic v2 schemas for Case Management API - CASE-01, CASE-02."""
 from __future__ import annotations
 
 import uuid

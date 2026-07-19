@@ -105,17 +105,17 @@ def test_asset_row_rejects_malformed_asset_id():
 def test_asset_note_patch_bounds():
     from app.schemas.assets import AssetNotePatch
 
-    # empty string allowed — operator clearing a note
+    # empty string allowed - operator clearing a note
     assert AssetNotePatch.model_validate({"note": ""}).note == ""
 
-    # exact 10_000 char limit — allowed
+    # exact 10_000 char limit - allowed
     assert AssetNotePatch.model_validate({"note": "x" * 10_000}).note == "x" * 10_000
 
-    # 10_001 chars — rejected
+    # 10_001 chars - rejected
     with pytest.raises(ValidationError):
         AssetNotePatch.model_validate({"note": "x" * 10_001})
 
-    # missing note field — rejected
+    # missing note field - rejected
     with pytest.raises(ValidationError):
         AssetNotePatch.model_validate({})
 

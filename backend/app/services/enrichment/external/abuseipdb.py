@@ -1,4 +1,4 @@
-"""AbuseIPDB enrichment provider — ENRICH-02.
+"""AbuseIPDB enrichment provider - ENRICH-02.
 
 Supports: ip, ipv6
 

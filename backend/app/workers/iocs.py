@@ -1,10 +1,10 @@
 """IOC Dramatiq actors.
 
-Section 1 (Plan 22-04): backfill_iocs_actor — async backfill driven by
+Section 1 (Plan 22-04): backfill_iocs_actor - async backfill driven by
   POST /api/admin/iocs/backfill so the HTTP request returns 202 + job_id
   and the long-running scan over ~29k events runs off-thread.
 
-Section 2 (Plan 22-05): bulk_import_iocs — appended in a later wave.
+Section 2 (Plan 22-05): bulk_import_iocs - appended in a later wave.
 
 Per-loop async engine pattern (verbatim from `app/workers/ai.py:48`):
 each Dramatiq invocation gets a fresh engine bound to the current loop;
@@ -13,7 +13,7 @@ re-using a module-global engine across worker threads breaks asyncio
 canonical reference implementation.
 
 Job status protocol (Redis):
-  job:{job_id}:status — JSON {status: queued|running|complete|failed,
+  job:{job_id}:status - JSON {status: queued|running|complete|failed,
                               processed, inserted, error?} TTL=3600s
 """
 from __future__ import annotations
@@ -136,7 +136,7 @@ async def _async_bulk_import(
                 json.dumps({"status": "failed", "error": "payload_missing"}),
                 ex=3600,
             )
-            return {"status": "failed"}
+            return {"status": "failed"}  # type: ignore[dict-item]
         rows_json = json.loads(raw)
         rows = [IOCImportRow(**d) for d in rows_json]
         total = len(rows)
@@ -296,7 +296,7 @@ async def _run_provider(client, redis, provider_row, ioc, *, force_refresh: bool
 async def _async_enrich(ioc_id: str) -> None:
     """Async body for enrich_ioc actor.
 
-    Per-loop engine + Redis (mandatory — see workers/ai.py §"Per-loop engine").
+    Per-loop engine + Redis (mandatory - see workers/ai.py §"Per-loop engine").
     asyncio.gather with return_exceptions=True ensures one provider timeout
     cannot abort results from other providers.
 
@@ -361,7 +361,7 @@ async def _async_enrich(ioc_id: str) -> None:
             # Upsert results
             upserted = 0
             for result in results:
-                if isinstance(result, Exception):
+                if isinstance(result, BaseException):
                     logger.warning(
                         "enrich_ioc_provider_exception ioc_id=%s error=%r",
                         ioc_id, result,
@@ -379,7 +379,7 @@ async def _async_enrich(ioc_id: str) -> None:
                     "evidence_text": result.get("evidence_text"),
                 }
                 await session.execute(
-                    _pg_insert(IOCEnrichment.__table__)
+                    _pg_insert(IOCEnrichment.__table__)  # type: ignore[arg-type]
                     .values(**row_values)
                     .on_conflict_do_update(
                         index_elements=["ioc_id", "provider"],
@@ -400,7 +400,7 @@ async def _async_enrich(ioc_id: str) -> None:
             # passive DNS + WHOIS + AGE sync for domain IOCs.
             # This block runs AFTER the standard reputation enrichment above so that
             # VT/AbuseIPDB/etc. are not affected. AGE sync errors are swallowed inside
-            # sync_domain_pivot — they must never fail the enrichment worker.
+            # sync_domain_pivot - they must never fail the enrichment worker.
             if ioc.type == "domain":
                 import httpx as _httpx  # noqa: PLC0415
                 from datetime import datetime as _dt, timezone as _tz  # noqa: PLC0415
@@ -414,7 +414,7 @@ async def _async_enrich(ioc_id: str) -> None:
                 )
                 from app.models.passive_dns import PassiveDnsRecord  # noqa: PLC0415
 
-                # WHOIS fetch — 7-day TTL gate inside the service
+                # WHOIS fetch - 7-day TTL gate inside the service
                 try:
                     await fetch_and_cache_whois(session, redis, ioc.normalized_value)
                 except Exception as _whois_exc:  # noqa: BLE001
@@ -423,7 +423,7 @@ async def _async_enrich(ioc_id: str) -> None:
                         ioc_id, ioc.normalized_value, _whois_exc,
                     )
 
-                # Passive DNS enrichment — try each enabled provider in turn.
+                # Passive DNS enrichment - try each enabled provider in turn.
                 # get_enabled_providers already includes pdns providers for domain type.
                 _pdns_providers = [
                     ("securitytrails", securitytrails),
@@ -485,7 +485,7 @@ async def _async_enrich(ioc_id: str) -> None:
                                 )
                                 await session.rollback()
 
-                # AGE sync — build DomainPivot vertex + SHARES_INFRA edges
+                # AGE sync - build DomainPivot vertex + SHARES_INFRA edges
                 await sync_domain_pivot(
                     session,
                     str(ioc.id),
@@ -507,8 +507,8 @@ async def _async_enrich(ioc_id: str) -> None:
 def enrich_ioc(ioc_id: str) -> None:
     """Dramatiq actor: enrich a single IOC against all applicable reputation providers.
 
-    queue_name="ai" (CONTEXT.md locked — same queue as LLM workers).
-    max_retries=0 — retrying would burn quota slots; the 24h cache + manual
+    queue_name="ai" (CONTEXT.md locked - same queue as LLM workers).
+    max_retries=0 - retrying would burn quota slots; the 24h cache + manual
     refresh path handles recovery instead.
     """
     asyncio.run(_async_enrich(ioc_id))
@@ -521,18 +521,18 @@ def trigger_sandbox_if_sha256(ioc_id: str, ioc_type: str, project_id: str) -> No
     """Trigger sandbox submission for SHA256 IOCs if project has sandbox enabled.
 
     Called from app.services.iocs immediately after IOC upsert when ioc_type='sha256'.
-    Safe to call on every IOC insert — the worker itself checks SandboxConfig.enabled
+    Safe to call on every IOC insert - the worker itself checks SandboxConfig.enabled
     before submitting, so this is a best-effort enqueue (never raises).
 
     Args:
         ioc_id:     UUID string of the newly inserted/upserted IOC row.
-        ioc_type:   IOC type string (IOC.type column — confirmed as 'type' not 'ioc_type').
+        ioc_type:   IOC type string (IOC.type column - confirmed as 'type' not 'ioc_type').
         project_id: UUID string of the owning project.
     """
     if ioc_type != "sha256":
         return
     try:
-        from app.workers.sandbox import submit_sandbox_report  # noqa: PLC0415 — lazy, avoids circular at broker init
+        from app.workers.sandbox import submit_sandbox_report  # noqa: PLC0415 - lazy, avoids circular at broker init
         submit_sandbox_report.send(ioc_id, project_id)
     except Exception as exc:  # noqa: BLE001
         logger.warning(

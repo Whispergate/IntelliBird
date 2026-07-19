@@ -1,4 +1,4 @@
-"""GET /healthz and GET /api/system/status — FN signal source + INFRA-03/04."""
+"""GET /healthz and GET /api/system/status - FN signal source + INFRA-03/04."""
 from __future__ import annotations
 
 from typing import Literal
@@ -58,7 +58,7 @@ def get_status() -> SystemStatusResponse:
     elif not loopback:
         warning = (
             "This IntelliBird instance is exposed beyond loopback and has "
-            "NO AUTHENTICATION — for trusted internal networks only. "
+            "NO AUTHENTICATION - for trusted internal networks only. "
             "Auth lands in."
         )
     else:
@@ -82,7 +82,7 @@ def get_status() -> SystemStatusResponse:
 async def get_setup_status(
     db: AsyncSession = Depends(get_session),
 ) -> SetupStatusResponse:
-    """Pre-auth probe for the /setup UI — exposes SETUP_TOKEN presence and
+    """Pre-auth probe for the /setup UI - exposes SETUP_TOKEN presence and
     user count so the first-admin form knows whether to render or redirect.
     """
     user_count = int((await db.execute(select(func.count(User.id)))).scalar_one())

@@ -1,7 +1,7 @@
-"""Authentik OIDC mock fixtures — AUTH-01 Wave 0.
+"""Authentik OIDC mock fixtures - AUTH-01 Wave 0.
 
 Minimal OIDC discovery document + JWKS + sample id_token claims for unit tests of
-app/security/oidc.py. These are NOT live captures — they are schema-correct skeletons
+app/security/oidc.py. These are NOT live captures - they are schema-correct skeletons
 sufficient for PyJWT/authlib code paths to run deterministically.
 
 Wave 1 plan 09-02 consumes these when implementing map_groups_to_role.
@@ -27,7 +27,7 @@ AUTHENTIK_DISCOVERY: dict[str, Any] = {
 }
 
 # Deterministic RS256 public key for test signing roundtrips. Private pair kept
-# in the test module below. These are NOT production keys — 2048-bit RSA suitable
+# in the test module below. These are NOT production keys - 2048-bit RSA suitable
 # for unit-test speed.
 AUTHENTIK_JWKS: dict[str, Any] = {
     "keys": [
@@ -48,7 +48,7 @@ SAMPLE_ID_TOKEN_CLAIMS: dict[str, Any] = {
     "iss": MOCK_ISSUER_URL,
     "sub": "authentik-test-user-uuid-0001",
     "aud": "intellibird-client",
-    "exp": 9999999999,  # 2286 — never expires for test purposes
+    "exp": 9999999999,  # 2286 - never expires for test purposes
     "iat": 0,
     "nonce": "test-nonce-0001",
     "email": "test-user@intellibird.local",

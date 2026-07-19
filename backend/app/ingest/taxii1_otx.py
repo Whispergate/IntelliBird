@@ -1,7 +1,7 @@
 
 """OTX-specific TAXII 1.1 XML poller (Scope-C, hand-rolled).
 
-AlienVault OTX speaks TAXII 1.1 XML — not TAXII 2.1 JSON. The taxii2-client
+AlienVault OTX speaks TAXII 1.1 XML - not TAXII 2.1 JSON. The taxii2-client
 library cannot communicate with it. This module hand-rolls the three required
 TAXII 1.1 messages:
  1. Discovery_Request → Discovery_Response (locate poll service URL)
@@ -180,7 +180,7 @@ def _poll_collection(
                     continue
                 except Exception:  # noqa: BLE001
                     pass
-            # STIX 1.x XML — synthesize a STIX 2.x-compatible dict. Extract
+            # STIX 1.x XML - synthesize a STIX 2.x-compatible dict. Extract
             # Title + Description from STIX_Header for operator-visible fields.
             tag = child.tag.split("}")[-1] if "}" in child.tag else child.tag
             obj_id = child.get("id") or f"x-stix1-{tag}--{uuid.uuid4()}"
@@ -229,7 +229,7 @@ def poll_otx_taxii1(
     creds: dict | None,
     tlp_cache: dict[uuid.UUID, str],
 ) -> None:
-    """OTX TAXII 1.1 poll entry point — called by taxii.poll_taxii_impl when
+    """OTX TAXII 1.1 poll entry point - called by taxii.poll_taxii_impl when
  the URL heuristic matches /taxii/discovery.
 
  Performs Discovery → Collections → Poll → normalise → persist → cursor advance.
@@ -264,7 +264,7 @@ def poll_otx_taxii1(
         return
 
     # Locate poll service URL. OTX discovery returns service_type in the form
-    # `COLLECTION_MANAGEMENT` / `POLL` — lowercased earlier → `collection_management`.
+    # `COLLECTION_MANAGEMENT` / `POLL` - lowercased earlier → `collection_management`.
     poll_url = services.get("poll")
     collection_url = (
         services.get("collection_management")
@@ -308,7 +308,7 @@ def poll_otx_taxii1(
             session.commit()
             return
 
-    # Normalise + persist (all objects, then advance cursor —)
+    # Normalise + persist (all objects, then advance cursor -)
     inserted = 0
     latest_modified_str: str | None = None
 

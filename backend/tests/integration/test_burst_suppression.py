@@ -1,4 +1,4 @@
-"""Integration test: burst suppression — SCR-05 / Roadmap H-1.
+"""Integration test: burst suppression - SCR-05 / Roadmap H-1.
 
 Verifies that when 50 CVE events all scoring 95.0 (S-tier) are seeded and the
 webhook dispatcher tick runs, at most BURST_HIGH_CAP (5) webhook POSTs fire and
@@ -21,7 +21,6 @@ import hashlib
 import os
 import uuid
 from datetime import datetime, timedelta, timezone
-from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -191,7 +190,7 @@ def test_burst_suppression_caps_high_tier_webhooks(
     with session:
         project_id = _seed_project(session)
         _seed_scope_row(session, project_id)
-        event_ids = _seed_events_high_tier(session, project_id, NUM_EVENTS)
+        _seed_events_high_tier(session, project_id, NUM_EVENTS)
         preset_name = _seed_filter_preset(session, project_id)
         webhook_id = _seed_webhook_and_binding(session, project_id, preset_name)
         session.commit()
@@ -243,7 +242,7 @@ def test_burst_suppression_caps_high_tier_webhooks(
 
         # 1. Exactly 1 HTTP POST must fire (the dispatcher sends ONE batch request
         #    per tick, not one per event). The batch must contain BURST_HIGH_CAP (5)
-        #    events — the 45 suppressed events never enter the Redis batch.
+        #    events - the 45 suppressed events never enter the Redis batch.
         assert len(dispatched_payloads) == 1, (
             f"Expected exactly 1 HTTP POST (one batch), got {len(dispatched_payloads)}"
         )

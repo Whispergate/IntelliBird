@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScenarioStepperSheet — Surface 4: 5-step scenario builder Sheet.
+ * ScenarioStepperSheet - Surface 4: 5-step scenario builder Sheet.
  * UI-SPEC §Surface 4 verbatim.
  *
  * Steps: Actor → CIF/CBS → Objective → Technique → Procedure
@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 import { patchScenario, type ActorProfile, type ObjectiveType, type TiberScenario } from "../lib/api";
 
 // ---------------------------------------------------------------------------
-// TECH_CHIP_STYLE from EventDetailDrawer.tsx — verbatim
+// TECH_CHIP_STYLE from EventDetailDrawer.tsx - verbatim
 // ---------------------------------------------------------------------------
 
 const TECH_CHIP_STYLE = {
@@ -93,7 +93,7 @@ export function ScenarioStepperSheet({
   const [currentStep, setCurrentStep] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  // Local draft state — step fields
+  // Local draft state - step fields
   const [selectedActorId, setSelectedActorId] = useState<string>(scenario.actor_id ?? "");
   const [cifCbsLabel, setCifCbsLabel] = useState<string>(scenario.cif_or_cbs_label ?? "");
   const [objectiveType, setObjectiveType] = useState<ObjectiveType | "">(
@@ -190,7 +190,7 @@ export function ScenarioStepperSheet({
     }
   }
 
-  // Technique search — debounced
+  // Technique search - debounced
   useEffect(() => {
     if (currentStep !== 3) return;
     if (techniqueDebounce.current) clearTimeout(techniqueDebounce.current);
@@ -236,7 +236,7 @@ export function ScenarioStepperSheet({
               <SelectContent>
                 {actors.length === 0 ? (
                   <SelectItem value="__none" disabled>
-                    No actor profiles available — add actors first
+                    No actor profiles available - add actors first
                   </SelectItem>
                 ) : (
                   actors.map((actor) => (
@@ -281,19 +281,19 @@ export function ScenarioStepperSheet({
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="availability" id="obj-availability" />
                 <Label htmlFor="obj-availability" className="font-normal cursor-pointer">
-                  Availability — disruption or denial of service
+                  Availability - disruption or denial of service
                 </Label>
               </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="integrity" id="obj-integrity" />
                 <Label htmlFor="obj-integrity" className="font-normal cursor-pointer">
-                  Integrity — data manipulation or corruption
+                  Integrity - data manipulation or corruption
                 </Label>
               </div>
               <div className="flex items-center gap-2">
                 <RadioGroupItem value="confidentiality" id="obj-confidentiality" />
                 <Label htmlFor="obj-confidentiality" className="font-normal cursor-pointer">
-                  Confidentiality — unauthorised data access or exfiltration
+                  Confidentiality - unauthorised data access or exfiltration
                 </Label>
               </div>
             </RadioGroup>
@@ -348,7 +348,7 @@ export function ScenarioStepperSheet({
                       className="inline-flex items-center gap-1 rounded border px-2 py-1 brand-caption cursor-pointer hover:opacity-80 transition-opacity"
                       style={TECH_CHIP_STYLE}
                     >
-                      {tech.technique_id} — {tech.name}
+                      {tech.technique_id} - {tech.name}
                       {isSelected && (
                         <CheckCircle2 size={10} className="ml-1 text-green-400 shrink-0" />
                       )}
@@ -387,7 +387,7 @@ export function ScenarioStepperSheet({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          {/* Step indicator row — UI-SPEC §Surface 4 verbatim */}
+          {/* Step indicator row - UI-SPEC §Surface 4 verbatim */}
           <div className="flex items-center gap-2 mb-6 overflow-x-auto">
             {steps.map((step, i) => (
               <React.Fragment key={step.id}>

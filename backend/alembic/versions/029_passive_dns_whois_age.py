@@ -1,4 +1,4 @@
-"""029 — passive_dns_records, whois_cache, AGE graph labels for.
+"""029 - passive_dns_records, whois_cache, AGE graph labels for.
 
 ENRICH-06, ENRICH-07, ENRICH-08, GRAPH-01.
 
@@ -15,7 +15,7 @@ AGE graph additions:
   * Creates SHARES_INFRA edge label for IP-sharing multi-hop connections.
 
 Note: enrichment_providers.provider is plain TEXT with no CHECK constraint
-(see 024_enrichment_providers.py) — no constraint modification needed for
+(see 024_enrichment_providers.py) - no constraint modification needed for
 the three new passive-DNS providers; they are accepted without schema change.
 """
 from __future__ import annotations
@@ -100,7 +100,7 @@ def upgrade() -> None:
     )
 
     # ------------------------------------------------------------------
-    # 3. AGE graph — idempotent intellibird_graph + labels
+    # 3. AGE graph - idempotent intellibird_graph + labels
     #
     # AGE DDL must run through the raw synchronous connection so that
     # LOAD 'age' takes effect for the whole session.  op.get_bind()
@@ -120,7 +120,7 @@ def upgrade() -> None:
             sa.text("SELECT * FROM ag_catalog.create_graph('intellibird_graph')")
         )
 
-    # CREATE VLABEL/ELABEL are AGE SQL-level DDL, not Cypher — call via
+    # CREATE VLABEL/ELABEL are AGE SQL-level DDL, not Cypher - call via
     # ag_catalog.create_vlabel / create_elabel SQL functions.
     # Gate on ag_catalog.ag_label to stay idempotent.
     row = conn.execute(
@@ -153,7 +153,7 @@ def downgrade() -> None:
     conn = op.get_bind()
     conn.execute(sa.text("LOAD 'age'"))
     conn.execute(sa.text("SET search_path = ag_catalog, \"$user\", public"))
-    # DROP VLABEL/ELABEL are AGE SQL DDL — use drop_label SQL function.
+    # DROP VLABEL/ELABEL are AGE SQL DDL - use drop_label SQL function.
     row = conn.execute(
         sa.text(
             "SELECT 1 FROM ag_catalog.ag_label"

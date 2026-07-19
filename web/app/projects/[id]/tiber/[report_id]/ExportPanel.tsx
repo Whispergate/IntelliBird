@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ExportPanel — Surface 7: export buttons with completeness gate + polling.
+ * ExportPanel - Surface 7: export buttons with completeness gate + polling.
  * UI-SPEC §Surface 7 verbatim.
  *
  * 3 buttons: Markdown / PDF / STIX.
@@ -10,7 +10,7 @@
  * On click: POST /exports → toast → poll /exports?format=… every 3s →
  *   on ready: sonner action toast with download link.
  * Per-format independent loading state.
- * readOnly does NOT apply — export buttons always active on published reports.
+ * readOnly does NOT apply - export buttons always active on published reports.
  */
 
 import { useRef, useState } from "react";
@@ -35,9 +35,9 @@ type FormatLoadingState = Record<ReportFormat, boolean>;
 interface ExportPanelProps {
   projectId: string;
   reportId: string;
-  /** Missing section names — export disabled when any present */
+  /** Missing section names - export disabled when any present */
   completenessGaps: string[];
-  /** Number of selected complete scenarios — export disabled when < 3 */
+  /** Number of selected complete scenarios - export disabled when < 3 */
   selectedScenarioCount: number;
   /** Called when an export completes (to trigger HistorySidebar refresh) */
   onExportComplete?: () => void;
@@ -211,7 +211,7 @@ export function ExportPanel({
             })}
           </div>
 
-          {/* Validation summary — shown when export is blocked */}
+          {/* Validation summary - shown when export is blocked */}
           {isDisabled && (
             <p className="text-destructive text-xs mt-3">
               {completenessGaps.length + (selectedScenarioCount < 3 ? 1 : 0)} issue(s) must be

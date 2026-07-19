@@ -1,4 +1,4 @@
-# PROD-05 — `events_query` load test results
+# PROD-05 - `events_query` load test results
 
 Evidence log for the PROD-05 success criterion: **50k events × 10 projects,
 `EXPLAIN (ANALYZE)` stays under 200ms p95 with `Index Scan` on
@@ -18,7 +18,7 @@ overwrites the "Last Run" section and appends a new block under "Run Log".
    loaded (i.e. run `pgbench` against the DB the pytest step left behind, or
    seed a dedicated DB via the same `seed_events` helper).
 2. Run: `bash scripts/run-load-test.sh`
-3. Re-run once more (cache already warm) to confirm determinism — p95 should
+3. Re-run once more (cache already warm) to confirm determinism - p95 should
    be within ~10–20% of the first run.
 4. Edit the "Last Run" section below with the observed numbers and paste one
    representative EXPLAIN JSON sample.
@@ -51,7 +51,7 @@ _To be filled by operator after rehearsal._
 
 ### Result
 
-- [x] Pass — `p95 < 200ms` AND `Index Scan` confirmed on
+- [x] Pass - `p95 < 200ms` AND `Index Scan` confirmed on
       `events_project_observed_idx`
 
 ## Run Log
@@ -60,7 +60,7 @@ _Auto-appended by `scripts/run-load-test.sh`. Newest entries at the bottom._
 
 ---
 
-## Run Log — 2026-04-25T03:47:38Z
+## Run Log - 2026-04-25T03:47:38Z
 
 - Operator: lavender
 - Host: garden
@@ -71,7 +71,7 @@ _Auto-appended by `scripts/run-load-test.sh`. Newest entries at the bottom._
 
 
 ```markdown
-### PROD-05 evidence — 2026-04-25T03:48:14.802565+00:00
+### PROD-05 evidence - 2026-04-25T03:48:14.802565+00:00
 - Operator: lavender
 - Seed: 500000 rows (10 projects × 50000) in 22560 ms
 - Warm-up: 10 iterations (discarded)
@@ -1120,7 +1120,7 @@ tests/integration/test_prod05_events_query_load.py::test_prod05_events_query_loa
 
 pytest exit: 0
 
-### `pgbench` concurrent-read — 10 clients × 4 jobs × 60s
+### `pgbench` concurrent-read - 10 clients × 4 jobs × 60s
 
 ```
 Error: pg_wrapper: pgbench was not found in /usr/lib/postgresql/17/bin
@@ -1129,7 +1129,7 @@ Error: pg_wrapper: pgbench was not found in /usr/lib/postgresql/17/bin
 ### pgbench percentile
 
 ```
-pgbench log empty — no samples
+pgbench log empty - no samples
 ```
 
 pgbench exit: 1

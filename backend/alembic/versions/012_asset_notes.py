@@ -1,4 +1,4 @@
-"""asset_notes — operator-writable per-asset free-text note
+"""asset_notes - operator-writable per-asset free-text note
 
 Revision ID: 012
 Revises: 011
@@ -7,7 +7,7 @@ Create Date: 2026-04-24
 Project Asset Surface from BBOT scan findings.
 
 The project asset inventory surface is a query-time aggregation over
-easm_findings. `asset_notes` is the sole stored write-state — a free-text
+easm_findings. `asset_notes` is the sole stored write-state - a free-text
 operator note keyed on the same (project_id, bbot_event_type, canonical_target)
 tuple that makes easm_findings unique. Notes survive scan cleanup (no FK to
 easm_findings); they are anchored to the project only.

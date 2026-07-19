@@ -61,15 +61,15 @@ interface ActorsClientProps {
 
 // Format first_seen "2023-01-15T..." → "Jan 2023"
 function formatFirstSeen(value: string | null): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const d = new Date(value);
-  if (isNaN(d.getTime())) return "—";
+  if (isNaN(d.getTime())) return "-";
   return d.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
-// Flag emoji from country name (very approximate — based on country codes embedded in names)
+// Flag emoji from country name (very approximate - based on country codes embedded in names)
 function countryDisplay(country: string | null): string {
-  if (!country) return "—";
+  if (!country) return "-";
   return country;
 }
 
@@ -250,7 +250,7 @@ export default function ActorsClient({ initialData }: ActorsClientProps) {
           <div>
             <h1 className="text-[22px] font-medium leading-tight">Threat Actors</h1>
             <p className="text-sm text-muted-foreground">
-              Global catalog — survives across engagements
+              Global catalog - survives across engagements
             </p>
           </div>
           {isLead && (
@@ -281,7 +281,7 @@ export default function ActorsClient({ initialData }: ActorsClientProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All countries</SelectItem>
-              {/* Countries are dynamic — only "all" available until actors are loaded */}
+              {/* Countries are dynamic - only "all" available until actors are loaded */}
               {Array.from(new Set(items.map((a) => a.country).filter(Boolean))).map(
                 (c) => (
                   <SelectItem key={c!} value={c!}>
@@ -384,7 +384,7 @@ export default function ActorsClient({ initialData }: ActorsClientProps) {
                         </div>
                       </TableCell>
                       <TableCell>{countryDisplay(actor.country)}</TableCell>
-                      <TableCell>{actor.motivation ?? "—"}</TableCell>
+                      <TableCell>{actor.motivation ?? "-"}</TableCell>
                       <TableCell>
                         <SophisticationBadge value={actor.sophistication} />
                       </TableCell>
@@ -404,7 +404,7 @@ export default function ActorsClient({ initialData }: ActorsClientProps) {
                             <TooltipContent>View on ATT&CK</TooltipContent>
                           </Tooltip>
                         ) : (
-                          "—"
+                          "-"
                         )}
                       </TableCell>
                       <TableCell>{formatFirstSeen(actor.first_seen)}</TableCell>

@@ -1,4 +1,4 @@
-"""Smoke test for two_project_fixture — PROD-01 Wave 0.
+"""Smoke test for two_project_fixture - PROD-01 Wave 0.
 
 Asserts the fixture correctly seeds:
 - 20 events per project in SQL (40 total)

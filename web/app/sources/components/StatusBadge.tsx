@@ -12,7 +12,7 @@ type Props = {
 
 // Brand-aligned status colors:
 // ok = Primary teal (brand positive)
-// silent = Signal amber (brand accent — warrants attention)
+// silent = Signal amber (brand accent - warrants attention)
 // rate_limited = yellow (semantic warning)
 // errors = red (semantic failure)
 // never_polled = Slate (brand neutral)

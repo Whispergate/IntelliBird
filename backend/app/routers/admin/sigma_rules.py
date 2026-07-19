@@ -1,10 +1,10 @@
 """
-Sigma rule admin CRUD — SIGMA-01/SIGMA-03.
-POST /api/admin/sigma-rules       — parse and store a Sigma YAML rule (Admin only)
-GET  /api/admin/sigma-rules       — list rules (optional ?project_id, ?enabled filters)
-PATCH /api/admin/sigma-rules/{id} — update name/enabled; re-parse if content changed
-DELETE /api/admin/sigma-rules/{id} — delete rule
-POST /api/admin/sigma-rules/test  — evaluate rule YAML against last 100 events
+Sigma rule admin CRUD - SIGMA-01/SIGMA-03.
+POST /api/admin/sigma-rules       - parse and store a Sigma YAML rule (Admin only)
+GET  /api/admin/sigma-rules       - list rules (optional ?project_id, ?enabled filters)
+PATCH /api/admin/sigma-rules/{id} - update name/enabled; re-parse if content changed
+DELETE /api/admin/sigma-rules/{id} - delete rule
+POST /api/admin/sigma-rules/test  - evaluate rule YAML against last 100 events
 """
 from __future__ import annotations
 
@@ -139,7 +139,7 @@ async def test_sigma_rule(
     from app.services.sigma_engine import _parse_sigma_rule, _evaluate_condition  # noqa: PLC0415
     from sigma.rule import SigmaRule as _SigmaRule  # noqa: PLC0415
 
-    # 1. Parse rule — 422 on bad YAML
+    # 1. Parse rule - 422 on bad YAML
     try:
         cache_dict = _parse_sigma_rule(body.rule_yaml)
         sigma_rule = _SigmaRule.from_dict(cache_dict)

@@ -1,6 +1,6 @@
 """PROD-05 load test: 50k events × 10 projects, EXPLAIN Index Scan + p95 < 200ms.
 
-Gated by `@pytest.mark.load` — excluded from the default suite (`-m 'not load'`
+Gated by `@pytest.mark.load` - excluded from the default suite (`-m 'not load'`
 in backend/pyproject.toml [tool.pytest.ini_options] addopts). Run via
 `scripts/run-load-test.sh` or `uv run pytest -m load
 tests/integration/test_prod05_events_query_load.py -s`.
@@ -57,7 +57,7 @@ N_PER_PROJECT = 50_000
 WARMUP_ITERATIONS = 10
 SAMPLE_ITERATIONS = 200
 
-# Threshold in ms — PROD-05 success criterion from REQUIREMENTS.md.
+# Threshold in ms - PROD-05 success criterion from REQUIREMENTS.md.
 P95_THRESHOLD_MS = 200.0
 
 # The measured query. Matches the first-page, no-FTS shape in
@@ -104,7 +104,7 @@ def _find_index_scan(plan: dict, expected_index: str) -> dict | None:
     or None. Tolerates the Index Scan being a child of Limit/Sort (common
     shape for ORDER BY observed_at DESC LIMIT 100). On TimescaleDB hypertables
     the Custom Scan (ChunkAppend) wraps per-chunk Index Scans whose names
-    follow `_hyper_<N>_<M>_chunk_<base_index>` — match either the literal
+    follow `_hyper_<N>_<M>_chunk_<base_index>` - match either the literal
     base name or any chunk-suffixed variant ending in it."""
     for node in _walk(plan):
         if node.get("Node Type") not in ("Index Scan", "Index Only Scan"):
@@ -129,7 +129,7 @@ async def test_prod05_events_query_load(db_session, pg_url, capsys):
     dsn = _asyncpg_dsn(pg_url)
     conn = await asyncpg.connect(dsn)
     try:
-        seed_start = time.perf_counter()
+        time.perf_counter()
         total, seed_elapsed_ms = await seed_events(
             conn,
             project_ids=project_ids,
@@ -193,7 +193,7 @@ async def test_prod05_events_query_load(db_session, pg_url, capsys):
     block = (
         "\n\n"
         "```markdown\n"
-        f"### PROD-05 evidence — {now}\n"
+        f"### PROD-05 evidence - {now}\n"
         f"- Operator: {operator}\n"
         f"- Seed: {total} rows ({N_PROJECTS} projects × {N_PER_PROJECT})"
         f" in {seed_elapsed_ms:.0f} ms\n"
@@ -217,7 +217,7 @@ async def test_prod05_events_query_load(db_session, pg_url, capsys):
         "```\n"
         "```\n"
     )
-    # Use capsys-safe print — visible with `pytest -s`.
+    # Use capsys-safe print - visible with `pytest -s`.
     print(block)
 
     assert p95 < P95_THRESHOLD_MS, (

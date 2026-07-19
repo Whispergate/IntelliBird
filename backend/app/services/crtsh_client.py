@@ -4,7 +4,7 @@ Async httpx GET against https://crt.sh/?q=%.{term}&output=json with:
 - 429 rate-limit backoff: 30s, 60s, 120s, then skip cycle (return []).
 - 5xx / network error: return [] immediately (skip cycle, not retry).
 - name_value newline-splitting, wildcard prefix strip, precert/cert dedup
-  via (san, not_before) key — matches the plan 12-02 must-have truths.
+  via (san, not_before) key - matches the plan 12-02 must-have truths.
 
 Returns a list of normalised dicts:
     {
@@ -43,10 +43,10 @@ async def fetch_certs(
     """Poll crt.sh for SANs matching %.{term_value}.
 
     Returns a deduplicated list of cert-record dicts. Returns [] on persistent
-    429, 5xx, network error, or malformed JSON — caller interprets [] as
+    429, 5xx, network error, or malformed JSON - caller interprets [] as
     "skip this cycle, try again next tick".
     """
-    # Use params= so httpx URL-encodes the '%' wildcard prefix (→ %25) — matches
+    # Use params= so httpx URL-encodes the '%' wildcard prefix (→ %25) - matches
     # what crt.sh accepts and what tests assert.
     url = "https://crt.sh/"
     params = {"q": f"%.{term_value}", "output": "json"}

@@ -1,4 +1,4 @@
-"""RSS parser + normaliser + worker tests — INGR-01, INGR-02, INGR-03.
+"""RSS parser + normaliser + worker tests - INGR-01, INGR-02, INGR-03.
 
 Parser-level (Task 1 of-03): pure functions over feedparser output
 using the backend/tests/fixtures/rss_krebs_2026-04.xml golden file.
@@ -44,7 +44,7 @@ def test_normalise_first_entry_shape() -> None:
     assert row is not None
     assert row["stix_type"] == "x-intellibird-rss"
     assert row["source_id"] == SRC_ID
-    assert row["title"] == "Fixture Entry One — Supply Chain Compromise"
+    assert row["title"] == "Fixture Entry One - Supply Chain Compromise"
     assert row["raw_reference"] == "https://krebsonsecurity.com/2026/04/fixture-one/"
     assert row["visibility"] == "shared"
     import re
@@ -133,7 +133,7 @@ def test_link_id_fallback() -> None:
 # ──────────────────────────────────────── Worker-level (Task 2) ────
 
 class _FakeEntry(dict):
-    """Tests use plain dict entries — feedparser.FeedParserDict duck-types via.get/.attr."""
+    """Tests use plain dict entries - feedparser.FeedParserDict duck-types via.get/.attr."""
     def __getattr__(self, k: str):
         try:
             return self[k]

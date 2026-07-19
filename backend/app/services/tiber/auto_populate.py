@@ -1,12 +1,12 @@
-"""TIBER report auto-populate functions — TIBER-04.
+"""TIBER report auto-populate functions - TIBER-04.
 
 Four section fillers for the TIBER TTIR auto-populate flow:
-  populate_threat_landscape      — top-N scored events from project scope
-  populate_actor_profiles        — actor nodes via graph_traversal scoped to project
-  populate_scenarios_longlist    — TTPs seen in project events, up to max_count
-  populate_actionable_intelligence — scope summary + top 3 high-tier events
+  populate_threat_landscape      - top-N scored events from project scope
+  populate_actor_profiles        - actor nodes via graph_traversal scoped to project
+  populate_scenarios_longlist    - TTPs seen in project events, up to max_count
+  populate_actionable_intelligence - scope summary + top 3 high-tier events
 
-H-4 CHOKEPOINT ENFORCEMENT — MANDATORY:
+H-4 CHOKEPOINT ENFORCEMENT - MANDATORY:
   Every function MUST start with:
     scope_rows = await fetch_scope_rows_intel(db, project_id)
     predicate = build_scope_predicate(scope_rows)
@@ -32,12 +32,11 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import sqlalchemy as sa
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.events import Event
 from app.models.tags import AttackTechniqueTag
-from app.services.graph_traversal import traverse_graph
 from app.services.project_scope import build_scope_predicate, fetch_scope_rows_intel
 
 
@@ -76,7 +75,7 @@ class ActionableIntelligenceResult:
 
 
 # ---------------------------------------------------------------------------
-# Populate threat landscape — H-4 chokepoint: build_scope_predicate
+# Populate threat landscape - H-4 chokepoint: build_scope_predicate
 # ---------------------------------------------------------------------------
 
 
@@ -89,7 +88,7 @@ async def populate_threat_landscape(
 
     Scoped to project_id via build_scope_predicate (H-4 chokepoint).
     Events are ordered by score DESC NULLS LAST, then observed_at DESC.
-    Returns a list of Event ORM objects — all rows have project_id == project_id.
+    Returns a list of Event ORM objects - all rows have project_id == project_id.
 
     Args:
         db: Async SQLAlchemy session.
@@ -116,11 +115,11 @@ async def populate_threat_landscape(
     )
     rows = list((await db.execute(stmt)).scalars().all())
 
-    # Defensive assertion — belt-and-suspenders beyond the predicate
+    # Defensive assertion - belt-and-suspenders beyond the predicate
     assert all(
         str(r.project_id) == str(project_id) for r in rows
     ), (
-        f"populate_threat_landscape: leakage detected — "
+        f"populate_threat_landscape: leakage detected - "
         f"rows with wrong project_id: "
         f"{[str(r.project_id) for r in rows if str(r.project_id) != str(project_id)]}"
     )
@@ -128,7 +127,7 @@ async def populate_threat_landscape(
 
 
 # ---------------------------------------------------------------------------
-# Populate actor profiles — H-4 chokepoint: graph_traversal (project_id scoped)
+# Populate actor profiles - H-4 chokepoint: graph_traversal (project_id scoped)
 # ---------------------------------------------------------------------------
 
 
@@ -140,7 +139,7 @@ async def populate_actor_profiles(
     """Return up to top_n actor profiles derived from the project's event graph.
 
     Uses graph_traversal.traverse_graph which internally scopes all BFS hops to
-    project_id — the traverse_graph function enforces H-3 / PROD-01 project_id
+    project_id - the traverse_graph function enforces H-3 / PROD-01 project_id
     boundary at every layer (seed guard + Layer 3 cross-event WHERE clause).
 
     Because M1 graph_traversal is a BFS over relational tables (AGE Cypher deferred
@@ -148,7 +147,7 @@ async def populate_actor_profiles(
     relationship objects referencing threat-actor / intrusion-set nodes.
 
     The source_event_ids list on each ActorProfileResult contains only event IDs
-    from project_id — never from another project (H-4 enforcement via scope predicate).
+    from project_id - never from another project (H-4 enforcement via scope predicate).
 
     Args:
         db: Async SQLAlchemy session.
@@ -178,7 +177,7 @@ async def populate_actor_profiles(
         str(e.project_id) == str(project_id) for e in events
     ), "populate_actor_profiles: event scope leakage detected"
 
-    # Extract actor nodes from raw_stix SROs — mirrors graph_traversal Layer 2 logic
+    # Extract actor nodes from raw_stix SROs - mirrors graph_traversal Layer 2 logic
     _ACTOR_STIX_TYPES = {"threat-actor", "intrusion-set"}
     actors_seen: dict[str, dict] = {}  # stix_id → {name, event_ids}
 
@@ -187,7 +186,7 @@ async def populate_actor_profiles(
             continue
         objects = event.raw_stix.get("objects") or []
         # Build lookup map
-        by_id: dict[str, dict] = {
+        {
             obj["id"]: obj
             for obj in objects
             if isinstance(obj, dict) and "id" in obj and "type" in obj
@@ -238,7 +237,7 @@ def _extract_motivation(stix_obj: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Populate scenarios longlist — H-4 chokepoint: build_scope_predicate
+# Populate scenarios longlist - H-4 chokepoint: build_scope_predicate
 # ---------------------------------------------------------------------------
 
 
@@ -300,7 +299,7 @@ async def populate_scenarios_longlist(
 
 
 # ---------------------------------------------------------------------------
-# Populate actionable intelligence — H-4 chokepoint: build_scope_predicate
+# Populate actionable intelligence - H-4 chokepoint: build_scope_predicate
 # ---------------------------------------------------------------------------
 
 

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ScenarioCard — summary card for a scenario in ScenariosSection (Surface 3e).
+ * ScenarioCard - summary card for a scenario in ScenariosSection (Surface 3e).
  * UI-SPEC §3e verbatim.
  *
  * Renders: actor name + technique ID, completeness badge, selection checkbox,
@@ -79,7 +79,7 @@ export function ScenarioCard({
   const isComplete = missingFields.length === 0;
 
   function getActorName(): string {
-    if (!scenario.actor_id) return "—";
+    if (!scenario.actor_id) return "-";
     return actors.find((a) => a.id === scenario.actor_id)?.name ?? scenario.actor_id.slice(0, 8);
   }
 

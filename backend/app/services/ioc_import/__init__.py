@@ -1,9 +1,9 @@
 """Bulk-import parsers for IOC ingestion (IOC-02).
 
 Three formats supported per CONTEXT.md §"Bulk import + STIX mapping":
-  * CSV  — `parse_csv_rows(bytes)` (Content-Type: text/csv)
-  * JSON — `parse_json_rows(bytes)` (Content-Type: application/json)
-  * STIX 2.1 — `parse_stix_bundle(dict)` (Content-Type: application/stix+json)
+  * CSV  - `parse_csv_rows(bytes)` (Content-Type: text/csv)
+  * JSON - `parse_json_rows(bytes)` (Content-Type: application/json)
+  * STIX 2.1 - `parse_stix_bundle(dict)` (Content-Type: application/stix+json)
 
 Hard cap: 10_000 rows per request. Parsers raise `IOCImportTooLarge` when the
 cap is exceeded; the router translates that to HTTP 413.
