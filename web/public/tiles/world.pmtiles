@@ -1,0 +1,1 @@
+PMTILES_PLACEHOLDER - operator must download a world pmtiles (zoom 0-6, ~10MB) and save it as web/public/tiles/world.pmtiles or override via NEXT_PUBLIC_MAP_TILES_URL env var.

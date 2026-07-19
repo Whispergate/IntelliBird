@@ -1,0 +1,78 @@
+import { auth } from "@/auth";
+import { NextResponse } from "next/server";
+
+export default auth((req) => {
+  const session = req.auth;
+  const { pathname, origin } = req.nextUrl;
+
+  // 0. AUTH_ENABLED=false -> pass-through (INFRA-04 contract mirrors the api proxy route).
+  //    Backend AuthMiddleware is already a pass-through in this mode; middleware must
+  //    not redirect to /login or no local-dev path is reachable without compose SSO.
+  if (process.env.AUTH_ENABLED !== "true") {
+    return NextResponse.next();
+  }
+
+  // 1. Unauthenticated on a matched route -> /login?next=<path>
+  if (!session) {
+    const loginUrl = new URL("/login", origin);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // 1b. Token expired (auth.ts jwt callback flagged it) -> /login?reason=expired
+  //     Clear Auth.js session cookies so SessionProvider drops the stale session.
+  if ((session as any).error === "AccessTokenExpired") {
+    const u = new URL("/login", origin);
+    u.searchParams.set("reason", "expired");
+    if (pathname !== "/") u.searchParams.set("next", pathname);
+    const res = NextResponse.redirect(u);
+    for (const name of [
+      "authjs.session-token",
+      "__Secure-authjs.session-token",
+    ]) {
+      res.cookies.set(name, "", { path: "/", maxAge: 0 });
+    }
+    return res;
+  }
+
+  // 2. must_change_password: block every route except /change-password and /api/auth/*
+  const user = (session.user as any) ?? {};
+  if (user.must_change_password && pathname !== "/change-password") {
+    const u = new URL("/change-password", origin);
+    u.searchParams.set("reason", "first_login");
+    return NextResponse.redirect(u);
+  }
+
+  // 3. Dashboard role mismatch: redirect, not deny.
+  const dashboardRoles: string[] = Array.isArray(user.dashboard_roles)
+    ? user.dashboard_roles
+    : [];
+
+  if (pathname.startsWith("/red") && !dashboardRoles.includes("red")) {
+    if (dashboardRoles.includes("blue")) {
+      return NextResponse.redirect(new URL("/blue", origin));
+    }
+    return NextResponse.redirect(new URL("/", origin));
+  }
+
+  if (pathname.startsWith("/blue") && !dashboardRoles.includes("blue")) {
+    if (dashboardRoles.includes("red")) {
+      return NextResponse.redirect(new URL("/red", origin));
+    }
+    return NextResponse.redirect(new URL("/", origin));
+  }
+
+  return NextResponse.next();
+});
+
+export const config = {
+  matcher: [
+    "/red/:path*",
+    "/blue/:path*",
+    "/events/:path*",
+    "/sources/:path*",
+    "/webhooks/:path*",
+    "/admin/:path*",
+    "/projects/:path*",
+  ],
+};

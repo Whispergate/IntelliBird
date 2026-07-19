@@ -1,0 +1,437 @@
+# IntelliBird v2.0 - Docker Compose stack
+#
+# PROD-07: public exposure is now fronted by Caddy. The api and
+# web services are compose-network-internal (no host-port publish). Caddy
+# terminates TLS on 80/443 and reverse-proxies to api:8000 / web:3000. The
+# api container refuses to start unless AUTH_ENABLED=true (enforced by
+# ops/api-entrypoint.sh).
+#
+# Legacy note: v1.5 bound api/web/db/redis to 127.0.0.1 on the host as a
+# loopback-only guard while auth was absent. v2.0 removes that binding for
+# api/web (they no longer publish to the host at all); db/redis retain
+# 127.0.0.1 publish for operator-local tooling only.
+
+services:
+
+  db:
+    build:
+      context: .
+      dockerfile: db.Dockerfile
+    image: intellibird-db:m1
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: ops/api.Dockerfile
+    image: intellibird-api:m1
+    # running alembic + gunicorn. See ops/api-entrypoint.sh.
+    command: ["/app/api-entrypoint.sh"]
+    # PROD-07: api is compose-network-internal. Caddy is the only public edge.
+    # No host-port publish here (was "127.0.0.1:8000:8000" in v1.5).
+    volumes:
+      - ./api-entrypoint.sh:/app/api-entrypoint.sh:ro
+    env_file: .env
+    environment:
+      AUTH_ENABLED: ${AUTH_ENABLED:-false}
+      SETUP_TOKEN: ${SETUP_TOKEN:-}
+      REKEY_FROM_SECRET: ${REKEY_FROM_SECRET:-}
+      # AUTH-03
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY:?JWT_SIGNING_KEY required when AUTH_ENABLED=true}
+      SSO_ISSUER_URL: ${SSO_ISSUER_URL:-}
+      SSO_CLIENT_ID: ${SSO_CLIENT_ID:-}
+      SSO_CLIENT_SECRET: ${SSO_CLIENT_SECRET:-}
+      SSO_GROUPS_CLAIM: ${SSO_GROUPS_CLAIM:-groups}
+      SSO_ADMIN_GROUPS: ${SSO_ADMIN_GROUPS:-}
+      SSO_ANALYST_GROUPS: ${SSO_ANALYST_GROUPS:-}
+      SSO_VIEWER_GROUPS: ${SSO_VIEWER_GROUPS:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 240s
+
+  worker:
+    image: intellibird-api:m1
+    # Explicitly scope to non-easm queues. easm-worker owns the easm queue
+    # (only that container has /var/run/docker.sock mounted).
+    # brand-monitor queue (BRP-02) co-located here - dnstwist runs in-process
+    # no docker.sock needed (contrast BBOT).
+    command: dramatiq app.workers.broker --queues ingest maintenance webhooks brand-monitor --processes 1 --threads 4
+    env_file: .env
+    environment:
+      GEOLITE_PATH: /app/geolite/GeoLite2-City.mmdb
+    volumes:
+      # Named volume shared with `geoip-update` profile service.
+      # Fallback to ./geolite bind if operator prefers host-managed:
+      #   volumes: [./geolite:/app/geolite:ro]
+      - geoip:/app/geolite:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+  scheduler:
+    image: intellibird-api:m1
+    command: python -m app.scheduler.jobs
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+  # --- CertStream realtime CT log consumer (CERT-01..03) ---
+  # Long-lived asyncio WebSocket consumer; NOT a Dramatiq actor.
+  # Connects to wss://certstream.calidog.io (or CERTSTREAM_URL env override for
+  # operators running a self-hosted CertStream instance). Pattern set is reloaded
+  # from DB every 30s - no restart required when brand_terms change.
+  # Only active when at least one project has certstream_enabled=True.
+  certstream-worker:
+    image: intellibird-api:m1
+    command: python -m app.workers.certstream_worker
+    env_file: .env
+    environment:
+      CERTSTREAM_URL: ${CERTSTREAM_URL:-wss://certstream.calidog.io}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # --- Tor SOCKS5 proxy (dark-web collection - opt-in via `docker compose --profile darkweb up`) ---
+  # DARK-01: isolated on darkweb_net (internal: true).
+  # No clearnet egress from darkweb_net; tor daemon is the sole Tor egress point.
+  # Image default: osminogin/tor-simple - binds SOCKS5 to 0.0.0.0:9050 out of the box.
+  # Override: set TOR_IMAGE env var (e.g. torproject/tor requires custom torrc for SOCKS).
+  tor:
+    image: ${TOR_IMAGE:-osminogin/tor-simple:latest}
+    profiles: ["darkweb"]
+    networks:
+      - darkweb_net
+    restart: unless-stopped
+    # No host-port published - tor-worker reaches via compose DNS tor:9050
+
+  # --- Dark-web ingest worker (darkweb Dramatiq queue) ---
+  # DARK-01..04: processes tor_html, paste, telegram actors.
+  # Attached to BOTH networks:
+  #   - default compose network → db:5432 + redis:6379 access (paste clearnet HTTP also exits here)
+  #   - darkweb_net → tor:9050 access for .onion routing
+  # internal:true on darkweb_net prevents clearnet from that interface;
+  # clearnet paste-site HTTP requests exit via the default network interface.
+  tor-worker:
+    image: intellibird-api:m1
+    profiles: ["darkweb"]
+    command: dramatiq app.workers.broker --queues darkweb --processes 1 --threads 2
+    env_file: .env
+    environment:
+      TOR_SOCKS5_HOST: tor:9050
+    networks:
+      - default
+      - darkweb_net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      tor:
+        condition: service_started
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ../web
+      dockerfile: ../ops/web.Dockerfile
+    image: intellibird-web:m1
+    # PROD-07: web is compose-network-internal. Caddy reverse-proxies / → web:3000.
+    # No host-port publish here (was "127.0.0.1:3000:3000" in v1.5).
+    env_file: .env
+    environment:
+      NEXT_PUBLIC_API_BASE: http://localhost:8000
+      BACKEND_URL: http://api:8000
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      AUTH_ENABLED: ${AUTH_ENABLED:-false}
+      AUTH_TRUST_HOST: "true"
+      AUTH_URL: ${AUTH_URL:-https://localhost}
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET required - generate with `openssl rand -hex 32`}
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # --- Caddy reverse proxy (PROD-07) ---
+  # Single public edge. Terminates TLS, reverse-proxies /api/* + /healthz to
+  # api:8000 and everything else to web:3000. Strips X-Dashboard-Role at the
+  # api upstream (PROD-03 edge defense-in-depth). See ops/Caddyfile.
+  caddy:
+    image: caddy:2.8-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_started
+    restart: unless-stopped
+
+  # --- Authentik (optional SSO - opt-in via `docker compose --profile sso up -d`) ---
+  # Runs its own Postgres (authentik-db) per Authentik best practice (isolation from
+  # IntelliBird's primary DB). Shares the redis container (AUTHENTIK_REDIS__HOST=redis).
+  # AUTH-01.
+  authentik-db:
+    image: postgres:16-alpine
+    profiles: ["sso"]
+    environment:
+      POSTGRES_DB: ${AUTHENTIK_PG_DB:-authentik}
+      POSTGRES_USER: ${AUTHENTIK_PG_USER:-authentik}
+      POSTGRES_PASSWORD: ${AUTHENTIK_PG_PASS:?AUTHENTIK_PG_PASS required when --profile sso}
+    volumes:
+      - authentik_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  authentik-server:
+    image: ghcr.io/goauthentik/server:2025.12.1
+    profiles: ["sso"]
+    command: server
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9443:9443"
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_PG_PASS:?}
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_PG_DB:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?AUTHENTIK_SECRET_KEY required when --profile sso}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2025.12.1
+    profiles: ["sso"]
+    command: worker
+    user: root  # required for Docker socket integration (Authentik image default)
+    environment:
+      AUTHENTIK_REDIS__HOST: redis
+      AUTHENTIK_POSTGRESQL__HOST: authentik-db
+      AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_PG_USER:-authentik}
+      AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_PG_PASS:?}
+      AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_PG_DB:-authentik}
+      AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY:?}
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "false"
+    depends_on:
+      authentik-server:
+        condition: service_started
+
+  # --- EASM worker (opt-in - docker compose up easm-worker) ---
+  # ELEVATED PRIVILEGE: /var/run/docker.sock is mounted on THIS service only.
+  # Any code path that reaches easm-worker can docker-run arbitrary images with
+  # root-equivalent host access. See docs/ops/easm.md §Security for threat model.
+  # Do NOT copy this mount to api, worker, or scheduler (PITFALLS §Pitfall 7).
+  easm-worker:
+    image: intellibird-api:m1
+    command: dramatiq app.workers.broker --queues easm --processes 1 --threads 2
+    env_file: .env
+    environment:
+      BBOT_PASSIVE_MAX_SECONDS: ${BBOT_PASSIVE_MAX_SECONDS:-7200}
+      BBOT_ACTIVE_MAX_SECONDS: ${BBOT_ACTIVE_MAX_SECONDS:-1800}
+      BBOT_CONCURRENT_LIMIT: ${BBOT_CONCURRENT_LIMIT:-2}
+      BBOT_SCAN_HISTORY_LIMIT: ${BBOT_SCAN_HISTORY_LIMIT:-5}
+      BBOT_EXPERIMENTAL_OVERRIDE: ${BBOT_EXPERIMENTAL_OVERRIDE:-}
+      BBOT_IMAGE_TAG: ${BBOT_IMAGE_TAG:-blacklanternsecurity/bbot:stable}
+      BBOT_ACTIVE_AUTH_TTL_SECONDS: ${BBOT_ACTIVE_AUTH_TTL_SECONDS:-604800}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY}
+    volumes:
+      # ELEVATED PRIVILEGE - see docs/ops/easm.md §Security before copying this
+      # mount to any other service.
+      - /var/run/docker.sock:/var/run/docker.sock
+      - bbot_scans:/bbot/scans
+    depends_on:
+      - redis
+      - db
+    # profiles: [easm]   # uncomment to make easm-worker opt-in (not started by default)
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ai"]
+    # Loopback-only publish - ai-worker reaches ollama on the compose network.
+    # Host publish exists for operator-local `ollama pull` / curl debugging.
+    # docker exec ops-ollama-1 ollama pull <model name>
+    # Do NOT expose externally: Ollama has no auth.
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+    # NVIDIA GPU passthrough (uncomment to enable):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  ai-worker:
+    image: intellibird-api:m1
+    # Dedicated AI queue worker. Ollama CPU inference can take
+    # 60-120s per summary; isolating from `worker` prevents starvation of
+    # ingest/maintenance/webhooks queues.
+    profiles: ["ai"]
+    command: dramatiq app.workers.broker --queues ai --processes 1 --threads 2
+    env_file: .env
+    environment:
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://ollama:11434}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
+  # --- Reports worker (opt-in - docker compose --profile reports up -d) ---
+  # Dedicated worker for PDF/MD/STIX export generation on the "reports" queue.
+  # WeasyPrint subprocess isolation: the worker process never imports weasyprint
+  # directly - it shells out via subprocess.run(["weasyprint", ...]) so the C
+  # library (pango/cairo/fontconfig) RSS is reclaimed on subprocess exit.
+  # mem_limit 2g: WeasyPrint child subprocess can spike to ~1GB for large PDFs;
+  # 2g gives the parent worker + child subprocess sufficient headroom.
+  # profiles: ["reports"] - opt-in.
+  reports-worker:
+    image: intellibird-api:m1
+    command: dramatiq app.workers.broker --queues reports --processes 1 --threads 1
+    mem_limit: 2g
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    profiles: ["reports"]
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # ntfy notification service (optional - profile: notify)
+  # Run: docker compose --profile notify up
+  # Self-hosted push notification broker for NOTIF-04.
+  # Default port 2586; override with NTFY_PORT env var.
+  # ---------------------------------------------------------------------------
+  ntfy:
+    image: ${NTFY_IMAGE:-binwiederhier/ntfy:latest}
+    profiles: ["notify"]
+    command: serve
+    volumes:
+      - ntfy-cache:/var/cache/ntfy
+      - ntfy-etc:/etc/ntfy
+    ports:
+      - "${NTFY_PORT:-2586}:80"
+    restart: unless-stopped
+
+  # On-demand GeoLite2 downloader. Pulls City/ASN/Country mmdb via jsDelivr
+  # from wp-statistics/geolite2-* packages (no MaxMind account needed).
+  # Run explicitly:  docker compose --profile geoip run --rm geoip-update
+  # Then restart workers: docker compose restart worker scheduler
+  geoip-update:
+    image: alpine/curl:latest
+    profiles: ["geoip"]
+    volumes:
+      - geoip:/geoip
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        set -e
+        echo "Downloading GeoLite2 databases (wp-statistics / jsDelivr)..."
+        for db in City ASN Country; do
+          lc=$$(echo $$db | tr A-Z a-z)
+          url="https://cdn.jsdelivr.net/npm/geolite2-$$lc/GeoLite2-$$db.mmdb.gz"
+          curl -sSL -o /geoip/GeoLite2-$$db.mmdb.gz "$$url"
+          gunzip -f /geoip/GeoLite2-$$db.mmdb.gz
+          echo "  $$db DB downloaded"
+        done
+        ls -lh /geoip/*.mmdb
+        echo "Done."
+
+volumes:
+  pg_data:
+  redis_data:
+  geoip:
+  authentik_db_data:
+  bbot_scans:
+  caddy_data:
+  caddy_config:
+  ollama_models:
+  ntfy-cache:
+  ntfy-etc:
+
+networks:
+  darkweb_net:
+    driver: bridge
+    internal: true
+    # internal: true - containers on darkweb_net cannot reach the public internet directly.
+    # The tor daemon is the sole clearnet egress point via the Tor network.
+    # tor-worker is also attached to the default compose network for db/redis + paste clearnet access.

@@ -1,0 +1,107 @@
+[project]
+name = "intellibird-backend"
+version = "0.1.0"
+description = "IntelliBird backend - FastAPI + workers + Alembic"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi>=0.115,<0.116",
+  "uvicorn[standard]>=0.30,<0.31",
+  "gunicorn>=22,<23",
+  "sqlalchemy[asyncio]>=2.0,<2.1",
+  "asyncpg>=0.29,<0.30",
+  "alembic>=1.13,<1.14",
+  "pydantic>=2.7,<3",
+  "pydantic-settings>=2.3,<3",
+  "dramatiq[redis]>=1.17,<2",
+  "apscheduler>=3.10,<4",
+  "structlog>=24.1,<26",
+  "asgi-correlation-id>=4,<5",
+  "stix2==3.0.2",
+  "taxii2-client==2.3.0",
+  "httpx>=0.27,<0.28",
+  "redis>=5,<6",
+  "psycopg2-binary>=2.9,<3",
+  "feedparser==6.0.12",
+  "nvdlib>=0.8,<0.9",
+  "cryptography>=42,<43",
+  "litellm>=1.83.0,<2",
+  "lxml>=5,<6",
+  "cssselect>=1.2,<2",
+  "trafilatura>=1.12,<2",
+  "geoip2>=4.8,<5",
+  "PyJWT>=2.12,<3",
+  "pySigma>=0.10,<0.11",
+  "pwdlib[argon2]>=0.2,<0.3",
+  "authlib>=1.6,<2",
+  "dnstwist>=20240219",
+  "socksio>=0.2,<0.3",
+  "telethon>=1.36,<2",
+  "weasyprint>=62,<70",
+  "mistune>=3.0,<4",
+  "rapidfuzz>=3.0,<4",
+  "yara-python>=4.5,<5",
+  "pymisp>=2.5,<3",
+  "networkx>=3.3,<4",
+  "numpy>=1.26,<3",
+  "scipy>=1.13,<2",
+  "asyncwhois>=1.1,<2",
+  "aiosmtplib>=3.0,<6",
+  "mastodon-py>=1.8,<2",
+  "datasketch>=1.6,<2",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8,<9",
+  "pytest-asyncio>=0.23,<1",
+  "pytest-docker>=3,<4",
+  "testcontainers[postgres,redis]>=4.8,<5",
+  "httpx>=0.27,<0.28",
+  "ruff>=0.6,<1",
+  "mypy>=1.11,<2",
+  "types-psycopg2>=2.9,<3",
+  "aiosqlite>=0.22.1",
+]
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+addopts = "-ra --strict-markers -m 'not load'"
+markers = [
+  "integration: marks tests that require docker/testcontainers (deselect with '-m \"not integration\"')",
+  "load: long-running load test; excluded by default (run with `-m load`)",
+  "cross_file_pollution: regression gate for tests previously failing only in combined runs due to fixture pollution",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+# Third-party libs without py.typed markers or published stubs
+# (apscheduler, mastodon, yara-python, etc.) — treat as untyped rather
+# than failing the build on missing stubs.
+ignore_missing_imports = true
+# Relaxed strict sub-flags: keep strict base (None checks, equality, etc.)
+# but don't fail on missing annotations / bare generics / untyped calls.
+disallow_any_generics = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+warn_return_any = false
+warn_unused_ignores = false
+# Internal packages re-export from submodules (e.g. app.services.enrichment)
+implicit_reexport = true

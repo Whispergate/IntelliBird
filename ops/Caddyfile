@@ -1,0 +1,50 @@
+# IntelliBird v2.0 - Caddy reverse proxy (PROD-07)
+#
+# PROD-07: single public edge; api + web are compose-network-internal.
+# For production: replace `:443, :80` with a real hostname (e.g.
+# `https://intellibird.example.com`) and remove `tls internal`. Caddy will
+# auto-provision a Let's Encrypt certificate on first boot.
+# For lab / smoke: `tls internal` issues a Caddy-signed cert; no ACME reach-out.
+
+{
+    # email admin@example.com    # uncomment for Let's Encrypt production mode
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory  # staging
+}
+
+# Explicit hostnames so `tls internal` can bind a Caddy-signed cert to the SNI
+# the browser sends. `:443, :80` (no host) led to TLS handshake failures
+# (SSL_ERROR_INTERNAL_ERROR_ALERT) because the local CA had no cert provisioned
+# for an empty server name. Caddy auto-binds both :80 and :443 for these
+# hostnames and auto-redirects HTTP → HTTPS. For production, replace with the
+# public hostname.
+localhost, 127.0.0.1 {
+    encode zstd gzip
+
+    # All browser traffic - including /api/* - goes to the web container.
+    # Web container handles:
+    #   /api/auth/*   -> NextAuth v5 handler (app/api/auth/[...nextauth]/route.ts)
+    #   /api/*        -> app/api/[...path]/route.ts runtime proxy that reads the
+    #                    Auth.js session and injects Authorization: Bearer
+    #                    before forwarding to http://api:8000. It also strips the
+    #                    spoofable X-Dashboard-Role header (PROD-03 / INFRA-04).
+    # Routing /api/* directly to api:8000 at the edge would bypass the bearer
+    # injection and return 401 invalid_token for every authenticated request.
+    # PROD-03 edge header strip is preserved defensively for the web -> api hop.
+    request_header -X-Dashboard-Role
+
+    # /healthz is a pre-auth liveness probe; can go direct to api.
+    @healthz path /healthz
+    handle @healthz {
+        reverse_proxy api:8000
+    }
+
+    handle {
+        reverse_proxy web:3000 {
+            header_up Host {host}
+            header_up X-Forwarded-Host {host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    tls internal
+}

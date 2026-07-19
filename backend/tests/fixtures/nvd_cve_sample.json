@@ -1,0 +1,70 @@
+{
+  "resultsPerPage": 1,
+  "startIndex": 0,
+  "totalResults": 1,
+  "format": "NVD_CVE",
+  "version": "2.0",
+  "timestamp": "2026-04-10T00:00:00.000",
+  "vulnerabilities": [
+    {
+      "cve": {
+        "id": "CVE-2024-99999",
+        "sourceIdentifier": "fixture@example.com",
+        "published": "2026-04-09T18:15:00.000",
+        "lastModified": "2026-04-10T12:00:00.000",
+        "vulnStatus": "Analyzed",
+        "descriptions": [
+          {"lang": "en", "value": "Fixture CVE used by Phase 2 unit tests. Not a real vulnerability."}
+        ],
+        "metrics": {
+          "cvssMetricV31": [
+            {
+              "source": "nvd@nist.gov",
+              "type": "Primary",
+              "cvssData": {
+                "version": "3.1",
+                "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "baseScore": 9.8,
+                "baseSeverity": "CRITICAL"
+              },
+              "exploitabilityScore": 3.9,
+              "impactScore": 5.9
+            }
+          ]
+        },
+        "weaknesses": [
+          {"source": "nvd@nist.gov", "type": "Primary", "description": [{"lang": "en", "value": "CWE-89"}]}
+        ],
+        "configurations": [
+          {
+            "nodes": [
+              {
+                "operator": "OR",
+                "negate": false,
+                "cpeMatch": [
+                  {
+                    "vulnerable": true,
+                    "criteria": "cpe:2.3:a:fixture:webapp:1.0.0:*:*:*:*:*:*:*",
+                    "matchCriteriaId": "FIXTURE-MATCH-ID"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "references": [
+          {
+            "url": "https://attack.mitre.org/techniques/T1190/",
+            "source": "nvd@nist.gov",
+            "tags": ["Exploit", "Third Party Advisory"]
+          },
+          {
+            "url": "https://fixture.example.com/advisory",
+            "source": "nvd@nist.gov",
+            "tags": ["Vendor Advisory"]
+          }
+        ]
+      }
+    }
+  ]
+}

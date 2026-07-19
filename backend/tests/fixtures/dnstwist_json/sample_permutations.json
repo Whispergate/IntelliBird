@@ -1,0 +1,23 @@
+[
+  {
+    "fuzzer": "addition",
+    "domain": "googleb.com",
+    "dns_a": ["104.21.16.168"],
+    "dns_aaaa": ["2606:4700:3033::6815:10a8"],
+    "dns_mx": ["route1.mx.cloudflare.net"],
+    "dns_ns": ["damon.ns.cloudflare.com"]
+  },
+  {
+    "fuzzer": "addition",
+    "domain": "googlec.com",
+    "dns_a": ["1.214.210.188"],
+    "dns_ns": ["ns1.doregi.com"]
+  },
+  {
+    "fuzzer": "addition",
+    "domain": "google4.com",
+    "dns_a": ["!ServFail"],
+    "dns_aaaa": ["!ServFail"],
+    "dns_ns": ["!ServFail"]
+  }
+]

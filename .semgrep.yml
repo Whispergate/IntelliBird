@@ -1,0 +1,77 @@
+rules:
+  # ---------------------------------------------------------------------------
+  # Rule 1: template-unescaped-with-safe
+  #
+  # TIBER templates MUST NOT use the | safe filter on any variable.
+  # Analyst-authored content (section narratives, scenario text) passes through
+  # these templates. If | safe is used, an analyst who embeds raw HTML in their
+  # narrative can execute arbitrary JavaScript in the PDF render context (XSS).
+  #
+  # Correct pattern: pre-render analyst markdown with mistune HTMLRenderer(escape=True)
+  # and wrap the result in jinja2.Markup(rendered_html). The template then uses
+  # {{ variable }} without | safe - autoescape respects the Markup wrapper.
+  #
+  # See: 18-RESEARCH.md Pattern 2 + Pitfall 5
+  # ---------------------------------------------------------------------------
+
+  - id: template-unescaped-with-safe
+    languages: [generic]
+    paths:
+      include:
+        - "backend/app/templates/tiber/**/*.j2"
+        - "backend/app/templates/tiber/**/*.html"
+    pattern-regex: '\|\s*safe(?![a-zA-Z_])'
+    message: >
+      TIBER templates MUST NOT use `| safe` filter - pre-render markdown via
+      mistune HTMLRenderer(escape=True) and wrap in jinja2.Markup() instead.
+      See 18-RESEARCH.md Pitfall 5.
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-79
+      owasp: "A03:2021 - Injection"
+      references:
+        - "https://jinja.palletsprojects.com/en/3.1.x/templates/#working-with-automatic-escaping"
+        - ".planning/phases/18-tiber-report-generation/18-RESEARCH.md"
+
+  # ---------------------------------------------------------------------------
+  # Rule 2: render-template-string
+  #
+  # render_template_string and jinja2.Template(user_input).render() are SSTI
+  # (Server-Side Template Injection) vulnerabilities when the template string
+  # itself can contain analyst-authored content. File-based templates with
+  # FileSystemLoader are the only safe pattern.
+  #
+  # Banned patterns:
+  #   - render_template_string(...)          (Flask; SSTI if input is user data)
+  #   - jinja2.Template($X).render(...)      (SSTI: $X can be analyst content)
+  #   - Template($X).render(...)             (same, with bare import)
+  #
+  # Correct pattern: FileSystemLoader + env.get_template("report.md.j2")
+  # See: 18-RESEARCH.md Pattern 2 + Pitfall 5 security invariants
+  # ---------------------------------------------------------------------------
+
+  - id: render-template-string
+    languages: [python]
+    paths:
+      include:
+        - "backend/app/services/tiber/**/*.py"
+        - "backend/app/routers/tiber.py"
+        - "backend/app/workers/reports.py"
+    patterns:
+      - pattern-either:
+          - pattern: render_template_string(...)
+          - pattern: jinja2.Template($X).render(...)
+          - pattern: Template($X).render(...)
+    message: >
+      TIBER service layer MUST NOT use render_template_string or
+      jinja2.Template(...) - SSTI risk. Use FileSystemLoader +
+      autoescape=select_autoescape(['html']). See 18-RESEARCH.md Pattern 2.
+    severity: ERROR
+    metadata:
+      category: security
+      cwe: CWE-94
+      owasp: "A03:2021 - Injection"
+      references:
+        - "https://semgrep.dev/docs/cheat-sheets/flask-xss"
+        - ".planning/phases/18-tiber-report-generation/18-RESEARCH.md"

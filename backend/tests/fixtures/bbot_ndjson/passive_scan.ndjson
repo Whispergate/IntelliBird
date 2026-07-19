@@ -1,0 +1,3 @@
+{"type":"DNS_NAME","id":"DNS_NAME:abc","data":"sub1.example.com","scope_distance":1,"scan":"SCAN:test","timestamp":1700000000.0,"resolved_hosts":["1.2.3.4"],"parent":"DNS_NAME:root","tags":["distance-1"],"module":"crt","module_sequence":"crt"}
+{"type":"IP_ADDRESS","id":"IP_ADDRESS:xyz","data":"1.2.3.4","scope_distance":1,"scan":"SCAN:test","timestamp":1700000001.0,"resolved_hosts":["1.2.3.4"],"parent":"DNS_NAME:abc","tags":["ipv4"],"module":"A","module_sequence":"A"}
+{"type":"SUBDOMAIN_TAKEOVER_CANDIDATE","id":"STC:q","data":"abandoned.example.com","scope_distance":1,"scan":"SCAN:test","timestamp":1700000002.0,"resolved_hosts":[],"parent":"DNS_NAME:abc","tags":["takeover"],"module":"subdomain_takeover_finder","module_sequence":"subdomain_takeover_finder"}
